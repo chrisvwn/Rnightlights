@@ -1,0 +1,19 @@
+This directory structure was created by the R package 'Rnightlights'
+available on CRAN [http://cran.r-project.org/package=Rnightlights].
+It downloads satellite nightlights imagery from the NOAA, a branch of
+NASA and processes them producing various statistics of any country
+globally using polygon shapefiles downloaded from http://www.gadm.org.
+The data files and other important files are stored in this directory.
+The structure is as follows:
+
+root-
+    +data             directory containing the extracted country nightlight
+                      data in CSV format
+    +outputrasters    directory containing the clipped country rasters
+    +outputrasters_webdirectory containing resampled (optional) 
+                      outputrasters for faster web serving
+    +polygons         the country polygons downloaded from http://www.gadm.org
+    +temp             some temporary files (optional)
+    +tiles            the satellite nightlights imagery tiles downloaded from 
+                      http://noaa.usgs.gov
+    +zonals           the rasters mapping raster pixels to country regions
