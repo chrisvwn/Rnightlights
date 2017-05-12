@@ -1,4 +1,4 @@
-# shiny_nightlights
+# Rnightlights
 
 ## Nightlights for R
 
