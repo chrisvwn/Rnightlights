@@ -116,7 +116,7 @@ getNlDir <- function(dirName)
     stop("Missing required parameter dirName")
     
   if(!is.character(dirName) || is.null(dirName) || is.na(dirName) || dirName == "")
-    stop("Invalid dirName")
+    stop("Invalid dirName: ", dirName)
   
   dataPath <- getDataPath()
   
@@ -580,7 +580,7 @@ getTilesCtryIntersect <- function(ctryCode)
   ctryCode <- as.character(ctryCode)
   
   if(!validCtryCode(ctryCode))
-    stop("Invalid/Unknown ctryCode ", ctryCode)
+    stop("Invalid/Unknown ctryCode: ", ctryCode)
   
   ctryISO3 <- rworldmap::rwmGetISO3(ctryCode)
 
@@ -640,7 +640,7 @@ validNlTileNameVIIRS <- function(tileName)
     stop("Missing required parameter tileName")
   
   if(!is.character(tileName) || is.null(tileName) || is.na(tileName) || tileName == "")
-    stop("Invalid tileName")
+    stop("Invalid tileName: ", tileName)
   
   if(length(tileName2Idx(tileName)) != 0)
     return(TRUE)
@@ -667,7 +667,7 @@ tileName2Idx <- function(tileName)
     stop("Missing required parameter tileName")
 
   if(!is.character(tileName) || is.null(tileName) || is.na(tileName) || tileName == "")
-    stop("Invalid tileName")
+    stop("Invalid tileName: ", tileName)
 
   if (!existsNlTiles())
     nlTiles <- getNlTiles()
@@ -694,13 +694,13 @@ tileIdx2Name <- function(tileNum)
     stop("Missing required parameter tileNum")
   
   if(!validNlTileNumVIIRS(tileNum))
-    stop("Invalid tileNum")
+    stop("Invalid tileNum: ", tileNum)
   
   if (!existsNlTiles())
     nlTiles <- getNlTiles()
 
   #return (nlTiles[tileNum, "name"])
-  return(nlTiles[which(tileNum %in% nlTiles$id), "name"])
+  return(nlTiles[tileNum, "name"])
 }
 
 ######################## tilesPolygonIntersect ###################################
@@ -1010,13 +1010,10 @@ validNlYearMonthVIIRS <- function(nlYearMonth)
 #' @return TRUE/FALSE
 #'
 #' @examples
-#' validNlTileNumVIIRS("1","VIIRS")
+#' validNlTileNumVIIRS("1")
 #'  returns TRUE
 #'
-#' validNlTileNumVIIRS("9","VIIRS")
-#'  returns FALSE
-#'
-#' validNlMonthNum("2","OLS")
+#' validNlTileNumVIIRS("9")
 #'  returns FALSE
 #'
 validNlTileNumVIIRS <- function(nlTileNum)
@@ -1074,13 +1071,13 @@ getNtLtsZipLclNameVIIRS <- function(nlYear, nlMonth, tileNum, dir=getNlDir("dirR
     stop("Missing required parameter tileNum")
 
   if(!validNlYearNum(nlYear, nlType))
-    stop("Invalid nlYear")
+    stop("Invalid nlYear: ", nlYear)
   
   if(!validNlMonthNum(nlMonth, nlType))
-    stop("Invalid nlMonth")
+    stop("Invalid nlMonth: ", nlMonth)
   
-  if(!validNlTileNumVIIRS(tileNum, nlType))
-    stop("Invalid tileNum")
+  if(!validNlTileNumVIIRS(tileNum))
+    stop("Invalid tileNum: ", tileNum)
 
   #TODO: create function to return the filename
   #TODO: rename this function since it returns a path not a filename
@@ -1123,13 +1120,13 @@ getNtLtsTifLclNameVIIRS <- function(nlYear, nlMonth, tileNum, dir=getNlDir("dirR
     stop("Missing required parameter tileNum")
   
   if(!validNlYearNum(nlYear, nlType))
-    stop("Invalid nlYear")
+    stop("Invalid nlYear: ", nlYear)
   
   if(!validNlMonthNum(nlMonth, nlType))
-    stop("Invalid nlMonth")
+    stop("Invalid nlMonth: ", nlMonth)
   
-  if(!validNlTileNumVIIRS(tileNum, nlType))
-    stop("Invalid tileNum")
+  if(!validNlTileNumVIIRS(tileNum))
+    stop("Invalid tileNum: ", tileNum)
 
   if (missing(dir) && !dir.exists(dir))
   {
@@ -1181,13 +1178,13 @@ getNtLtsVIIRS <- function(nlYear, nlMonth, tileNum, downloadMethod=pkg_options("
     stop("Missing required parameter tileNum")
   
   if(!validNlYearNum(nlYear, nlType))
-    stop("Invalid nlYear")
+    stop("Invalid nlYear: ", nlYear)
   
   if(!validNlMonthNum(nlMonth, nlType))
-    stop("Invalid nlMonth")
+    stop("Invalid nlMonth: ", nlMonth)
   
-  if(!validNlTileNumVIIRS(tileNum, nlType))
-    stop("Invalid tileNum")
+  if(!validNlTileNumVIIRS(tileNum))
+    stop("Invalid tileNum: ", tileNum)
   
   rsltDnld <- NA
 
@@ -1280,7 +1277,6 @@ getNtLtsVIIRS <- function(nlYear, nlMonth, tileNum, downloadMethod=pkg_options("
 #'
 masqVIIRS <- function(ctryPoly, ctryRast, idx)
 {
-  if(missing)
   #based on masq function from https://commercedataservice.github.io/tutorial_viirs_part1/
   #slightly modified to use faster masking method by converting the raster to vector
   #Extract one polygon based on index value i
@@ -1592,7 +1588,7 @@ ctryNameToCode <- function(ctryName)
     stop("Missing parameter ctryName")
   
   if (class(ctryName) != "character" || is.null(ctryName) || is.na(ctryName) || ctryName =="" || length(grep("[^[:alpha:]]", ctryName) > 0))
-    stop("Invalid ctryName")
+    stop("Invalid ctryName: ", ctryName)
   
   return (rworldmap::rwmGetISO3(ctryName))
 }
@@ -1619,7 +1615,7 @@ ctryCodeToName <- function(ctryCode)
     stop("Missing equired parameter ctryCode")
 
   if (class(ctryCode) != "character" || is.null(ctryCode) || is.na(ctryCode) || ctryCode =="" || length(grep("[^[:alpha:]]", ctryCode) > 0))
-    stop("Invalid ctryCode")
+    stop("Invalid ctryCode: ", ctryCode)
     
   #rworldmap::isoToName can resolve 2-letter ctryCodes but we only want 3-letter ISO3 codes
   if(nchar(ctryCode) != 3)
@@ -1657,7 +1653,7 @@ ctryPolyLyrNames <- function (nLyrs)
     stop("Missing required parameter nLyrs")
   
   if(is.null(nLyrs) || is.na(nLyrs) || nLyrs < 1 || !is.numeric(nLyrs) || is.na(as.numeric(nLyrs)))
-    stop("Invalid value for nLyrs")
+    stop("Invalid value for nLyrs: ", nLyrs)
   
   #the repeat pattern required to create columns in the format 1,1,2,2,3,3 ...
   #for col names: admlevel1_id, admlevel1_name, ..., admleveN_id, admlevelN_name
@@ -1732,7 +1728,7 @@ processNLCountryOls <- function(cntryCode, nlYear)
 {
   message("processNLCountryOLS: ")
 
-  ctryPoly <- rgdal::readOGR(getPolyFnamePath(ctryCode), getCtryShpLowestLyrName(ctryCode))
+  ctryPoly <- rgdal::readOGR(path.expand(getPolyFnamePath(ctryCode)), getCtryShpLowestLyrName(ctryCode))
 
   ctryExtent <- raster::extent(ctryPoly)
 
@@ -1922,10 +1918,10 @@ createCtryNlDataDF <- function(ctryCode)
     stop("Missing required parameter ctryCode")
   
   if(!validCtryCode(ctryCode))
-    stop("Invalid ctryCode")
+    stop("Invalid ctryCode: ", ctryCode)
   
   if(dir.exists(getPolyFnamePath(ctryCode)) && length(dir(getPolyFnamePath(ctryCode)))> 0)
-  ctryPoly <- rgdal::readOGR(getPolyFnamePath(ctryCode), getCtryShpLowestLyrName(ctryCode))
+  ctryPoly <- rgdal::readOGR(path.expand(getPolyFnamePath(ctryCode)), getCtryShpLowestLyrName(ctryCode))
 
   ctryExtent <- raster::extent(ctryPoly)
 
@@ -2014,7 +2010,7 @@ processNLCountriesVIIRS <- function(ctryCodes, nlYearMonth)
     stop("Invalid ctryCode detected")
   
   if(!validNlYearMonthVIIRS(nlYearMonth))
-    stop("Invalid nlYearMonth")
+    stop("Invalid nlYearMonth: ", nlYearMonth)
   for (nlCtryCode in nlCtryCodes)
   {
     processNLCountryVIIRS(ctryCode, nlYearMonth)
@@ -2041,7 +2037,7 @@ ctryShpLyrName2Num <- function(layerName)
     stop("Missing required parameter layerName")
   
   if (class(layerName) != "character" || is.null(layerName) || is.na(layerName) || layerName =="")
-    stop("Invalid layerName")
+    stop("Invalid layerName: ", layerName)
   
   return(as.numeric(gsub("[^[:digit:]]", "", layerName)))
 }
@@ -2101,10 +2097,10 @@ processNLCountryVIIRS <- function(ctryCode, nlYearMonth, cropMaskMethod="rast", 
     stop("Missing required parameter nlYearMonth")
 
   if(!validCtryCode(ctryCode))
-    stop("Invalid ctryCode")
+    stop("Invalid ctryCode: ", ctryCode)
   
   if(!validNlYearMonthVIIRS(nlYearMonth))
-    stop("Invalid nlYearMonth")
+    stop("Invalid nlYearMonth: ", nlYearMonth)
   
   if (missing(cropMaskMethod) || class(cropMaskMethod) != "character" || is.null(cropMaskMethod) || nlYearMonth == "")
     cropMaskMethod <- "rast"
@@ -2132,7 +2128,7 @@ processNLCountryVIIRS <- function(ctryCode, nlYearMonth, cropMaskMethod="rast", 
     ctryNlDataDF <- utils::read.csv(getCtryNlDataFnamePath(ctryCode))
 
     message("Load country polygon lowest admin level")
-    ctryPoly <- rgdal::readOGR(getPolyFnamePath(ctryCode), getCtryShpLowestLyrName(ctryCode))
+    ctryPoly <- rgdal::readOGR(path.expand(getPolyFnamePath(ctryCode)), getCtryShpLowestLyrName(ctryCode))
 
     ctryExtent <- raster::extent(ctryPoly)
 
@@ -2148,7 +2144,7 @@ processNLCountryVIIRS <- function(ctryCode, nlYearMonth, cropMaskMethod="rast", 
 
     message("Load country polygon lowest admin level")
 
-    ctryPoly <- rgdal::readOGR(getPolyFnamePath(ctryCode), getCtryShpLowestLyrName(ctryCode))
+    ctryPoly <- rgdal::readOGR(path.expand(getPolyFnamePath(ctryCode)), getCtryShpLowestLyrName(ctryCode))
   }
 
   if(!file.exists(getCtryRasterOutputFname(ctryCode, nlYearMonth)))
@@ -2394,7 +2390,7 @@ saveCtryNlData <- function(ctryNlDataDF, ctryCode)
     stop("Missing required parameter ctryCode")
   
   if(!validCtryCode(ctryCode))
-    stop("Invalid ctryCode")
+    stop("Invalid ctryCode: ", ctryCode)
   
   if(!validCtryNlDataDF(ctryNlDataDF))
     stop("Invalid country dataframe")
@@ -2455,10 +2451,10 @@ getCtryRasterOutputFname <- function(ctryCode, nlYearMonth)
     stop("Missing required parameter nlYearMonth")
   
   if(!validCtryCode(ctryCode))
-    stop("Invalid ctryCode")
+    stop("Invalid ctryCode: ", ctryCode)
   
   if(!validNlYearMonthVIIRS(nlYearMonth))
-    stop("Invalid nlYearMonth")
+    stop("Invalid nlYearMonth: ", nlYearMonth)
   
   return (file.path(getNlDir("dirRasterOutput"), paste0(ctryCode, "_", nlYearMonth,".tif")))
 }
@@ -2487,7 +2483,7 @@ getCtryPolyUrl <- function(ctryCode)
     stop("Missing required parameter ctryCode")
   
   if(!validCtryCode(ctryCode))
-    stop("Invalid ctryCode")
+    stop("Invalid ctryCode: ", ctryCode)
 
   #Sample url: http://biogeo.ucdavis.edu/data/gadm2.8/shp/AFG_adm_shp.zip
   basePolyUrl <- "http://biogeo.ucdavis.edu/data/gadm2.8/shp/"
@@ -2519,7 +2515,7 @@ getCtryNlDataFname <- function(ctryCode)
     stop("Missing required parameter ctryCode")
   
   if(!validCtryCode(ctryCode))
-    stop("Invalid ctryCode")
+    stop("Invalid ctryCode: ", ctryCode)
   
   return (paste0(ctryCode, "_NLData.csv"))
 }
@@ -2544,7 +2540,7 @@ getCtryNlDataFnamePath <- function(ctryCode)
     stop("Missing required parameter ctryCode")
   
   if(!validCtryCode(ctryCode))
-    stop("Invalid ctryCode")
+    stop("Invalid ctryCode: ", ctryCode)
   
   return (file.path(getNlDir("dirNlData"), getCtryNlDataFname(ctryCode)))
 }
@@ -2770,7 +2766,7 @@ getCtryNlDataColName <- function(nlYearMonth, stat, nlType="VIIRS")
     stop("Missing required parameter stat")
 
   if(!validNlYearMonthVIIRS(nlYearMonth))
-    stop("Invalid nlYearMonth")
+    stop("Invalid nlYearMonth: ", nlYearMonth)
     
   if (!allValid(stat, validStat))
     stop("Invalid/unsupported stat detected")
@@ -2814,7 +2810,7 @@ validStat <- function(stat)
     stop("Missing required parameter stat")
   
   if(!is.character(stat) || is.null(stat) || is.na(stat) || stat == "")
-    stop("Invalid stat")
+    stop("Invalid stat: ", stat)
   
   matchedFun <- tryCatch(
     {
@@ -2861,8 +2857,8 @@ allValid <- function(testData, testFun)
   
   invalidData <- testData[!valid]
   
-  if(length(invalidData)>0)
-    warning("Invalid data: ", invalidData)
+  if(length(invalidData) > 0)
+    warning("Invalid data: ", paste0(invalidData, collapse = ", "))
   
   return(all(valid))
 }
@@ -2888,7 +2884,7 @@ existsCtryNlDataFile <- function(ctryCode)
     stop("Missing required parameter ctryCode")
   
   if(!validCtryCode(ctryCode))
-    stop("Invalid/Unknown ctryCode")
+    stop("Invalid/Unknown ctryCode: ", ctryCode)
   
   #for polygons look for shapefile dir
   return(file.exists(getCtryNlDataFnamePath(ctryCode)))
@@ -2934,7 +2930,7 @@ existsPolyFnameZip <- function(ctryCode)
     stop("Missing required parameter ctryCode")
 
   if(!validCtryCode(ctryCode))
-    stop("Invalid ctryCode")
+    stop("Invalid ctryCode: ", ctryCode)
   
   return(file.exists(getPolyFnameZip(ctryCode)))
 }
@@ -2962,10 +2958,8 @@ getCtryShpLyrName <- function(ctryCode, lyrNum)
     stop("Missing required parameter ctryCode")
 
   if(!validCtryCode(ctryCode))
-    stop("Invalid ctryCode")
-  
-  
-  
+    stop("Invalid ctryCode: ", ctryCode)
+
   return(paste0(ctryCode, "_adm", lyrNum))
 }
 
@@ -2992,9 +2986,9 @@ getCtryShpLowestLyrName <- function(ctryCode)
     stop("Missing required parameter ctryCode")
 
   if(!validCtryCode(ctryCode))
-    stop("Invalid ctryCode")
+    stop("Invalid ctryCode: ", ctryCode)
 
-  layers <- rgdal::ogrListLayers(getPolyFnamePath(ctryCode))
+  layers <- rgdal::ogrListLayers(path.expand(getPolyFnamePath(ctryCode)))
 
   admLayers <- layers[grep("adm", layers)]
 
@@ -3034,7 +3028,7 @@ getCtryPolyAdmLevelNames <- function(ctryCode)
     stop("Missing required parameter ctryCode")
   
   if(!validCtryCode(ctryCode))
-    stop("Invalid ISO3 ctryCode")
+    stop("Invalid ISO3 ctryCode: ", ctryCode)
   
   lowestLayer <- getCtryShpLowestLyrName(ctryCode)
 
@@ -3045,7 +3039,7 @@ getCtryPolyAdmLevelNames <- function(ctryCode)
   if (numLayers > 0)
     for (lyrNum in 1:numLayers)
     {
-      lyrPoly <- rgdal::readOGR(getPolyFnamePath(ctryCode), getCtryShpLyrName(ctryCode, lyrNum))
+      lyrPoly <- rgdal::readOGR(path.expand(getPolyFnamePath(ctryCode)), getCtryShpLyrName(ctryCode, lyrNum))
 
       lvlTypeName <- paste0("TYPE_",lyrNum)
 
@@ -3133,7 +3127,7 @@ dnldCtryPoly <- function(ctryCode)
     stop("Missing required parameter ctryCode")
 
   if(!validCtryCode(ctryCode))
-    stop("Invalid ctryCode")
+    stop("Invalid ctryCode: ", ctryCode)
 
   fullPolyUrl <- getCtryPolyUrl(ctryCode)
 
@@ -3189,7 +3183,7 @@ dnldCtryPoly <- function(ctryCode)
 getAllNlYears <- function(nlType = "VIIRS")
 {
   if (class(nlType) != "character" || is.null(nlType) || is.na(nlType) || nlType =="" || length(grep("[^[:alpha:]]", nlType) > 0))
-    stop("Invalid nlType")
+    stop("Invalid nlType: ", nlType)
   
   if (nlType == "OLS")
     return (1992:2013)
@@ -3308,7 +3302,7 @@ getNlType <- function(nlYear)
     stop("Missing required parameter nlYear")
   
   if(is.null(nlYear) || is.na(nlYear) || (!is.numeric(nlYear) && is.na(as.numeric(nlYear))))
-    stop("Invalid value for nlYear")
+    stop("Invalid value for nlYear: ", nlYear)
   
   nlYear <- as.numeric(nlYear)
   
@@ -3341,7 +3335,7 @@ getPolyFname <- function(ctryCode)
     stop("Missing required parameter ctryCode")
 
   if(!validCtryCode(ctryCode))
-    stop("Invalid ctryCode")
+    stop("Invalid ctryCode: ", ctryCode)
   
   #format of shapefiles is CTR_adm_shp e.g. KEN_adm_shp
   polyFname <- paste0(ctryCode, "_adm_shp")
@@ -3373,7 +3367,7 @@ getPolyFnamePath <- function(ctryCode)
     stop("Missing required parameter ctryCode")
   
   if(!validCtryCode(ctryCode))
-    stop("Invalid ctryCode")
+    stop("Invalid ctryCode: ", ctryCode)
   
   #check for the shapefile directory created with
   #format of shapefiles is CTR_adm_shp e.g. KEN_adm_shp
@@ -3402,7 +3396,7 @@ getPolyFnameZip <- function(ctryCode)
     stop("Missing required parameter ctryCode")
   
   if(!validCtryCode(ctryCode))
-    stop("Invalid ctryCode")
+    stop("Invalid ctryCode: ", ctryCode)
   
   #format of shapefiles is <ctryCode>_adm_shp e.g. KEN_adm_shp
   polyFname <- paste0(getPolyFnamePath(ctryCode),".zip")
@@ -3482,9 +3476,9 @@ getNlYearMonthTilesVIIRS <- function(nlYearMonth, tileList)
     stop("Missing required parameter tileList")
   
   if(!validNlYearMonthVIIRS(nlYearMonth))
-    stop("Invalid nlYearMonth")
+    stop("Invalid nlYearMonth: ", nlYearMonth)
   
-  if(!allValid(tileList, validNlTileNumVIIRS))
+  if(!allValid(tileList, validNlTileNameVIIRS))
     stop("Invalid tileNum detected")
   
   success <- TRUE
@@ -3645,13 +3639,13 @@ existsCtryNlDataVIIRS <- function(ctryCode, nlYearMonth, stat)
   #   stop("Please supply only 1 stat to check")
 
   if(!validCtryCode(ctryCode))
-    stop("Invalid ctryCode")
+    stop("Invalid ctryCode: ", ctryCode)
   
   if(!validNlYearMonthVIIRS(nlYearMonth))
-    stop("Invalid nlYearMonth")
+    stop("Invalid nlYearMonth: ", nlYearMonth)
   
   if(!validStat(stat))
-    stop("Invalid stat")
+    stop("Invalid stat: ", stat)
     
   if (!existsCtryNlDataFile(ctryCode))
     return (FALSE)
@@ -3735,7 +3729,28 @@ existsCtryNlDataVIIRS <- function(ctryCode, nlYearMonth, stat)
 #' #Example 4: process VIIRS nightlights for countries KEN & RWA in 2014 Oct to 2014 Dec only
 #'
 #'     processNtLts(ctryCodes=c("KEN", "RWA"), nlYearMonths=c("201410", "201411", "201412"))
+#'     
+#' #Example 5: process all nightlights, all countries, all stats in one thread
 #' 
+#'    processNtLts() 
+#'    
+#' #Example 6: process all nightlights, all countries, all stats with each
+#' #   year in a separate thread. Create a separate R script for each year as follows:
+#' 
+#'     library(Rnightlights)
+#' 
+#'     initNtLts()
+#' 
+#'     nlYearMonths <- getAllNlYears()
+#' 
+#'     nlYearMonths_2012 <- nlYearMonths[grep("^2012", nlYearMonths)]
+#' 
+#'     processNtLts(nlYearMonths=nlYearMonths_2012)
+#' 
+#'     #Run the script from the command line as:
+#'     
+#'     #R CMD BATCH script_name_2012.R
+#'     
 #' @export
 processNtLts <- function (ctryCodes=getAllNlCtryCodes("all"), nlYearMonths=getAllNlYears(), nlType="VIIRS", stats=pkg_options("stats"))
 {
@@ -3753,19 +3768,13 @@ processNtLts <- function (ctryCodes=getAllNlCtryCodes("all"), nlYearMonths=getAl
   {
     nlYears <- getAllNlYears(nlType)
   }
-  
-  # allValid <- sapply(nlYearMonths, validNlYearMonthVIIRS) #check if the nlYearMonths are valid
-  # 
-  # if(sum(allValid) != length(nlYearMonths)) #if some returned FALSE
-  # {
-  #   invalidNlYearMonths <- nlYearMonths[!allValid] #get the invalid nlYearMonths
-  #   
-  #   stop("Invalid nlYearMonths detected: ", paste0(invalidNlYearMonths, collapse = ", "))
-  # }
+
+  if(!allValid(ctryCodes, validCtryCode))
+    stop("Invalid ctryCode detected")
   
   if(!allValid(nlYearMonths, validNlYearMonthVIIRS))
   {
-    stop("Invalid nlYearMonths detected")
+    stop("Invalid nlYearMonths detected: ", nlYearMonths)
   }
   
   #if the tile mapping does not exist create it
@@ -3825,10 +3834,13 @@ processNtLts <- function (ctryCodes=getAllNlCtryCodes("all"), nlYearMonths=getAl
 
         message("Stats missing. Adding tiles for ", ctryCode)
 
+        #get the list of tiles required for the ctryCode
         ctryTiles <- getCtryCodeTileList(ctryCode)
 
-        tileList <- c(tileList, rgeos::setdiff(ctryTiles, tileList))
+        #combine the list of unique tiles across all ctryCodes in tileList
+        tileList <- c(tileList, setdiff(ctryTiles, tileList))
 
+        #if all the unique tiles have been listed no need to proceed checking
         if (length(tileList) == nrow(nlTiles))
         {
           message ("All tiles have been listed. No need to check other country tiles")
@@ -3868,17 +3880,17 @@ processNtLts <- function (ctryCodes=getAllNlCtryCodes("all"), nlYearMonths=getAl
 
       #post-processing. Delete the downloaded tiles to release disk space
       if(pkg_options("deleteTiles"))
-      for (tile in tileList)
-      {
-        nlYear <- substr(nlYearMonth, 1, 4)
-        nlMonth <- substr(nlYearMonth, 5, 6)
-
-        #del the tif file
-        #file.remove(getNtLtsTifLclNameVIIRS(nlYear, nlMonth, tileName2Idx(tile)))
-
-        #del the zip file
-        #file.remove(getNtLtsZipLclNameVIIRS(nlYear, nlMonth, tileName2Idx(tile)))
-      }
+        for (tile in tileList)
+        {
+          nlYear <- substr(nlYearMonth, 1, 4)
+          nlMonth <- substr(nlYearMonth, 5, 6)
+  
+          #del the tif file
+          #file.remove(getNtLtsTifLclNameVIIRS(nlYear, nlMonth, tileName2Idx(tile)))
+  
+          #del the zip file
+          #file.remove(getNtLtsZipLclNameVIIRS(nlYear, nlMonth, tileName2Idx(tile)))
+        }
     }
     else if (nlType == "OLS")
     {
@@ -4085,7 +4097,7 @@ ZonalPipe <- function (ctryCode, ctryPoly, path.in.shp, path.in.r, path.out.r, p
     stop("Missing required parameter stats")
   
   if(!validCtryCode(ctryCode))
-    stop("Invalid ctryCode")
+    stop("Invalid ctryCode: ", ctryCode)
   
   if(!allValid(stats, validStat))
     stop("Invalid stat(s) detected")
@@ -4099,10 +4111,12 @@ ZonalPipe <- function (ctryCode, ctryPoly, path.in.shp, path.in.r, path.out.r, p
   {
     message("Zonal file ", path.out.r, " doesn't exist. Creating")
 
+    #get the extent and change to minx, miny, maxx, maxy order for use in gdal_rasterize. Explanation below
     ext<-raster::extent(r)
     ext<-paste(ext[1], ext[3], ext[2], ext[4])
 
-    res<-paste(res(r)[1], res(r)[2])
+    #get the resolution of the raster. will be used in gdal_rasterize for target resolution which should be the same as the source resolution. Specifying makes it run faster (?)
+    res<-paste(raster::res(r)[1], raster::res(r)[2])
 
     lowestLyrName <- getCtryShpLowestLyrName(ctryCode)
     lowestIDCol <- paste0("ID_", gsub("[^[:digit:]]", "", lowestLyrName))
@@ -4180,12 +4194,12 @@ fnSumAvgRadGdal <- function(ctryCode, ctryPoly, nlYearMonth, fnStats=stats)
     stop("Missing required parameter nlYearMonth")
 
   if(!validCtryCode(ctryCode))
-    stop("Invalid ctryCode")
+    stop("Invalid ctryCode: ", ctryCode)
   
   if(!validNlYearMonthVIIRS(nlYearMonth))
-    stop("Invalid nlYearMonth")
+    stop("Invalid nlYearMonth: ", nlYearMonth)
   
-  if(!allValid(stats, validStat))
+  if(!allValid(fnStats, validStat))
     stop("Invalid stat(s) detected")
   
   #source: http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/
@@ -4263,6 +4277,7 @@ fnSumAvgRadGdal <- function(ctryCode, ctryPoly, nlYearMonth, fnStats=stats)
 #' #calculate the sum of radiances for the wards in Kenya
 #' sumAvgRadRast <- fnSumAvgRadRast(ctryPoly, ctryRastCropped)
 #' 
+#' @importFrom doParallel dopar
 fnSumAvgRadRast <- function(ctryPoly, ctryRastCropped, stats)
 {
   if(missing(ctryPoly))
@@ -4271,19 +4286,19 @@ fnSumAvgRadRast <- function(ctryPoly, ctryRastCropped, stats)
   if(missing(ctryRastCropped))
     stop("Missing required parameter ctryRastCropped")
   
-  if ((class(ctryPoly) != "SpatialPolygons" || class(ctryPoly) != "SpatialPolygonsDataFrame" ) || is.null(nlType) || is.na(nlType))
-    stop("Invalid ctryPoly type")
+  if ((class(ctryPoly) != "SpatialPolygons" && class(ctryPoly) != "SpatialPolygonsDataFrame" ) || is.null(ctryPoly))
+    stop("Invalid ctryPoly type: ", class(ctryPoly))
   
-  if (class(ctryRastCropped) != "raster" || is.null(ctryRastCropped) || is.na(ctryRastCropped))
-    stop("Invalid ctryRastCropped type")
+  if (class(ctryRastCropped) != "RasterLayer" || is.null(ctryRastCropped))
+    stop("Invalid ctryRastCropped type: ", class(ctryRastCropped))
   
   if(!allValid(stats, validStat))
     stop("Invalid stat(s) detected")
   
   doParallel::registerDoParallel(cores=pkg_options("numCores"))
 
-  sumAvgRad <- foreach::foreach(i=1:nrow(ctryPoly@data), .combine=rbind) %dopar%
-  {
+  sumAvgRad <- foreach::foreach(i=1:nrow(ctryPoly@data), .combine=rbind) %dopar% {
+    
     message("Extracting data from polygon " , i, " ", base::date())
 
     dat <- masqVIIRS(ctryPoly, ctryRastCropped, i)
@@ -4852,7 +4867,7 @@ setDataPath <- function(dataPath, newDataPath)
   #~/.Rnightlights Must always exist even if it does not hold the data
   if(!exists(file.path(homePath)))
     if(dir.exists(file.path(homePath)) || dir.create(file.path(homePath)))
-      saveRDS(dataPath, file.path(homePath, "datapath.rda"))
+      saveRDS(path.expand(dataPath), file.path(homePath, "datapath.rda"))
 
   #if this is a move
   if(isMove)
@@ -4863,7 +4878,7 @@ setDataPath <- function(dataPath, newDataPath)
     if(file.copy(file.path(dataPath, dataDirName), file.path(newDataPath), recursive = TRUE))
     {
       #persist the changed data path
-      saveRDS(newDataPath, file.path(homePath, "datapath.rda"))
+      saveRDS(path.expand(newDataPath), file.path(homePath, "datapath.rda"))
       
       #if the old directory was the default dir in the home dir then do not attempt to delete old directory
       if(path.expand(dataPath) == path.expand("~"))
@@ -4937,7 +4952,7 @@ getDataPath <- function()
         dataPath <- homePath
         
         RnightlightsDataPath <- homePath
-        saveRDS(dataPath, file.path(homePath, "datapath.rda"))
+        saveRDS(path.expand(dataPath), file.path(homePath, "datapath.rda"))
       }
     }
     else
