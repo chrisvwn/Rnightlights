@@ -13,7 +13,7 @@
 # 
 # library(shiny)
 # library(ggplot2)
-# library(plotly)
+ library(plotly)
 # library(leaflet)
 # library(reshape)
 # library(rgdal)
@@ -23,6 +23,10 @@
 # library(Rnightlights)
 # library(aws.s3)
 
+if (!requireNamespace("Rnightlights", quietly = TRUE))
+{
+  stop("Pkg Rnightlights needed for this function to work. Please install missing packages.", call. = FALSE)
+}
 
 if (!requireNamespace("shiny", quietly = TRUE))
 {
@@ -85,7 +89,7 @@ shiny::shinyServer(function(input, output, session){
       if (length(input$countries) != 1)
         return()
 
-      temp <- data.table::fread(getCtryNlDataFnamePath(input$countries), nrows = 1, header = T)
+      temp <- data.table::fread(Rnightlights::getCtryNlDataFnamePath(input$countries), nrows = 1, header = T)
       
       cols <- names(temp)
       
@@ -102,14 +106,14 @@ shiny::shinyServer(function(input, output, session){
       if (length(countries) != 1)
         return()
 
-      hdr <- data.table::fread(getCtryNlDataFnamePath(countries), nrows = 1, header = T)
+      hdr <- data.table::fread(Rnightlights::getCtryNlDataFnamePath(countries), nrows = 1, header = T)
       
       colClasses <- names(hdr)
       
       colClasses[-grep("area_sq_km|NL_", colClasses)] <- "character"
       colClasses[grep("area_sq_km|NL_", colClasses)] <- "NULL"
       
-      data <- data.table::fread(getCtryNlDataFnamePath(countries), colClasses = colClasses, header = T)
+      data <- data.table::fread(Rnightlights::getCtryNlDataFnamePath(countries), colClasses = colClasses, header = T)
     })
     
   #### reactive ctryAdmLevels ####
@@ -120,7 +124,7 @@ shiny::shinyServer(function(input, output, session){
     if (length(input$countries) != 1)
       return()
     
-    temp <- data.table::fread(getCtryNlDataFnamePath(input$countries), nrows = 1, header = T)
+    temp <- data.table::fread(Rnightlights::getCtryNlDataFnamePath(input$countries), nrows = 1, header = T)
     
     cols <- names(temp)
     
@@ -146,14 +150,14 @@ shiny::shinyServer(function(input, output, session){
       
       if (length(countries) == 1)
       {
-        ctryData <- data.table::fread(getCtryNlDataFnamePath(countries))
+        ctryData <- data.table::fread(Rnightlights::getCtryNlDataFnamePath(countries))
       }
       else if(length(countries) > 1) #remove subcountry admin levels
       {
         for (ctryCode in countries)
         {
           print(ctryCode)
-          temp <- data.table::fread(getCtryNlDataFnamePath(ctryCode))
+          temp <- data.table::fread(Rnightlights::getCtryNlDataFnamePath(ctryCode))
           
           ctryCols <- grep("country|area|NL_", names(temp))
           
@@ -654,12 +658,12 @@ shiny::shinyServer(function(input, output, session){
         if ("norm_area" %in% scale)
           meltCtryData$value <- (meltCtryData$value)/meltCtryData$area_sq_km
         
-        ctryPoly0 <- rgdal::readOGR(getPolyFnamePath(countries), getCtryShpLyrName(countries,0))
+        ctryPoly0 <- rgdal::readOGR(Rnightlights::getPolyFnamePath(countries), Rnightlights::getCtryShpLyrName(countries,0))
         
         map <- leaflet::leaflet(data=ctryPoly0) %>%
           #addTiles("http://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png") %>%
           leaflet::addTiles() %>%
-          leaflet::addWMSTiles(layerId="nlRaster", baseUrl = "http://localhost/cgi-bin/mapserv?map=nightlights_wms.map", layers = "nightlights_201204", options = WMSTileOptions(format = "image/png", transparent = TRUE, opacity=1)) %>%
+          leaflet::addWMSTiles(layerId="nlRaster", baseUrl = "http://localhost/cgi-bin/mapserv?map=nightlights_wms.map", layers = "nightlights_201204", options = leaflet::WMSTileOptions(format = "image/png", transparent = TRUE, opacity=1)) %>%
           leaflet::addPolygons(layerId = countries, fill = FALSE, fillColor = "#fefe40", stroke = TRUE, weight=4, smoothFactor = 0.7, opacity = 1, color="white", dashArray = "5", group = "country")
         
         
@@ -672,7 +676,7 @@ shiny::shinyServer(function(input, output, session){
         pal <- cbPalette
         
         #turn off previous layer? No point keeping it if it is hidden. Also we want to turn the current layer to transparent so that one can see through to the raster layer on hover
-        ctryPoly <- rgdal::readOGR(getPolyFnamePath(countries), getCtryShpLyrName(countries, 1)) 
+        ctryPoly <- rgdal::readOGR(Rnightlights::getPolyFnamePath(countries), Rnightlights::getCtryShpLyrName(countries, 1)) 
         
         ctryPoly <- sp::spTransform(ctryPoly, wgs84)
         
@@ -1065,7 +1069,7 @@ shiny::shinyServer(function(input, output, session){
 #       
 #       lyrNum <- which(lyrs == admLevel) - 1
 #       
-#       ctryPoly <- readOGR(getPolyFnamePath(countries), ifelse(is.null(admLevel),  yes = getCtryShpLyrName(countries,0), no = getCtryShpLyrName(countries,lyrNum)))
+#       ctryPoly <- readOGR(Rnightlights::getPolyFnamePath(countries), ifelse(is.null(admLevel),  yes = Rnightlights::getCtryShpLyrName(countries,0), no = Rnightlights::getCtryShpLyrName(countries,lyrNum)))
 #       
 #       proxy <- leafletProxy("map", data=ctryPoly)
 #       
@@ -1162,7 +1166,7 @@ shiny::shinyServer(function(input, output, session){
       
       message(ctryYearMonth)
       
-      ctryPoly0 <- rgdal::readOGR(getPolyFnamePath(countries), getCtryShpLyrName(countries,0))
+      ctryPoly0 <- rgdal::readOGR(Rnightlights::getPolyFnamePath(countries), Rnightlights::getCtryShpLyrName(countries,0))
       
       map <- leaflet::leaflet(data=ctryPoly0) %>%
         #addTiles("http://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png") %>%
@@ -1210,7 +1214,7 @@ shiny::shinyServer(function(input, output, session){
           pal <- leaflet::colorBin(brewerPal, domain = lvlCtryData$value, na.color = "grey", bins=bins)
           
           #turn off previous layer? No point keeping it if it is hidden. Also we want to turn the current layer to transparent so that one can see through to the raster layer on hover
-          ctryPoly <- rgdal::readOGR(getPolyFnamePath(countries), getCtryShpLyrName(countries, iterAdmLevel-1)) 
+          ctryPoly <- rgdal::readOGR(Rnightlights::getPolyFnamePath(countries), Rnightlights::getCtryShpLyrName(countries, iterAdmLevel-1)) 
           
           ctryPoly <- sp::spTransform(ctryPoly, wgs84)
           

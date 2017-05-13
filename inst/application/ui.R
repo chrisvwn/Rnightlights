@@ -25,6 +25,11 @@
 
 #source("nightlights.R")
 
+if (!requireNamespace("Rnightlights", quietly = TRUE))
+{
+  stop("Pkg Rnightlights needed for this function to work. Please install missing packages.", call. = FALSE)
+}
+
 if (!requireNamespace("shiny", quietly = TRUE))
 {
   stop("Pkg shiny needed for this function to work. Please install missing packages.", call. = FALSE)
@@ -47,13 +52,13 @@ if (!requireNamespace("plotly", quietly = TRUE))
 
 #library(Rnightlights)
 
-filenames <- list.files(file.path(Rnightlights::pkg_options("rootPath"), Rnightlights::pkg_options("dirNlData")))
+filenames <- list.files(file.path(Rnightlights::getNlDir("dirNlData")))
 
-print(file.path(Rnightlights::pkg_options("rootPath"), Rnightlights::pkg_options("dirNlData")))
+print(file.path(Rnightlights::getNlDir("dirNlData")))
 
 ctryCodesWithData <- substr(filenames, 1, 3)
 
-ctryCodeNames <- lapply(ctryCodesWithData, function(x) ctryCodeToName(x))
+ctryCodeNames <- lapply(ctryCodesWithData, function(x) Rnightlights::ctryCodeToName(x))
 
 ctryCodesWithData <- stats::setNames(ctryCodesWithData, ctryCodeNames)
 
