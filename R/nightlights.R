@@ -832,7 +832,7 @@ getNtLtsUrlVIIRS <- function(inYear, inMonth, tileNum)
   #the page that lists all available nightlight files NOTE: URL CHANGE from "https://www.ngdc.noaa.gov/eog/viirs/download_mon_mos_iframe.html"
   #ntLtsPageHtml <- "https://www.ngdc.noaa.gov/eog/viirs/download_dnb_composites_iframe.html"
 
-  ntLtsIndexUrlVIIRS <- pkgOptions("nltLtsIndexUrlVIIRS")
+  ntLtsIndexUrlVIIRS <- pkgOptions("ntLtsIndexUrlVIIRS")
   
   #the local name of the file once downloaded
   ntLtsPageLocalName <- "ntltspageviirs.html"
