@@ -17,7 +17,7 @@
 # 
 # suppressMessages(library(leaflet))
 # 
-# suppressMessages(library(plotly))
+ suppressMessages(library(plotly))
 # 
 # suppressMessages(library(aws.s3))
 
@@ -25,30 +25,36 @@
 
 #source("nightlights.R")
 
+missingPkgs <- NULL
+ 
 if (!requireNamespace("Rnightlights", quietly = TRUE))
 {
-  stop("Pkg Rnightlights needed for this function to work. Please install missing packages.", call. = FALSE)
+  missingPkgs <- c(missingPkgs, "Rnightlights")
 }
 
 if (!requireNamespace("shiny", quietly = TRUE))
 {
-  stop("Pkg shiny needed for this function to work. Please install missing packages.", call. = FALSE)
+  missingPkgs <- c(missingPkgs, "shiny")
 }
 
 if (!requireNamespace("shinydashboard", quietly = TRUE))
 {
-  stop("Pkg shinydashboard needed for this function to work. Please install missing packages.", call. = FALSE)
+  missingPkgs <- c(missingPkgs, "shinydashboard")
 }
 
 if (!requireNamespace("leaflet", quietly = TRUE))
 {
-  stop("Pkg leaflet needed for this function to work. Please install missing packages.", call. = FALSE)
+  missingPkgs <- c(missingPkgs, "leaflet")
 }
 
 if (!requireNamespace("plotly", quietly = TRUE))
 {
-  stop("Pkg plotly needed for this function to work. Please install missing packages.", call. = FALSE)
+  missingPkgs <- c(missingPkgs, "plotly")
 }
+
+if(!is.null(missingPkgs))
+  stop("Missing packages needed for this function to work. 
+       Please install missing packages: '", paste0(missingPkgs, collapse = ", "), "'", call. = FALSE)
 
 #library(Rnightlights)
 
@@ -172,14 +178,14 @@ alignCenter <- function(el) {
                       )
                     )
                   )
-                  ),
+                ),
           
           shinydashboard::tabItem(tabName = "models",
                    shiny::textOutput("Models")
                    ),
           
           shinydashboard::tabItem(tabName = "Data",
-                   dataTableOutput(outputId = "dataset")
+                  dataTableOutput("dataset")
                    )
         )
       )

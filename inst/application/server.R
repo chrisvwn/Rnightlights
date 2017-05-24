@@ -13,7 +13,7 @@
 # 
 # library(shiny)
 # library(ggplot2)
- library(plotly)
+suppressMessages(library(plotly))
 # library(leaflet)
 # library(reshape)
 # library(rgdal)
@@ -23,51 +23,61 @@
 # library(Rnightlights)
 # library(aws.s3)
 
+missingPkgs <- NULL
+
+wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+ 
 if (!requireNamespace("Rnightlights", quietly = TRUE))
 {
-  stop("Pkg Rnightlights needed for this function to work. Please install missing packages.", call. = FALSE)
+  missingPkgs <- c(missingPkgs, "Rnightlights")
 }
 
 if (!requireNamespace("shiny", quietly = TRUE))
 {
-  stop("Pkg shiny needed for this function to work. Please install missing packages.", call. = FALSE)
+  missingPkgs <- c(missingPkgs, "shiny")
+  
 }
 
 if (!requireNamespace("dendextend", quietly = TRUE))
 {
-  stop("Pkg dendextend needed for this function to work. Please install missing packages.", call. = FALSE)
+  missingPkgs <- c(missingPkgs, "dendextend")
 }
 
 if (!requireNamespace("ggdendro", quietly = TRUE))
 {
-  stop("Pkg ggdendro needed for this function to work. Please install missing packages.", call. = FALSE)
+  missingPkgs <- c(missingPkgs, "ggdendro")
 }
 
 if (!requireNamespace("leaflet", quietly = TRUE))
 {
-  stop("Pkg leaflet needed for this function to work. Please install missing packages.", call. = FALSE)
+  missingPkgs <- c(missingPkgs, "leaflet")
 }
 
 if (!requireNamespace("plotly", quietly = TRUE))
 {
-  stop("Pkg plotly needed for this function to work. Please install missing packages.", call. = FALSE)
+  missingPkgs <- c(missingPkgs, "plotly")
 }
 
 if (!requireNamespace("RColorBrewer", quietly = TRUE))
 {
-  stop("Pkg RColorBrewer needed for this function to work. Please install missing packages.", call. = FALSE)
+  missingPkgs <- c(missingPkgs, "RColorBrewer")
 }
 
 if (!requireNamespace("reshape", quietly = TRUE))
 {
-  stop("Pkg reshape needed for this function to work. Please install missing packages.", call. = FALSE)
+  missingPkgs <- c(missingPkgs, "reshape")
 }
 
 if (!requireNamespace("rgdal", quietly = TRUE))
 {
-  stop("Pkg rgdal needed for this function to work. Please install missing packages.", call. = FALSE)
+  missingPkgs <- c(missingPkgs, "rgdal")
 }
 
+if(!is.null(missingPkgs))
+ stop("Missing packages needed for this function to work. 
+      Please install missing packages: '", paste0(missingPkgs, collapse = ", "), "'", call. = FALSE)
+ 
+ 
 options(shiny.trace=F)
 
 shiny::shinyServer(function(input, output, session){
@@ -81,7 +91,7 @@ shiny::shinyServer(function(input, output, session){
   
   #isolate({updateTabItems(session, "inputs", "plotNightLights")})
 
-  #### reactive ctryAdmLevels ####
+  ######################## reactive ctryAdmLevels ###################################
   
     ctryAdmLevels <- shiny::reactive({
       print(paste0("here: ctryAdmLevels"))
@@ -96,8 +106,8 @@ shiny::shinyServer(function(input, output, session){
       cols <- cols[-grep("area_sq_km|NL_", cols)]
     })
     
-    #### reactive ctryAdmLevelNames ####
-    
+  ######################## reactive ctryAdmLevelNames ###################################
+  
     ctryAdmLevelNames <- shiny::reactive({
       print(paste0("here: ctryAdmLevelNames"))
       
@@ -116,7 +126,7 @@ shiny::shinyServer(function(input, output, session){
       data <- data.table::fread(Rnightlights::getCtryNlDataFnamePath(countries), colClasses = colClasses, header = T)
     })
     
-  #### reactive ctryAdmLevels ####
+  ######################## reactive ctryAdmLevels ###################################
   
   ctryDataStats <- shiny::reactive({
     print(paste0("here: ctryDataStats"))
@@ -135,7 +145,7 @@ shiny::shinyServer(function(input, output, session){
     
   })
   
-    #### reactive ctryNlData ####
+  ######################## reactive ctryNlData ###################################
   
     ctryNlData <- shiny::reactive({
       print(paste0("here: ctryNlData"))
@@ -175,8 +185,8 @@ shiny::shinyServer(function(input, output, session){
       return(ctryData)
     })  
   
-    #### reactive ctryNlDataMelted ####
-    
+  ######################## reactive ctryNlDataMelted ###################################
+  
     ctryNlDataMelted <- shiny::reactive({
       print(paste0("here: ctryNlDataMelted"))
       
@@ -212,8 +222,9 @@ shiny::shinyServer(function(input, output, session){
       return(ctryData)
     })
 
-    #### reactiveValues values ####
-    
+  
+  ######################## reactiveValues values ###################################
+  
     values <- shiny::reactiveValues(
       a=print(paste0("here: lastUpdated")),
       lastUpdated = NULL
@@ -230,7 +241,8 @@ shiny::shinyServer(function(input, output, session){
       )
     })
   
-    #### observe lastUpdated ####
+    
+    ######################## observe lastUpdated ###################################
     
     observe({
       lapply(names(input), function(x) {
@@ -252,7 +264,7 @@ shiny::shinyServer(function(input, output, session){
     })
     
     
-    #### render UI: intraCountry ####
+    ######################## render UI: intraCountry ###################################
     
     output$intraCountry <- shiny::renderUI({
       
@@ -296,7 +308,7 @@ shiny::shinyServer(function(input, output, session){
         })
     })
     
-    #### observe selectAdms (intraCountry) ####
+    ######################## observe selectAdms (intraCountry) ###################################
     
     shiny::observe({
       print(paste0("here: observe selectAdms"))
@@ -433,7 +445,7 @@ shiny::shinyServer(function(input, output, session){
   #})
 
 
-    #### sliderNlYearMonthRange ####
+    ######################## sliderNlYearMonthRange ###################################
     
     output$sliderNlYearMonthRange <- shiny::renderUI({
       print(paste0("here: sliderNlYearMonthRange"))
@@ -470,7 +482,7 @@ shiny::shinyServer(function(input, output, session){
       
     })
     
-    #### sliderNlYearMonth ####
+    ######################## sliderNlYearMonth ###################################
     
     output$sliderNlYearMonth <- shiny::renderUI({
       print(paste0("here: sliderNlYearMonth"))
@@ -505,7 +517,9 @@ shiny::shinyServer(function(input, output, session){
         )
       }
     })
-    ####reactive hcluster####
+    
+    ######################## hCluster ###################################
+    
     hCluster <- shiny::reactive({
       print(paste0("here: reactive hCluster"))
       input$btnGo
@@ -551,6 +565,8 @@ shiny::shinyServer(function(input, output, session){
       })
     })
     
+    ######################## plotHCluster ###################################
+    
     output$plotHCluster <- shiny::renderPlot({
       print(paste0("here: plotHCluster"))
       
@@ -576,7 +592,7 @@ shiny::shinyServer(function(input, output, session){
     })
     
     
-    ####renderPlotly plotCluster####
+    ######################## plotPointsCluster ###################################
     
     output$plotPointsCluster <- plotly::renderPlotly({
       print(paste0("here: plotPointsCluster"))
@@ -621,6 +637,8 @@ shiny::shinyServer(function(input, output, session){
         plotly::ggplotly(g)
       })
     })
+    
+    ######################## mapHCluster ###################################
     
     output$mapHCluster <- leaflet::renderLeaflet({
       print(paste0("here: draw mapHCluster"))
@@ -726,8 +744,8 @@ shiny::shinyServer(function(input, output, session){
       })
     })
     
-    ####renderPlotly plotTSDecomposed####
-    
+    ######################## renderPlotly plotTSDecomposed ###################################
+
     output$plotTSDecomposed <- shiny::renderPlot({
       print(paste0("here: plotTSDecomposed"))
       input$btnGo
@@ -769,7 +787,7 @@ shiny::shinyServer(function(input, output, session){
       })
     })
     
-    ####renderPlotly plotYearly####
+    ######################## plotYearly ###################################
     
     output$plotYearly <- plotly::renderPlotly({
       print(paste0("here: renderPlotYearly"))
@@ -901,7 +919,7 @@ shiny::shinyServer(function(input, output, session){
       })
     })
     
-    #### renderPlotly plotNightLights####
+    ######################## plotNightLights ###################################
     
     output$plotNightLights <- plotly::renderPlotly({
       print(paste0("here: renderPlot"))
@@ -1029,22 +1047,19 @@ shiny::shinyServer(function(input, output, session){
       })
     })
     
+    ######################## renderDataTable dataset ###################################
+    
     output$dataset <- renderDataTable({
       if(is.null(ctryNlData()))
         return("NO DATA")
       
       ctryNlData()
-      },
+    },
       
       options = list(scrollX = TRUE, scrolly = TRUE)
     )
     
-    #output$message <- renderText({
-    #  input$countries
-    #})
-    
-    ##map output ##
-    
+    ######################## observe map ###################################
 #     observe({
 #       if(!exists("nlYearMonth"))
 #         return()
@@ -1079,6 +1094,7 @@ shiny::shinyServer(function(input, output, session){
 #         addPolygons(fill = FALSE, stroke = TRUE, weight=3, smoothFactor = 0.7, opacity = 0.5, color="green")
 #     })
     
+    ######################## map ###################################
 
     output$map <- leaflet::renderLeaflet({
       print(paste0("here: draw leaflet map"))
@@ -1256,8 +1272,7 @@ shiny::shinyServer(function(input, output, session){
                 direction = "auto"
                 )
             )
-            
-        
+
           for (iterPoly in selected)
           {
               map <- map %>% leaflet::addPolygons(
@@ -1319,4 +1334,7 @@ shiny::shinyServer(function(input, output, session){
       map
       })
     })
+    
+    ######################## renderDataTable dtTblOutput ###################################
+    
 })
