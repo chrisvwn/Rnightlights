@@ -95,8 +95,8 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   #gdal_cachemax Speeds up gdal_rasterize calculation of stats in function ZonalPipe with more cache (advice: max 1/3 of your total RAM) see: http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/
   gdal_cachemax = 2000,
   
-  #downloadMethod used options: wget, aria
-  downloadMethod = "aria",
+  #downloadMethod used options: auto, aria, curl, libcurl, wget
+  downloadMethod = "auto",
   
   omitCountries = "missing",
   
@@ -105,7 +105,7 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   .allowed = list(
     cropMaskMethod = settings::inlist("gdal","rast"),
     extractMethod = settings::inlist("gdal", "rast"),
-    downloadMethod = settings::inlist("wget", "aria"),
+    downloadMethod = settings::inlist("aria", "auto", "curl", "libcurl", "wget"),
     omitCountries = settings::inlist("error", "missing", "long", "all", "none")
   )
 )
@@ -487,16 +487,20 @@ mapAllCtryPolyToTiles <- function(omitCountries=pkgOptions("omitCountries"))
 
 #' Create a mapping of all countries and the tiles they intersect
 #'
-#' Create a dataframe mapping each country in the rworldmap to the VIIRS tiles which they intersect with
-#'     and thus need to be retrieved to process their nightlight imagery. Since some functions use this
-#'     dataframe for long-term processing, omitCountries can eliminate countries that should be excluded
-#'     from the list hence from processing. Countries can be added in the omitCountries function.
-#'     Default is "none".
+#' Create a dataframe mapping each country in the rworldmap to the VIIRS
+#'     tiles which they intersect with and thus need to be retrieved to 
+#'     process their nightlight imagery. Since some functions use this
+#'     dataframe for long-term processing, omitCountries can eliminate 
+#'     countries that should be excluded from the list hence from processing. 
+#'     Countries can be added in the omitCountries function. Default is "none".
 #'
-#' @param ctryCodes A character vector or list of countries to map. Default is \code{"all"}
-#' @param omitCountries A character vector or list of countries to leave out. Default is \code{"none"}
+#' @param ctryCodes A character vector or list of countries to map. Default 
+#'     is \code{"all"}
+#' @param omitCountries A character vector or list of countries to leave out.
+#'     Default is \code{"none"}
 #'
-#' @return ctryCodeTiles A data frame of countries and the tiles they intersect with as give by getNlTiles()
+#' @return ctryCodeTiles A data frame of countries and the tiles they 
+#'     intersect with as give by getNlTiles()
 #'
 #' @examples
 #' mapCtryPolyToTiles() map all countries
@@ -787,9 +791,9 @@ getNtLts <- function(inputYear)
     return ("Invalid year")
 
   if (inputYear < 2014)
-    print("Downloading from DMSP/OLS")
+    message("Downloading from DMSP/OLS")
   else
-    print("Downloading from SNPP/VIIRS")
+    message("Downloading from SNPP/VIIRS")
 }
 
 ######################## getNtLtsUrlVIIRS ###################################
@@ -809,23 +813,23 @@ getNtLts <- function(inputYear)
 #' @examples
 #' tileUrl <- getNtLtsUrlVIIRS("2012", "04", "1")
 #'
-getNtLtsUrlVIIRS <- function(inYear, inMonth, tileNum)
+getNtLtsUrlVIIRS <- function(nlYearMonth, tileNum)
 {
-  if(missing(inYear))
-    stop("Missing required parameter inYear")
-  
-  if(missing(inMonth))
-    stop("Missing required parameter inMonth")
-  
+  if(missing(nlYearMonth))
+    stop("Missing required parameter nlYearMonth")
+
   if(missing(tileNum))
     stop("Missing required parameter tileNum")
+  
+  if(!validNlYearMonthVIIRS(nlYearMonth))
+    stop("Invalid nlYearMonth")
   
   if (!existsNlTiles())
     nlTiles <- getNlTiles()
 
-  inYear <- as.character(inYear)
+  inYear <- as.character(substr(nlYearMonth, 1, 4))
 
-  nMonth <- as.character(inMonth)
+  inMonth <- as.character(substr(nlYearMonth, 5, 6))
 
   #nlTile is a global list
 
@@ -838,13 +842,12 @@ getNtLtsUrlVIIRS <- function(inYear, inMonth, tileNum)
   ntLtsPageLocalName <- "ntltspageviirs.html"
 
   #if the file does not exist or is older than a week download it afresh
-  #not working. download.file does not seem to update mtime
   if (!file.exists(ntLtsPageLocalName) || (lubridate::date(lubridate::now()) - lubridate::date(file.mtime(ntLtsPageLocalName)) > lubridate::as.difftime(lubridate::period("1 day"))) || file.size(ntLtsPageLocalName) == 0)
   {
-    utils::download.file(url = ntLtsIndexUrlVIIRS, destfile = ntLtsPageLocalName, method = "wget", extra = "  -N --timestamping --no-use-server-timestamps")
+    utils::download.file(url = ntLtsIndexUrlVIIRS, destfile = ntLtsPageLocalName, method = "auto", extra = "  -N --timestamping --no-use-server-timestamps")
   }
   #else
-  #  print(paste0(ntLtsPageHtml, " already downloaded"))
+  #  message(paste0(ntLtsPageHtml, " already downloaded"))
 
   #read in the html page
   ntLtsPage <- readr::read_lines(ntLtsPageLocalName)
@@ -970,9 +973,9 @@ validNlMonthNum <- function(monthNum, nlType="VIIRS")
 
 ######################## validNlYearMonthVIIRS ###################################
 
-#' Check if a VIIRS yearmonth is valid
+#' Check if a VIIRS nlYearMonth is valid
 #'
-#' Check if a VIIRS yearmonth is valid Note this function is only valid for the "VIIRS" nightlight type
+#' Check if a VIIRS nlYearMonth is valid Note this function is only valid for the "VIIRS" nightlight type
 #'
 #' @param nlYearMonth the yearmonth in "YYYYMM" format e.g. "201210", "201401"
 #'
@@ -1001,10 +1004,82 @@ validNlYearMonthVIIRS <- function(nlYearMonth)
   nlY <- as.numeric(substr(nlYearMonth, 1, 4))
   nlM <- as.numeric(substr(nlYearMonth, 5, 6))
   
+  if (nlY == 2012 & nlM < 4) #Special case. first VIIRS in 201204
+    return(FALSE)
+  
   if (validNlYearNum(yearNum = nlY, nlType = "VIIRS") && validNlMonthNum(monthNum = nlM, nlType = "VIIRS"))
     return(TRUE)
   else
     return(FALSE)
+}
+
+validNlYearOLS <- function(nlPeriod)
+{
+  if (missing(nlPeriod))
+    stop("Missing required parameter nlPeriod")
+  
+  nlPeriod <- as.character(nlPeriod)
+  
+  if (class(nlPeriod) != "character" || nlPeriod =="" || length(grep("[^[:digit:]]", nlPeriod) > 0))
+    return(FALSE)
+  
+  if (validNlYearNum(yearNum = nlY, nlType = "OLS"))
+    return(TRUE)
+  else
+    return(FALSE)
+}
+
+validNlType <- function(nlType)
+{
+  if(missing(nlType))
+    stop("Missing required parameter nlType")
+  
+  return(nlType %in% c("OLS", "VIIRS"))
+}
+
+######################## validNlMonthNum ###################################
+
+#' Check if a month number is valid for a given nightlight type
+#'
+#' Check if a month number is valid for a given nightlight type. Note month num is only valid for
+#' "VIIRS" nightlight type
+#'
+#' @param monthNum the month in "MM" format e.g. Jan="01", Feb="02"
+#'
+#' @param nlType type of nightlight either "VIIRS" or "OLS"
+#'
+#' @return TRUE/FALSE
+#'
+#' @examples
+#' validNlMonthNum("01","VIIRS")
+#'  returns TRUE
+#'
+#' validNlMonthNum("13","VIIRS")
+#'  returns FALSE
+#'
+#' validNlMonthNum("01","OLS")
+#'  returns FALSE
+#'
+validNlPeriod <- function(nlPeriod, nlType)
+{
+  if (missing(nlPeriod))
+    stop("Missing required parameter nlPeriod")
+  
+  if (missing(nlType))
+    stop("Missing required parameter nlType")
+  
+  if(!validNlType(nlType))
+    stop("Invalid nlType")
+  
+  nlPeriod <- as.character(nlPeriod)
+  nlType <- as.character(nlType)
+  
+  if (nlType == "OLS")
+    return(validNlYearOLS(nlPeriod))
+  else if (nlType == "VIIRS")
+    return(validNlYearMonthVIIRS(nlPeriod))
+  else
+    return(NA) #we should never get here
 }
 
 ######################## validNlTileNumVIIRS ###################################
@@ -1054,9 +1129,46 @@ validNlTileNumVIIRS <- function(nlTileNum)
 #'
 #' Constructs the filename used to save/access the downloaded VIIRS tile .tgz file
 #'
-#' @param nlYear the year in which the tile was created
+#' @param nlYearMonth The nlYearMonth in which the tile was created
 #'
-#' @param nlMonth the month in which the tile was created
+#' @param tileNum The index of the tile as given in nlTileIndex
+#'
+#' @param dir The directory storing the tiles. Defaults to the global variable dirRasterVIIRS
+#'
+#' @return A character string filename of the compressed .tgz VIIRS tile
+#'
+#' @examples
+#' getNtLtsZipLclNameVIIRS("201401", "1")
+#'  returns "./tiles/viirs_2014_01_75N180W.tgz"
+#'
+getNtLtsZipLclNameVIIRS <- function(nlYearMonth, tileNum, dir=getNlDir("dirRasterVIIRS"))
+{
+  if(missing(nlYearMonth))
+    stop("Missing required parameter nlYearMonth")
+
+  if(missing(tileNum))
+    stop("Missing required parameter tileNum")
+
+  if(!validNlYearMonthVIIRS(nlYearMonth))
+    stop("Invalid nlYearMonth: ", nlYearMonth)
+
+  if(!validNlTileNumVIIRS(tileNum))
+    stop("Invalid tileNum: ", tileNum)
+  
+  nlYear <- substr(nlYearMonth, 1, 4)
+  
+  nlMonth <- substr(nlYearMonth, 5, 6)
+
+  return (paste0("viirs_", nlYear, "_", nlMonth, "_", tileIdx2Name(tileNum), ".tgz"))
+}
+
+######################## getNtLtsZipLclNamePathVIIRS ###################################
+
+#' Constructs the full path used to save/access the downloaded VIIRS tile .tgz file
+#'
+#' Constructs the full path used to save/access the downloaded VIIRS tile .tgz file
+#'
+#' @param nlYearMonth the nlYearMonth in which the tile was created
 #'
 #' @param tileNum the index of the tile as given in nlTileIndex
 #'
@@ -1065,45 +1177,34 @@ validNlTileNumVIIRS <- function(nlTileNum)
 #' @return a character string filename of the compressed .tgz VIIRS tile
 #'
 #' @examples
-#' getNtLtsZipLclNameVIIRS("2014", "01", "1")
-#'  returns "./tiles/viirs_2014_01_75N180W.tgz"
+#' getNtLtsZipLclNamePathVIIRS("2014", "01", "1")
+#'  returns "/dataPath/viirs_2014_01_75N180W.tgz"
 #'
-getNtLtsZipLclNameVIIRS <- function(nlYear, nlMonth, tileNum, dir=getNlDir("dirRasterVIIRS"))
+getNtLtsZipLclNamePathVIIRS <- function(nlYearMonth, tileNum, dir=getNlDir("dirRasterVIIRS"))
 {
-  nlType <- "VIIRS"
-  
-  if(missing(nlYear))
-    stop("Missing required parameter nlYear")
-  
-  if(missing(nlMonth))
-    stop("Missing required parameter nlMonth")
-  
+
+  if(missing(nlYearMonth))
+    stop("Missing required parameter nlYearMonth")
+
   if(missing(tileNum))
     stop("Missing required parameter tileNum")
+  
+  if(!validNlYearMonthVIIRS(nlYearMonth))
+    stop("Invalid nlYearMonth: ", nlYearMonth)
 
-  if(!validNlYearNum(nlYear, nlType))
-    stop("Invalid nlYear: ", nlYear)
-  
-  if(!validNlMonthNum(nlMonth, nlType))
-    stop("Invalid nlMonth: ", nlMonth)
-  
   if(!validNlTileNumVIIRS(tileNum))
     stop("Invalid tileNum: ", tileNum)
-
-  #TODO: create function to return the filename
-  #TODO: rename this function since it returns a path not a filename
-  return (paste0(dir, "/viirs_", nlYear, "_", nlMonth, "_", tileIdx2Name(tileNum), ".tgz"))
+  
+  return (file.path(dir, getNtLtsZipLclNameVIIRS(nlYearMonth, tileNum)))
 }
 
 ######################## getNtLtsTifLclNameVIIRS ###################################
 
-#' Constructs the filename used to save/access the decompressed VIIRS .tif file
+#' Constructs the filename of the decompressed VIIRS .tif file
 #'
-#' Constructs the filename used to save/access the decompressed VIIRS .tif file
+#' Constructs the filename of the decompressed VIIRS .tif file
 #'
-#' @param nlYear the year in which the tile was created
-#'
-#' @param nlMonth the month in which the tile was created
+#' @param nlYearMonth the nlYearMonth in which the tile was created
 #'
 #' @param tileNum the index of the tile as given in nlTileIndex
 #'
@@ -1114,125 +1215,153 @@ getNtLtsZipLclNameVIIRS <- function(nlYear, nlMonth, tileNum, dir=getNlDir("dirR
 #' @examples
 #' #using default dirRasterVIIRS
 #' getNtLtsTifLclNameVIIRS("2014", "01", "1")
-#'  returns "./tiles/viirs_2014_01_75N180W.tif"
+#'  returns "viirs_2014_01_75N180W.tif"
 #'
 #'
-getNtLtsTifLclNameVIIRS <- function(nlYear, nlMonth, tileNum, dir=getNlDir("dirRasterVIIRS"))
+getNtLtsTifLclNameVIIRS <- function(nlYearMonth, tileNum, dir=getNlDir("dirRasterVIIRS"))
 {
-  nlType <- "VIIRS"
-  
-  if(missing(nlYear))
-    stop("Missing required parameter nlYear")
-  
-  if(missing(nlMonth))
-    stop("Missing required parameter nlMonth")
-  
+  if(missing(nlYearMonth))
+    stop("Missing required parameter nlYearMonth")
+
   if(missing(tileNum))
     stop("Missing required parameter tileNum")
   
-  if(!validNlYearNum(nlYear, nlType))
-    stop("Invalid nlYear: ", nlYear)
-  
-  if(!validNlMonthNum(nlMonth, nlType))
-    stop("Invalid nlMonth: ", nlMonth)
-  
+  if(!validNlYearMonthVIIRS(nlYearMonth))
+    stop("Invalid nlYearMonth: ", nlYearMonth)
+
   if(!validNlTileNumVIIRS(tileNum))
     stop("Invalid tileNum: ", tileNum)
+  
+  nlYear <- substr(nlYearMonth, 1, 4)
+  
+  nlMonth <- substr(nlYearMonth, 5, 6)
 
+  return (paste0("viirs_", nlYear, "_", nlMonth, "_", tileIdx2Name(tileNum), ".tif"))
+}
+
+######################## getNtLtsTifLclNamePathVIIRS ###################################
+
+#' Constructs the full path used to save/access the decompressed VIIRS .tif file
+#'
+#' Constructs the full path used to save/access the decompressed VIIRS .tif file
+#'
+#' @param nlYearMonth the year in which the tile was created
+#'
+#' @param tileNum the index of the tile as given in nlTileIndex
+#'
+#' @param dir the directory storing the tiles. Defaults to the global variable dirRasterVIIRS
+#'
+#' @return a character vector filename of the .tif VIIRS tile
+#'
+#' @examples
+#' #using default dirRasterVIIRS
+#' getNtLtsTifLclNamePathVIIRS("2014", "01", "1")
+#'  returns "/dataPath/tiles/viirs_2014_01_75N180W.tif"
+#'
+getNtLtsTifLclNamePathVIIRS <- function(nlYearMonth, tileNum, dir=getNlDir("dirRasterVIIRS"))
+{
+  nlType <- "VIIRS"
+  
+  if(missing(nlYearMonth))
+    stop("Missing required parameter nlYearMonth")
+
+  if(missing(tileNum))
+    stop("Missing required parameter tileNum")
+  
+  if(!validNlYearMonthVIIRS(nlYearMonth))
+    stop("Invalid nlYearMonth: ", nlYearMonth)
+
+  if(!validNlTileNumVIIRS(tileNum))
+    stop("Invalid tileNum: ", tileNum)
+  
   if (missing(dir) && !dir.exists(dir))
   {
     message("Invalid directory ", dir ,". Using default directory \"", getwd(), "/tiles\"")
-
+    
     #TODO: this is not correct! Not the right place to create the directory!
     if (!dir.exists(dir))
     {
       message("creating raster tiles directory")
-
+      
       dir.create("tiles")
     }
   }
 
-  #TODO: create function to return the filename
-  #TODO: rename this function since it returns a path not a filename
-  return (paste0(dir, "/viirs_", nlYear, "_", nlMonth, "_", tileIdx2Name(tileNum), ".tif"))
+  return (file.path(dir, getNtLtsTifLclNameVIIRS(nlYearMonth, tileNum)))
 }
-
-######################## getNtLtsVIIRS ###################################
+######################## downloadNtLtsTilesVIIRS ###################################
 
 #' Download VIIRS nightlight tile
 #'
 #' Download VIIRS nightlight tile
 #'
-#' @param nlYear the year in "YYYY" format e.g. "2012"
-#'
-#' @param monthNum the month in "MM" format e.g. Jan="01", Feb="02"
+#' @param nlYearMonth the year in "YYYYMM" format e.g. "201204"
 #'
 #' @param tileNum the index of the tile as given by getNlTiles()
+#' 
+#' @param downloadMethod The method to use for download.
 #'
 #' @return TRUE/FALSE Whether the download was successful
 #'
 #' @examples
-#' if(getNtLtsVIIRS("2012", "05", "1"))
+#' if(downloadNtLtsTilesVIIRS("201205", "1"))
 #'   print("download successful")
 #'
-getNtLtsVIIRS <- function(nlYear, nlMonth, tileNum, downloadMethod=pkgOptions("downloadMethod"))
+downloadNtLtsTilesVIIRS <- function(nlYearMonth, tileNum, downloadMethod=pkgOptions("downloadMethod"))
 {
   nlType <- "VIIRS"
 
-  if(missing(nlYear))
+  if(missing(nlYearMonth))
     stop("Missing required parameter nlYear")
-  
-  if(missing(nlMonth))
-    stop("Missing required parameter nlMonth")
-  
+
   if(missing(tileNum))
     stop("Missing required parameter tileNum")
   
-  if(!validNlYearNum(nlYear, nlType))
+  if(!validNlYearMonthVIIRS(nlYearMonth))
     stop("Invalid nlYear: ", nlYear)
-  
-  if(!validNlMonthNum(nlMonth, nlType))
-    stop("Invalid nlMonth: ", nlMonth)
-  
+
   if(!validNlTileNumVIIRS(tileNum))
     stop("Invalid tileNum: ", tileNum)
   
   rsltDnld <- NA
 
-  ntLtsZipLocalNameVIIRS <- getNtLtsZipLclNameVIIRS(nlYear, nlMonth, tileNum)
-  ntLtsTifLocalNameVIIRS <- getNtLtsTifLclNameVIIRS(nlYear, nlMonth, tileNum)
+  #get the zip and tif local names
+  ntLtsZipLocalNamePathVIIRS <- getNtLtsZipLclNamePathVIIRS(nlYearMonth, tileNum)
+  ntLtsTifLocalNamePathVIIRS <- getNtLtsTifLclNamePathVIIRS(nlYearMonth, tileNum)
 
   #if (!file.exists(ntLtsZipLocalNameVIIRS) && !file.exists(ntLtsTifLocalNameVIIRS))
-  if (!file.exists(ntLtsTifLocalNameVIIRS))
+  if (!file.exists(ntLtsTifLocalNamePathVIIRS))
   {
-    ntLtsFileUrl <- getNtLtsUrlVIIRS(nlYear, nlMonth, tileNum)
+    ntLtsFileUrl <- getNtLtsUrlVIIRS(nlYearMonth, tileNum)
 
-    if (!(downloadMethod %in% c("wget", "aria")))
-      downloadMethod <- "wget"
+    validDnldMethods <- c(c("auto", "curl", "libcurl", "wget", "aria"))
+    
+    if (!(downloadMethod %in% validDnldMethods))
+      downloadMethod <- "auto"
 
-    if (downloadMethod == "wget")
-      rsltDnld <- download.file(ntLtsFileUrl, ntLtsZipLocalNameVIIRS, mode = "wb", method = "wget", extra = "-c")
+    if (downloadMethod %in% c("auto", "curl", "libcurl", "wget"))
+      rsltDnld <- download.file(ntLtsFileUrl, ntLtsZipLocalNamePathVIIRS, mode = "wb", method = downloadMethod, extra = "-c")
     else if (downloadMethod == "aria")
-      rsltDnld <- system(paste0("aria2c -c -x2 ", ntLtsFileUrl, " -o ", ntLtsZipLocalNameVIIRS))
+      rsltDnld <- system(paste0("aria2c -c -x2 ", ntLtsFileUrl, " -d ", getNlDir("dirRasterVIIRS"), " -o ", getNtLtsZipLclNameVIIRS(nlYearMonth, tileNum))) #downloads to path relative to -d if specified else local dir
   }
   else
   {
     #if the file is found we can return positive? Probably not unless there's an overwrite option
     #for our purposes return true
-    print("File exists, set Overwrite = TRUE to overwrite")
+    message("File exists, set Overwrite = TRUE to overwrite")
 
     rsltDnld <- 0
   }
 
   if (rsltDnld == 0)
   {
-    message("Extracting ", ntLtsZipLocalNameVIIRS, " ", base::date())
+    message("Extracting ", ntLtsZipLocalNamePathVIIRS, " ", base::date())
 
-    if (!file.exists(getNtLtsTifLclNameVIIRS(nlYear, nlMonth, tileNum)))
+    if (!file.exists(getNtLtsTifLclNamePathVIIRS(nlYearMonth, tileNum)))
     {
-      message("Getting list of files in ", ntLtsZipLocalNameVIIRS, " ", base::date())
+      message("Getting list of files in ", ntLtsZipLocalNamePathVIIRS, " ", base::date())
 
-      tgzFileList <- utils::untar(ntLtsZipLocalNameVIIRS, list = TRUE)
+      tgzFileList <- utils::untar(ntLtsZipLocalNamePathVIIRS, list = TRUE)
       #tgz_file_list <- stringr::str_replace(tgz_file_list,"./","")
 
       if (is.null(tgzFileList))
@@ -1246,13 +1375,13 @@ getNtLtsVIIRS <- function(nlYear, nlMonth, tileNum, downloadMethod=pkgOptions("d
 
       message("Decompressing ", tgzAvgRadFilename, " ", base::date())
 
-      if(!file.exists(getNtLtsTifLclNameVIIRS(nlYear, nlMonth, tileNum)))
+      if(!file.exists(getNtLtsTifLclNamePathVIIRS(nlYearMonth, tileNum)))
       {
-        utils::untar(ntLtsZipLocalNameVIIRS, files = tgzAvgRadFilename, exdir = getNlDir("dirRasterVIIRS"))
+        utils::untar(ntLtsZipLocalNamePathVIIRS, files = tgzAvgRadFilename, exdir = getNlDir("dirRasterVIIRS"))
 
-        file.rename(file.path(getNlDir("dirRasterVIIRS"), tgzAvgRadFilename), getNtLtsTifLclNameVIIRS(nlYear, nlMonth, tileNum))
+        file.rename(file.path(getNlDir("dirRasterVIIRS"), tgzAvgRadFilename), getNtLtsTifLclNamePathVIIRS(nlYearMonth, tileNum))
 
-        file.remove(ntLtsZipLocalNameVIIRS)
+        file.remove(ntLtsZipLocalNamePathVIIRS)
       }
     }
     else
@@ -1349,10 +1478,10 @@ getNtLtsUrlOls <- function(inYear, inTile)
   #not working. download.file does not seem to update mtime
   if (!file.exists(ntLtsPageLocalName) || (lubridate::date(now()) - lubridate::date(file.mtime(ntLtsPageLocalName)) > lubridate::as.difftime(period("1 day"))))
   {
-    download.file(url = ntLtsPageHtml, destfile = ntLtsPageLocalName, method = "wget", extra = "-N")
+    download.file(url = ntLtsPageHtml, destfile = ntLtsPageLocalName, method = "auto", extra = "-N")
   }
   #else
-  #  print(paste0(ntLtsPageHtml, " already downloaded"))
+  #  message(paste0(ntLtsPageHtml, " already downloaded"))
 
   #read in the html page
   ntLtsPage <- readr::read_lines(ntLtsPageLocalName)
@@ -1452,10 +1581,10 @@ getNtLtsTifLclNameOLS <- function(nlYear, tileNum)
 #' @return TRUE/FALSE Whether the download was successful
 #'
 #' @examples
-#' result <- getNtLtsVIIRS("2012", "05", "1")
+#' result <- downloadNtLtsTilesVIIRS("2012", "05", "1")
 #'
 #' if (result)
-#'   print("download successful")
+#'   message("download successful")
 #'
 getNtLtsOLS <- function(nlYear, tileNum)
 {
@@ -1467,13 +1596,13 @@ getNtLtsOLS <- function(nlYear, tileNum)
   {
     ntLtsFileUrl <- getNtLtsUrlOLS(nlYear)
 
-    rsltDnld <- download.file(ntLtsFileUrl, ntLtsZipLocalName, mode = "wb", method = "wget", extra = "-c")
+    rsltDnld <- download.file(ntLtsFileUrl, ntLtsZipLocalName, mode = "wb", method = "auto", extra = "-c")
   }
   else
   {
     #if the file is found we can return positive? Probably not unless there's an overwrite option
     #for our purposes return true
-    print("File exists, set Overwrite = TRUE to overwrite")
+    message("File exists, set Overwrite = TRUE to overwrite")
 
     rsltDnld <- 0
   }
@@ -1500,7 +1629,7 @@ getNtLtsOLS <- function(nlYear, tileNum)
 
       message("Decompressing ", tgzAvgRadFilename, " ", base::date())
 
-      if(!file.exists(getNtLtsTifLclNameVIIRS(nlYear, nlMonth, tileNum)))
+      if(!file.exists(getNtLtsTifLclNamePathVIIRS(nlYear, nlMonth, tileNum)))
       {
         utils::untar(ntLtsZipLocalName, files = tgzAvgRadFilename, exdir = getNlDir("dirRasterOLS"))
 
@@ -2170,7 +2299,7 @@ processNLCountryVIIRS <- function(ctryCode, nlYearMonth, cropMaskMethod="rast", 
 
     for (tile in tileList)
     {
-      rastFilename <- getNtLtsTifLclNameVIIRS(nlYear, nlMonth, tileName2Idx(tile))
+      rastFilename <- getNtLtsTifLclNamePathVIIRS(nlYearMonth, tileName2Idx(tile))
 
       rastTile <- raster::raster(rastFilename)
 
@@ -2634,13 +2763,19 @@ getCtryNlDataFnamePath <- function(ctryCode)
 #'  #(ignoreMissing==FALSE must return all data: forces processing of any missing)
 #'  
 #' @export
-getCtryNlData <- function(ctryCode, nlYearMonths, stats=pkgOptions("stats"), nlType, ignoreMissing=NULL, source="local")
+getCtryNlData <- function(ctryCode, nlPeriods, stats=pkgOptions("stats"), nlType, ignoreMissing=NULL, source="local")
 {
   if(missing(ctryCode))
     stop("Missing required ctryCode")
 
-  if(missing(nlYearMonths) && (!missing(ignoreMissing) && !ignoreMissing))
-    nlYearMonths <- getAllNlYears()
+  if(missing(nlType))
+    stop("Missing required parameter nlType")
+  
+  if(missing(nlPeriods) && (!missing(ignoreMissing) && !ignoreMissing))
+    nlPeriods <- getAllNlPeriods(nlType)
+  
+  if(!allValid(nlPeriods, validNlPeriod, nlType))
+    stop("Invalid nlPeriods detected")
   
   #if(missing(ignoreMissing))
   #  ignoreMissing = TRUE
@@ -2652,16 +2787,19 @@ getCtryNlData <- function(ctryCode, nlYearMonths, stats=pkgOptions("stats"), nlT
     if(ignoreMissing && !existsCtryNlDataFile(ctryCode))
       stop("No data exists for ", ctryCode, ". Set IgnoreMissing= to download and process")
   
-  if (!missing(nlYearMonths)) #if nlYearMonths is provided process else return all ctry data
+  if (!missing(nlPeriods)) #if nlPeriods is provided process else return all ctry data
   {
     #check if the stats exist in the given year months will test nlYm1+stat1, nlYm2+stat1, ..., nlYm1+stat2, nlYm2+stat2
-    nlYmStats <- expand.grid(nlYearMonths, stats)
+    nlPeriodStats <- expand.grid(nlPeriods, stats)
     
-    existnlYMStats <- apply(nlYmStats, 1, function(x) existsCtryNlDataVIIRS(ctryCode, x[1], x[2]))
+    if(nlType == "VIIRS")
+      existnlPeriodStats <- apply(nlPeriodStats, 1, function(x) existsCtryNlDataVIIRS(ctryCode, x[1], x[2]))
+    else
+      existnlPeriodStats <- apply(nlYmStats, 1, function(x) existsCtryNlDataOLS(ctryCode, x[1], x[2]))
     
-    missingData <- paste0(apply(nlYmStats[!existnlYMStats,], 1, function(x)paste0(x[1], ":", x[2])), collapse = ", ")
+    missingData <- paste0(apply(nlPeriodStats[!existnlPeriodStats,], 1, function(x)paste0(x[1], ":", x[2])), collapse = ", ")
     
-    if (!all(existnlYMStats))
+    if (!all(existnlPeriodStats))
     {
       if (is.null(ignoreMissing)) #default
       {
@@ -2672,7 +2810,7 @@ getCtryNlData <- function(ctryCode, nlYearMonths, stats=pkgOptions("stats"), nlT
       {
         message("Processing missing data: ", ctryCode, " in ", missingData, ". This may take a while. Note: Set 'ignoreMissing=TRUE' to return only data found or 'ignoreMissing=NULL' to return NULL if not all the data is found")
         
-        processNtLts(ctryCode, nlYearMonths, stats = stats)
+        processNtLts(ctryCode, nlType = nlType, nlPeriods, stats = stats)
       }
       else if (ignoreMissing)
       {
@@ -2704,8 +2842,8 @@ getCtryNlData <- function(ctryCode, nlYearMonths, stats=pkgOptions("stats"), nlT
   #to remove any missing nlYearMonths if ignoreMissing==TRUE
   if(ignoreMissing)
   {
-    if(any(existnlYMStats))
-      existingCols <- apply(nlYmStats[existnlYMStats,], 1, function(x) getCtryNlDataColName(x[1], x[2]))
+    if(any(existnlPeriodStats))
+      existingCols <- apply(nlYmStats[existnlPeriodStats,], 1, function(x) getCtryNlDataColName(x[1], x[2]))
     else
       existingCols <- NULL
   }
@@ -2713,10 +2851,13 @@ getCtryNlData <- function(ctryCode, nlYearMonths, stats=pkgOptions("stats"), nlT
   {
     #ignoreMissing == FALSE so we should have the missing data
     #check again to see that processNtLts was successful
-    existnlYMStats <- apply(nlYmStats, 1, function(x) existsCtryNlDataVIIRS(ctryCode, x[1], x[2]))
+    if (nlType == "VIIRS")
+      existnlPeriodStats <- apply(nlPeriodStats, 1, function(x) existsCtryNlDataVIIRS(ctryCode, x[1], x[2]))
+    else if (nlType == "OLS")
+      existnlPeriodStats <- apply(nlPeriodStats, 1, function(x) existsCtryNlDataOLS(ctryCode, x[1], x[2]))
     
-    if(all(existnlYMStats))
-      existingCols <- apply(nlYmStats[existnlYMStats,], 1, function(x) getCtryNlDataColName(x[1], x[2]))
+    if(all(existnlPeriodStats))
+      existingCols <- apply(nlPeriodStats[existnlPeriodStats,], 1, function(x) getCtryNlDataColName(x[1], x[2]))
     else
       stop("An error occurred")
   }
@@ -2864,9 +3005,9 @@ validStat <- function(stat)
 #' allValid(ctryCodes, validCtryCode)
 #'  returns TRUE
 #'
-allValid <- function(testData, testFun)
+allValid <- function(testData, testFun, ...)
 {
-  valid <- sapply(testData, function(x) eval(parse(text="testFun(x)")))
+  valid <- sapply(testData, function(x) eval(parse(text="testFun(x, ...)")))
   
   invalidData <- testData[!valid]
   
@@ -3153,7 +3294,7 @@ dnldCtryPoly <- function(ctryCode)
   {
     if (!existsPolyFnameZip(ctryCode))
     {
-      if(download.file(url = getCtryPolyUrl(ctryCode), destfile = getPolyFnameZip(ctryCode), method = "wget", mode = "wb", extra = "-c") == 0)
+      if(download.file(url = getCtryPolyUrl(ctryCode), destfile = getPolyFnameZip(ctryCode), method = "auto", mode = "wb", extra = "-c") == 0)
       {
         result <- utils::unzip(getPolyFnameZip(ctryCode), exdir = getPolyFnamePath(ctryCode))
         file.remove(getPolyFnameZip(ctryCode))
@@ -3172,7 +3313,7 @@ dnldCtryPoly <- function(ctryCode)
   return (!is.null(result))
 }
 
-######################## getAllNlYears ###################################
+######################## getAllNlPeriods ###################################
 
 #' Check if a month number is valid for a given nightlight type
 #'
@@ -3186,18 +3327,19 @@ dnldCtryPoly <- function(ctryCode)
 #' @return TRUE/FALSE
 #'
 #' @examples
-#' validNlMonthNum("01","VIIRS")
-#'  returns TRUE
+#' getAllNlPeriods("OLS")
+#'  returns a vector of all years from 1994 to present
 #'
-#' validNlMonthNum("13","VIIRS")
-#'  returns FALSE
+#' getAllNlPeriods("VIIRS")
+#'  returns a vector of all yearMonths from 201204 to present
 #'
-#' validNlMonthNum("01","OLS")
-#'  returns FALSE
 #'
-getAllNlYears <- function(nlType = "VIIRS")
+getAllNlPeriods <- function(nlType)
 {
-  if (class(nlType) != "character" || is.null(nlType) || is.na(nlType) || nlType =="" || length(grep("[^[:alpha:]]", nlType) > 0))
+  if (missing(nlType))
+    stop("Missing required parameter nlType")
+  
+  if (!validNlType(nlType))
     stop("Invalid nlType: ", nlType)
   
   if (nlType == "OLS")
@@ -3288,7 +3430,7 @@ getAllNlCtryCodes <- function(omit="none")
   return (ctryCodes)
 }
 
-######################## getNlType ###################################
+######################## getNlType: TO DELETE ###################################
 
 #' Check if a month number is valid for a given nightlight type
 #'
@@ -3311,23 +3453,21 @@ getAllNlCtryCodes <- function(omit="none")
 #' validNlMonthNum("01","OLS")
 #'  returns FALSE
 #'
-getNlType <- function(nlYear)
+getNlType <- function(nlPeriod)
 {
-  if(missing(nlYear))
-    stop("Missing required parameter nlYear")
+  if(missing(nlPeriod))
+    stop("Missing required parameter nlPeriod")
   
-  if(is.null(nlYear) || is.na(nlYear) || (!is.numeric(nlYear) && is.na(as.numeric(nlYear))))
-    stop("Invalid value for nlYear: ", nlYear)
+  if(is.null(nlPeriod) || is.na(nlPeriod) || (!is.numeric(nlPeriod) && is.na(as.numeric(nlPeriod))))
+    stop("Invalid value for nlPeriod: ", nlPeriod)
   
-  nlYear <- as.numeric(nlYear)
-  
-  if (nlYear < 1992 || nlYear > lubridate::year(lubridate::now()))
-    return(NA)
-
-  if (nlYear > 1992 && nlYear < 2012)
+  if(validNlYearOLS(nlPeriod))
     return("OLS")
-  else
+
+  if(validNlYearMonthVIIRS(nlPeriod))
     return("VIIRS")
+  
+  return(NA)
 }
 
 ######################## getPolyFname ###################################
@@ -3450,14 +3590,8 @@ getNlYearMonthTilesOLS <- function(nlYearMonth, tileList)
 
   for (tile in tileList)
   {
-    nlYear <- substr(nlYearMonth, 1, 4)
-
-    nlMonth <- substr(nlYearMonth, 5, 6)
-
-    nlTile <-
-
     #download tile
-    success <- success && getNtLtsOls(nlYear, nlMonth, nlTile)
+    success <- success && getNtLtsOls(nlYearMonth, nlTile)
   }
 
   return (success)
@@ -3503,16 +3637,12 @@ getNlYearMonthTilesVIIRS <- function(nlYearMonth, tileList)
   #ensure we have all required tiles
   for (tile in tileList)
   {
-    nlYear <- substr(nlYearMonth, 1, 4)
-
-    nlMonth <- substr(nlYearMonth, 5, 6)
-
     nlTile <- tileName2Idx(tile)
 
-    print(paste0(nlYear, nlMonth, nlTile))
+    message(paste0(nlYearMonth, nlTile))
 
     #download tile
-    success <- success && getNtLtsVIIRS(nlYear, nlMonth, nlTile)
+    success <- success && downloadNtLtsTilesVIIRS(nlYearMonth, nlTile)
   }
 
   return (success)
@@ -3769,7 +3899,7 @@ existsCtryNlDataVIIRS <- function(ctryCode, nlYearMonth, stat)
 #'     #R CMD BATCH script_name_2012.R
 #'     
 #' @export
-processNtLts <- function (ctryCodes=getAllNlCtryCodes("all"), nlYearMonths=getAllNlYears(), nlType="VIIRS", stats=pkgOptions("stats"))
+processNtLts <- function (ctryCodes=getAllNlCtryCodes("all"), nlPeriods=getAllNlPeriods(), nlType="VIIRS", stats=pkgOptions("stats"))
 {
   #nlYearMonths is a character vector with each entry containing an entry of the form YYYYMM (%Y%m)
   #e.g. 201401 representing the month for which nightlights should be calculated
@@ -3781,15 +3911,15 @@ processNtLts <- function (ctryCodes=getAllNlCtryCodes("all"), nlYearMonths=getAl
   #3. OLS
 
   #if the period is not given process all available periods
-  if(missing("nlYearMonths") || is.null(nlYearMonths) || length(nlYearMonths) == 0 || nlYearMonths == "")
+  if(missing("nlPeriods") || is.null(nlPeriods) || length(nlPeriods) == 0 || nlPeriods == "")
   {
-    nlYears <- getAllNlYears(nlType)
+    nlPeriods <- getAllNlPeriods(nlType)
   }
 
   if(!allValid(ctryCodes, validCtryCode))
     stop("Invalid ctryCode detected")
   
-  if(!allValid(nlYearMonths, validNlYearMonthVIIRS))
+  if(!allValid(nlPeriods, validNlYearMonthVIIRS))
   {
     stop("Invalid nlYearMonths detected: ", nlYearMonths)
   }
@@ -3823,11 +3953,11 @@ processNtLts <- function (ctryCodes=getAllNlCtryCodes("all"), nlYearMonths=getAl
   }
 
   #for all nlYearMonths check if the tiles exist else download
-  for (nlYearMonth in nlYearMonths)
+  for (nlPeriod in nlPeriods)
   {
-    message("Checking tiles required for ", nlYearMonth)
+    message("Checking tiles required for ", nlPeriod)
 
-    nlType <- getNlType(substr(nlYearMonth,1,4))
+    #nlType <- getNlType(nlPeriod)
 
     #init the list of tiles to be downloaded
     tileList <- NULL
@@ -3842,9 +3972,9 @@ processNtLts <- function (ctryCodes=getAllNlCtryCodes("all"), nlYearMonths=getAl
       #For each country
       for (ctryCode in unique(ctryCodes))
       {
-        if (all(sapply(stats, function(stat) existsCtryNlDataVIIRS(ctryCode, nlYearMonth, stat))))
+        if (all(sapply(stats, function(stat) existsCtryNlDataVIIRS(ctryCode, nlPeriod, stat))))
         {
-          message ("All stats exists for ", ctryCode, ":", nlYearMonth)
+          message ("All stats exists for ", ctryCode, ":", nlPeriod)
 
           next
         }
@@ -3868,52 +3998,49 @@ processNtLts <- function (ctryCodes=getAllNlCtryCodes("all"), nlYearMonths=getAl
 
       if (length(tileList) == 0)
       {
-        message("No tiles needed for ", nlYearMonth, ". Process next nlYearMonth")
+        message("No tiles needed for ", nlPeriod, ". Process next nlPeriod")
 
         next
       }
       else #if the cropped raster is not found try to download
       {
-        if (!file.exists(getCtryRasterOutputFname(ctryCode, nlYearMonth)))
+        if (!file.exists(getCtryRasterOutputFname(ctryCode, nlPeriod)))
         {
-            if(!getNlYearMonthTilesVIIRS(nlYearMonth, tileList))
+            if(!getNlYearMonthTilesVIIRS(nlPeriod, tileList))
             {
-              print("Something went wrong with the tile downloads. Aborting ...")
+              message("Something went wrong with the tile downloads. Aborting ...")
       
               break
             }
         }
         else
         {
-          print("Cropped raster already exists. Skipping tile download")
+          message("Cropped raster already exists. Skipping tile download")
         }
       }
       
       #for all required countries
       for (ctryCode in unique(ctryCodes))
       {
-        processNLCountryVIIRS(ctryCode, nlYearMonth, cropMaskMethod = pkgOptions("cropMaskMethod"), extractMethod = pkgOptions("extractMethod"), fnStats = stats)
+        processNLCountryVIIRS(ctryCode, nlPeriod, cropMaskMethod = pkgOptions("cropMaskMethod"), extractMethod = pkgOptions("extractMethod"), fnStats = stats)
       }
 
       #post-processing. Delete the downloaded tiles to release disk space
       if(pkgOptions("deleteTiles"))
         for (tile in tileList)
         {
-          nlYear <- substr(nlYearMonth, 1, 4)
-          nlMonth <- substr(nlYearMonth, 5, 6)
-  
           #del the tif file
-          #file.remove(getNtLtsTifLclNameVIIRS(nlYear, nlMonth, tileName2Idx(tile)))
+          file.remove(getNtLtsTifLclNamePathVIIRS(nlPeriod, tileName2Idx(tile)))
   
           #del the zip file
-          #file.remove(getNtLtsZipLclNameVIIRS(nlYear, nlMonth, tileName2Idx(tile)))
+          file.remove(getNtLtsZipLclNamePathVIIRS(nlPeriod, tileName2Idx(tile)))
         }
     }
     else if (nlType == "OLS")
     {
-      if (!getNlYearMonthTilesOLS(nlYearMonth))
+      if (!getNlPeriodTilesOLS(nlPeriod))
       {
-        print("Something went wrong with the tile downloads. Aborting ...")
+        message("Something went wrong with the tile downloads. Aborting ...")
 
         break
       }
@@ -3921,7 +4048,7 @@ processNtLts <- function (ctryCodes=getAllNlCtryCodes("all"), nlYearMonths=getAl
       #for all required countries
       for (ctryCode in unique(ctryCodes))
       {
-        processNLCountryOls(ctryCode, nlYearMonth)
+        processNLCountryOls(ctryCode, nlPeriod)
       }
 
     }
@@ -4638,8 +4765,6 @@ myquantile <- function (x)
 #' @examples
 #' runApplication()
 #'
-#' @importFrom plotly ggplotly
-#'
 #' @export
 exploreData <- function()
 {
@@ -4832,8 +4957,7 @@ setupDataPath <- function(newDataPath="~", ...)
 #'   Returns (invisibly) the old root path.
 #'   
 #' @examples
-#'   
-#' @export
+#'
 setDataPath <- function(dataPath)
 {
   if(missing(dataPath))
