@@ -1432,7 +1432,7 @@ downloadNlTilesVIIRS <- function(nlYearMonth, tileNum, downloadMethod=pkgOptions
     {
       message("Getting list of files in ", ntLtsZipLocalNamePathVIIRS, " ", base::date())
 
-      tgzFileList <- utils::untar(ntLtsZipLocalNamePathVIIRS, list = TRUE)
+      tgzFileList <- utils::untar(ntLtsZipLocalNamePathVIIRS, list = TRUE, tar = "internal")
       #tgz_file_list <- stringr::str_replace(tgz_file_list,"./","")
 
       if (is.null(tgzFileList))
@@ -1448,7 +1448,7 @@ downloadNlTilesVIIRS <- function(nlYearMonth, tileNum, downloadMethod=pkgOptions
 
       if(!file.exists(getNlTileTifLclNamePathVIIRS(nlYearMonth, tileNum)))
       {
-        utils::untar(ntLtsZipLocalNamePathVIIRS, files = tgzAvgRadFilename, exdir = getNlDir("dirRasterVIIRS"))
+        utils::untar(ntLtsZipLocalNamePathVIIRS, files = tgzAvgRadFilename, exdir = getNlDir("dirRasterVIIRS"), tar="internal")
 
         file.rename(file.path(getNlDir("dirRasterVIIRS"), tgzAvgRadFilename), getNlTileTifLclNamePathVIIRS(nlYearMonth, tileNum))
 
@@ -1531,7 +1531,7 @@ downloadNlTilesOLS <- function(nlYear, downloadMethod=pkgOptions("downloadMethod
       message("Getting list of files in ", ntLtsZipLocalNamePath, " ", base::date())
       
       #get a list of files in the tar archive
-      tarFileList <- utils::untar(ntLtsZipLocalNamePath, list = TRUE)
+      tarFileList <- utils::untar(ntLtsZipLocalNamePath, list = TRUE, tar="internal")
       
       #get the nightlight data filename
       #the nightlight data filename has the format "web.avg_vis.tif.gz"
@@ -1539,7 +1539,7 @@ downloadNlTilesOLS <- function(nlYear, downloadMethod=pkgOptions("downloadMethod
       tgzFile <- tarFileList[grep(".*stable_lights\\.avg_vis\\.tif\\.gz$", tarFileList, ignore.case = T)]
       
       #extract the nightlight data file
-      utils::untar(tarfile = ntLtsZipLocalNamePath, files = tgzFile, exdir = getNlDir("dirRasterOLS"))
+      utils::untar(tarfile = ntLtsZipLocalNamePath, files = tgzFile, exdir = getNlDir("dirRasterOLS"), tar = "internal")
       
       #the tif has the same name as the compressed file without the .gz
       tifFile <- stringr::str_replace(tgzFile, ".gz", "")
@@ -1665,6 +1665,7 @@ getNlUrlOLS <- function(nlYear)
   ntLtsPageUrl <- rvest::html_attr(ntLtsPageHtml,name = "href")
 
   ntLtsPageUrl <- gsub("\n", "", ntLtsPageUrl)
+  ntLtsPageUrl <- gsub("\r", "", ntLtsPageUrl)
 
   ntLtsPageUrl <- unlist(lapply(ntLtsPageUrl, FUN=function(x) paste0(ntLtsBaseUrl, x)))
 
@@ -1720,6 +1721,12 @@ getNlTileZipLclNameOLS <- function(nlYear)
 #'
 getNlTifLclNameOLS <- function(nlYear)
 {
+  if(missing(nlYear))
+    stop("Missing required parameter nlYear")
+  
+  if(!validNlYearOLS(nlYear))
+    stop("Invalid nlYear")
+  
   return (paste0("ols_", nlYear, ".tif"))
 }
 
@@ -2073,7 +2080,7 @@ processNLCountryOLS <- function(ctryCode, nlYear, cropMaskMethod=pkgOptions("cro
       gdalUtils::gdalwarp(srcfile=rstTmp, dstfile=output_file_vrt, s_srs=wgs84, t_srs=wgs84, cutline=getPolyFnamePath(ctryCode), cl= getCtryShpLyrName(ctryCode,0), multi=TRUE, wm=2048, wo="NUM_THREADS=ALL_CPUS")
       
       message("gdal_translate ", base::date())
-      gdalUtils::gdal_translate(co = "compress=LZW", src_dataset = output_file_vrt, dst_dataset = getCtryRasterOutputFname(ctryCode,nlYearMonth))
+      gdalUtils::gdal_translate(co = "compress=LZW", src_dataset = output_file_vrt, dst_dataset = getCtryRasterOutputFname(ctryCode, "OLS", nlYear))
       
       message("Deleting the component rasters ", base::date())
       
@@ -2087,7 +2094,7 @@ processNLCountryOLS <- function(ctryCode, nlYear, cropMaskMethod=pkgOptions("cro
   }
   else
   {
-    rastFilename <- getCtryRasterOutputFname(ctryCode, nlYearMonth)
+    rastFilename <- getCtryRasterOutputFname(ctryCode, "OLS", nlYear)
     
     ctryRastCropped <- raster::raster(rastFilename)
     
@@ -2111,9 +2118,9 @@ processNLCountryOLS <- function(ctryCode, nlYear, cropMaskMethod=pkgOptions("cro
   message("Begin extracting the data from the merged raster ", base::date())
   
   if (extractMethod == "rast")
-    sumAvgRad <- fnSumAvgRadRast(ctryPoly, ctryRastCropped, fnStats)
+    sumAvgRad <- fnSumAvgRadRast(ctryPoly, ctryRastCropped, fnStats, "OLS")
   else if (extractMethod == "gdal")
-    sumAvgRad <- fnSumAvgRadGdal(ctryCode, ctryPoly, nlYear, fnStats)
+    sumAvgRad <- fnSumAvgRadGdal(ctryCode, ctryPoly, nlYear, fnStats, "OLS")
   
   for(stat in fnStats)
     ctryNlDataDF <- insertNlDataCol(ctryNlDataDF, sumAvgRad[,stat], stat, nlYear, nlType = "OLS")
@@ -2501,9 +2508,9 @@ processNLCountryVIIRS <- function(ctryCode, nlYearMonth, cropMaskMethod=pkgOptio
   message("Begin extracting the data from the merged raster ", base::date())
 
   if (extractMethod == "rast")
-    sumAvgRad <- fnSumAvgRadRast(ctryPoly, ctryRastCropped, fnStats)
+    sumAvgRad <- fnSumAvgRadRast(ctryPoly, ctryRastCropped, fnStats, "VIIRS")
   else if (extractMethod == "gdal")
-    sumAvgRad <- fnSumAvgRadGdal(ctryCode, ctryPoly, nlYearMonth, fnStats)
+    sumAvgRad <- fnSumAvgRadGdal(ctryCode, ctryPoly, nlYearMonth, fnStats, "VIIRS")
 
   for(stat in fnStats)
     ctryNlDataDF <- insertNlDataCol(ctryNlDataDF, sumAvgRad[,stat], stat, nlYearMonth, nlType = "VIIRS")
@@ -2545,7 +2552,7 @@ processNLCountryVIIRS <- function(ctryCode, nlYearMonth, cropMaskMethod=pkgOptio
 #' 
 #' ctryNlDataDF <- insertNlDataCol(ctryNlDataDF, dataCol, "sum", "201209", "VIIRS")
 #'
-insertNlDataCol <- function (ctryNlDataDF, dataCol, statType, nlYearMonth, nlType = "VIIRS")
+insertNlDataCol <- function (ctryNlDataDF, dataCol, statType, nlPeriod, nlType)
 {
   if(missing(ctryNlDataDF))
     stop("Missing required parameter ctryNlDataDF")
@@ -2556,18 +2563,18 @@ insertNlDataCol <- function (ctryNlDataDF, dataCol, statType, nlYearMonth, nlTyp
   if(missing(statType))
     stop("Missing required parameter statType")
   
-  if(missing(nlYearMonth))
-    stop("Missing required parameter nlYearMonth")
+  if(missing(nlPeriod))
+    stop("Missing required parameter nlPeriod")
   
   if(missing(nlType))
-    warning("Missing parameter nlType, defaulting to: ", nlType)
+    warning("Missing required parameter nlType")
   
   
   #append the calculated means for the polygon as a new column
   ctryNlDataDF <- cbind(ctryNlDataDF, dataCol)
   
   #name the new column which is currently last with the yearmonth of the data
-  names(ctryNlDataDF)[ncol(ctryNlDataDF)] <- getCtryNlDataColName(nlYearMonth = nlYearMonth, stat = statType, nlType = nlType)
+  names(ctryNlDataDF)[ncol(ctryNlDataDF)] <- getCtryNlDataColName(nlPeriod = nlPeriod, stat = statType, nlType = nlType)
   
   #re-arrange the columns
   #read in all column names in the dataframe afresh
@@ -4425,19 +4432,24 @@ ZonalPipe <- function (ctryCode, ctryPoly, path.in.shp, path.in.r, path.out.r, p
 #' validNlMonthNum("01","VIIRS")
 #'  returns TRUE
 #'
-fnSumAvgRadGdal <- function(ctryCode, ctryPoly, nlYearMonth, fnStats=stats)
+fnSumAvgRadGdal <- function(ctryCode, ctryPoly, nlPeriod, fnStats=stats, nlType)
 {
   if(missing(ctryCode))
     stop("Missing required parameter ctryCode")
   
-  if(missing(nlYearMonth))
-    stop("Missing required parameter nlYearMonth")
+  if(missing(nlPeriod))
+    stop("Missing required parameter nlPeriod")
 
   if(!validCtryCode(ctryCode))
     stop("Invalid ctryCode: ", ctryCode)
   
-  if(!validNlYearMonthVIIRS(nlYearMonth))
-    stop("Invalid nlYearMonth: ", nlYearMonth)
+  if(nchar(nlPeriod) == 4)
+    nlType <- "OLS"
+  else if(nchar(nlPeriod) == 6)
+    nlType <- "VIIRS"
+  
+  if(!validNlPeriod(nlPeriod, nlType))
+    stop("Invalid nlPeriod: ", nlPeriod, " for nlType: ", nlType)
   
   if(!allValid(fnStats, validStat))
     stop("Invalid stat(s) detected")
@@ -4446,7 +4458,7 @@ fnSumAvgRadGdal <- function(ctryCode, ctryPoly, nlYearMonth, fnStats=stats)
   
   path.in.shp<- getPolyFnamePath(ctryCode)
   
-  path.in.r<- getCtryRasterOutputFname(ctryCode, nlYearMonth) #or path.in.r<-list.files("/home/, pattern=".tif$")
+  path.in.r<- getCtryRasterOutputFname(ctryCode, nlType, nlPeriod) #or path.in.r<-list.files("/home/, pattern=".tif$")
   path.out.r<- paste0(getNlDir("dirZonals"), "/", ctryCode, "_zone.tif")
 
   path.out.shp<-"zone_withZstat.shp"
@@ -4518,7 +4530,7 @@ fnSumAvgRadGdal <- function(ctryCode, ctryPoly, nlYearMonth, fnStats=stats)
 #' sumAvgRadRast <- fnSumAvgRadRast(ctryPoly, ctryRastCropped)
 #' 
 #' @importFrom foreach %dopar%
-fnSumAvgRadRast <- function(ctryPoly, ctryRastCropped, stats)
+fnSumAvgRadRast <- function(ctryPoly, ctryRastCropped, stats, nlType)
 {
   if(missing(ctryPoly))
     stop("Missing required parameter ctryPoly")
@@ -4537,11 +4549,17 @@ fnSumAvgRadRast <- function(ctryPoly, ctryRastCropped, stats)
   
   doParallel::registerDoParallel(cores=pkgOptions("numCores"))
 
-  sumAvgRad <- foreach::foreach(i=1:nrow(ctryPoly@data), .combine=rbind) %dopar% {
+  sumAvgRad <- foreach::foreach(i=1:nrow(ctryPoly@data), 
+                                .combine=rbind,
+                                .export = c("masqOLS", "masqVIIRS"),
+                                .packages = c("raster")) %dopar% {
     
     message("Extracting data from polygon " , i, " ", base::date())
 
-    dat <- masqVIIRS(ctryPoly, ctryRastCropped, i)
+    if(nlType=="OLS")
+      dat <- masqOLS(ctryPoly, ctryRastCropped, i)
+    else if(nlType=="VIIRS")
+      dat <- masqVIIRS(ctryPoly, ctryRastCropped, i)
 
     message("Calculating the NL stats of polygon ", i, " ", base::date())
 
