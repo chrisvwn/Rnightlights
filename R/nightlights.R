@@ -91,7 +91,8 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   
   dirNlData = "data",
   
-  #cropMaskMethod" Method used to crop and mask tiles to country polygons. options: "gdal" or "rast" gdal is usually faster but requires gdal to be installed on the system
+  #cropMaskMethod" Method used to crop and mask tiles to country polygons. 
+  #options: "gdal" or "rast" gdal is usually faster but requires gdal to be installed on the system
   cropMaskMethod = "gdal",
   
   extractMethod = "gdal",
@@ -1795,7 +1796,7 @@ masqOLS <- function(shp, rast, i)
 
 #' Convert a country name to its ISO3 code
 #'
-#' Convert a country name to its ISO3 code. Exposes the rworldmap function rwmGetISO3(ctryName). See the examples
+#' Convert a country name to its ISO3 code. Exposes the rworldmap function rwmGetISO3(ctryName). See the examples. With no parameters returns a list of ctryNames and their corresponding codes as given by rworldMap
 #'
 #' @param ctryCode
 #'
@@ -1812,7 +1813,7 @@ masqOLS <- function(shp, rast, i)
 ctryNameToCode <- function(ctryName)
 {
   if(missing(ctryName))
-    stop("Missing parameter ctryName")
+    return(rworldmap::getMap()@data[,c("NAME", "ISO3")])
   
   if (class(ctryName) != "character" || is.null(ctryName) || is.na(ctryName) || ctryName =="" || length(grep("[^[:alpha:]]", ctryName) > 0))
     stop("Invalid ctryName: ", ctryName)
@@ -1826,11 +1827,14 @@ ctryNameToCode <- function(ctryName)
 #'
 #' Convert a country ISO3 code to the full name. Exposes the rworldmap function 
 #'     isoToName(ctryCode). #rworldmap::isoToName can resolve 2-letter ctryCodes 
-#'     but we only want 3-letter ISO3 codes
+#'     but we only want 3-letter ISO3 codes.  With no parameters returns a list
+#'     of ctryCodes and their corresponding names as given by rworldMap::getMap@data
 #'
-#' @param ctryCode
+#' @param ctryCode The country Code to search for
 #'
-#' @return Character full country name
+#' @return Character The full country name if the ctryCode is found. If
+#'     \code{ctryCode} is not supplied then return a list of all country
+#'     codes and their corresponding names
 #'
 #' @examples
 #' ctryCodeToName("KEN")
@@ -1839,7 +1843,7 @@ ctryNameToCode <- function(ctryName)
 ctryCodeToName <- function(ctryCode)
 {
   if(missing(ctryCode))
-    stop("Missing equired parameter ctryCode")
+    return(rworldmap::getMap()@data[,c("ISO3", "NAME")])
   
   if (class(ctryCode) != "character" || is.null(ctryCode) || is.na(ctryCode) || ctryCode =="" || length(grep("[^[:alpha:]]", ctryCode) > 0))
     stop("Invalid ctryCode: ", ctryCode)
@@ -2394,7 +2398,7 @@ processNLCountryVIIRS <- function(ctryCode, nlYearMonth, cropMaskMethod=pkgOptio
     
     message("Reading in the rasters " , base::date())
     
-    tileList <- getCtryCodeTileList(ctryCode)
+    tileList <- getCtryTileList(ctryCode)
     
     ctryRastCropped <- NULL
     
@@ -3727,7 +3731,7 @@ getPolyFnameZip <- function(ctryCode)
 #' downloadNlYearMonthsTilesVIIRS("201201", c(2, 5))
 #'
 #' #same as above but getting the tileList automatically
-#' downloadNlYearMonthsTilesVIIRS("201201", tileName2Idx(getCtryCodeTileList("KEN")))
+#' downloadNlYearMonthsTilesVIIRS("201201", tileName2Idx(getCtryTileList("KEN")))
 #' 
 #' returns TRUE if the download was successful
 #'
@@ -3787,7 +3791,7 @@ downloadNlTiles <- function(nlType, nlPeriod, tileList)
 #' getAllNlYearMonthsTiles(c("201201", "201202", "201205"), c(2, 5))
 #'
 #' #same as above but getting the tileList automatically
-#' getAllNlYearMonthsTiles(c("201201", "201202", "201205"), tileName2Idx(getCtryCodeTileList("KEN")))
+#' getAllNlYearMonthsTiles(c("201201", "201202", "201205"), tileName2Idx(getCtryTileList("KEN")))
 #' #returns TRUE if ALL downloads were successful
 #'
 getAllNlYearMonthsTiles <- function(nlYearMonths, tileList)
@@ -3832,7 +3836,7 @@ existsCtryCodeTiles <- function()
   return (exists("ctryCodeTiles") && class(ctryCodeTiles)=="data.frame" && !is.null(ctryCodeTiles))
 }
 
-######################## getCtryCodeTileList ###################################
+######################## getCtryTileList ###################################
 
 #' Returns a list of VIIRS nightlight tiles that a country or countries intersects with
 #'
@@ -3851,11 +3855,11 @@ existsCtryCodeTiles <- function()
 #' @return TRUE/FALSE
 #'
 #' @examples
-#' getCtryCodeTileList(ctryCodes=c("BUR", "KEN", "RWA", "UGA", "TZA"), omitCountries="none")
+#' getCtryTileList(ctryCodes=c("BUR", "KEN", "RWA", "UGA", "TZA"), omitCountries="none")
 #' 
-#' getCtryCodeTileList(ctryCodes="all", omitCountries="long")
+#' getCtryTileList(ctryCodes="all", omitCountries="long")
 #'
-getCtryCodeTileList <- function(ctryCodes, omitCountries="none")
+getCtryTileList <- function(ctryCodes, omitCountries="none")
 {
   if(missing(ctryCodes))
     stop("Missing required parameter ctryCodes")
@@ -4122,7 +4126,7 @@ processNlData <- function (ctryCodes=getAllNlCtryCodes("all"), nlPeriods=getAllN
         message("Stats missing. Adding tiles for ", ctryCode)
         
         #get the list of tiles required for the ctryCode
-        ctryTiles <- getCtryCodeTileList(ctryCode)
+        ctryTiles <- getCtryTileList(ctryCode)
         
         #combine the list of unique tiles across all ctryCodes in tileList
         tileList <- c(tileList, setdiff(ctryTiles, tileList))
@@ -7199,66 +7203,6 @@ masqOLS <- function(shp, rast, i)
   return(data)
 }
 
-######################## ctryNameToCode ###################################
-
-#' Convert a country name to its ISO3 code
-#'
-#' Convert a country name to its ISO3 code. Exposes the rworldmap function rwmGetISO3(ctryName). See the examples
-#'
-#' @param ctryCode
-#'
-#' @return Character full country name
-#'
-#' @examples
-#' ctryNameToCode("kenya")
-#'   #returns "KEN"
-#'
-#' ctryNameToCode("ken")
-#'   #returns "KEN"
-#'
-#' @export
-ctryNameToCode <- function(ctryName)
-{
-  if(missing(ctryName))
-    stop("Missing parameter ctryName")
-  
-  if (class(ctryName) != "character" || is.null(ctryName) || is.na(ctryName) || ctryName =="" || length(grep("[^[:alpha:]]", ctryName) > 0))
-    stop("Invalid ctryName: ", ctryName)
-  
-  return (rworldmap::rwmGetISO3(ctryName))
-}
-
-######################## ctryCodeToName ###################################
-
-#' Convert a country ISO3 code to the full name
-#'
-#' Convert a country ISO3 code to the full name. Exposes the rworldmap function 
-#'     isoToName(ctryCode). #rworldmap::isoToName can resolve 2-letter ctryCodes 
-#'     but we only want 3-letter ISO3 codes
-#'
-#' @param ctryCode
-#'
-#' @return Character full country name
-#'
-#' @examples
-#' ctryCodeToName("KEN")
-#'
-#' @export
-ctryCodeToName <- function(ctryCode)
-{
-  if(missing(ctryCode))
-    stop("Missing equired parameter ctryCode")
-  
-  if (class(ctryCode) != "character" || is.null(ctryCode) || is.na(ctryCode) || ctryCode =="" || length(grep("[^[:alpha:]]", ctryCode) > 0))
-    stop("Invalid ctryCode: ", ctryCode)
-  
-  #rworldmap::isoToName can resolve 2-letter ctryCodes but we only want 3-letter ISO3 codes
-  if(nchar(ctryCode) != 3)
-    stop("Only 3-letter ISO3 codes allowed")
-  
-  return(rworldmap::isoToName(ctryCode))
-}
-
 ######################## ctryPolyLyrNames : TO DELETE ###################################
 
 #' Check if a month number is valid for a given nightlight type
@@ -7802,7 +7746,7 @@ processNLCountryVIIRS <- function(ctryCode, nlYearMonth, cropMaskMethod=pkgOptio
     
     message("Reading in the rasters " , base::date())
     
-    tileList <- getCtryCodeTileList(ctryCode)
+    tileList <- getCtryTileList(ctryCode)
     
     ctryRastCropped <- NULL
     
@@ -9137,7 +9081,7 @@ getPolyFnameZip <- function(ctryCode)
 #' downloadNlYearMonthsTilesVIIRS("201201", c(2, 5))
 #'
 #' #same as above but getting the tileList automatically
-#' downloadNlYearMonthsTilesVIIRS("201201", tileName2Idx(getCtryCodeTileList("KEN")))
+#' downloadNlYearMonthsTilesVIIRS("201201", tileName2Idx(getCtryTileList("KEN")))
 #' 
 #' returns TRUE if the download was successful
 #'
@@ -9197,7 +9141,7 @@ downloadNlTiles <- function(nlType, nlPeriod, tileList)
 #' getAllNlYearMonthsTiles(c("201201", "201202", "201205"), c(2, 5))
 #'
 #' #same as above but getting the tileList automatically
-#' getAllNlYearMonthsTiles(c("201201", "201202", "201205"), tileName2Idx(getCtryCodeTileList("KEN")))
+#' getAllNlYearMonthsTiles(c("201201", "201202", "201205"), tileName2Idx(getCtryTileList("KEN")))
 #' #returns TRUE if ALL downloads were successful
 #'
 getAllNlYearMonthsTiles <- function(nlYearMonths, tileList)
@@ -9242,7 +9186,7 @@ existsCtryCodeTiles <- function()
   return (exists("ctryCodeTiles") && class(ctryCodeTiles)=="data.frame" && !is.null(ctryCodeTiles))
 }
 
-######################## getCtryCodeTileList ###################################
+######################## getCtryTileList ###################################
 
 #' Returns a list of VIIRS nightlight tiles that a country or countries intersects with
 #'
@@ -9261,11 +9205,11 @@ existsCtryCodeTiles <- function()
 #' @return TRUE/FALSE
 #'
 #' @examples
-#' getCtryCodeTileList(ctryCodes=c("BUR", "KEN", "RWA", "UGA", "TZA"), omitCountries="none")
+#' getCtryTileList(ctryCodes=c("BUR", "KEN", "RWA", "UGA", "TZA"), omitCountries="none")
 #' 
-#' getCtryCodeTileList(ctryCodes="all", omitCountries="long")
+#' getCtryTileList(ctryCodes="all", omitCountries="long")
 #'
-getCtryCodeTileList <- function(ctryCodes, omitCountries="none")
+getCtryTileList <- function(ctryCodes, omitCountries="none")
 {
   if(missing(ctryCodes))
     stop("Missing required parameter ctryCodes")
@@ -9532,7 +9476,7 @@ processNlData <- function (ctryCodes=getAllNlCtryCodes("all"), nlPeriods=getAllN
         message("Stats missing. Adding tiles for ", ctryCode)
         
         #get the list of tiles required for the ctryCode
-        ctryTiles <- getCtryCodeTileList(ctryCode)
+        ctryTiles <- getCtryTileList(ctryCode)
         
         #combine the list of unique tiles across all ctryCodes in tileList
         tileList <- c(tileList, setdiff(ctryTiles, tileList))
@@ -12609,66 +12553,6 @@ masqOLS <- function(shp, rast, i)
   return(data)
 }
 
-######################## ctryNameToCode ###################################
-
-#' Convert a country name to its ISO3 code
-#'
-#' Convert a country name to its ISO3 code. Exposes the rworldmap function rwmGetISO3(ctryName). See the examples
-#'
-#' @param ctryCode
-#'
-#' @return Character full country name
-#'
-#' @examples
-#' ctryNameToCode("kenya")
-#'   #returns "KEN"
-#'
-#' ctryNameToCode("ken")
-#'   #returns "KEN"
-#'
-#' @export
-ctryNameToCode <- function(ctryName)
-{
-  if(missing(ctryName))
-    stop("Missing parameter ctryName")
-  
-  if (class(ctryName) != "character" || is.null(ctryName) || is.na(ctryName) || ctryName =="" || length(grep("[^[:alpha:]]", ctryName) > 0))
-    stop("Invalid ctryName: ", ctryName)
-  
-  return (rworldmap::rwmGetISO3(ctryName))
-}
-
-######################## ctryCodeToName ###################################
-
-#' Convert a country ISO3 code to the full name
-#'
-#' Convert a country ISO3 code to the full name. Exposes the rworldmap function 
-#'     isoToName(ctryCode). #rworldmap::isoToName can resolve 2-letter ctryCodes 
-#'     but we only want 3-letter ISO3 codes
-#'
-#' @param ctryCode
-#'
-#' @return Character full country name
-#'
-#' @examples
-#' ctryCodeToName("KEN")
-#'
-#' @export
-ctryCodeToName <- function(ctryCode)
-{
-  if(missing(ctryCode))
-    stop("Missing equired parameter ctryCode")
-  
-  if (class(ctryCode) != "character" || is.null(ctryCode) || is.na(ctryCode) || ctryCode =="" || length(grep("[^[:alpha:]]", ctryCode) > 0))
-    stop("Invalid ctryCode: ", ctryCode)
-  
-  #rworldmap::isoToName can resolve 2-letter ctryCodes but we only want 3-letter ISO3 codes
-  if(nchar(ctryCode) != 3)
-    stop("Only 3-letter ISO3 codes allowed")
-  
-  return(rworldmap::isoToName(ctryCode))
-}
-
 ######################## ctryPolyLyrNames : TO DELETE ###################################
 
 #' Check if a month number is valid for a given nightlight type
@@ -13212,7 +13096,7 @@ processNLCountryVIIRS <- function(ctryCode, nlYearMonth, cropMaskMethod=pkgOptio
     
     message("Reading in the rasters " , base::date())
     
-    tileList <- getCtryCodeTileList(ctryCode)
+    tileList <- getCtryTileList(ctryCode)
     
     ctryRastCropped <- NULL
     
@@ -14009,10 +13893,12 @@ existsPolyFnameZip <- function(ctryCode)
 
 ######################## listCtryNlData ###################################
 
-#' List the data existing locally
+#' List available data
 #'
-#' List the data existing locally
+#' List available data. If source is "local" it lists data cached locally.
+#'     If source is remote lists available data on the remote repository.
 #' 
+#' @param 
 #' @return a list of countries and the years and stats for each
 #'
 #' @examples
@@ -14020,7 +13906,7 @@ existsPolyFnameZip <- function(ctryCode)
 #'   #returns "KEN_adm0"
 #'
 #' @export
-listExistingData <- function()
+listData <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, source="local")
 {
   dataList <- NULL
   
@@ -14038,7 +13924,7 @@ listExistingData <- function()
     
     nlCtryHdr <- t(as.data.frame(nlCtryHdr))
     
-    nlCtryHdr <- c(nlCtryHdr[1,2:nrow(nlCtryHdr)],nlCtryHdr[,ncol(nlCtryHdr)])
+    nlCtryHdr <- c(nlCtryHdr[1,1:nrow(nlCtryHdr)],nlCtryHdr[,ncol(nlCtryHdr)])
     
     nlCtryHdr <- c(ctryCode, nlCtryHdr)
     
@@ -14047,9 +13933,23 @@ listExistingData <- function()
   
   dataList <- as.data.frame(dataList, row.names = 1:nrow(dataList))
   
-  names(dataList) <- c("ctryCode", "nlType", "nlPeriod", "stats")
+  names(dataList) <- c("ctryCode", "dataType", "nlType", "nlPeriod", paste0("stat", 1:(ncol(dataList)-4)))
+
+  if(!is.null(ctryCodes))
+    dataList <- dataList[which(dataList[,1] %in% ctryCodes),]
   
-  return(dataList)
+  if(!is.null(nlTypes))
+    dataList <- dataList[which(dataList[,2] %in% nlTypes),]
+  
+  if(!is.null(nlPeriods))
+    dataList <- dataList[which(dataList[,3] %in% nlPeriods),]
+  
+  dataList <- dplyr::select(dataList, dataType, ctryCode, nlType, nlPeriod, dplyr::contains("stat"))
+
+  if(nrow(dataList) > 0)
+    return(dataList)
+  else
+    return(NULL)
 }
 
 ######################## getCtryShpLyrName ###################################
@@ -14545,7 +14445,7 @@ getPolyFnameZip <- function(ctryCode)
 #' downloadNlYearMonthsTilesVIIRS("201201", c(2, 5))
 #'
 #' #same as above but getting the tileList automatically
-#' downloadNlYearMonthsTilesVIIRS("201201", tileName2Idx(getCtryCodeTileList("KEN")))
+#' downloadNlYearMonthsTilesVIIRS("201201", tileName2Idx(getCtryTileList("KEN")))
 #' 
 #' returns TRUE if the download was successful
 #'
@@ -14605,7 +14505,7 @@ downloadNlTiles <- function(nlType, nlPeriod, tileList)
 #' getAllNlYearMonthsTiles(c("201201", "201202", "201205"), c(2, 5))
 #'
 #' #same as above but getting the tileList automatically
-#' getAllNlYearMonthsTiles(c("201201", "201202", "201205"), tileName2Idx(getCtryCodeTileList("KEN")))
+#' getAllNlYearMonthsTiles(c("201201", "201202", "201205"), tileName2Idx(getCtryTileList("KEN")))
 #' #returns TRUE if ALL downloads were successful
 #'
 getAllNlYearMonthsTiles <- function(nlYearMonths, tileList)
@@ -14650,7 +14550,7 @@ existsCtryCodeTiles <- function()
   return (exists("ctryCodeTiles") && class(ctryCodeTiles)=="data.frame" && !is.null(ctryCodeTiles))
 }
 
-######################## getCtryCodeTileList ###################################
+######################## getCtryTileList ###################################
 
 #' Returns a list of VIIRS nightlight tiles that a country or countries intersects with
 #'
@@ -14669,11 +14569,11 @@ existsCtryCodeTiles <- function()
 #' @return TRUE/FALSE
 #'
 #' @examples
-#' getCtryCodeTileList(ctryCodes=c("BUR", "KEN", "RWA", "UGA", "TZA"), omitCountries="none")
+#' getCtryTileList(ctryCodes=c("BUR", "KEN", "RWA", "UGA", "TZA"), omitCountries="none")
 #' 
-#' getCtryCodeTileList(ctryCodes="all", omitCountries="long")
+#' getCtryTileList(ctryCodes="all", omitCountries="long")
 #'
-getCtryCodeTileList <- function(ctryCodes, omitCountries="none")
+getCtryTileList <- function(ctryCodes, omitCountries="none")
 {
   if(missing(ctryCodes))
     stop("Missing required parameter ctryCodes")
@@ -14940,7 +14840,7 @@ processNlData <- function (ctryCodes=getAllNlCtryCodes("all"), nlPeriods=getAllN
         message("Stats missing. Adding tiles for ", ctryCode)
         
         #get the list of tiles required for the ctryCode
-        ctryTiles <- getCtryCodeTileList(ctryCode)
+        ctryTiles <- getCtryTileList(ctryCode)
         
         #combine the list of unique tiles across all ctryCodes in tileList
         tileList <- c(tileList, setdiff(ctryTiles, tileList))
