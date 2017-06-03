@@ -1639,7 +1639,7 @@ getNlUrlOLS <- function(nlYear)
   ntLtsPageHtml <- "https://www.ngdc.noaa.gov/eog/dmsp/downloadV4composites.html"
   
   #the local name of the file once downloaded
-  ntLtsPageLocalName <- file.path(getNldir("dataPath"), "ntltspageols.html")
+  ntLtsPageLocalName <- file.path(getNlDir("dataPath"), "ntltspageols.html")
   
   #if the file does not exist or is older than a day download it afresh
   #not working. download.file does not seem to update mtime
@@ -1813,9 +1813,15 @@ masqOLS <- function(shp, rast, i)
 ctryNameToCode <- function(ctryName)
 {
   if(missing(ctryName))
-    return(rworldmap::getMap()@data[,c("NAME", "ISO3")])
+  {
+    ctryList <- rworldmap::getMap()@data[,c("NAME", "ISO3")]
+    
+    ctryList <- dplyr::arrange(ctryList, NAME)
+    
+    return(ctryList)
+  }
   
-  if (class(ctryName) != "character" || is.null(ctryName) || is.na(ctryName) || ctryName =="" || length(grep("[^[:alpha:]]", ctryName) > 0))
+  if (class(ctryName) != "character" || is.null(ctryName) || is.na(ctryName) || ctryName =="" || length(grep("[^[:alpha:]| ]", ctryName) > 0))
     stop("Invalid ctryName: ", ctryName)
   
   return (rworldmap::rwmGetISO3(ctryName))
@@ -1843,7 +1849,13 @@ ctryNameToCode <- function(ctryName)
 ctryCodeToName <- function(ctryCode)
 {
   if(missing(ctryCode))
-    return(rworldmap::getMap()@data[,c("ISO3", "NAME")])
+  {
+    ctryList <- rworldmap::getMap()@data[,c("ISO3", "NAME")]
+    
+    ctryList <- dplyr::arrange(ctryList, ISO3)
+    
+    return(ctryList)
+  }
   
   if (class(ctryCode) != "character" || is.null(ctryCode) || is.na(ctryCode) || ctryCode =="" || length(grep("[^[:alpha:]]", ctryCode) > 0))
     stop("Invalid ctryCode: ", ctryCode)
@@ -4043,7 +4055,7 @@ nlRange <- function(startNlPeriod, endNlPeriod)
 #'     #R CMD BATCH script_name_2012.R
 #'     
 #' @export
-processNlData <- function (ctryCodes=getAllNlCtryCodes("all"), nlPeriods=getAllNlPeriods(), nlType="VIIRS", stats=pkgOptions("stats"))
+processNlData <- function (ctryCodes=getAllNlCtryCodes("all"), nlPeriods=getAllNlPeriods(nlType), nlType="VIIRS", stats=pkgOptions("stats"))
 {
   #nlYearMonths is a character vector with each entry containing an entry of the form YYYYMM (%Y%m)
   #e.g. 201401 representing the month for which nightlights should be calculated
@@ -7050,7 +7062,7 @@ getNlUrlOLS <- function(nlYear)
   ntLtsPageHtml <- "https://www.ngdc.noaa.gov/eog/dmsp/downloadV4composites.html"
   
   #the local name of the file once downloaded
-  ntLtsPageLocalName <- file.path(getNldir("dataPath"), "ntltspageols.html")
+  ntLtsPageLocalName <- file.path(getNlDir("dataPath"), "ntltspageols.html")
   
   #if the file does not exist or is older than a day download it afresh
   #not working. download.file does not seem to update mtime
@@ -12400,7 +12412,7 @@ getNlUrlOLS <- function(nlYear)
   ntLtsPageHtml <- "https://www.ngdc.noaa.gov/eog/dmsp/downloadV4composites.html"
   
   #the local name of the file once downloaded
-  ntLtsPageLocalName <- file.path(getNldir("dataPath"), "ntltspageols.html")
+  ntLtsPageLocalName <- file.path(getNlDir("dataPath"), "ntltspageols.html")
   
   #if the file does not exist or is older than a day download it afresh
   #not working. download.file does not seem to update mtime
