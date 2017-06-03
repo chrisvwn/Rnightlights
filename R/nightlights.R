@@ -1639,7 +1639,7 @@ getNlUrlOLS <- function(nlYear)
   ntLtsPageHtml <- "https://www.ngdc.noaa.gov/eog/dmsp/downloadV4composites.html"
   
   #the local name of the file once downloaded
-  ntLtsPageLocalName <- file.path(getNlDir("dataPath"), "ntltspageols.html")
+  ntLtsPageLocalName <- file.path(getDataPath(), "ntltspageols.html")
   
   #if the file does not exist or is older than a day download it afresh
   #not working. download.file does not seem to update mtime
@@ -4414,10 +4414,11 @@ ZonalPipe <- function (ctryCode, ctryPoly, path.in.shp, path.in.r, path.out.r, p
   
   # 1/ Rasterize using GDAL
   
-  suppressWarnings(
-    if(system("which", intern = T) != 0)
-      stop("gdal_rasterize not found. Please check that GDAL is installed")
-  )
+  # Find a better multi-platform way to check for gdal.
+  # suppressWarnings(
+  #   if(system("which gdal_rasterize", intern = T) != 0)
+  #     stop("gdal_rasterize not found. Please check that GDAL is installed")
+  # )
   
   #Initiate parameter
   r<-raster::stack(path.in.r)
@@ -4561,7 +4562,7 @@ fnAggRadGdal <- function(ctryCode, ctryPoly, nlPeriod, fnStats=stats, nlType)
   {
     sumAvgRad <- cbind(ctryPolyData$ID_0, sumAvgRad[sumAvgRad$z!=0, ])
     
-    sumAvgRad <- sumAvgRad[,2]
+    #sumAvgRad <- sumAvgRad[,2]
   }
   else
   {
