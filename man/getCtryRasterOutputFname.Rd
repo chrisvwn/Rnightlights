@@ -4,7 +4,7 @@
 \alias{getCtryRasterOutputFname}
 \title{Get the full path to the file where the cropped VIIRS country raster is stored.}
 \usage{
-getCtryRasterOutputFname(ctryCode, nlYearMonth)
+getCtryRasterOutputFname(ctryCode, nlType, nlPeriod)
 }
 \arguments{
 \item{ctryCode}{}
@@ -22,4 +22,3 @@ Get the full path to the file where the cropped VIIRS country raster is stored. 
 getCtryRasterOutputFname("KEN","201412")
 
 }
-

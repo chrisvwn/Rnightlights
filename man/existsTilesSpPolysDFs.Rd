@@ -17,4 +17,3 @@ if(!existsTilesSpPolysDFs())
   tilesSpPolysDFs <- createNlTilesSpPolysDF()
 
 }
-

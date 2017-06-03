@@ -24,4 +24,3 @@ getCtryNlDataFname(ctryCode)
  #returns name of the ctry data file
 
 }
-

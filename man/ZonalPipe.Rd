@@ -32,4 +32,3 @@ Create a zonal file if it does not exist and calculate the zonal stats by callin
     myZonal function. Modified from 
     \url{http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/}
 }
-

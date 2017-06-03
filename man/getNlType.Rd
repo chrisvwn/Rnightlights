@@ -4,7 +4,7 @@
 \alias{getNlType}
 \title{Check if a month number is valid for a given nightlight type}
 \usage{
-getNlType(nlYear)
+getNlType(nlPeriod)
 }
 \arguments{
 \item{monthNum}{the month in "MM" format e.g. Jan="01", Feb="02"}
@@ -29,4 +29,3 @@ validNlMonthNum("01","OLS")
  returns FALSE
 
 }
-

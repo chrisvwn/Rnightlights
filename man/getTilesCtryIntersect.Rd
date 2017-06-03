@@ -28,4 +28,3 @@ mapCtryPolyToTiles(omitCountries=c("error", "missing")) will not omit countries 
 on GADM
 
 }
-

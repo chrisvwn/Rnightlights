@@ -14,4 +14,3 @@ Initialize some important variables and create directory structure
  initNtLts()
 
 }
-

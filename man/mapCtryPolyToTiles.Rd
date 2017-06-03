@@ -8,19 +8,23 @@ mapCtryPolyToTiles(ctryCodes = "all",
   omitCountries = pkg_option("omitCountries"))
 }
 \arguments{
-\item{ctryCodes}{A character vector or list of countries to map. Default is \code{"all"}}
+\item{ctryCodes}{A character vector or list of countries to map. Default 
+is \code{"all"}}
 
-\item{omitCountries}{A character vector or list of countries to leave out. Default is \code{"none"}}
+\item{omitCountries}{A character vector or list of countries to leave out.
+Default is \code{"none"}}
 }
 \value{
-ctryCodeTiles A data frame of countries and the tiles they intersect with as give by getNlTiles()
+ctryCodeTiles A data frame of countries and the tiles they 
+    intersect with as give by getNlTiles()
 }
 \description{
-Create a dataframe mapping each country in the rworldmap to the VIIRS tiles which they intersect with
-    and thus need to be retrieved to process their nightlight imagery. Since some functions use this
-    dataframe for long-term processing, omitCountries can eliminate countries that should be excluded
-    from the list hence from processing. Countries can be added in the omitCountries function.
-    Default is "none".
+Create a dataframe mapping each country in the rworldmap to the VIIRS
+    tiles which they intersect with and thus need to be retrieved to 
+    process their nightlight imagery. Since some functions use this
+    dataframe for long-term processing, omitCountries can eliminate 
+    countries that should be excluded from the list hence from processing. 
+    Countries can be added in the omitCountries function. Default is "none".
 }
 \examples{
 mapCtryPolyToTiles() map all countries
@@ -31,4 +35,3 @@ mapCtryPolyToTiles(omitCountries=c("error", "missing")) will not omit countries 
 on GADM
 
 }
-

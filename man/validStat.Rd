@@ -21,4 +21,3 @@ validStat("sum")
  returns TRUE
 
 }
-

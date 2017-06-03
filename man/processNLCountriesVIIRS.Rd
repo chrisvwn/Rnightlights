@@ -22,4 +22,3 @@ Check if a month number is valid for a given nightlight type. Note month num is 
 processNLCountriesVIIRS(ctryCodes, nlYearMonth)
 
 }
-

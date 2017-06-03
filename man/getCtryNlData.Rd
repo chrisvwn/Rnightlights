@@ -4,13 +4,11 @@
 \alias{getCtryNlData}
 \title{Returns VIIRS nightlight data for the given ctryCode in the given year months}
 \usage{
-getCtryNlData(ctryCode, nlYearMonths, stats = pkgOptions("stats"), nlType,
+getCtryNlData(ctryCode, nlPeriods, stats = pkgOptions("stats"), nlType,
   ignoreMissing = NULL, source = "local")
 }
 \arguments{
 \item{ctryCode}{the ISO3 code of the country. Only 1 country can be processed at a time}
-
-\item{nlYearMonths}{a vector of yearMonths}
 
 \item{stats}{a vector of stats. if not supplied defaults to all stats as listed in pkgOptions("stats")}
 
@@ -24,9 +22,11 @@ found in the data file
        and all stats provided otherwise return NULL
     \item TRUE return any partial data that is found for the provided 
        nlYearMonths and stats. Ignore any missing data
-    \item FALSE return all data that is found and call \code{processNtLts}
+    \item FALSE return all data that is found and call \code{processNlData}
        to download and process any missing nlYearMonths and stats
 }}
+
+\item{nlYearMonths}{a vector of yearMonths}
 }
 \value{
 dataframe of data for one country in one or multiple yearmonths
@@ -41,7 +41,7 @@ Returns VIIRS nightlight data for the given ctryCode and stats in the given
            and all stats provided otherwise return NULL
         \item TRUE return any partial data that is found for the provided 
            nlYearMonths and stats. Ignore any missing data
-        \item FALSE return all data that is found and call \code{processNtLts}
+        \item FALSE return all data that is found and call \code{processNlData}
            to download and process any missing nlYearMonths and stats
     }
    
@@ -77,9 +77,8 @@ getCtryNlData("KEN", nlYearMonths=c("existingNlYearMonth", "missingNlYearMonth),
  
 getCtryNlData("KEN", nlYearMonths=c("existingNlYearMonth", "missingNlYearMonth),
 stats=c("existingStat", "missingStat"), ignoreMissing=FALSE)
- #Runs processNtLts for missingStat in missingNlYearMonth and returns
+ #Runs processNlData for missingStat in missingNlYearMonth and returns
  #existingStat and missingStat for both existingNlYearMonth and missingNlYearMonth
  #(ignoreMissing==FALSE must return all data: forces processing of any missing)
  
 }
-

@@ -21,4 +21,3 @@ ctryPoly <- rgdal::readOGR(getPolyFnamePath("KEN"), getCtryShpLyrName("KEN",0))
 tileList <- tilesPolygonIntersect(ctryPoly)
 
 }
-

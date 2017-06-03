@@ -16,4 +16,3 @@ Creates a Spatial Polygons DataFrame from the \code{"nlTiles"} dataframe of VIIR
   tilesSpPolysDFs <- createNlTilesSpPolysDF()
 
 }
-

@@ -29,4 +29,3 @@ validNlMonthNum("01","OLS")
  returns FALSE
 
 }
-

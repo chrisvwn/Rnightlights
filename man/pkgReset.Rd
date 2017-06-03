@@ -9,4 +9,3 @@ pkgReset()
 \description{
 Reset global options for the Rnightlights package
 }
-

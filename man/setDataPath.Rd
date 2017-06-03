@@ -4,7 +4,7 @@
 \alias{setDataPath}
 \title{Sets the root path to the package data directory}
 \usage{
-setDataPath(dataPath, newDataPath)
+setDataPath(dataPath)
 }
 \arguments{
 \item{path}{The path}
@@ -18,6 +18,5 @@ Returns (invisibly) the old root path.
 By default, this function will set the root path to \code{~/.Rnightlights/}.
 }
 \examples{
-  
-}
 
+}

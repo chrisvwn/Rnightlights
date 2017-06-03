@@ -21,4 +21,3 @@ Convert a country ISO3 code to the full name. Exposes the rworldmap function
 ctryCodeToName("KEN")
 
 }
-

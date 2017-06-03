@@ -21,4 +21,3 @@ ctryDF <- read.csv(getCtryNlDataFnamePath("KEN"))
 
 #@export only due to exploreData() shiny app
 }
-

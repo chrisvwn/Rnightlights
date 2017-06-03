@@ -26,4 +26,3 @@ getAllNlYearMonthsTiles(c("201201", "201202", "201205"), tileName2Idx(getCtryCod
 #returns TRUE if ALL downloads were successful
 
 }
-

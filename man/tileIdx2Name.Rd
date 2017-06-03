@@ -19,4 +19,3 @@ Get the name of a VIIRS tile as given by getNlTiles() given its index
 tileIdx <- tileName2Idx("00N060W")
 
 }
-

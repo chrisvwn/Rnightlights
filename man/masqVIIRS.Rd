@@ -28,4 +28,3 @@ ctryRaster <- raster::raster('path/to/raster.tif')
 sumPolygon1 <- sum(masqVIIRS(ctryPoly, ctryRaster, 1), na.rm=T)
 
 }
-

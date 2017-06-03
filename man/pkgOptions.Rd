@@ -32,6 +32,7 @@ The following options are supported
  \item{\code{omitCountries}}{(\code{character}) The countries to exclude in processing }
 }
 }
+
 \examples{
 pkgOptions("cropMaskMethod")
 
@@ -40,4 +41,3 @@ pkgOptions()
 pkgOptions("cropMaskMethod"="gdal")
 
 }
-

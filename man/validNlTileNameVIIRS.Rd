@@ -25,8 +25,7 @@ validNlTileNameVIIRS("00N060W","VIIRS")
 validNlTileNameVIIRS("9","VIIRS")
  returns FALSE
 
-validNlMonthName("","OLS")
+validNlTileNameVIIRS("","OLS")
  returns FALSE
 
 }
-

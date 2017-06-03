@@ -23,4 +23,3 @@ ctryNameToCode("ken")
   #returns "KEN"
 
 }
-

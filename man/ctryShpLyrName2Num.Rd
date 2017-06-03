@@ -20,4 +20,3 @@ ctryShpLyrName2Num("KEN_adm1")
   #returns 1
 
 }
-

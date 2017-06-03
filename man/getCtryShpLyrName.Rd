@@ -24,4 +24,3 @@ lyrName <- getCtryShpLyrName("KEN","0")) #top layer name
 
 #@export only due to exploreData() shiny app
 }
-

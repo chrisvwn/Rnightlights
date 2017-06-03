@@ -4,15 +4,15 @@
 \alias{getCtryNlDataColName}
 \title{Construct the name of a nightlight data column given the nightlight type and yearMonth}
 \usage{
-getCtryNlDataColName(nlYearMonth, stat, nlType = "VIIRS")
+getCtryNlDataColName(nlPeriod, stat, nlType)
 }
 \arguments{
-\item{nlYearMonth}{character vector. the yearMonth (concat year + month) in the format 
-"YYYYMM" e.g. "201203"}
-
 \item{stat}{}
 
 \item{nlType}{character vector. the type of nightlight i.e. "OLS" or VIIRS. Default=VIIRS}
+
+\item{nlYearMonth}{character vector. the yearMonth (concat year + month) in the format 
+"YYYYMM" e.g. "201203"}
 }
 \value{
 character string
@@ -24,7 +24,6 @@ Construct the name of a nightlight data column given the nightlight type and yea
 \examples{
 ctryCode <- "KEN"
 dt <- read.csv(getCtryNlDataFnamePath(ctryCode))
-dt <- dt[,getCtryNlDataColName("201612", nlType="VIIRS")]
-
+dt <- dt[,getCtryNlDataColName("201612", "sum", nlType="VIIRS")]
+  #returns the column "NL_201612_SUM" if it exists in the KEN data file
 }
-

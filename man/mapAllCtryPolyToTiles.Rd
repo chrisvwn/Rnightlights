@@ -23,4 +23,3 @@ mapAllCtryPolyToTiles(omitCountries="none") no countries omitted
 mapAllCtryPolyToTiles(omitCountries=c("error", "long")) will not omit countries that take long to process
 
 }
-

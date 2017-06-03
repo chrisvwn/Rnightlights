@@ -23,4 +23,3 @@ validNlMonthNum("01","VIIRS")
  returns TRUE
 
 }
-

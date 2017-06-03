@@ -21,4 +21,3 @@ Check if a year is valid for a given nightlight type
 validNlYearNum("2014","VIIRS")
 
 }
-

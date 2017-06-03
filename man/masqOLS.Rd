@@ -17,11 +17,11 @@ masqOLS(shp, rast, i)
 numeric vector of radiances
 }
 \description{
-Download VIIRS nightlight tile
+Extract raster pixel values within the boundaries of a polygon
 }
 \examples{
 ctryPoly <- readOGR(getPolyFnamePath("KEN"), getCtryShpLyrName("KEN", 1))
-ctryRaster <- raster(getCtryRasterOutputFname("KEN", "1999"))
+ctryRaster <- raster(getCtryRasterOutputFname("KEN", "OLS", "1999"))
 temp <- NULL
 KenAdm1Sum <- NULL
 for (i in 1:5)#length(ctryPoly@polygons))
@@ -33,4 +33,3 @@ for (i in 1:5)#length(ctryPoly@polygons))
 }
 
 }
-

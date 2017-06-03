@@ -18,4 +18,3 @@ Creates a data.frame mapping VIIRS nightlight tile names to their vertice coordi
 getNlTiles()
 
 }
-

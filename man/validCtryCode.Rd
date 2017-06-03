@@ -24,4 +24,3 @@ validNlCtryCode("UAE")
  #returns FALSE. "United Arab Emirates" ISO3 code = "ARE"
 
 }
-

@@ -4,8 +4,9 @@
 \alias{processNLCountryVIIRS}
 \title{Processes nightlights for an individual country in a particular year month}
 \usage{
-processNLCountryVIIRS(ctryCode, nlYearMonth, cropMaskMethod = "rast",
-  extractMethod = "rast", fnStats = stats)
+processNLCountryVIIRS(ctryCode, nlYearMonth,
+  cropMaskMethod = pkgOptions("cropMaskMethod"),
+  extractMethod = pkgOptions("extractMethod"), fnStats = stats)
 }
 \arguments{
 \item{ctryCode}{}
@@ -44,14 +45,13 @@ Processing consists of:
     }
 
 NOTE: \code{processNLCountryVIIRS()} assumes that all inputs are available and will not 
-    attempt to download them. It should ideally be called from the function \code{processNtLts()}
-    which does all the preparation for processing. \code{processNtLts()} which can process 
+    attempt to download them. It should ideally be called from the function \code{processNlData()}
+    which does all the preparation for processing. \code{processNlData()} which can process 
     multiple countries and time periods will download all the required tiles and polygons prior to
     calling \code{processNLCountryVIIRS()}. \code{getCtryNlData} can also be used with the option
-    \code{ignoreMissing=FALSE} which will call \code{processNtLts} in the background.
+    \code{ignoreMissing=FALSE} which will call \code{processNlData} in the background.
 }
 \examples{
 processNLCountryVIIRS(c("KEN"), c("201204"))
 
 }
-

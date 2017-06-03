@@ -26,4 +26,3 @@ validNlTileNumVIIRS("9")
  returns FALSE
 
 }
-

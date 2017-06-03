@@ -21,4 +21,3 @@ initCtryNlData <- createCtryNlDataDF("KEN")
  #returns a data frame
 
 }
-

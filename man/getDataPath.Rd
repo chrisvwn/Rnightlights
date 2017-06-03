@@ -26,4 +26,3 @@ Gets the root path to the file directory"
 To set the directory where package data files are stored,
     see @see "setDataPath".
 }
-

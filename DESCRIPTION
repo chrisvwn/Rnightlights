@@ -19,6 +19,7 @@ Imports:
     readr,
     rgdal,
     rgeos,
+    rvest,
     rworldmap,
     settings,
     sp
@@ -36,5 +37,6 @@ Remotes:
 SystemRequirements:
     gdal
     wget
+    curl
     aria2
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1

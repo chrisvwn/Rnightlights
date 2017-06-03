@@ -2,7 +2,7 @@
 % Please edit documentation in R/nightlights.R
 \name{validNlYearMonthVIIRS}
 \alias{validNlYearMonthVIIRS}
-\title{Check if a VIIRS yearmonth is valid}
+\title{Check if a VIIRS nlYearMonth is valid}
 \usage{
 validNlYearMonthVIIRS(nlYearMonth)
 }
@@ -13,7 +13,7 @@ validNlYearMonthVIIRS(nlYearMonth)
 TRUE/FALSE
 }
 \description{
-Check if a VIIRS yearmonth is valid Note this function is only valid for the "VIIRS" nightlight type
+Check if a VIIRS nlYearMonth is valid Note this function is only valid for the "VIIRS" nightlight type
 }
 \examples{
 validNlYearMonthVIIRS("201512")
@@ -26,4 +26,3 @@ validNlYearMonthVIIRS("201201")
  returns FALSE #VIIRS starts in "201204"
 
 }
-

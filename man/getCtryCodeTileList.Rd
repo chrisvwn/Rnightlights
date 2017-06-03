@@ -29,4 +29,3 @@ getCtryCodeTileList(ctryCodes=c("BUR", "KEN", "RWA", "UGA", "TZA"), omitCountrie
 getCtryCodeTileList(ctryCodes="all", omitCountries="long")
 
 }
-

@@ -24,4 +24,3 @@ getCtryPolyUrl(ctryCode)
  #returns url for the zipped country ESRI shapefile
 
 }
-

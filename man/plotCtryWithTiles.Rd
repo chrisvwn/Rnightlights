@@ -29,4 +29,3 @@ plotCtryWithTiles(85)
 plotCtryWithTiles("85")
 
 }
-

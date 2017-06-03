@@ -16,4 +16,3 @@ Run a web application to perform some exploratory data analysis. The application
 runApplication()
 
 }
-

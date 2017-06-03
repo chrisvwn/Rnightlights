@@ -4,8 +4,7 @@
 \alias{insertNlDataCol}
 \title{Insert an aggregate nightlight data column in a country nightlights dataframe}
 \usage{
-insertNlDataCol(ctryNlDataDF, dataCol, statType, nlYearMonth,
-  nlType = "VIIRS")
+insertNlDataCol(ctryNlDataDF, dataCol, statType, nlPeriod, nlType)
 }
 \arguments{
 \item{ctryNlDataDF}{dataframe with the country data to save}
@@ -14,9 +13,9 @@ insertNlDataCol(ctryNlDataDF, dataCol, statType, nlYearMonth,
 
 \item{statType}{the stat which produced the dataCol vector}
 
-\item{nlYearMonth}{the yearmonth that the dataCol belongs to}
-
 \item{nlType}{the type of nightlight data i.e. "OLS" or "VIIRS"}
+
+\item{nlYearMonth}{the yearmonth that the dataCol belongs to}
 }
 \value{
 Character full path to the cropped VIIRS country raster for a country and a given year and month
@@ -30,4 +29,3 @@ Insert an aggregate nightlight data column in a country nightlights dataframe. T
 ctryNlDataDF <- insertNlDataCol(ctryNlDataDF, dataCol, "sum", "201209", "VIIRS")
 
 }
-

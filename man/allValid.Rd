@@ -4,7 +4,7 @@
 \alias{allValid}
 \title{Check if a vector/list of values given is valid as per the given validation function}
 \usage{
-allValid(testData, testFun)
+allValid(testData, testFun, ...)
 }
 \arguments{
 \item{testData}{the list/vector of values to validate}
@@ -27,4 +27,3 @@ allValid(ctryCodes, validCtryCode)
  returns TRUE
 
 }
-
