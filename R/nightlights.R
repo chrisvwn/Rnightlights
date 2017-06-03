@@ -4437,7 +4437,7 @@ ZonalPipe <- function (ctryCode, ctryPoly, path.in.shp, path.in.r, path.out.r, p
     lowestLyrName <- getCtryShpLowestLyrName(ctryCode)
     lowestIDCol <- paste0("ID_", gsub("[^[:digit:]]", "", lowestLyrName))
     
-    temprast <- file.path(getNlDir("dirZonals"), "temprast.tif")
+    tempRast <- file.path(getNlDir("dirZonals"), "temprast.tif")
     
     #Gdal_rasterize
     message("Creating zonal raster")
@@ -4450,14 +4450,14 @@ ZonalPipe <- function (ctryCode, ctryPoly, path.in.shp, path.in.r, path.out.r, p
     command<-paste(command, "-tr", res) #(GDAL >= 1.8.0) set target resolution. The values must be expressed in georeferenced units. Both must be positive values.
     #command<-paste(command, "-a_nodata", 0)
     command<-paste(command, path.in.shp)
-    command<-paste(command, "temprast.tif")
+    command<-paste(command, tempRast)
     
     system(command)
     
     message("Compressing zonal raster")
-    gdalUtils::gdal_translate(co = "compress=LZW", src_dataset = "temprast.tif", dst_dataset = path.out.r)
+    gdalUtils::gdal_translate(co = "compress=LZW", src_dataset = tempRast, dst_dataset = path.out.r)
     
-    file.remove("temprast.tif")
+    file.remove(tempRast)
   }
   
   if(file.exists(path.out.r))
