@@ -813,7 +813,7 @@ getNlUrlVIIRS <- function(nlYearMonth, tileNum)
   ntLtsIndexUrlVIIRS <- pkgOptions("ntLtsIndexUrlVIIRS")
   
   #the local name of the file once downloaded
-  ntLtsPageLocalName <- file.path(getNlDir("dataPath"),"ntltspageviirs.html")
+  ntLtsPageLocalName <- file.path(getDataPath(),"ntltspageviirs.html")
   
   #if the file does not exist or is older than a week download it afresh
   if (!file.exists(ntLtsPageLocalName) || (lubridate::date(lubridate::now()) - lubridate::date(file.mtime(ntLtsPageLocalName)) > lubridate::as.difftime(lubridate::period("1 day"))) || file.size(ntLtsPageLocalName) == 0)
@@ -12412,7 +12412,7 @@ getNlUrlOLS <- function(nlYear)
   ntLtsPageHtml <- "https://www.ngdc.noaa.gov/eog/dmsp/downloadV4composites.html"
   
   #the local name of the file once downloaded
-  ntLtsPageLocalName <- file.path(getNlDir("dataPath"), "ntltspageols.html")
+  ntLtsPageLocalName <- file.path(getDataPath(), "ntltspageols.html")
   
   #if the file does not exist or is older than a day download it afresh
   #not working. download.file does not seem to update mtime
