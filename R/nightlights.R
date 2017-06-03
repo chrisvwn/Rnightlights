@@ -438,7 +438,7 @@ plotCtryWithTiles <- function(idx)
   extents <- as(e, 'SpatialLines')
   
   #get a list of the intersecting tiles. Used to highlight tiles which intersect with plotted country
-  tilesIntersected <- tileName2Idx(getTilesCtryIntersect(map@data$ISO3[[idx]]))
+  tilesIntersected <- tileName2Idx(tileName = getTilesCtryIntersect(map@data$ISO3[[idx]]), nlType=nlType)
   
   #create a list which serves as a subtitle showing the mapping of tile index to tile name
   tileIdxNames <- paste(tilesSpPolysDFs@data$z, tilesSpPolysDFs@data$name, sep = "=")
@@ -662,7 +662,7 @@ validNlTileNameVIIRS <- function(tileName)
   if(!is.character(tileName) || is.null(tileName) || is.na(tileName) || tileName == "")
     stop("Invalid tileName: ", tileName)
   
-  if(length(tileName2Idx(tileName)) != 0)
+  if(length(tileName2Idx(tileName, "VIIRS")) != 0)
     return(TRUE)
   else
     return(FALSE)
@@ -679,20 +679,32 @@ validNlTileNameVIIRS <- function(tileName)
 #' @return Integer index of the tile
 #'
 #' @examples
-#' tileIdx <- tileName2Idx("00N060W")
+#' tileIdx <- tileName2Idx("00N060W", "VIIRS")
 #'
-tileName2Idx <- function(tileName)
+tileName2Idx <- function(tileName, nlType)
 {
   if (missing(tileName))
     stop("Missing required parameter tileName")
   
+  if (missing(nlType))
+    stop("Missing required parameter nlType")
+  
   if(!is.character(tileName) || is.null(tileName) || is.na(tileName) || tileName == "")
     stop("Invalid tileName: ", tileName)
   
-  if (!existsNlTiles())
-    nlTiles <- getNlTiles()
+  if(nlType == "OLS")
+  {
+    return("DEFAULT")
+  } 
+  else if(nlType == "VIIRS")
+  {
+    if (!existsNlTiles())
+      nlTiles <- getNlTiles()
+    
+    return (which(nlTiles$name %in% tileName))
+  }
   
-  return (which(nlTiles$name %in% tileName))
+  return(NA)
 }
 
 ######################## tileIdx2Name ###################################
@@ -706,7 +718,7 @@ tileName2Idx <- function(tileName)
 #' @return Character name of the tile
 #'
 #' @examples
-#' tileIdx <- tileName2Idx("00N060W")
+#' tileIdx <- tileName2Idx("00N060W", "VIIRS")
 #'
 tileIdx2Name <- function(tileNum)
 {
@@ -1867,296 +1879,6 @@ ctryCodeToName <- function(ctryCode)
   return(rworldmap::isoToName(ctryCode))
 }
 
-######################## ctryPolyLyrNames : TO DELETE ###################################
-
-#' Check if a month number is valid for a given nightlight type
-#'
-#' Check if a month number is valid for a given nightlight type. Note month num is only valid for
-#' "VIIRS" nightlight type
-#'
-#' @param monthNum the month in "MM" format e.g. Jan="01", Feb="02"
-#'
-#' @param nlType type of nightlight either "VIIRS" or "OLS"
-#'
-#' @return TRUE/FALSE
-#'
-#' @examples
-#' validNlMonthNum("01","VIIRS")
-#'  returns TRUE
-#'
-#' validNlMonthNum("13","VIIRS")
-#'  returns FALSE
-#'
-#' validNlMonthNum("01","OLS")
-#'  returns FALSE
-#'
-ctryPolyLyrNames <- function (nLyrs)
-{
-  if(missing(nLyrs))
-    stop("Missing required parameter nLyrs")
-  
-  if(is.null(nLyrs) || is.na(nLyrs) || nLyrs < 1 || !is.numeric(nLyrs) || is.na(as.numeric(nLyrs)))
-    stop("Invalid value for nLyrs: ", nLyrs)
-  
-  #the repeat pattern required to create columns in the format 1,1,2,2,3,3 ...
-  #for col names: admlevel1_id, admlevel1_name, ..., admleveN_id, admlevelN_name
-  #and polygon data col names: ID_1, NAME_1, ..., ID_N, NAME_N
-  nums <- c(paste(1:nLyrs,1:nLyrs))
-  
-  nums <- utils::unlist(strsplit(paste(nums, collapse = " "), " "))
-  
-  return(paste(c("ID_", "NAME_"), nums, sep=""))
-}
-
-######################## ctryPolyAdmColNames : TO DELETE ###################################
-
-#' Check if a month number is valid for a given nightlight type
-#'
-#' Check if a month number is valid for a given nightlight type. Note month num is only valid for
-#' "VIIRS" nightlight type
-#'
-#' @param monthNum the month in "MM" format e.g. Jan="01", Feb="02"
-#'
-#' @param nlType type of nightlight either "VIIRS" or "OLS"
-#'
-#' @return TRUE/FALSE
-#'
-#' @examples
-#' validNlMonthNum("01","VIIRS")
-#'  returns TRUE
-#'
-#' validNlMonthNum("13","VIIRS")
-#'  returns FALSE
-#'
-#' validNlMonthNum("01","OLS")
-#'  returns FALSE
-#'
-ctryPolyAdmColNames <- function (ctryPolyAdmLevels, nLyrs)
-{
-  
-  #the repeat pattern required to create columns in the format 1,1,2,2,3,3 ...
-  #for col names: admlevel1_id, admlevel1_name, ..., admleveN_id, admlevelN_name
-  #and polygon data col names: ID_1, NAME_1, ..., ID_N, NAME_N
-  nums <- c(paste(1:nLyrs,1:nLyrs))
-  
-  nums <- unlist(strsplit(paste(nums, collapse = " "), " "))
-  
-  return(paste(ctryPolyAdmLevels[nums, "name"], c("_id", "_name"), sep=""))
-}
-
-######################## processNLCountryOLS ###################################
-
-#' Check if a month number is valid for a given nightlight type
-#'
-#' Check if a month number is valid for a given nightlight type. Note month num is only valid for
-#' "VIIRS" nightlight type
-#'
-#' @param monthNum the month in "MM" format e.g. Jan="01", Feb="02"
-#'
-#' @param nlType type of nightlight either "VIIRS" or "OLS"
-#'
-#' @return TRUE/FALSE
-#'
-#' @examples
-#' validNlMonthNum("01","VIIRS")
-#'  returns TRUE
-#'
-#' validNlMonthNum("13","VIIRS")
-#'  returns FALSE
-#'
-#' validNlMonthNum("01","OLS")
-#'  returns FALSE
-#'
-processNLCountryOLS <- function(ctryCode, nlYear, cropMaskMethod=pkgOptions("cropMaskMethod"), extractMethod=pkgOptions("extractMethod"), fnStats=pkgOptions("stats"))
-{
-  if(missing(ctryCode))
-    stop("Missing required parameter ctryCode")
-  
-  if(missing(nlYear))
-    stop("Missing required parameter nlYear")
-  
-  if(!validCtryCode(ctryCode))
-    stop("Invalid ctryCode: ", ctryCode)
-  
-  if(!validNlYearOLS(nlYear))
-    stop("Invalid nlYear: ", nlYear)
-  
-  message("processNLCountryOLS: ", ctryCode, " ", nlYear)
-  
-  message("Check for existing data file")
-  
-  if (existsCtryNlDataFile(ctryCode))
-  {
-    message("Data file found: ", getCtryNlDataFnamePath(ctryCode))
-    
-    if(all(sapply(fnStats, function(stat) existsCtryNlData(ctryCode, nlYear, stat, "OLS"))))
-    {
-      message("All stats data exists for ", ctryCode, " ", nlYear, ". Skipping")
-      
-      return(-1)
-    }
-    
-    message("Load country data file")
-    ctryNlDataDF <- utils::read.csv(getCtryNlDataFnamePath(ctryCode))
-    
-    message("Load country polygon lowest admin level")
-    ctryPoly <- rgdal::readOGR(path.expand(getPolyFnamePath(ctryCode)), getCtryShpLowestLyrName(ctryCode))
-    
-    ctryExtent <- raster::extent(ctryPoly)
-    
-    raster::projection(ctryPoly) <- sp::CRS(wgs84)
-    
-  } else
-  {
-    message("Data file not found. Creating ...")
-    
-    ctryNlDataDF <- createCtryNlDataDF(ctryCode)
-    
-    message("Data file not found. Creating ... DONE")
-    
-    message("Load country polygon lowest admin level")
-    
-    ctryPoly <- rgdal::readOGR(path.expand(getPolyFnamePath(ctryCode)), getCtryShpLowestLyrName(ctryCode))
-  }
-  
-  if(!file.exists(getCtryRasterOutputFname(ctryCode = ctryCode, nlPeriod = nlYear, nlType = "OLS")))
-  {
-    message("Begin processing ", nlYear, " ", base::date())
-    
-    message("Reading in the rasters " , base::date())
-    
-    ctryRastCropped <- NULL
-    
-    rastFilename <- getNlTileTifLclNamePathOLS(nlYear)
-    
-    rastTile <- raster::raster(rastFilename)
-    
-    raster::projection(rastTile) <- sp::CRS(wgs84)
-    
-    message("Cropping the rasters", base::date())
-    
-    #extTempCrop <- crop(rastTile, ctryExtent)
-    
-    tempCrop <- raster::crop(rastTile, ctryPoly)
-    
-    if(is.null(ctryRastCropped))
-    {
-      ctryRastCropped <- tempCrop
-      
-      #ctryExtCropped <- extTempCrop
-    }
-    else
-    {
-      ctryRastMerged <- ctryRastCropped
-      
-      ctryRastCropped <- NULL
-      
-      ctryRastCropped <- raster::merge(ctryRastMerged, tempCrop)
-      
-      rm(ctryRastMerged)
-    }
-    
-    rm(tempCrop)
-    
-    rm(rastTile)
-    
-    gc()
-    
-    message("Masking the merged raster ", base::date())
-    
-    if (cropMaskMethod == "rast")
-    {
-      
-      #RASTERIZE
-      message("Crop and mask using rasterize ", base::date())
-      ctryRastCropped <- raster::rasterize(ctryPoly, ctryRastCropped, mask=TRUE) #crops to polygon edge & converts to raster
-      
-      message("Writing the merged raster to disk ", base::date())
-      
-      raster::writeRaster(x = ctryRastCropped, filename = getCtryRasterOutputFname(ctryCode, "OLS", nlYear), overwrite=TRUE)
-      
-      message("Crop and mask using rasterize ... Done", base::date())
-    }
-    else if (cropMaskMethod == "gdal")
-    {
-      message("Crop and mask using gdalwarp ... ", base::date())
-      
-      #GDALWARP
-      rstTmp <- paste0(tempfile(), ".tif")
-      
-      message("Writing merged raster to disk for gdal")
-      
-      raster::writeRaster(ctryRastCropped, rstTmp)
-      
-      output_file_vrt <- file.path(getDataPath(), paste0(ctryCode, "_", nlYear, ".vrt"))
-      
-      if (file.exists(output_file_vrt))
-        file.remove(output_file_vrt)
-      
-      message("gdalwarp ",base::date())
-      
-      gdalUtils::gdalwarp(srcfile=rstTmp, dstfile=output_file_vrt, s_srs=wgs84, t_srs=wgs84, cutline=getPolyFnamePath(ctryCode), cl= getCtryShpLyrName(ctryCode,0), multi=TRUE, wm=2048, wo="NUM_THREADS=ALL_CPUS")
-      
-      message("gdal_translate ", base::date())
-      gdalUtils::gdal_translate(co = "compress=LZW", src_dataset = output_file_vrt, dst_dataset = getCtryRasterOutputFname(ctryCode, "OLS", nlYear))
-      
-      message("Deleting the component rasters ", base::date())
-      
-      file.remove(rstTmp)
-      file.remove(output_file_vrt)
-      
-      ctryRastCropped <- raster::raster(getCtryRasterOutputFname(ctryCode, "OLS", nlYear))
-      #GDALWARP
-      message("Crop and mask using gdalwarp ... DONE", base::date())
-    }
-  }
-  else
-  {
-    rastFilename <- getCtryRasterOutputFname(ctryCode, "OLS", nlYear)
-    
-    ctryRastCropped <- raster::raster(rastFilename)
-    
-    raster::projection(ctryRastCropped) <- sp::CRS(wgs84)
-  }
-  
-  message("Create web version of raster", base::date())
-  
-  #attempting to obtain QGIS display style grayscale stretch minmax of 2%-98% of values
-  #message("calculating quantile 2 and 98 ", base::date())
-  #system.time(qnts <- sapply(1:1000,FUN =  function(x) quantile(sampleRandom(ctryRastCropped,100), c(0.02,0.98)),simplify = T))
-  
-  #qnt2 <- mean(qnts[1,])
-  #qnt98 <- mean(qnts[2,])
-  
-  #cmd <- paste0("gdal_translate -co TILED=YES -co COMPRESS=JPEG -ot Byte -scale ", qnt2, " ", qnt98," 0 255 ", getCtryRasterOutputFname(ctryCode,nlYearMonth), " ", dirRasterWeb, "/", ctryCode, "_", nlYearMonth, "_JPEG.tif")
-  
-  #message("Create web raster ", base::date())
-  #system(cmd)
-  
-  message("Begin extracting the data from the merged raster ", base::date())
-  
-  if (extractMethod == "rast")
-    sumAvgRad <- fnAggRadRast(ctryPoly, ctryRastCropped, fnStats, "OLS")
-  else if (extractMethod == "gdal")
-    sumAvgRad <- fnAggRadGdal(ctryCode, ctryPoly, nlYear, fnStats, "OLS")
-  
-  for(stat in fnStats)
-    ctryNlDataDF <- insertNlDataCol(ctryNlDataDF, sumAvgRad[,stat], stat, nlYear, nlType = "OLS")
-  
-  message("DONE processing ", ctryCode, " ", nlYear, " ", base::date())
-  
-  message("COMPLETE. Writing data to disk")
-  
-  #Write the country data dataframe to disk
-  saveCtryNlData(ctryNlDataDF, ctryCode)
-  
-  #release the cropped raster
-  rm (ctryRastCropped)
-  
-  #delete temporary raster files
-  raster::removeTmpFiles(h = 0)
-}
-
 ######################## createCtryNlDataDF ###################################
 
 #' Initiates the country nightlight dataframe with the country data read from the polygon
@@ -2242,41 +1964,6 @@ createCtryNlDataDF <- function(ctryCode)
   return(ctryNlDataDF)
 }
 
-######################## processNLCountriesVIIRS : TO DELETE ###################################
-
-#' Check if a month number is valid for a given nightlight type
-#'
-#' Check if a month number is valid for a given nightlight type. Note month num is only valid for
-#' "VIIRS" nightlight type
-#'
-#' @param monthNum the month in "MM" format e.g. Jan="01", Feb="02"
-#'
-#' @param nlType type of nightlight either "VIIRS" or "OLS"
-#'
-#' @return TRUE/FALSE
-#'
-#' @examples
-#' processNLCountriesVIIRS(ctryCodes, nlYearMonth)
-#'
-processNLCountriesVIIRS <- function(ctryCodes, nlYearMonth)
-{
-  if(missing(ctryCodes))
-    stop("Missing required parameter ctryCode")
-  
-  if(missing(nlYearMonth))
-    stop("Missing required parameter nlYearMonth")
-  
-  if(!allValid(ctryCodes, validCtryCode))
-    stop("Invalid ctryCode detected")
-  
-  if(!validNlYearMonthVIIRS(nlYearMonth))
-    stop("Invalid nlYearMonth: ", nlYearMonth)
-  for (nlCtryCode in nlCtryCodes)
-  {
-    processNLCountryVIIRS(ctryCode, nlYearMonth)
-  }
-}
-
 ######################## ctryShpLyrName2Num ###################################
 
 #' Get the integer number of the layer. topmost country layer=0
@@ -2348,35 +2035,37 @@ ctryShpLyrName2Num <- function(layerName)
 #' @examples
 #' processNLCountryVIIRS(c("KEN"), c("201204"))
 #'
-processNLCountryVIIRS <- function(ctryCode, nlYearMonth, cropMaskMethod=pkgOptions("cropMaskMethod"), extractMethod=pkgOptions("extractMethod"), fnStats=stats)
+processNLCountry <- function(ctryCode, nlPeriod, nlType, cropMaskMethod=pkgOptions("cropMaskMethod"), extractMethod=pkgOptions("extractMethod"), fnStats=stats)
 {
   if(missing(ctryCode))
     stop("Missing required parameter ctryCode")
   
-  if(missing(nlYearMonth))
+  if(missing(nlPeriod))
     stop("Missing required parameter nlYearMonth")
+  
+  if(missing(nlType))
+    stop("Missing required parameter nlType")
   
   if(!validCtryCode(ctryCode))
     stop("Invalid ctryCode: ", ctryCode)
   
-  if(!validNlYearMonthVIIRS(nlYearMonth))
-    stop("Invalid nlYearMonth: ", nlYearMonth)
+  if(!validNlPeriod(nlPeriod, nlType))
+    stop("Invalid nlPeriod: ", nlPeriod, " for nlType ", nlType)
   
-  message("processNLCountryVIIRS: ", ctryCode, " ", nlYearMonth)
+  if(!validNlType(nlType))
+    stop("Invalid nlType: ", nlType)
   
-  nlYear <- substr(nlYearMonth, 1, 4)
-  
-  nlMonth <- substr(nlYearMonth, 5, 6)
-  
+  message("processNLCountry: ", ctryCode, " ", nlType, " ", nlPeriod)
+
   message("Check for existing data file")
   
   if (existsCtryNlDataFile(ctryCode))
   {
     message("Data file found: ", getCtryNlDataFnamePath(ctryCode))
     
-    if(all(sapply(fnStats, function(stat) existsCtryNlData(ctryCode, nlYearMonth, stat, "VIIRS"))))
+    if(all(sapply(fnStats, function(stat) existsCtryNlData(ctryCode, nlPeriod, stat, nlType))))
     {
-      message("All stats data exists for ", ctryCode, " ", nlYearMonth, ". Skipping")
+      message("All stats data exists for ", ctryCode, " ", nlPeriod, ". Skipping")
       
       return(-1)
     }
@@ -2404,19 +2093,19 @@ processNLCountryVIIRS <- function(ctryCode, nlYearMonth, cropMaskMethod=pkgOptio
     ctryPoly <- rgdal::readOGR(path.expand(getPolyFnamePath(ctryCode)), getCtryShpLowestLyrName(ctryCode))
   }
   
-  if(!file.exists(getCtryRasterOutputFname(ctryCode = ctryCode, nlPeriod = nlYearMonth, nlType = "VIIRS")))
+  if(!file.exists(getCtryRasterOutputFname(ctryCode = ctryCode, nlPeriod = nlPeriod, nlType = nlType)))
   {
-    message("Begin processing ", nlYearMonth, " ", base::date())
+    message("Begin processing ", nlPeriod, " ", base::date())
     
     message("Reading in the rasters " , base::date())
     
-    tileList <- getCtryTileList(ctryCode)
+    tileList <- getCtryTileList(ctryCode, nlType)
     
     ctryRastCropped <- NULL
     
     for (tile in tileList)
     {
-      rastFilename <- getNlTileTifLclNamePathVIIRS(nlYearMonth, tileName2Idx(tile))
+      rastFilename <- getNlTileTifLclNamePath(nlType, nlPeriod, tileName2Idx(tile, nlType))
       
       rastTile <- raster::raster(rastFilename)
       
@@ -2463,7 +2152,7 @@ processNLCountryVIIRS <- function(ctryCode, nlYearMonth, cropMaskMethod=pkgOptio
       
       message("Writing the merged raster to disk ", base::date())
       
-      raster::writeRaster(x = ctryRastCropped, filename = getCtryRasterOutputFname(ctryCode, "VIIRS", nlYearMonth), overwrite=TRUE)
+      raster::writeRaster(x = ctryRastCropped, filename = getCtryRasterOutputFname(ctryCode, nlType, nlYearMonth), overwrite=TRUE)
       
       message("Crop and mask using rasterize ... Done", base::date())
     }
@@ -2472,13 +2161,13 @@ processNLCountryVIIRS <- function(ctryCode, nlYearMonth, cropMaskMethod=pkgOptio
       message("Crop and mask using gdalwarp ... ", base::date())
       
       #GDALWARP
-      rstTmp <- paste0(tempfile(), ".tif")
+      rstTmp <- file.path(getNlDir("dirRasterVIIRS"), paste0(basename(tempfile()), ".tif"))
       
       message("Writing merged raster to disk for gdal")
       
       raster::writeRaster(ctryRastCropped, rstTmp)
       
-      output_file_vrt <- file.path(getDataPath(), paste0(ctryCode, "_", nlYearMonth, ".vrt"))
+      output_file_vrt <- file.path(getDataPath(), paste0(ctryCode, "_", nlType, "_", nlPeriod, ".vrt"))
       
       if (file.exists(output_file_vrt))
         file.remove(output_file_vrt)
@@ -2488,21 +2177,21 @@ processNLCountryVIIRS <- function(ctryCode, nlYearMonth, cropMaskMethod=pkgOptio
       gdalUtils::gdalwarp(srcfile=rstTmp, dstfile=output_file_vrt, s_srs=wgs84, t_srs=wgs84, cutline=getPolyFnamePath(ctryCode), cl= getCtryShpLyrName(ctryCode,0), multi=TRUE, wm=2048, wo="NUM_THREADS=ALL_CPUS")
       
       message("gdal_translate ", base::date())
-      gdalUtils::gdal_translate(co = "compress=LZW", src_dataset = output_file_vrt, dst_dataset = getCtryRasterOutputFname(ctryCode, "VIIRS", nlYearMonth))
+      gdalUtils::gdal_translate(co = "compress=LZW", src_dataset = output_file_vrt, dst_dataset = getCtryRasterOutputFname(ctryCode, nlType, nlPeriod))
       
       message("Deleting the component rasters ", base::date())
       
       file.remove(rstTmp)
       file.remove(output_file_vrt)
       
-      ctryRastCropped <- raster::raster(getCtryRasterOutputFname(ctryCode, "VIIRS", nlYearMonth))
+      ctryRastCropped <- raster::raster(getCtryRasterOutputFname(ctryCode, nlType, nlPeriod))
       #GDALWARP
       message("Crop and mask using gdalwarp ... DONE", base::date())
     }
   }
   else
   {
-    rastFilename <- getCtryRasterOutputFname(ctryCode, "VIIRS", nlYearMonth)
+    rastFilename <- getCtryRasterOutputFname(ctryCode, nlType, nlPeriod)
     
     ctryRastCropped <- raster::raster(rastFilename)
     
@@ -2526,14 +2215,14 @@ processNLCountryVIIRS <- function(ctryCode, nlYearMonth, cropMaskMethod=pkgOptio
   message("Begin extracting the data from the merged raster ", base::date())
   
   if (extractMethod == "rast")
-    sumAvgRad <- fnAggRadRast(ctryPoly, ctryRastCropped, fnStats, "VIIRS")
+    sumAvgRad <- fnAggRadRast(ctryPoly, ctryRastCropped, fnStats, nlType)
   else if (extractMethod == "gdal")
-    sumAvgRad <- fnAggRadGdal(ctryCode, ctryPoly, nlYearMonth, fnStats, "VIIRS")
+    sumAvgRad <- fnAggRadGdal(ctryCode, ctryPoly, nlPeriod, fnStats, nlType)
   
   for(stat in fnStats)
-    ctryNlDataDF <- insertNlDataCol(ctryNlDataDF, sumAvgRad[,stat], stat, nlYearMonth, nlType = "VIIRS")
+    ctryNlDataDF <- insertNlDataCol(ctryNlDataDF, sumAvgRad[,stat], stat, nlPeriod, nlType = nlType)
   
-  message("DONE processing ", ctryCode, " ", nlYearMonth, " ", base::date())
+  message("DONE processing ", ctryCode, " ", nlPeriod, " ", base::date())
   
   message("COMPLETE. Writing data to disk")
   
@@ -3591,46 +3280,6 @@ getAllNlCtryCodes <- function(omit="none")
   return (ctryCodes)
 }
 
-######################## getNlType: TO DELETE ###################################
-
-#' Check if a month number is valid for a given nightlight type
-#'
-#' Check if a month number is valid for a given nightlight type. Note month num is only valid for
-#' "VIIRS" nightlight type
-#'
-#' @param monthNum the month in "MM" format e.g. Jan="01", Feb="02"
-#'
-#' @param nlType type of nightlight either "VIIRS" or "OLS"
-#'
-#' @return TRUE/FALSE
-#'
-#' @examples
-#' validNlMonthNum("01","VIIRS")
-#'  returns TRUE
-#'
-#' validNlMonthNum("13","VIIRS")
-#'  returns FALSE
-#'
-#' validNlMonthNum("01","OLS")
-#'  returns FALSE
-#'
-getNlType <- function(nlPeriod)
-{
-  if(missing(nlPeriod))
-    stop("Missing required parameter nlPeriod")
-  
-  if(is.null(nlPeriod) || is.na(nlPeriod) || (!is.numeric(nlPeriod) && is.na(as.numeric(nlPeriod))))
-    stop("Invalid value for nlPeriod: ", nlPeriod)
-  
-  if(validNlYearOLS(nlPeriod))
-    return("OLS")
-  
-  if(validNlYearMonthVIIRS(nlPeriod))
-    return("VIIRS")
-  
-  return(NA)
-}
-
 ######################## getPolyFname ###################################
 
 #' Returns the directory name of the unzipped shapefile downloaded from GADM.ORG without the path
@@ -3743,7 +3392,7 @@ getPolyFnameZip <- function(ctryCode)
 #' downloadNlYearMonthsTilesVIIRS("201201", c(2, 5))
 #'
 #' #same as above but getting the tileList automatically
-#' downloadNlYearMonthsTilesVIIRS("201201", tileName2Idx(getCtryTileList("KEN")))
+#' downloadNlYearMonthsTilesVIIRS("201201", tileName2Idx(getCtryTileList(ctryCodes="KEN", nlType="VIIRS")))
 #' 
 #' returns TRUE if the download was successful
 #'
@@ -3775,58 +3424,13 @@ downloadNlTiles <- function(nlType, nlPeriod, tileList)
   else if(nlType == "VIIRS")
     for (tile in tileList)
     {
-      nlTile <- tileName2Idx(tile)
+      nlTile <- tileName2Idx(tile, nlType)
       
       message(paste0(nlPeriod, nlTile))
       
       #download tile
       success <- success && downloadNlTilesVIIRS(nlPeriod, nlTile)
     }
-  
-  return (success)
-}
-
-######################## getAllNlYearMonthsTiles: TO DELETE ###################################
-
-#' Downloads all the listed VIIRS tiles for a particular year, month
-#'
-#' Downloads all the listed VIIRS tiles for a particular year, month
-#'
-#' @param nlYearMonths character vector a list of the nlYearMonths to process in the format "YYYYMM"
-#'
-#' @param tileList character vector a list of tile numbers (1-6) to download
-#'
-#' @return TRUE/FALSE whether the download was successful
-#'
-#' @examples
-#' #download tiles for "KEN" which are tiles 2 and 5 for the specified time periods
-#' getAllNlYearMonthsTiles(c("201201", "201202", "201205"), c(2, 5))
-#'
-#' #same as above but getting the tileList automatically
-#' getAllNlYearMonthsTiles(c("201201", "201202", "201205"), tileName2Idx(getCtryTileList("KEN")))
-#' #returns TRUE if ALL downloads were successful
-#'
-getAllNlYearMonthsTiles <- function(nlYearMonths, tileList)
-{
-  if(missing(nlYearMonths))
-    stop("Missing required parameter nlYearMonths")
-  
-  if(missing(tileList))
-    stop("Missing required parameter tileList")
-  
-  if(!allValid(nlYearMonths, validNlYearMonthVIIRS))
-    stop("Invalid nlYearMonth detected")
-  
-  if(!allValid(tileList, validNlTileNumVIIRS))
-    stop("Invalid tileNum detected")
-  
-  #all good we can start
-  success <- TRUE
-  
-  for (nlYearMonth in nlYearMonths)
-  {
-    success <- success && download(nlYearMonth, tileList)
-  }
   
   return (success)
 }
@@ -3867,20 +3471,29 @@ existsCtryCodeTiles <- function()
 #' @return TRUE/FALSE
 #'
 #' @examples
-#' getCtryTileList(ctryCodes=c("BUR", "KEN", "RWA", "UGA", "TZA"), omitCountries="none")
+#' getCtryTileList(ctryCodes=c("BUR", "KEN", "RWA", "UGA", "TZA"), nlType="VIIRS", omitCountries="none")
 #' 
-#' getCtryTileList(ctryCodes="all", omitCountries="long")
+#' getCtryTileList(ctryCodes="all", nlType="OLS", omitCountries="long")
 #'
-getCtryTileList <- function(ctryCodes, omitCountries="none")
+getCtryTileList <- function(ctryCodes, nlType, omitCountries="none")
 {
   if(missing(ctryCodes))
     stop("Missing required parameter ctryCodes")
   
+  if(missing(nlType))
+    stop("Missing required parameter nlType")
+  
   if(!allValid(ctryCodes, validCtryCode))
     stop("Invalid ctryCode(s) detected")
   
-  ctryTiles <- unlist(mapCtryPolyToTiles(ctryCodes, omitCountries)$tiles)
+  if(!validNlType(nlType))
+    stop("Invalid nlType: ", nlType)
   
+  if(nlType == "OLS")
+    ctryTiles <- "DEFAULT"
+  else if(nlType == "VIIRS")
+    ctryTiles <- unlist(mapCtryPolyToTiles(ctryCodes, omitCountries)$tiles)
+
   return (ctryTiles)
 }
 
@@ -3974,8 +3587,8 @@ nlRange <- function(startNlPeriod, endNlPeriod)
 #'     it determines which nightlight tiles require to be downloaded. At the same time, it 
 #'     downloads any country polygons which have not already been downloaded.
 #' 
-#'     processNlData then calls the appropriate function to process the data depending on the type 
-#'     of nightlights. i.e. OLS = processNlCountryOLS and VIIRS = processNlCountryVIIRS
+#'     processNlData then calls processNlCountry with the nlType supplied as a parameter. The
+#'     processing is essentially the same for all nlTypes.
 #' 
 #'     This is the main entry-point to the package and the main user-facing function. However, it 
 #'     works in batch mode and caches all data without returning any data to the user. However, it 
@@ -4113,93 +3726,52 @@ processNlData <- function (ctryCodes=getAllNlCtryCodes("all"), nlPeriods=getAllN
   {
     message("Checking tiles required for ", nlPeriod)
     
-    #nlType <- getNlType(nlPeriod)
-    
     #init the list of tiles to be downloaded
     tileList <- NULL
     
     #determine tiles to download
-    if (nlType == "VIIRS")
+    ctryTiles <- NULL
+    
+    tileList <- NULL
+    
+    #For each country
+    for (ctryCode in unique(ctryCodes))
     {
-      ctryTiles <- NULL
-      
-      tileList <- NULL
-      
-      #For each country
-      for (ctryCode in unique(ctryCodes))
+      if (all(sapply(stats, function(stat) existsCtryNlData(ctryCode, nlPeriod, stat, nlType))))
       {
-        if (all(sapply(stats, function(stat) existsCtryNlData(ctryCode, nlPeriod, stat, nlType))))
-        {
-          message ("All stats exists for ", ctryCode, ":", nlPeriod)
-          
-          next
-        }
-        
-        message("Stats missing. Adding tiles for ", ctryCode)
-        
-        #get the list of tiles required for the ctryCode
-        ctryTiles <- getCtryTileList(ctryCode)
-        
-        #combine the list of unique tiles across all ctryCodes in tileList
-        tileList <- c(tileList, setdiff(ctryTiles, tileList))
-        
-        #if all the unique tiles have been listed no need to proceed checking
-        if (length(tileList) == nrow(nlTiles))
-        {
-          message ("All tiles have been listed. No need to check other country tiles")
-          
-          break
-        }
-      }
-      
-      if (length(tileList) == 0)
-      {
-        message("No tiles needed for ", nlPeriod, ". Process next nlPeriod")
+        message ("All stats exists for ", ctryCode, ":", nlPeriod)
         
         next
       }
-      else #if the cropped raster is not found try to download
-      {
-        if (!file.exists(getCtryRasterOutputFname(ctryCode, nlType, nlPeriod)))
-        {
-          if(!downloadNlTiles(nlType, nlPeriod, tileList))
-          {
-            message("Something went wrong with the tile downloads. Aborting ...")
-            
-            break
-          }
-        }
-        else
-        {
-          message("Cropped raster already exists. Skipping tile download")
-        }
-      }
       
-      #for all required countries
-      for (ctryCode in unique(ctryCodes))
-      {
-        processNLCountryVIIRS(ctryCode, nlPeriod, cropMaskMethod = pkgOptions("cropMaskMethod"), extractMethod = pkgOptions("extractMethod"), fnStats = stats)
-      }
+      message("Stats missing. Adding tiles for ", ctryCode)
       
-      #post-processing. Delete the downloaded tiles to release disk space
-      if(pkgOptions("deleteTiles"))
-        for (tile in tileList)
-        {
-          #del the tif file
-          file.remove(getNlTileTifLclNamePathVIIRS(nlPeriod, tileName2Idx(tile)))
-          
-          #del the zip file
-          file.remove(getNlTileZipLclNamePathVIIRS(nlPeriod, tileName2Idx(tile)))
-        }
+      #get the list of tiles required for the ctryCode
+      ctryTiles <- getCtryTileList(ctryCode, nlType)
+      
+      #combine the list of unique tiles across all ctryCodes in tileList
+      tileList <- c(tileList, setdiff(ctryTiles, tileList))
+      
+      #if all the unique tiles have been listed no need to proceed checking
+      if (length(tileList) == nrow(nlTiles))
+      {
+        message ("All tiles have been listed. No need to check other country tiles")
+        
+        break
+      }
     }
-    else if (nlType == "OLS")
+    
+    if (length(tileList) == 0)
     {
-      message("Checking if cropped raster exists")
+      message("No tiles needed for ", nlPeriod, ". Process next nlPeriod")
+      
+      next
+    }
+    else #if the cropped raster is not found try to download
+    {
       if (!file.exists(getCtryRasterOutputFname(ctryCode, nlType, nlPeriod)))
       {
-        message("Cropped raster not found")
-        message("Checking if tile exists")
-        if(!downloadNlTiles(nlType, nlPeriod))
+        if(!downloadNlTiles(nlType, nlPeriod, tileList))
         {
           message("Something went wrong with the tile downloads. Aborting ...")
           
@@ -4210,14 +3782,24 @@ processNlData <- function (ctryCodes=getAllNlCtryCodes("all"), nlPeriods=getAllN
       {
         message("Cropped raster already exists. Skipping tile download")
       }
-      
-      #for all required countries
-      for (ctryCode in unique(ctryCodes))
-      {
-        processNLCountryOLS(ctryCode, nlPeriod)
-      }
-      
     }
+    
+    #for all required countries
+    for (ctryCode in unique(ctryCodes))
+    {
+      processNLCountry(ctryCode, nlPeriod, nlType, cropMaskMethod = pkgOptions("cropMaskMethod"), extractMethod = pkgOptions("extractMethod"), fnStats = stats)
+    }
+    
+    #post-processing. Delete the downloaded tiles to release disk space
+    if(pkgOptions("deleteTiles"))
+      for (tile in tileList)
+      {
+        #del the tif file
+        file.remove(getNlTileTifLclNamePath(nlPeriod, tileName2Idx(tile, nlType)))
+        
+        #del the zip file
+        file.remove(getNlTileZipLclNamePath(nlPeriod, tileName2Idx(tile, nlType)))
+      }
   }
 }
 
