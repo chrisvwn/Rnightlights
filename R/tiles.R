@@ -1,0 +1,797 @@
+######################## downloadNlTiles ###################################
+
+#' Download the listed tiles for a given nlType in a given nlPeriod
+#'
+#' Download the listed tiles for a given nlType in a given nlPeriod
+#'
+#' @param nlType character The nightlight type
+#'
+#' @param nlPeriod character The nlPeriod to process in the appropriate 
+#'     format
+#'
+#' @param tileList integer vector or character vector of digits containing 
+#'     valid tile numbers as obtained by tileName2Idx for VIIRS. Ignore for 
+#'     nlType=="OLS"
+#'
+#' @return TRUE/FALSE if the download was successful
+#' 
+#' @examples
+#' #download VIIRS tiles for "KEN" which are tiles 2 and 5 for the specified
+#'     #time periods
+#' \dontrun{downloadNlTiles("VIIRS", "201201", c(2, 5))}
+#'
+#' #same as above but getting the tileList automatically
+#' \dontrun{
+#' downloadNlTiles("VIIRS", "201201", 
+#'     tileName2Idx(getCtryTileList(ctryCodes="KEN", 
+#'     nlType="VIIRS")))
+#'     }
+#' 
+#' #returns TRUE if the download was successful
+#'
+downloadNlTiles <- function(nlType, nlPeriod, tileList)
+{
+  if(missing(nlType))
+    stop("Missing required parameter nlType")
+  
+  if(missing(nlPeriod))
+    stop("Missing required parameter nlPeriod")
+  
+  if(nlType == "VIIRS" && missing(tileList))
+    stop("Missing required parameter tileList")
+  
+  if(!validNlType(nlType))
+    stop("Invalid nlType detected")
+  
+  if(!validNlPeriod(nlPeriod, nlType))
+    stop("Invalid nlPeriod: ", nlPeriod)
+  
+  if(nlType == "VIIRS" && !allValid(tileList, validNlTileNameVIIRS))
+    stop("Invalid tile detected")
+  
+  success <- TRUE
+  
+  #ensure we have all required tiles
+  if(nlType == "OLS")
+    success <- success && downloadNlTilesOLS(nlPeriod)
+  else if(nlType == "VIIRS")
+    for (tile in tileList)
+    {
+      nlTile <- tileName2Idx(tile, nlType)
+      
+      message(paste0(nlPeriod, nlTile))
+      
+      #download tile
+      success <- success && downloadNlTilesVIIRS(nlPeriod, nlTile)
+    }
+  
+  return (success)
+}
+
+######################## existsCtryCodeTiles ###################################
+
+#' Check if the variable ctryCodeTiles exists
+#'
+#' Check if the variable ctryCodeTiles, which is a mapping between countryCodes and the tiles it intersects with, exists as created by \code{mapCtryPolyToTilesVIIRS()}.
+#'
+#' @return TRUE/FALSE
+#'
+#' @examples
+#' \dontrun{
+#' if(!existsCtryCodeTiles())
+#'   mapCtryPolyToTilesVIIRS()
+#'   }
+#'
+existsCtryCodeTiles <- function()
+{
+  return (exists("ctryCodeTiles") && class(ctryCodeTiles)=="data.frame" && !is.null(ctryCodeTiles))
+}
+
+######################## getCtryTileList ###################################
+
+#' Returns a list of VIIRS nightlight tiles that a country or countries
+#'     intersects with
+#'
+#' Given a list of countries, this function will provide alist of VIIRS
+#'     nightlight tiles that intersect with them. This helps in processing
+#'     multiple countries by determining which nightlight tiles are required
+#'     for processing by allowing the download of all required tiles before
+#'     processing. 
+#'
+#' @param ctryCodes character vector of country codes to process
+#' 
+#' @param nlType character string The nlType of interest
+#'
+#' @param omitCountries countries to exclude from processing. This is
+#'     helpful when the number of countries to exclude is smaller than
+#'     the number to process e.g. when one wants to process all countries
+#'     and exclude countries that take long to process i.e. 
+#'     omitCountries = "long"
+#'
+#' @return TRUE/FALSE
+#'
+#' @examples
+#' \dontrun{
+#' getCtryTileList(ctryCodes=c("BUR", "KEN", "RWA", "UGA", "TZA"), 
+#'     nlType="VIIRS", omitCountries="none")
+#' 
+#' getCtryTileList(ctryCodes="all", nlType="OLS", omitCountries="long")
+#' }
+#'
+getCtryTileList <- function(ctryCodes, nlType, omitCountries="none")
+{
+  if(missing(ctryCodes))
+    stop("Missing required parameter ctryCodes")
+  
+  if(missing(nlType))
+    stop("Missing required parameter nlType")
+  
+  if(!allValid(ctryCodes, validCtryCode))
+    stop("Invalid ctryCode(s) detected")
+  
+  if(!validNlType(nlType))
+    stop("Invalid nlType: ", nlType)
+  
+  if(nlType == "OLS")
+    ctryTiles <- "DUMMY"
+  else if(nlType == "VIIRS")
+    ctryTiles <- unlist(mapCtryPolyToTilesVIIRS(ctryCodes, omitCountries)$tiles)
+  
+  return (ctryTiles)
+}
+
+######################## getNlTiles ###################################
+
+#' Create mapping of nightlight tiles
+#'
+#' Creates a data.frame mapping nightlight tile names to their vertice coordinates. This is used to
+#'     identify nightlight tiles as well as to build a spatial polygons dataframe used to plot the tiles. OLS
+#'     only has one tile for the whole world and thus has a dummy entry. OLS is included to
+#'     prevent code duplication by writing separate functions for OLS.
+#'
+#' @param nlType the nlType of interest
+#' 
+#' @return A data.frame of names of tiles and lon-lat coordinate of top-left corner of each
+#'
+#' @examples
+#' \dontrun{getNlTiles("VIIRS")}
+#' 
+#' \dontrun{getNlTiles("OLS")}
+#'
+getNlTiles <- function(nlType)
+{
+  #6 nightlight tiles named by top-left geo coordinate numbered from left-right & top-bottom
+  #creates columns as strings. createSpPolysDF converts relevant columns to numeric
+  nlTiles <- as.data.frame(
+    cbind(id=c(1,2,3,4,5,6,7),
+          type=c("OLS","VIIRS","VIIRS","VIIRS","VIIRS","VIIRS","VIIRS"),
+          name=c("DUMMY", "75N180W", "75N060W", "75N060E", "00N180W", "00N060W", "00N060E"),
+          minx=c(-1, -180, -60, 60, -180, -60, 60), maxx=c(-1, -60, 60, 180, -60, 60, 180),
+          miny=c(-1, 0, 0, 0, -75, -75, -75), maxy=c(-1, 75, 75, 75, 0, 0, 0)
+    ), 
+    stringsAsFactors=FALSE)
+  
+  if(!missing(nlType))
+  {
+    if(!validNlType(nlType))
+      stop("Invalid nlType")
+    
+    nlTiles <- nlTiles[which(nlTiles$type == nlType),]
+  }
+  
+  return (nlTiles)
+}
+
+######################## existsNlTiles ###################################
+
+#' Checks if the nlTiles data.frame variable exists
+#'
+#' Checks if the nlTiles data.frame variable exists in the environment and that it is not null or empty. This is used by other functions that depend on the nlTiles data.frame to check if it exists. If it doesn't they may create the data.frame.
+#'
+#' @return TRUE/FALSE
+#'
+#' @examples
+#' \dontrun{
+#' if(!existsNlTiles())
+#'   nlTiles <- getNlTiles("VIIRS")
+#'   }
+#'
+existsNlTiles <- function()
+{
+  if (exists("nlTiles") && class(nlTiles) == "data.frame" && !is.null(nlTiles) && nrow(nlTiles) > 0)
+    return (TRUE)
+  else
+    return (FALSE)
+}
+
+######################## existsTilesSpPolysDFs ###################################
+
+#' Checks if the variable \code{"tilesSpPolysDFs"} exists
+#'
+#' Checks if the \code{"tilesSpPolysDFs"} (tile Spatial Polygons DataFrame) variable exists in the environment   and that it is not null. This is used by other functions that depend on the \code{"tilesSpPolysDFs"} data.frame to check if it exists. If it doesn't they can create the data.frame.
+#'
+#' @return TRUE/FALSE
+#'
+#' @examples
+#' \dontrun{
+#' if(!existsTilesSpPolysDFs())
+#'   tilesSpPolysDFs <- createNlTilesSpPolysDF()
+#'   }
+#'
+existsTilesSpPolysDFs <- function()
+{
+  if (exists("tilesSpPolysDFs") && class(tilesSpPolysDFs) == "SpatialPolygonsDataFrame" && !is.null(tilesSpPolysDFs))
+    return(TRUE)
+  else
+    return(FALSE)
+}
+
+######################## createNlTilesSpPolysDF ###################################
+
+#' Creates a tile Spatial Polygons DataFrame from the \code{"nlTiles"} dataframe
+#'
+#' Creates a Spatial Polygons DataFrame from the \code{"nlTiles"} dataframe of VIIRS tiles
+#'
+#' @return TRUE/FALSE
+#'
+#' @examples
+#'   \dontrun{tilesSpPolysDFs <- createNlTilesSpPolysDF()}
+#'
+createNlTilesSpPolysDF <- function()
+{
+  if (!existsNlTiles())
+  {
+    nlTiles <- getNlTiles("VIIRS")
+  }
+  
+  #convert nlTiles min/max columns to numeric
+  for (cIdx in grep("id|min|max", names(nlTiles))) nlTiles[,cIdx] <- as.numeric(as.character(nlTiles[, cIdx]))
+  
+  #create the empty obj to hold the data frame of tile PolygonsDataFrams
+  tilesSpPolysDFs <- NULL
+  
+  #for each row in nlTiles
+  for (i in 1:nrow(nlTiles))
+  {
+    #grab the row containing the tile
+    t <- nlTiles[i,]
+    
+    #convert the tile x,y extents to a matrix
+    #format is 2 cols x & y
+    tMat <- as.matrix(cbind(rbind(t$minx, t$maxx, t$maxx, t$minx), rbind(t$maxy, t$maxy, t$miny, t$miny)))
+    
+    #create a Polygon object from the tile extents matrix
+    tPoly <- list(sp::Polygon(tMat))
+    
+    #create a Polygons object with a list of 1 polygon
+    tPolys <- sp::Polygons(srl = tPoly, ID = i)
+    
+    #create a SpatialPolygons object with a list of 1 list of Polygons
+    tilesSpPolys <- sp::SpatialPolygons(Srl = list(tPolys))
+    
+    #we assign the CRS at this point (note other objects cannot be assigned CRS)
+    raster::projection(tilesSpPolys) <- sp::CRS(wgs84)
+    
+    #convert the SpatialPolygons object into a SpatialPolygonsDataFrame
+    #tilesSpPolysDF <- as(tilesSpPolys, "SpatialPolygonsDataFrame")
+    
+    #z used for plotCtryWithTilesVIIRS to color the tiles
+    tilesSpPolysDF <- sp::SpatialPolygonsDataFrame(tilesSpPolys, data.frame(z=factor(i), name=nlTiles[i,"name"], row.names=i))
+    
+    #append the SPDF into a dataframe of SPDFs
+    if (is.null(tilesSpPolysDFs))
+      tilesSpPolysDFs <- tilesSpPolysDF
+    else
+      tilesSpPolysDFs <- sp::rbind.SpatialPolygonsDataFrame(tilesSpPolysDFs, tilesSpPolysDF)
+  }
+  return (tilesSpPolysDFs)
+}
+
+######################## plotCtryWithTilesVIIRS ###################################
+
+#' Plot a country polygon against a background of the VIIRS tiles and world map
+#'
+#' Plot a country polygon as defined in the \pkg{rworldmap} package along with the VIIRS 
+#'     nightlight tiles for a visual inspection of the tiles required for download in order 
+#'     to process a country's nightlight data.
+#'     
+#'     It utilizes \code{rworldmap::rwmgetISO3} to resolve country codes as well as names
+#'
+#' @param idx character string or integer either the index of the country polygon in 
+#'     \code{rworldmap::getMap()} or the 3-letter ISO3 country code e.g. "KEN" or a common 
+#'     name of the country e.g. "Kenya" as found valid by \code{rworldmap::rwmgetISO3}
+#'
+#' @return None
+#'
+#' @examples
+#' plotCtryWithTilesVIIRS("KEN")
+#'
+#' plotCtryWithTilesVIIRS(85)
+#' 
+#' plotCtryWithTilesVIIRS("85")
+#'
+#' @export
+plotCtryWithTilesVIIRS <- function(idx)
+{
+  if(missing(idx))
+    stop("You must supply a country code or index")
+  
+  if(!is.character(idx) && !is.numeric(idx))
+    stop("The parameter you supplied needs to be type numeric or character")
+  
+  #if the map variable does not exist
+  if(!exists("map"))
+  {
+    #get the map from the rworldmap package
+    map <- rworldmap::getMap()
+    
+    #some rworldmap polygons have problems. Rectify them to allow plotting without errors
+    map <- cleangeo::clgeo_Clean(map)
+  }
+  
+  #if the tiles spatial polygons dataframe does not exist create it
+  if(!existsTilesSpPolysDFs())
+    tilesSpPolysDFs <- createNlTilesSpPolysDF()
+  
+  #if idx is numeric we assume it is the index of the country polygon in the map
+  if (is.numeric(idx))
+  {
+    #idx cannot be less than zero or greater than the number of polygons in the map
+    if(idx < 0 || idx > length(map@polygons))
+    {
+      #invalid index
+      return("Index out of range")
+    }
+  }
+  else if (is.character(idx)) #try if it is a character ISO3 code
+  {
+    if (suppressWarnings(!is.na(as.numeric(idx))))
+    {
+      idx <- as.numeric(idx)
+    }
+    else
+    {
+      #valid index so get the corresponding ISO3 country code
+      ctryISO3 <- rworldmap::rwmGetISO3(idx)
+      
+      #print(ctryISO3)
+      
+      #if ctryISO3 is empty then the country was not found
+      if (is.na(ctryISO3) || ctryISO3 == "")
+        return("Country code/name not found")
+      
+      #otherwise we have a valid country ISO3 code. get its index
+      idx <- which(as.character(map@data$ISO3) == ctryISO3)
+    }
+  }
+  else
+  {
+    return("invalid type")
+  }
+  
+  #At this point we have a valid index number
+  
+  #get the polygon that matches the index
+  ctryPolys <- map@polygons[[idx]]
+  
+  #get the name of the polygon
+  ctryPolyTitle <- paste0("VIIRS Nightlight Tiles Required for:\n", map@data$ADMIN[[idx]], " (", map@data$ISO3[[idx]], ")")
+  
+  #create a SpatialPolygons object with the list of Polygons
+  ctrySpPolys <- sp::SpatialPolygons(Srl = list(ctryPolys))
+  
+  #set the coordinate reference system
+  raster::projection(ctrySpPolys) <- sp::CRS(wgs84)
+  
+  #convert the spatial polygons to an SPsDF
+  ctrySpPolysDF <- methods::as(ctrySpPolys, "SpatialPolygonsDataFrame")
+  
+  #set the 4 margins to 2 inches from the border to avoid boundary errors
+  #graphics::par(mar=rep(2,4))
+  
+  #plot the tiles first
+  #sp::plot(tilesSpPolysDFs, main=ctryPolyName)
+  
+  
+  #plot the country on the same plot and fill with blue
+  #sp::plot(ctrySpPolysDF, col="blue", add=TRUE)
+  
+  #get the extents of the SpatialPolygonsDataFrame. Used to draw a bounding box around the plotted country. Especially helpful for very small countries
+  e <- raster::extent(ctrySpPolysDF)
+  
+  #draw back the boundaries by 10 units
+  e@xmin <- e@xmin - 10
+  e@xmax <- e@xmax + 10
+  e@ymin <- e@ymin - 10
+  e@ymax <- e@ymax + 10
+  
+  #convert the Extents object to a SpatialLines object for spplot to use
+  extents <- as(e, 'SpatialLines')
+  
+  #get a list of the intersecting tiles. Used to highlight tiles which intersect with plotted country
+  tilesIntersected <- tileName2Idx(tileName = getTilesCtryIntersectVIIRS(map@data$ISO3[[idx]]), nlType="VIIRS")
+  
+  #create a list which serves as a subtitle showing the mapping of tile index to tile name
+  tileIdxNames <- paste(tilesSpPolysDFs@data$z, tilesSpPolysDFs@data$name, sep = "=")
+  
+  #plot the map
+  sp::spplot(tilesSpPolysDFs, #the tiles SPDF
+             zcol = "z", #the col in the tiles SPDF which determines their color
+             col.regions = as.vector(ifelse(1:nrow(tilesSpPolysDFs) %in% tilesIntersected, "lightblue", "transparent")), #colors of the tiles. intersected tiles are lightblue, otherwise transparent
+             colorkey = FALSE,
+             sp.layout = list(list(map, col='grey', fill='transparent', first=FALSE), #plot the world map from rworldmap
+                              list(ctrySpPolysDF, col='black', fill='blue', first=FALSE), #plot the selected country
+                              list('sp.lines', extents, col='green', lwd=2), #plot the bounding box
+                              list('sp.text', sp::coordinates(tilesSpPolysDFs), 1:nrow(tilesSpPolysDFs), col='black', cex=2) #label the tiles with their index numbers
+             ),
+             main = ctryPolyTitle, #the main title
+             sub = tileIdxNames #the sub title 
+  )
+  
+  #ggplot(tilesSpPolysDFs, aes(x=long,y=lat))+geom_polygon(col="black", fill="white", alpha=0.5)#+geom_polygon(data=ctrySpPolysDF, alpha=0.5)
+  #ggplot(ctrySpPolysDF, aes(x=long,y=lat, group=group))+geom_polygon(col="black", fill="white",alpha=0.5)
+  
+  #a <- spplot(tilesSpPolysDFs, main=map@polygons[[idx]]@ID)
+  #b <- spplot(ctrySpPolysDF)
+  
+  #a+as.layer(b)
+}
+
+######################## mapAllCtryPolyToTilesVIIRS ###################################
+
+#' Create a mapping of all countries and the tiles they intersect
+#'
+#' This is simply another name for mapCtryPolyToTilesVIIRS with ctryCodes="all"
+#'
+#' @param omitCountries A character vector or list of countries to leave
+#' out when processing. Default is \code{"none"}
+#'
+#' @return None
+#'
+#' @examples
+#' #no countries omitted
+#' \dontrun{mapAllCtryPolyToTilesVIIRS()}
+#'
+#' #no countries omitted
+#' \dontrun{mapAllCtryPolyToTilesVIIRS(omitCountries="none")}
+#'
+#' #include countries that take long to process
+#' \dontrun{mapAllCtryPolyToTilesVIIRS(omitCountries=c("error", "long"))}
+#'
+mapAllCtryPolyToTilesVIIRS <- function(omitCountries=pkgOptions("omitCountries"))
+{
+  mapCtryPolyToTilesVIIRS(ctryCodes="all", omitCountries)
+}
+
+######################## mapCtryPolyToTilesVIIRS ###################################
+
+#' Create a mapping of all countries and the tiles they intersect
+#'
+#' Create a dataframe mapping each country in the rworldmap to the VIIRS
+#'     tiles which they intersect with and thus need to be retrieved to 
+#'     process their nightlight imagery. Since some functions use this
+#'     dataframe for long-term processing, omitCountries can eliminate 
+#'     countries that should be excluded from the list hence from processing. 
+#'     Countries can be added in the omitCountries function. Default is "none".
+#'
+#' @param ctryCodes A character vector or list of countries to map. Default 
+#'     is \code{"all"}
+#' @param omitCountries A character vector or list of countries to leave out.
+#'     Default is \code{"none"}
+#'
+#' @return ctryCodeTiles A data frame of countries and the tiles they 
+#'     intersect with as give by getNlTiles("VIIRS")
+#'
+#' @examples
+#' #map all countries
+#' \dontrun{mapCtryPolyToTilesVIIRS()}
+#'
+#' #map all countries, no countries omitted
+#' \dontrun{mapCtryPolyToTilesVIIRS(ctryCodes="all", omitCountries="none")}
+#'
+#' #will not omit countries that do not have polygons on GADM
+#' \dontrun{mapCtryPolyToTilesVIIRS(omitCountries=c("error", "missing"))}
+#'
+mapCtryPolyToTilesVIIRS <- function(ctryCodes="all", omitCountries=pkgOptions("omitCountries"))
+{
+  #if ctryCodes is "all" otherwise consider ctryCodes to be a list of countries
+  if (length(ctryCodes) == 1 && tolower(ctryCodes) == "all")
+  {
+    #get list of all country codes
+    ctryCodes <- getAllNlCtryCodes(omitCountries)
+  }
+  
+  #if the rworldmap::getMap() hasn't been loaded, load it
+  if (!exists("map"))
+  {
+    map <- rworldmap::getMap()
+    
+    map <- cleangeo::clgeo_Clean(sp = map)
+  }
+  
+  #get the indices of the country polygons from the rworldmap
+  ctryCodeIdx <- which(map@data$ISO3 %in% ctryCodes)
+  
+  ctryCodeTiles <- NULL
+  
+  #for each ctryCode index
+  for (i in ctryCodeIdx)
+  {
+    #get the matching polygon
+    ctryPolys <- map@polygons[[i]]
+    
+    #create a SpatialPolygons object with a list of 1 list of Polygons
+    ctrySpPolys <- sp::SpatialPolygons(Srl = list(ctryPolys))
+    
+    #set the CRS
+    raster::projection(ctrySpPolys) <- sp::CRS(wgs84)
+    
+    #convert the SpatialPolygons to a SpatialPolygonsDataFrame
+    ctrySpPolysDF <- as(ctrySpPolys, "SpatialPolygonsDataFrame")
+    
+    #find the tiles the SPDF intersects with and add to the list of tiles
+    ctryCodeTiles <- rbind(ctryCodeTiles, list(tilesPolygonIntersectVIIRS(ctrySpPolys)))
+  }
+  
+  #combine the ctryCodes and intersecting tile columns into a dataframe
+  ctryCodeTiles <- as.data.frame(cbind(code = as.character(ctryCodes), tiles = ctryCodeTiles))
+  
+  #name the columns
+  names(ctryCodeTiles) <- c("code", "tiles")
+  
+  #convert the code column to character since it is picked as factor
+  ctryCodeTiles$code <- as.character(ctryCodeTiles$code)
+  
+  #return the data frame
+  return(ctryCodeTiles)
+}
+
+######################## getTilesCtryIntersectVIIRS ###################################
+
+#' Get a list of tiles that a country polygon intersects with
+#'
+#' Create a dataframe mapping each country in the rworldmap to the VIIRS
+#'     tiles which they intersect with and thus need to be retrieved to
+#'     process their nightlight imagery. Since some functions use this
+#'     dataframe for long-term processing, omitCountries can eliminate 
+#'     countries that should be excluded from the list hence from processing.
+#'     Countries can be added in the omitCountries function.
+#'     Default is "none".
+#'
+#' @param ctryCode The country's ISO3 code
+#'
+#' @return None
+#'
+#' @examples
+#' 
+#' \dontrun{getTilesCtryIntersectVIIRS("KEN")}
+#'
+getTilesCtryIntersectVIIRS <- function(ctryCode)
+{
+  if(missing(ctryCode))
+    stop("Missing equired parameter ctryCode")
+  
+  ctryCode <- as.character(ctryCode)
+  
+  if(!validCtryCode(ctryCode))
+    stop("Invalid/Unknown ctryCode: ", ctryCode)
+  
+  ctryISO3 <- rworldmap::rwmGetISO3(ctryCode)
+  
+  #print(ctryISO3)
+  
+  if (is.na(ctryISO3) || ctryISO3 == "")
+    return("Unknown country")
+  
+  idx <- which(map@data$ISO3 == ctryISO3)
+  
+  ctryCodeTiles <- NULL
+  
+  ctryPolys <- map@polygons[[idx]]
+  
+  #create a SpatialPolygons object with a list of 1 list of Polygons
+  ctrySpPolys <- sp::SpatialPolygons(Srl = list(ctryPolys))
+  
+  raster::projection(ctrySpPolys) <- sp::CRS(wgs84)
+  
+  ctrySpPolysDF <- as(ctrySpPolys, "SpatialPolygonsDataFrame")
+  
+  ctryCodeTiles <- tilesPolygonIntersectVIIRS(ctrySpPolys)
+  
+  #Plot for debug
+  #plot(tilesSpPolysDFs, add=TRUE)
+  #plot(ctrySpPolysDF, add=TRUE)
+  
+  return (ctryCodeTiles)
+}
+
+######################## validNlTileNameVIIRS ###################################
+
+#' Check if a tile index name is valid for a given nightlight type
+#'
+#' Check if a tile number is valid for a given nightlight type. Note tile num is only valid for
+#' "VIIRS" nightlight type
+#'
+#' @param tileName the name of the tile
+#'
+#' @return TRUE/FALSE
+#'
+#' @examples
+#' \dontrun{validNlTileNameVIIRS("00N060W")}
+#'  #returns TRUE
+#'
+validNlTileNameVIIRS <- function(tileName)
+{
+  if(missing(tileName))
+    stop("Missing required parameter tileName")
+  
+  if(!is.character(tileName) || is.null(tileName) || is.na(tileName) || tileName == "")
+    stop("Invalid tileName: ", tileName)
+  
+  if(length(tileName2Idx(tileName, "VIIRS")) != 0)
+    return(TRUE)
+  else
+    return(FALSE)
+}
+
+######################## tileName2Idx ###################################
+
+#' Get the index of a tile given its name
+#'
+#' Get the index of a VIIRS tile as given by getNlTiles() given its name
+#'
+#' @param tileName name as given by getNlTiles()
+#' 
+#' @param nlType the nlType of interest
+#'
+#' @return Integer index of the tile
+#'
+#' @examples
+#' \dontrun{tileIdx <- tileName2Idx("00N060W", "VIIRS")}
+#'
+tileName2Idx <- function(tileName, nlType)
+{
+  if (missing(tileName))
+    stop("Missing required parameter tileName")
+  
+  if (missing(nlType))
+    stop("Missing required parameter nlType")
+  
+  if(!is.character(tileName) || is.null(tileName) || is.na(tileName) || tileName == "")
+    stop("Invalid tileName: ", tileName)
+  
+  nlType <- toupper(nlType)
+  
+  tileName <- toupper(tileName)
+  
+  if (!existsNlTiles())
+    nlTiles <- getNlTiles(nlType)
+  
+  return(NA)
+}
+
+######################## tileIdx2Name ###################################
+
+#' Get the name of a tile given its index
+#'
+#' Get the name of a VIIRS tile as given by getNlTiles() given its index
+#'
+#' @param tileNum index as given by getNlTiles()
+#' 
+#' @param nlType the nlType of interest
+#'
+#' @return Character name of the tile
+#'
+#' @examples
+#' \dontrun{tileIdx <- tileName2Idx("00N060W", "VIIRS")}
+#'
+tileIdx2Name <- function(tileNum, nlType)
+{
+  if(missing(tileNum))
+    stop("Missing required parameter tileNum")
+  
+  if(!validNlTileNumVIIRS(tileNum))
+    stop("Invalid tileNum: ", tileNum)
+  
+  if(!validNlType(nlType))
+    stop("Invalid nlType: ", nlType)
+  
+  if (!existsNlTiles())
+    nlTiles <- getNlTiles(nlType)
+  
+  nlType <- toupper(nlType)
+  
+  #return (nlTiles[tileNum, "name"])
+  return(nlTiles[tileNum, "name"])
+}
+
+######################## tilesPolygonIntersectVIIRS ###################################
+
+#' Get the list of VIIRS tiles that a polygon intersects with
+#'
+#' Get the list a VIIRS tiles that a polygon intersects with
+#'
+#' @param shpPolygon a SpatialPolygon or SpatialPolygons
+#'
+#' @return Character vector of the intersecting tiles as given by getNlTiles("VIIRS")
+#'
+#' @examples
+#' \dontrun{
+#' ctryShapefile <- dnldCtryPoly("KEN")
+#' ctryPoly <- rgdal::readOGR(getPolyFnamePath("KEN"), getCtryShpLyrName("KEN",0))
+#' tileList <- tilesPolygonIntersectVIIRS(ctryPoly)
+#' }
+#'
+tilesPolygonIntersectVIIRS <- function(shpPolygon)
+{
+  if(missing(shpPolygon))
+    stop("Missing required parameter shpPolygon")
+  
+  #given a polygon this function returns a list of the names of the viirs tiles
+  #that it intersects with
+  #Input: a Spatial Polygon e.g. from a loaded shapefile
+  #Output: a character vector of tile names as given in the nlTiles dataframe
+  
+  if (!existsTilesSpPolysDFs())
+  {
+    tilesSpPolysDFs <- createNlTilesSpPolysDF()
+  }
+  
+  if (!existsNlTiles())
+    nlTiles <- getNlTiles("VIIRS")
+  
+  raster::projection(shpPolygon) <- sp::CRS(wgs84)
+  
+  #init list to hold tile indices
+  tileIdx <- NULL
+  
+  #loop through the 6 tile rows in our SpatialPolygonsDataFrame
+  for (i in 1:nrow(tilesSpPolysDFs))
+  {
+    #check whether the polygon intersects with the current tile
+    tileIdx[i] <- rgeos::gIntersects(tilesSpPolysDFs[i,], shpPolygon)
+  }
+  
+  #return a list of tiles that intersected with the SpatialPolygon
+  return (nlTiles[tileIdx, "name"])
+}
+
+######################## validNlTileNumVIIRS ###################################
+
+#' Check if a tile index number is valid for a given nightlight type
+#'
+#' Check if a tile number is valid for a given nightlight type. Note tile num is only valid for
+#' "VIIRS" nightlight type
+#'
+#' @param nlTileNum the index of the tile
+#'
+#' @return TRUE/FALSE
+#'
+#' @examples
+#' \dontrun{validNlTileNumVIIRS("1")}
+#'  #returns TRUE
+#'
+#' \dontrun{validNlTileNumVIIRS("9")}
+#'  #returns FALSE
+#'
+validNlTileNumVIIRS <- function(nlTileNum)
+{
+  nlTileNum <- as.character(nlTileNum)
+  
+  if (missing(nlTileNum))
+    stop("Missing parameter nlTileNum")
+  
+  if (class(nlTileNum) != "character" || nlTileNum =="" || length(grep("[^[:digit:]]", nlTileNum) > 0))
+    return(FALSE)
+  
+  if(!exists("nlTiles"))
+    nlTiles <- getNlTiles("VIIRS")
+  
+  nlT <- as.numeric(nlTileNum)
+  
+  if (nlT >= 1 && nlT <= length(nlTiles))
+    return(TRUE)
+  else
+    return(FALSE)
+}
+

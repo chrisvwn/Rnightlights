@@ -4,7 +4,7 @@ Date: 2017-02-15
 Title: R Satellite Nightlight Data Extraction
 Description: Extract data from satellite nightlight imagery.
 Author: Christopher Wambugu <chris.njuguna@gmail.com>
-Maintainer: Christopher Wambugu <chris.njuguna@gmail.com>
+Maintainer: Christopher Wambugu Njuguna<chris.njuguna@gmail.com>
 License: GPL-3
 Imports:
     cleangeo,
@@ -15,6 +15,7 @@ Imports:
     foreach,
     gdalUtils,
     lubridate,
+    methods,
     raster,
     readr,
     rgdal,
@@ -22,7 +23,10 @@ Imports:
     rvest,
     rworldmap,
     settings,
-    sp
+    sp,
+    stats,
+    utils,
+    xml2
 Suggests:
     dendextend,
     ggdendro,

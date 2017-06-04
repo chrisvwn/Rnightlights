@@ -879,7 +879,7 @@ shiny::shinyServer(function(input, output, session){
             if (length(countries)==1)
             {
               #switched to data.table aggregation
-              #ctryData <- setNames(aggregate(ctryData$value, by=list(ctryData[,admLevel], ctryData[,"variable"]), mean, na.rm=T), c(admLevel, "variable", "value"))
+              #ctryData <- stats::setNames(aggregate(ctryData$value, by=list(ctryData[,admLevel], ctryData[,"variable"]), mean, na.rm=T), c(admLevel, "variable", "value"))
               ctryData <- stats::setNames(ctryData[,list(mean(value, na.rm = TRUE)), by = list(ctryData[[admLevel]], variable, as.factor(year), as.factor(month))], c(admLevel, "variable", "year", "month", "value"))
               g <- ggplot2::ggplot(ctryData, aes(x=month, y=value, col=year, group=year))
             }
@@ -1007,7 +1007,7 @@ shiny::shinyServer(function(input, output, session){
         if (length(countries)==1)
         {
           #switched to data.table aggregation
-          #ctryData <- setNames(aggregate(ctryData$value, by=list(ctryData[,admLevel], ctryData[,"variable"]), mean, na.rm=T), c(admLevel, "variable", "value"))
+          #ctryData <- stats::setNames(aggregate(ctryData$value, by=list(ctryData[,admLevel], ctryData[,"variable"]), mean, na.rm=T), c(admLevel, "variable", "value"))
           ctryData <- stats::setNames(ctryData[,mean(value, na.rm = TRUE),by = list(ctryData[[admLevel]], variable)], c(admLevel, "variable", "value"))
           g <- ggplot2::ggplot(data=ctryData, aes(x=variable, y=value, col=ctryData[[admLevel]]))
         }
@@ -1213,7 +1213,7 @@ shiny::shinyServer(function(input, output, session){
         {
           #aggregate the data to the current level
           iterAdmLevelName <- ctryAdmLevels[iterAdmLevel]
-          #lvlCtryData <- setNames(aggregate(ctryData$value, by=list(ctryData[[iterAdmLevelName]], ctryData[,"variable"]), mean, na.rm=T), c(iterAdmLevelName, "variable", "value"))
+          #lvlCtryData <- stats::setNames(aggregate(ctryData$value, by=list(ctryData[[iterAdmLevelName]], ctryData[,"variable"]), mean, na.rm=T), c(iterAdmLevelName, "variable", "value"))
           
           #temp <- as.data.table(ctryData)
           #data already in data.table form

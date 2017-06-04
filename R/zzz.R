@@ -18,12 +18,15 @@
   # Setup the data path, possibly by prompting the user. if not found
   if(is.null(getDataPath()))
     setupDataPath()
+  
+  compiler::enableJIT(3)
 }
 
-.onDetach <- function(libname, pkgname)
+.onDetach <- function(libname)
 {
   #cleanup by removing any global vars created etc
-  cleanupNtLts();
+  nlCleanup();
+  compiler::enableJIT(0)
 }
 
 .onUnload <- function(libname, pkgname)
