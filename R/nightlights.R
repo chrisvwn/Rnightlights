@@ -448,7 +448,7 @@ plotCtryWithTilesVIIRS <- function(idx)
   
   #get a list of the intersecting tiles. Used to highlight tiles which intersect with plotted country
   tilesIntersected <- tileName2Idx(tileName = getTilesCtryIntersectVIIRS(map@data$ISO3[[idx]]), nlType=nlType)
-  
+
   #create a list which serves as a subtitle showing the mapping of tile index to tile name
   tileIdxNames <- paste(tilesSpPolysDFs@data$z, tilesSpPolysDFs@data$name, sep = "=")
   
@@ -701,8 +701,8 @@ tileName2Idx <- function(tileName, nlType)
   
   if (!existsNlTiles())
     nlTiles <- getNlTiles(nlType)
-  
-  return (which(nlTiles$name %in% tileName))
+
+  return(NA)
 }
 
 ######################## tileIdx2Name ###################################
@@ -2069,7 +2069,7 @@ processNLCountry <- function(ctryCode, nlPeriod, nlType, cropMaskMethod=pkgOptio
     if(all(sapply(fnStats, function(stat) existsCtryNlData(ctryCode, nlPeriod, stat, nlType))))
     {
       message("All stats exist for ", ctryCode, " ", nlPeriod, ". Skipping")
-      
+
       return(-1)
     }
     
@@ -3758,7 +3758,7 @@ processNlData <- function (ctryCodes=getAllNlCtryCodes("all"), nlPeriods=getAllN
       if (all(sapply(stats, function(stat) existsCtryNlData(ctryCode, nlPeriod, stat, nlType))))
       {
         message ("All stats exist for ", ctryCode, ":", nlPeriod)
-        
+
         next
       }
       
