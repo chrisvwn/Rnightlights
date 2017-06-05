@@ -39,8 +39,10 @@ downloadNlTilesVIIRS <- function(nlYearMonth, tileNum, downloadMethod=pkgOptions
   #get the zip and tif local names
   ntLtsZipLocalNamePathVIIRS <- getNlTileZipLclNamePath("VIIRS", nlYearMonth, tileNum)
   ntLtsTifLocalNamePathVIIRS <- getNlTileTifLclNamePath("VIIRS", nlYearMonth, tileNum)
-  
-  #if (!file.exists(ntLtsZipLocalNameVIIRS) && !file.exists(ntLtsTifLocalNameVIIRS))
+
+  #if the .tif doesn't exist download tgz tile. For aria and wget, if the tgz exists
+  #it should attempt to complete it if incomplete else confirm it is complete and move
+  #to extraction. For the other methods it will restart the download and overwrite
   if (!file.exists(ntLtsTifLocalNamePathVIIRS))
   {
     ntLtsFileUrl <- getNlUrlVIIRS(nlYearMonth, tileNum)

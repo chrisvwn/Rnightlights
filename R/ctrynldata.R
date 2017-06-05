@@ -371,7 +371,10 @@ getCtryNlData <- function(ctryCode, nlPeriods, nlType, stats=pkgOptions("stats")
   
   if(length(ctryCode) > 1)
     stop("getCtryNlData can only process 1 ctryCode at a time")
-  
+
+  if(!validCtryCode(ctryCode))
+    stop("Invalid ctryCode", ctryCode)
+    
   if(!is.null(ignoreMissing))
     if(ignoreMissing && !existsCtryNlDataFile(ctryCode))
       stop("No data exists for ", ctryCode, ". Set IgnoreMissing= to download and process")

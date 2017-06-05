@@ -667,7 +667,7 @@ tileName2Idx <- function(tileName, nlType)
   if (!existsNlTiles())
     nlTiles <- getNlTiles(nlType)
   
-  return(NA)
+  return (which(nlTiles$name %in% tileName))
 }
 
 ######################## tileIdx2Name ###################################

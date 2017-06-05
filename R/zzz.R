@@ -19,7 +19,7 @@
   if(is.null(getDataPath()))
     setupDataPath()
   
-  compiler::enableJIT(3)
+  compiler::enableJIT(0)
 }
 
 .onDetach <- function(libname)

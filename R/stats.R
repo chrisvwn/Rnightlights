@@ -59,26 +59,20 @@ validStat <- function(stat)
 #' @param ... Other params to pass to the stats function
 #'
 #' @return numeric value result of the given stat function
-#'
+#' 
+#' @import data.table
 myZonal <- function (x, z, stats, digits = 0, na.rm = TRUE, ...)
 {
   #http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/
-  
-  #fun <- match.fun(stat)
-  
-  #fun <- paste0(sapply(stats, function(stat) paste0(stat,"=sapply(.SD, ", stat, ", na.rm = TRUE)")), collapse = ", ")
-  
+
   varx <- function(x, ...) ifelse(length(x) > 1, var(x, ...), x)
   
   statsFn <- lapply(stats, function(x) switch(x, sum="sum", mean="mean", var="varx"))
   
   fun <- paste0(sapply(statsFn, function(stat) paste0(stat,"=", stat, "(x, na.rm = TRUE)")), collapse = ", ")
   
-  funs <- paste0("rDT[, as.list(unlist(lapply(.SD, function(x) list(", fun, ")))), by=z]")
-  
-  
-  #result[,list(sum=sum(vals.sum, na.rm = TRUE),mean=mean(vals.mean, na.rm = TRUE)), by = z]
-  
+  funs <- paste0("rDT[, as.list(unlist(lapply(data.table::.SD, function(x) list(", fun, ")))), by=z]")
+
   vals <- NULL
   
   zones <- NULL
@@ -100,9 +94,7 @@ myZonal <- function (x, z, stats, digits = 0, na.rm = TRUE, ...)
     zones <- round(raster::getValues(z, blocks$row[i], blocks$nrows[i]), digits = digits)
     
     rDT <- data.table::data.table(vals, z=zones)
-    
-    #setkey(rDT, z)
-    
+
     message("Calculating partial stats")
     #result <- rbind(result, rDT[, lapply(.SD, fun, na.rm = TRUE), by=z])
     result <- rbind(result, eval(parse(text = funs)))
@@ -220,7 +212,6 @@ ZonalPipe <- function (ctryCode, ctryPoly, path.in.shp, path.in.r, path.out.r, p
     command<-paste(command, "-a", zone.attribute) #Identifies an attribute field on the features to be used for a burn in value. The value will be burned into all output bands.
     command<-paste(command, "-te", as.character(ext)) #(GDAL >= 1.8.0) set georeferenced extents. The values must be expressed in georeferenced units. If not specified, the extent of the output file will be the extent of the vector layers.
     command<-paste(command, "-tr", res) #(GDAL >= 1.8.0) set target resolution. The values must be expressed in georeferenced units. Both must be positive values.
-    #command<-paste(command, "-a_nodata", 0)
     command<-paste(command, path.in.shp)
     command<-paste(command, tempRast)
     
@@ -244,9 +235,7 @@ ZonalPipe <- function (ctryCode, ctryPoly, path.in.shp, path.in.r, path.out.r, p
   Zstat<-data.frame(myZonal(r, zone, stats))
   
   message("Calculating zonal stats ... DONE")
-  
-  #colnames(Zstat)[2:length(Zstat)]<-paste0("B", c(1:(length(Zstat)-1)), "_",stats)
-  
+
   colnames(Zstat)[2:length(Zstat)] <- stats
   
   return(Zstat)
@@ -319,8 +308,6 @@ fnAggRadGdal <- function(ctryCode, ctryPoly, nlPeriod, fnStats=stats, nlType)
   
   lowestIDCol <- paste0("ID_", gsub("[^[:digit:]]", "", lowestLyrName))
   
-  #ctryPoly <- readOGR(getPolyFnamePath(ctryCode), lowestLyrName)
-  
   sumAvgRad <- ZonalPipe(ctryCode, ctryPoly, path.in.shp, path.in.r, path.out.r, path.out.shp, zone.attribute, stats=fnStats)
   
   ctryPolyData <- ctryPoly@data
@@ -331,20 +318,14 @@ fnAggRadGdal <- function(ctryCode, ctryPoly, nlPeriod, fnStats=stats, nlType)
   
   #if there is only the country adm level i.e. no lower adm levels than the country adm level then we only have 1 row each but IDs may not match as seen with ATA. treat differently
   #since we do not have IDs to merge by, we simply cbind the columns and return column 2
-  
-  #cols <- paste0("B", c(1:(length(fnStats))), "_",fnStats)
-  
+
   if (lowestIDCol == "ID_0")
   {
     sumAvgRad <- cbind(ctryPolyData$ID_0, sumAvgRad[sumAvgRad$z!=0, ])
-    
-    #sumAvgRad <- sumAvgRad[,2]
   }
   else
   {
     sumAvgRad <- merge(ctryPolyData, sumAvgRad, by.x=lowestIDCol, by.y="z", all.x=T, sort=T)
-    
-    #sumAvgRad <- names(sumAvgRad) <-  c(names(sumAvgRad), fnStats)
   }
   
   return(sumAvgRad)
