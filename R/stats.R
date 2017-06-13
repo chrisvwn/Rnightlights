@@ -65,7 +65,7 @@ myZonal <- function (x, z, stats, digits = 0, na.rm = TRUE, ...)
 {
   #http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/
 
-  varx <- function(x, ...) ifelse(length(x) > 1, var(x, ...), x)
+  varx <- function(x, ...) ifelse(length(x) > 1, stats::var(x, ...), x)
   
   statsFn <- lapply(stats, function(x) switch(x, sum="sum", mean="mean", var="varx"))
   
@@ -271,7 +271,7 @@ ZonalPipe <- function (ctryCode, ctryPoly, path.in.shp, path.in.r, path.out.r, p
 #' \dontrun{validNlMonthNum("01","VIIRS")}
 #'  #returns TRUE
 #'
-fnAggRadGdal <- function(ctryCode, ctryPoly, nlPeriod, fnStats=stats, nlType)
+fnAggRadGdal <- function(ctryCode, ctryPoly, nlPeriod, fnStats=pkgOptions("stats"), nlType)
 {
   if(missing(ctryCode))
     stop("Missing required parameter ctryCode")

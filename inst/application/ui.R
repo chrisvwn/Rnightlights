@@ -93,6 +93,13 @@ alignCenter <- function(el) {
                                 multiple = TRUE
                  ),
                  
+                 shiny::radioButtons(inputId = "nltype", 
+                                     label = "NL Type",
+                                     choices = c("OLS","VIIRS"),
+                                     selected = "OLS",
+                                     inline = T
+                                      ),
+                 
                  shiny::uiOutput("radioStats"),
                  
                  shiny::uiOutput(outputId = "intraCountry"),
@@ -184,8 +191,8 @@ alignCenter <- function(el) {
                    shiny::textOutput("Models")
                    ),
           
-          shinydashboard::tabItem(tabName = "Data",
-                  dataTableOutput("dataset")
+          shinydashboard::tabItem(tabName = "data",
+                  DT::dataTableOutput("dataset")
                    )
         )
       )

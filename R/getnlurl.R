@@ -93,7 +93,7 @@ getNlUrlVIIRS <- function(nlYearMonth, tileNum)
   if(!validNlPeriodVIIRS(nlYearMonth))
     stop("Invalid nlYearMonth")
   
-  if (!existsNlTiles())
+  if (!exists("nlTiles"))
     nlTiles <- getNlTiles("VIIRS")
   
   inYear <- as.character(substr(nlYearMonth, 1, 4))

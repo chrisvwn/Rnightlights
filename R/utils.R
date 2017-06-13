@@ -143,11 +143,7 @@ getAllNlPeriods <- function(nlType)
 #'
 nlInit <- function(omitCountries="none")
 {
-  #create the nlTiles and tileSpPolysDFs variables in the global environment to speed up processing
-  #the two speed up tile lookup
-  nlTiles <<- getNlTiles()
-  
-  tilesSpPolysDFs <<- createNlTilesSpPolysDF()
+
 }
 
 ######################## nlCleanup ###################################
@@ -161,11 +157,10 @@ nlInit <- function(omitCountries="none")
 #' @examples
 #'  \dontrun{nlCleanup()}
 #'
-#' @export
 nlCleanup <- function()
 {
   #remove any global vars we might have used
-  suppressWarnings(rm(map, shpTopLyrName, wgs84, nlTiles, tilesSpPolysDFs))
+  #suppressWarnings(rm(map, shpTopLyrName, wgs84, nlTiles, tilesSpPolysDFs))
   
   #the destructor
   
@@ -385,7 +380,7 @@ writeNightlightsMap <- function()
   #     END
   END # MODIS raster layer ends here"
   
-  fList <- dir(path = pkgOptions("dirRasterVIIRS"), pattern = "*.tif$",full.names = T)
+  fList <- dir(path = pkgOptions("dirNlTiles"), pattern = "*.tif$",full.names = T)
   
   layers <- NULL
   nodata <- "-1.69999999999999994e+308"
@@ -452,7 +447,7 @@ myquantile <- function (x)
   {
     vals <- raster::getValues(x, blocks$row[i], blocks$nrows[i])
     
-    result <- rbind(result, quantile(vals, c(0.02,0.98),na.rm=T))
+    result <- rbind(result, stats::quantile(vals, c(0.02,0.98),na.rm=T))
   }
   
   result <- colMeans(result, na.rm = T)

@@ -19,7 +19,16 @@
   if(is.null(getDataPath()))
     setupDataPath()
   
-  compiler::enableJIT(0)
+  #global constants
+  map <- rworldmap::getMap()
+  map <- cleangeo::clgeo_Clean(map)
+  shpTopLyrName <- "adm0"
+  #projection system to use
+  #can we use only one or does it depend on the shapefile loaded?
+  wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+  #ntLtsIndexUrlVIIRS = "https://www.ngdc.noaa.gov/eog/viirs/download_monthly.html"
+  
+  compiler::enableJIT(3)
 }
 
 .onDetach <- function(libname)

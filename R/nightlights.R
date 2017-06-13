@@ -1,25 +1,25 @@
 #TODO:
-#+ gzip all outputrasters and extract/delete tifs as required
-#+ delete the 2nd tif in the tiles (avg_rad_...).
-#+ keep tiles gzipped until required. extract/delete as needed
-#+ modularize everything, processNlData especially: PARTIALLY DONE
-#+ give functions better names more descriptive: PARTIALLY DONE
+#+ gzip all outputrasters and extract/delete tifs as required :V2
+#+ delete the 2nd tif in the tiles (avg_rad_...). :V2
+#+ keep tiles gzipped until required. extract/delete as needed: V2
+#+ modularize everything, processNlData especially: DONE
+#+ give functions better names more descriptive: DONE
 #+ validation of inputs, error handling: PARTIALLY DONE
 #+ give temp files unique names to avoid problems in case of parallelization: DONE
-#+ settings and default settings list/DF: PARTIALLY DONE
+#+ settings and default settings list/DF: DONE
 #+ optimize download of tiles: PARTIALLY DONE aria2
-#+     Check available methods and try in prioritized order
+#+     Check available methods and try in prioritized order : V2
 #+     Retry number of times, resume downloads
-#+ zone files functions
+#+ zone files functions: DONE
 #+ logging
 #+ debug mode
 #+ do not export internal functions?: DONE
-#+ remove dependency on rworldmap?
-#+ aggregating by date e.g. quarterly, semi-annually, annually
-#+ verify treatment of ATA i.e. single adm level countries
+#+ remove dependency on rworldmap?: NA
+#+ aggregating by date e.g. quarterly, semi-annually, annually :V2
+#+ verify treatment of ATA i.e. single adm level countries: DONE
 #+ logic of getCtryPolyAdmLevelNames esp lvlEngName assignment needs scrutiny: DONE
-#+ OLS : PARTIALLY DONE In progress
-#+ store data in RDS format instead of CSV(?)
+#+ OLS : DONE
+#+ store data in RDS format instead of CSV(?): V2
 
 #Notes: gdalwarp is not used for cropping because the crop_to_cutline option causes a shift in the cell locations which then affects the stats extracted. A gdal-based crop to extent would be highly desirable for performance reasons though so seeking other gdal-based workarounds
 
@@ -48,121 +48,6 @@
 # require(doParallel) #Allows for parallel processing using multiple cores
 #
 # require(compiler)
-
-#global constants
-map <- rworldmap::getMap()
-map <- cleangeo::clgeo_Clean(map)
-shpTopLyrName <- "adm0"
-#projection system to use
-#can we use only one or does it depend on the shapefile loaded?
-wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
-#ntLtsIndexUrlVIIRS = "https://www.ngdc.noaa.gov/eog/viirs/download_monthly.html"
-
-compiler::enableJIT(0)
-
-######################## RNIGHTLIGHTSOPTIONS ###################################
-
-RNIGHTLIGHTSOPTIONS <- settings::options_manager(
-  #Change the temp dir to use e.g. if the system temp dir does not have enough space
-  tmpDir = raster::tmpDir(),
-  
-  ntLtsIndexUrlVIIRS = "https://www.ngdc.noaa.gov/eog/viirs/download_dnb_composites_iframe.html",
-  
-  ntLtsIndexUrlOLS = "https://www.ngdc.noaa.gov/eog/data/web_data/v4composites/",
-  
-  stats = c("sum", "mean", "var"),
-  
-  dirNlDataPath = ".Rnightlights",
-  
-  #Set raster directory path
-  dirRasterOLS = "tiles",
-  
-  #Set directory path
-  dirRasterVIIRS = "tiles",
-  
-  dirRasterOutput = "outputrasters",
-  
-  dirRasterWeb = "outputrasters_web",
-  
-  dirZonals = "zonals",
-  
-  dirPolygon = "polygons",
-  
-  dirNlData = "data",
-  
-  #cropMaskMethod" Method used to crop and mask tiles to country polygons. 
-  #options: "gdal" or "rast" gdal is usually faster but requires gdal to be installed on the system
-  cropMaskMethod = "gdal",
-  
-  extractMethod = "gdal",
-  
-  #gdal_cachemax Speeds up gdal_rasterize calculation of stats in function ZonalPipe with more cache (advice: max 1/3 of your total RAM) see: http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/
-  gdal_cachemax = 2000,
-  
-  #downloadMethod used options: auto, aria, curl, libcurl, wget
-  downloadMethod = "auto",
-  
-  omitCountries = "missing",
-  
-  deleteTiles = FALSE,
-  
-  .allowed = list(
-    cropMaskMethod = settings::inlist("gdal","rast"),
-    extractMethod = settings::inlist("gdal", "rast"),
-    downloadMethod = settings::inlist("aria", "auto", "curl", "libcurl", "wget"),
-    omitCountries = settings::inlist("error", "missing", "long", "all", "none")
-  )
-)
-
-######################## pkgOptions ###################################
-
-#' Set or get options for the Rnightlights package
-#' 
-#' @param ... Option names to retrieve option values or \code{[key]=[value]} pairs to set options.
-#'
-#' @section Supported options:
-#' The following options are supported
-#' \itemize{
-#'  \item{\code{dirRasterOLS}}{(\code{character}) The directory in which to store the downloaded OLS raster tiles }
-#'  \item{\code{dirRasterVIIRS}}{(\code{character}) The directory in which to store the downloaded VIIRS raster tiles }
-#'  \item{\code{dirRasterOutput}}{(\code{character}) The directory in which to store the clipped country rasters }
-#'  \item{\code{dirRasterWeb}}{(\code{character}) The directory in which to store the rasters resampled for web display }
-#'  \item{\code{dirZonals}}{(\code{character}) The directory in which to store the zonal statistics country polygon }
-#'  \item{\code{dirPolygon}}{(\code{character}) The directory to store the downloaded country administration level polygons }
-#'  \item{\code{dirNlData}}{(\code{character}) The directory to store the extracted data files in }
-#'  \item{\code{cropMaskMethod}}{(\code{character}) The method to use to clip the nightlight raster tiles to the country boundaries }
-#'  \item{\code{extractMethod}}{(\code{character}) The method to use to extract data from the rasters }
-#'  \item{\code{downloadMethod}}{(\code{character}) The download method to use }
-#'  \item{\code{omitCountries}}{(\code{character}) The countries to exclude in processing }
-#' }
-#' @return if an option name is supplied as a parameter this returns the value, else a list of all options is returned.
-#' 
-#' @examples
-#' pkgOptions("cropMaskMethod")
-#' 
-#' pkgOptions()
-#' 
-#' pkgOptions(cropMaskMethod="gdal")
-#' 
-#' @export
-pkgOptions <- function(...)
-{
-  settings::stop_if_reserved(...)
-  
-  RNIGHTLIGHTSOPTIONS(...)
-}
-
-######################## pkgReset ###################################
-
-#' Reset global options for the Rnightlights package
-#' 
-#' Reset global options for the Rnightlights package
-#'
-#' @export
-pkgReset <- function()
-{
-  settings::reset(RNIGHTLIGHTSOPTIONS)
-}
 
 ######################## processNLCountry ###################################
 
@@ -215,13 +100,13 @@ pkgReset <- function()
 #' #for both cropMask and extraction for KEN
 #' \dontrun{processNLCountry("KEN", "201212", "VIIRS", "gdal", "gdal", "sum")}
 #'
-processNLCountry <- function(ctryCode, nlPeriod, nlType, cropMaskMethod=pkgOptions("cropMaskMethod"), extractMethod=pkgOptions("extractMethod"), fnStats=stats)
+processNLCountry <- function(ctryCode, nlPeriod, nlType, cropMaskMethod=pkgOptions("cropMaskMethod"), extractMethod=pkgOptions("extractMethod"), fnStats=pkgOptions("stats"))
 {
   if(missing(ctryCode))
     stop("Missing required parameter ctryCode")
   
   if(missing(nlPeriod))
-    stop("Missing required parameter nlYearMonth")
+    stop("Missing required parameter nlPeriod")
   
   if(missing(nlType))
     stop("Missing required parameter nlType")
@@ -237,6 +122,8 @@ processNLCountry <- function(ctryCode, nlPeriod, nlType, cropMaskMethod=pkgOptio
   
   message("processNLCountry: ", ctryCode, " ", nlType, " ", nlPeriod)
 
+  wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+  
   message("Check for existing data file")
   
   if (existsCtryNlDataFile(ctryCode))
@@ -332,7 +219,7 @@ processNLCountry <- function(ctryCode, nlPeriod, nlType, cropMaskMethod=pkgOptio
       
       message("Writing the merged raster to disk ", base::date())
       
-      raster::writeRaster(x = ctryRastCropped, filename = getCtryRasterOutputFname(ctryCode, nlType, nlYearMonth), overwrite=TRUE)
+      raster::writeRaster(x = ctryRastCropped, filename = getCtryRasterOutputFname(ctryCode, nlType, nlPeriod), overwrite=TRUE)
       
       message("Crop and mask using rasterize ... Done", base::date())
     }
@@ -341,7 +228,7 @@ processNLCountry <- function(ctryCode, nlPeriod, nlType, cropMaskMethod=pkgOptio
       message("Crop and mask using gdalwarp ... ", base::date())
       
       #GDALWARP
-      rstTmp <- file.path(getNlDir("dirRasterVIIRS"), paste0(basename(tempfile()), ".tif"))
+      rstTmp <- file.path(getNlDir("dirNlTiles"), paste0(basename(tempfile()), ".tif"))
       
       message("Writing merged raster to disk for gdal")
       
@@ -462,7 +349,7 @@ getCtryRasterOutputFname <- function(ctryCode, nlType, nlPeriod)
 #' Downloads nightlight tiles and country polygons and calls the function to process them
 #'
 #' Downloads nightlight tiles and country polygons in preparation for the appropriate functions
-#'     to process them. Given a list of countries and nlYearMonths and an nlType, processNlData 
+#'     to process them. Given a list of countries and nlPeriods and an nlType, processNlData 
 #'     will first determine which countries and periods do not actually have data i.e. have not 
 #'     been previously processed. From the list of countries and prediods that need processing,
 #'     it determines which nightlight tiles require to be downloaded. At the same time, it 
@@ -551,15 +438,6 @@ getCtryRasterOutputFname <- function(ctryCode, nlType, nlPeriod)
 #' @export
 processNlData <- function (ctryCodes=getAllNlCtryCodes("all"), nlPeriods=getAllNlPeriods(nlType), nlType="VIIRS", stats=pkgOptions("stats"))
 {
-  #nlYearMonths is a character vector with each entry containing an entry of the form YYYYMM (%Y%m)
-  #e.g. 201401 representing the month for which nightlights should be calculated
-  #use provided list
-  #if none given default to all year_months
-  #TODO:
-  #1. if years only given, infer months
-  #2. verification & deduplication
-  #3. OLS: DONE
-  
   #if the period is not given process all available periods
   if(missing("nlPeriods") || is.null(nlPeriods) || length(nlPeriods) == 0 || nlPeriods == "")
   {
@@ -575,7 +453,7 @@ processNlData <- function (ctryCodes=getAllNlCtryCodes("all"), nlPeriods=getAllN
   }
   
   #if the tile mapping does not exist create it
-  if (!existsNlTiles())
+  if (!exists("nlTiles"))
     nlTiles <- getNlTiles(nlType)
   
   #use supplied list of ctryCodes in ISO3 format else use default of all

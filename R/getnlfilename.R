@@ -1,42 +1,3 @@
-######################## getNlTileZipLclNameVIIRS ###################################
-
-#' Constructs the filename used to save/access the downloaded VIIRS tile .tgz file
-#'
-#' Constructs the filename used to save/access the downloaded VIIRS tile .tgz file
-#'
-#' @param nlYearMonth The nlYearMonth in which the tile was created
-#'
-#' @param tileNum The index of the tile as given in nlTileIndex
-#'
-#' @param dir The directory storing the tiles. Defaults to the global variable dirRasterVIIRS
-#'
-#' @return A character string filename of the compressed .tgz VIIRS tile
-#'
-#' @examples
-#' \dontrun{getNlTileZipLclNameVIIRS("201401", "1")}
-#'  #returns "./tiles/viirs_2014_01_75N180W.tgz"
-#'
-getNlTileZipLclNameVIIRS <- function(nlYearMonth, tileNum, dir=getNlDir("dirRasterVIIRS"))
-{
-  if(missing(nlYearMonth))
-    stop("Missing required parameter nlYearMonth")
-  
-  if(missing(tileNum))
-    stop("Missing required parameter tileNum")
-  
-  if(!validNlPeriodVIIRS(nlYearMonth))
-    stop("Invalid nlYearMonth: ", nlYearMonth)
-  
-  if(!validNlTileNumVIIRS(tileNum))
-    stop("Invalid tileNum: ", tileNum)
-  
-  nlYear <- substr(nlYearMonth, 1, 4)
-  
-  nlMonth <- substr(nlYearMonth, 5, 6)
-  
-  return (paste0("viirs_", nlYear, "_", nlMonth, "_", tileIdx2Name(tileNum, "VIIRS"), ".tgz"))
-}
-
 ######################## getNlTileZipLclNamePath ###################################
 
 #' Constructs the full path used to save/access the compressed downloaded tile
@@ -46,7 +7,7 @@ getNlTileZipLclNameVIIRS <- function(nlYearMonth, tileNum, dir=getNlDir("dirRast
 #'
 #' @param nlType the nlType of interest
 #' 
-#' @param nlPeriod the nlYearMonth in which the tile was created
+#' @param nlPeriod the nlPeriod in which the tile was created
 #'
 #' @param tileNum the index of the tile as given in nlTileIndex
 #'
@@ -80,9 +41,46 @@ getNlTileZipLclNamePath <- function(nlType, nlPeriod, tileNum)
     stop("Invalid tileNum: ", tileNum)
   
   if(nlType == "OLS")
-    return (file.path(getNlDir("dirRasterOLS"), getNlTileZipLclNameOLS(nlPeriod)))
+    return (file.path(getNlDir("dirNlTiles"), getNlTileZipLclNameOLS(nlPeriod)))
   else if(nlType == "VIIRS")
-    return (file.path(getNlDir("dirRasterVIIRS"), getNlTileZipLclNameVIIRS(nlPeriod, tileNum)))
+    return (file.path(getNlDir("dirNlTiles"), getNlTileZipLclNameVIIRS(nlPeriod, tileNum)))
+}
+
+######################## getNlTileZipLclNameVIIRS ###################################
+
+#' Constructs the filename used to save/access the downloaded VIIRS tile .tgz file
+#'
+#' Constructs the filename used to save/access the downloaded VIIRS tile .tgz file
+#'
+#' @param nlYearMonth The nlYearMonth in which the tile was created
+#'
+#' @param tileNum The index of the tile as given in nlTileIndex
+#'
+#' @return A character string filename of the compressed .tgz VIIRS tile
+#'
+#' @examples
+#' \dontrun{getNlTileZipLclNameVIIRS("201401", "1")}
+#'  #returns "./tiles/viirs_2014_01_75N180W.tgz"
+#'
+getNlTileZipLclNameVIIRS <- function(nlYearMonth, tileNum)
+{
+  if(missing(nlYearMonth))
+    stop("Missing required parameter nlYearMonth")
+  
+  if(missing(tileNum))
+    stop("Missing required parameter tileNum")
+  
+  if(!validNlPeriodVIIRS(nlYearMonth))
+    stop("Invalid nlYearMonth: ", nlYearMonth)
+  
+  if(!validNlTileNumVIIRS(tileNum))
+    stop("Invalid tileNum: ", tileNum)
+  
+  nlYear <- substr(nlYearMonth, 1, 4)
+  
+  nlMonth <- substr(nlYearMonth, 5, 6)
+  
+  return (paste0("viirs_", nlYear, "_", nlMonth, "_", tileIdx2Name(tileNum, "VIIRS"), ".tgz"))
 }
 
 ######################## getNlTileTifLclNamePath ###################################
@@ -93,7 +91,7 @@ getNlTileZipLclNamePath <- function(nlType, nlPeriod, tileNum)
 #'
 #' @param nlType the nlType of interest
 #'
-#' @param nlPeriod the nlYearMonth in which the tile was created
+#' @param nlPeriod the nlPeriod in which the tile was created
 #'
 #' @param tileNum the index of the tile as given in nlTileIndex
 #'
@@ -127,9 +125,9 @@ getNlTileTifLclNamePath <- function(nlType, nlPeriod, tileNum)
     stop("Invalid tileNum: ", tileNum)
   
   if(nlType == "OLS")
-    return (file.path(getNlDir("dirRasterVIIRS"), getNlTileTifLclNameOLS(nlPeriod)))
+    return (file.path(getNlDir("dirNlTiles"), getNlTileTifLclNameOLS(nlPeriod)))
   else if(nlType == "VIIRS")
-    return (file.path(getNlDir("dirRasterVIIRS"), getNlTileTifLclNameVIIRS(nlPeriod, tileNum)))
+    return (file.path(getNlDir("dirNlTiles"), getNlTileTifLclNameVIIRS(nlPeriod, tileNum)))
 }
 
 ######################## getNlTileTifLclNameVIIRS ###################################
@@ -142,16 +140,14 @@ getNlTileTifLclNamePath <- function(nlType, nlPeriod, tileNum)
 #'
 #' @param tileNum the index of the tile as given in nlTileIndex
 #'
-#' @param dir the directory storing the tiles. Defaults to the global variable dirRasterVIIRS
-#'
 #' @return a character vector filename of the .tif VIIRS tile
 #'
 #' @examples
-#' #using default dirRasterVIIRS
-#' \dontrun{getNlTileTifLclNameVIIRS("2014", "01", "1")}
+#' #using default dirNlTiles
+#' \dontrun{getNlTileTifLclNameVIIRS("201401", "1")}
 #'  #returns "viirs_2014_01_75N180W.tif"
 #'
-getNlTileTifLclNameVIIRS <- function(nlYearMonth, tileNum, dir=getNlDir("dirRasterVIIRS"))
+getNlTileTifLclNameVIIRS <- function(nlYearMonth, tileNum)
 {
   if(missing(nlYearMonth))
     stop("Missing required parameter nlYearMonth")
@@ -183,7 +179,7 @@ getNlTileTifLclNameVIIRS <- function(nlYearMonth, tileNum, dir=getNlDir("dirRast
 #' @return a character vector filename of the .tif OLS tile
 #'
 #' @examples
-#' #using default dirRasterOLS
+#' #using default dirNlTiles
 #' \dontrun{getNlTileTifLclNameVIIRS("2004")}
 #'  #returns "OLS_2004.tif"
 #'
@@ -211,7 +207,7 @@ getNlTileTifLclNameOLS <- function(nlYear)
 #' @return a character vector filename of the .tif VIIRS tile
 #'
 #' @examples
-#' #using default dirRasterVIIRS
+#' #using default dirNlTiles
 #' \dontrun{getNlTileTifLclNamePathVIIRS("201401", "1")}
 #'  #returns "/dataPath/tiles/viirs_2014_01_75N180W.tif"
 #'
@@ -231,7 +227,7 @@ getNlTileTifLclNamePathVIIRS <- function(nlYearMonth, tileNum)
   if(!validNlTileNumVIIRS(tileNum))
     stop("Invalid tileNum: ", tileNum)
   
-  return (file.path(getNlDir("dirRasterVIIRS"), getNlTileTifLclNameVIIRS(nlYearMonth, tileNum)))
+  return (file.path(getNlDir("dirNlTiles"), getNlTileTifLclNameVIIRS(nlYearMonth, tileNum)))
 }
 
 ######################## getNlTileTifLclNamePathOLS ###################################
@@ -247,7 +243,7 @@ getNlTileTifLclNamePathVIIRS <- function(nlYearMonth, tileNum)
 #' @return a character vector filename of the .tif OLS tile
 #'
 #' @examples
-#' #using default dirRasterVIIRS
+#' #using default dirNlTiles
 #' \dontrun{getNlTileTifLclNamePathOLS("2014", "1")}
 #'  #returns "/dataPath/tiles/ols_2014.tif"
 #'
@@ -261,7 +257,7 @@ getNlTileTifLclNamePathOLS <- function(nlYear, tileNum)
   if(!validNlPeriodOLS(nlYear))
     stop("Invalid nlYear: ", nlYear)
   
-  return (file.path(getNlDir("dirRasterOLS"), getNlTileTifLclNameOLS(nlYear)))
+  return (file.path(getNlDir("dirNlTiles"), getNlTileTifLclNameOLS(nlYear)))
 }
 
 ######################## getNlTileZipLclNameOLS ###################################
@@ -299,7 +295,7 @@ getNlTileZipLclNameOLS <- function(nlYear)
 #' @return a character vector filename of the .tif VIIRS tile
 #'
 #' @examples
-#' #using default dirRasterOLS
+#' #using default dirNlTiles
 #' \dontrun{getNlTifLclNameOLS("2004")}
 #'  #returns "ols_2004.tif"
 #'

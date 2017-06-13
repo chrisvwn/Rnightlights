@@ -215,9 +215,18 @@ shiny::shinyServer(function(input, output, session){
       
       ctryData <- data.table::data.table(reshape2::melt(ctryData, measure.vars=meltMeasureVars))
 
-      ctryData$variable <- paste0(gsub("[^[:digit:]]","", ctryData$variable),"01")
+      if(input$nltype == "OLS")
+      {
+        ctryData$variable <- paste0(gsub("[^[:digit:]]","", ctryData$variable))
+        
+        ctryData$variable <- as.Date(ctryData$variable, format="%Y")
+      }
+      else if(input$nltype == "VIIRS")
+      {
+        ctryData$variable <- paste0(gsub("[^[:digit:]]","", ctryData$variable),"01")
       
-      ctryData$variable <- as.Date(ctryData$variable, format="%Y%m%d")
+        ctryData$variable <- as.Date(ctryData$variable, format="%Y%m%d")
+      }
       
       return(ctryData)
     })
@@ -548,7 +557,7 @@ shiny::shinyServer(function(input, output, session){
       if ("norm_area" %in% scale)
         meltCtryData$value <- (meltCtryData$value)/meltCtryData$area_sq_km
       
-      #aggMeltCtryData <- aggregate(mean(value), by=list(eval(admLevel)+variable), data=meltCtryData, mean)
+      #aggMeltCtryData <- stats::aggregate(mean(value), by=list(eval(admLevel)+variable), data=meltCtryData, mean)
       aggMeltCtryData <- stats::setNames(meltCtryData[,list(mean(value, na.rm = TRUE)), by = list(meltCtryData[[admLevel]], variable)], c(admLevel, "variable", "value"))
       
       dcastFormula <- paste(paste(admLevel, collapse = " + "), "~", paste("variable", collapse = " + "))
@@ -910,9 +919,9 @@ shiny::shinyServer(function(input, output, session){
             g <- g + ggplot2::scale_x_log10()
           
           if ("norm_area" %in% scale)
-            g <- g + ggplot2::labs(title="Nightlight Radiances", x = "Month", y = expression(paste("Avg Rad W" %.% "Sr" ^{-1} %.% "cm" ^{-2}, "per Km" ^{2})))
+            g <- g + ggplot2::labs(title="Nightlight Radiances", x = "Month", y = "Avg Rad (W.Sr^-1.cm^-2/Km2)") #y=expression(paste("Avg Rad W" %.% "Sr" ^{-1} %.% "cm" ^{-2}, "per Km" ^{2})))
           else
-            g <- g + ggplot2::labs(title="Nightlight Radiances", x = "Month", y = expression(~Total~Rad~W %.% Sr^{-1}%.%cm^{-2}))
+            g <- g + ggplot2::labs(title="Nightlight Radiances", x = "Month", y = "Total Rad (W.Sr^-1.cm^-2)") #y=expression(~Total~Rad~W %.% Sr^{-1}%.%cm^{-2}))
           
           plotly::ggplotly(g)
           
@@ -1038,9 +1047,9 @@ shiny::shinyServer(function(input, output, session){
         g <- g + ggplot2::scale_x_log10()
       
       if ("norm_area" %in% scale)
-        g <- g + ggplot2::labs(title="Nightlight Radiances", x = "Month", y = expression(paste("Avg Rad W" %.% "Sr" ^{-1} %.% "cm" ^{-2}, "per Km" ^{2})))
+        g <- g + ggplot2::labs(title="Nightlight Radiances", x = "Month", y = "Avg Rad (W.Sr^-1.cm^-2/Km2)") #y=expression(paste("Avg Rad W" %.% "Sr" ^{-1} %.% "cm" ^{-2}, "per Km" ^{2})))
       else
-        g <- g + ggplot2::labs(title="Nightlight Radiances", x = "Month", y = expression(~Total~Rad~W %.% Sr^{-1}%.%cm^{-2}))
+        g <- g + ggplot2::labs(title="Nightlight Radiances", x = "Month", y = "Total Rad (W.Sr^-1.cm^-2)") #y=expression(~Total~Rad~W %.% Sr^{-1}%.%cm^{-2}))
       
       plotly::ggplotly(g)
       
@@ -1049,7 +1058,7 @@ shiny::shinyServer(function(input, output, session){
     
     ######################## renderDataTable dataset ###################################
     
-    output$dataset <- renderDataTable({
+    output$dataset <- DT::renderDataTable({
       if(is.null(ctryNlData()))
         return("NO DATA")
       

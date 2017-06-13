@@ -68,25 +68,6 @@ downloadNlTiles <- function(nlType, nlPeriod, tileList)
   return (success)
 }
 
-######################## existsCtryCodeTiles ###################################
-
-#' Check if the variable ctryCodeTiles exists
-#'
-#' Check if the variable ctryCodeTiles, which is a mapping between countryCodes and the tiles it intersects with, exists as created by \code{mapCtryPolyToTilesVIIRS()}.
-#'
-#' @return TRUE/FALSE
-#'
-#' @examples
-#' \dontrun{
-#' if(!existsCtryCodeTiles())
-#'   mapCtryPolyToTilesVIIRS()
-#'   }
-#'
-existsCtryCodeTiles <- function()
-{
-  return (exists("ctryCodeTiles") && class(ctryCodeTiles)=="data.frame" && !is.null(ctryCodeTiles))
-}
-
 ######################## getCtryTileList ###################################
 
 #' Returns a list of VIIRS nightlight tiles that a country or countries
@@ -182,50 +163,6 @@ getNlTiles <- function(nlType)
   return (nlTiles)
 }
 
-######################## existsNlTiles ###################################
-
-#' Checks if the nlTiles data.frame variable exists
-#'
-#' Checks if the nlTiles data.frame variable exists in the environment and that it is not null or empty. This is used by other functions that depend on the nlTiles data.frame to check if it exists. If it doesn't they may create the data.frame.
-#'
-#' @return TRUE/FALSE
-#'
-#' @examples
-#' \dontrun{
-#' if(!existsNlTiles())
-#'   nlTiles <- getNlTiles("VIIRS")
-#'   }
-#'
-existsNlTiles <- function()
-{
-  if (exists("nlTiles") && class(nlTiles) == "data.frame" && !is.null(nlTiles) && nrow(nlTiles) > 0)
-    return (TRUE)
-  else
-    return (FALSE)
-}
-
-######################## existsTilesSpPolysDFs ###################################
-
-#' Checks if the variable \code{"tilesSpPolysDFs"} exists
-#'
-#' Checks if the \code{"tilesSpPolysDFs"} (tile Spatial Polygons DataFrame) variable exists in the environment   and that it is not null. This is used by other functions that depend on the \code{"tilesSpPolysDFs"} data.frame to check if it exists. If it doesn't they can create the data.frame.
-#'
-#' @return TRUE/FALSE
-#'
-#' @examples
-#' \dontrun{
-#' if(!existsTilesSpPolysDFs())
-#'   tilesSpPolysDFs <- createNlTilesSpPolysDF()
-#'   }
-#'
-existsTilesSpPolysDFs <- function()
-{
-  if (exists("tilesSpPolysDFs") && class(tilesSpPolysDFs) == "SpatialPolygonsDataFrame" && !is.null(tilesSpPolysDFs))
-    return(TRUE)
-  else
-    return(FALSE)
-}
-
 ######################## createNlTilesSpPolysDF ###################################
 
 #' Creates a tile Spatial Polygons DataFrame from the \code{"nlTiles"} dataframe
@@ -239,10 +176,12 @@ existsTilesSpPolysDFs <- function()
 #'
 createNlTilesSpPolysDF <- function()
 {
-  if (!existsNlTiles())
+  if (!exists("nlTiles"))
   {
     nlTiles <- getNlTiles("VIIRS")
   }
+  
+  wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
   
   #convert nlTiles min/max columns to numeric
   for (cIdx in grep("id|min|max", names(nlTiles))) nlTiles[,cIdx] <- as.numeric(as.character(nlTiles[, cIdx]))
@@ -273,7 +212,7 @@ createNlTilesSpPolysDF <- function()
     raster::projection(tilesSpPolys) <- sp::CRS(wgs84)
     
     #convert the SpatialPolygons object into a SpatialPolygonsDataFrame
-    #tilesSpPolysDF <- as(tilesSpPolys, "SpatialPolygonsDataFrame")
+    #tilesSpPolysDF <- methods::as(tilesSpPolys, "SpatialPolygonsDataFrame")
     
     #z used for plotCtryWithTilesVIIRS to color the tiles
     tilesSpPolysDF <- sp::SpatialPolygonsDataFrame(tilesSpPolys, data.frame(z=factor(i), name=nlTiles[i,"name"], row.names=i))
@@ -306,9 +245,9 @@ createNlTilesSpPolysDF <- function()
 #' @examples
 #' plotCtryWithTilesVIIRS("KEN")
 #'
-#' plotCtryWithTilesVIIRS(85)
+#' plotCtryWithTilesVIIRS(115)
 #' 
-#' plotCtryWithTilesVIIRS("85")
+#' plotCtryWithTilesVIIRS("24")
 #'
 #' @export
 plotCtryWithTilesVIIRS <- function(idx)
@@ -318,6 +257,8 @@ plotCtryWithTilesVIIRS <- function(idx)
   
   if(!is.character(idx) && !is.numeric(idx))
     stop("The parameter you supplied needs to be type numeric or character")
+  
+  wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
   
   #if the map variable does not exist
   if(!exists("map"))
@@ -330,7 +271,7 @@ plotCtryWithTilesVIIRS <- function(idx)
   }
   
   #if the tiles spatial polygons dataframe does not exist create it
-  if(!existsTilesSpPolysDFs())
+  if(!exists("tilesSpPolysDFs"))
     tilesSpPolysDFs <- createNlTilesSpPolysDF()
   
   #if idx is numeric we assume it is the index of the country polygon in the map
@@ -406,7 +347,7 @@ plotCtryWithTilesVIIRS <- function(idx)
   e@ymax <- e@ymax + 10
   
   #convert the Extents object to a SpatialLines object for spplot to use
-  extents <- as(e, 'SpatialLines')
+  extents <- methods::as(e, 'SpatialLines')
   
   #get a list of the intersecting tiles. Used to highlight tiles which intersect with plotted country
   tilesIntersected <- tileName2Idx(tileName = getTilesCtryIntersectVIIRS(map@data$ISO3[[idx]]), nlType="VIIRS")
@@ -509,6 +450,8 @@ mapCtryPolyToTilesVIIRS <- function(ctryCodes="all", omitCountries=pkgOptions("o
     map <- cleangeo::clgeo_Clean(sp = map)
   }
   
+  wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+  
   #get the indices of the country polygons from the rworldmap
   ctryCodeIdx <- which(map@data$ISO3 %in% ctryCodes)
   
@@ -527,7 +470,7 @@ mapCtryPolyToTilesVIIRS <- function(ctryCodes="all", omitCountries=pkgOptions("o
     raster::projection(ctrySpPolys) <- sp::CRS(wgs84)
     
     #convert the SpatialPolygons to a SpatialPolygonsDataFrame
-    ctrySpPolysDF <- as(ctrySpPolys, "SpatialPolygonsDataFrame")
+    ctrySpPolysDF <- methods::as(ctrySpPolys, "SpatialPolygonsDataFrame")
     
     #find the tiles the SPDF intersects with and add to the list of tiles
     ctryCodeTiles <- rbind(ctryCodeTiles, list(tilesPolygonIntersectVIIRS(ctrySpPolys)))
@@ -577,6 +520,14 @@ getTilesCtryIntersectVIIRS <- function(ctryCode)
     stop("Invalid/Unknown ctryCode: ", ctryCode)
   
   ctryISO3 <- rworldmap::rwmGetISO3(ctryCode)
+ 
+  if(!exists("map"))
+  {
+    map <- rworldmap::getMap()
+    map <- cleangeo::clgeo_Clean(map)
+  }
+  
+  wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
   
   #print(ctryISO3)
   
@@ -594,7 +545,7 @@ getTilesCtryIntersectVIIRS <- function(ctryCode)
   
   raster::projection(ctrySpPolys) <- sp::CRS(wgs84)
   
-  ctrySpPolysDF <- as(ctrySpPolys, "SpatialPolygonsDataFrame")
+  ctrySpPolysDF <- methods::as(ctrySpPolys, "SpatialPolygonsDataFrame")
   
   ctryCodeTiles <- tilesPolygonIntersectVIIRS(ctrySpPolys)
   
@@ -664,7 +615,7 @@ tileName2Idx <- function(tileName, nlType)
   
   tileName <- toupper(tileName)
   
-  if (!existsNlTiles())
+  if (!exists("nlTiles"))
     nlTiles <- getNlTiles(nlType)
   
   return (which(nlTiles$name %in% tileName))
@@ -696,7 +647,7 @@ tileIdx2Name <- function(tileNum, nlType)
   if(!validNlType(nlType))
     stop("Invalid nlType: ", nlType)
   
-  if (!existsNlTiles())
+  if (!exists("nlTiles"))
     nlTiles <- getNlTiles(nlType)
   
   nlType <- toupper(nlType)
@@ -732,13 +683,15 @@ tilesPolygonIntersectVIIRS <- function(shpPolygon)
   #Input: a Spatial Polygon e.g. from a loaded shapefile
   #Output: a character vector of tile names as given in the nlTiles dataframe
   
-  if (!existsTilesSpPolysDFs())
+  if (!exists("tilesSpPolysDFs"))
   {
     tilesSpPolysDFs <- createNlTilesSpPolysDF()
   }
   
-  if (!existsNlTiles())
+  if (!exists("nlTiles"))
     nlTiles <- getNlTiles("VIIRS")
+  
+  wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
   
   raster::projection(shpPolygon) <- sp::CRS(wgs84)
   

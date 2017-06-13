@@ -37,7 +37,7 @@ setupDataPath <- function(newDataPath="~", ...)
         \nEnter 0 to Exit"
         
         
-        ans <- menu(choices = c(paste0("Create data path under home directory '",  
+        ans <- utils::menu(choices = c(paste0("Create data path under home directory '",  
                                        path.expand("~")), 
                                 "Choose a different directory as the data path"),
                     graphics = F, title = prompt);
@@ -88,7 +88,7 @@ setupDataPath <- function(newDataPath="~", ...)
                          \nEnter 0 to Exit")
         
         
-        ans <- menu(choices = c(paste0("Use current directory '",  
+        ans <- utils::menu(choices = c(paste0("Use current directory '",  
                                        path.expand(getDataPath()), " as the data path"), 
                                 "Choose a different directory as the data path"),
                     graphics = F, title = prompt);
@@ -411,7 +411,7 @@ removeDataPath <- function(dataPath = file.path(getDataPath(), ".Rnightlights"))
   
   menuPrompt <- paste0("You are about to remove the Rnightlights data folder in \n", dataPath, ". Do you want to continue?")
   
-  response <- menu(choices = c("Yes", "no"), graphics = F, title = menuPrompt)
+  response <- utils::menu(choices = c("Yes", "no"), graphics = F, title = menuPrompt)
   
   if(response == "1")
   {
@@ -471,11 +471,11 @@ createNlDataDirs <- function()
   if(!dir.exists(getNlDir("dirPolygon")))
     dir.create(getNlDir("dirPolygon"))
   
-  if(!dir.exists(getNlDir("dirRasterOLS")))
-    dir.create(getNlDir("dirRasterOLS"))
+  if(!dir.exists(getNlDir("dirNlTiles")))
+    dir.create(getNlDir("dirNlTiles"))
   
-  if(!dir.exists(getNlDir("dirRasterVIIRS")))
-    dir.create(getNlDir("dirRasterVIIRS"))
+  if(!dir.exists(getNlDir("dirNlTiles")))
+    dir.create(getNlDir("dirNlTiles"))
   
   if(!dir.exists(getNlDir("dirNlData")))
     dir.create(getNlDir("dirNlData"))

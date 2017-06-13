@@ -24,7 +24,7 @@ ctryNameToCode <- function(ctryName)
   {
     ctryList <- rworldmap::getMap()@data[,c("NAME", "ISO3")]
     
-    ctryList <- dplyr::arrange(ctryList, NAME)
+    ctryList <- dplyr::arrange(ctryList, "NAME")
     
     return(ctryList)
   }
@@ -60,7 +60,7 @@ ctryCodeToName <- function(ctryCode)
   {
     ctryList <- rworldmap::getMap()@data[,c("ISO3", "NAME")]
     
-    ctryList <- dplyr::arrange(ctryList, ISO3)
+    ctryList <- dplyr::arrange(ctryList, "ISO3")
     
     return(ctryList)
   }

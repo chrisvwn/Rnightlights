@@ -29,7 +29,7 @@ downloadNlTilesVIIRS <- function(nlYearMonth, tileNum, downloadMethod=pkgOptions
     stop("Missing required parameter tileNum")
   
   if(!validNlPeriodVIIRS(nlYearMonth))
-    stop("Invalid nlYear: ", nlYear)
+    stop("Invalid nlYear: ", nlYearMonth)
   
   if(!validNlTileNumVIIRS(tileNum))
     stop("Invalid tileNum: ", tileNum)
@@ -55,7 +55,7 @@ downloadNlTilesVIIRS <- function(nlYearMonth, tileNum, downloadMethod=pkgOptions
     if (downloadMethod %in% c("auto", "curl", "libcurl", "wget"))
       rsltDnld <- utils::download.file(ntLtsFileUrl, ntLtsZipLocalNamePathVIIRS, mode = "wb", method = downloadMethod, extra = "-c")
     else if (downloadMethod == "aria")
-      rsltDnld <- system(paste0("aria2c -c -x2 ", ntLtsFileUrl, " -d ", getNlDir("dirRasterVIIRS"), " -o ", getNlTileZipLclNameVIIRS(nlYearMonth, tileNum))) #downloads to path relative to -d if specified else local dir
+      rsltDnld <- system(paste0("aria2c -c -x2 ", ntLtsFileUrl, " -d ", getNlDir("dirNlTiles"), " -o ", getNlTileZipLclNameVIIRS(nlYearMonth, tileNum))) #downloads to path relative to -d if specified else local dir
   }
   else
   {
@@ -90,9 +90,9 @@ downloadNlTilesVIIRS <- function(nlYearMonth, tileNum, downloadMethod=pkgOptions
       
       if(!file.exists(getNlTileTifLclNamePathVIIRS(nlYearMonth, tileNum)))
       {
-        utils::untar(ntLtsZipLocalNamePathVIIRS, files = tgzAvgRadFilename, exdir = getNlDir("dirRasterVIIRS"), tar="internal")
+        utils::untar(ntLtsZipLocalNamePathVIIRS, files = tgzAvgRadFilename, exdir = getNlDir("dirNlTiles"), tar="internal")
         
-        file.rename(file.path(getNlDir("dirRasterVIIRS"), tgzAvgRadFilename), getNlTileTifLclNamePathVIIRS(nlYearMonth, tileNum))
+        file.rename(file.path(getNlDir("dirNlTiles"), tgzAvgRadFilename), getNlTileTifLclNamePathVIIRS(nlYearMonth, tileNum))
         
         file.remove(ntLtsZipLocalNamePathVIIRS)
       }
@@ -155,7 +155,7 @@ downloadNlTilesOLS <- function(nlYear, downloadMethod=pkgOptions("downloadMethod
     if (downloadMethod %in% c("auto", "curl", "libcurl", "wget"))
       rsltDnld <- utils::download.file(ntLtsFileUrl, ntLtsZipLocalNamePath, mode = "wb", method = downloadMethod, extra = "-c")
     else if (downloadMethod == "aria")
-      rsltDnld <- system(paste0("aria2c -c -x2 ", ntLtsFileUrl, " -d ", getNlDir("dirRasterOLS"), " -o ", getNlTileZipLclNameOLS(nlYear))) #downloads to path relative to -d if specified else local dir
+      rsltDnld <- system(paste0("aria2c -c -x2 ", ntLtsFileUrl, " -d ", getNlDir("dirNlTiles"), " -o ", ntLtsZipLocalNamePath)) #downloads to path relative to -d if specified else local dir
   }
   else
   {
@@ -170,6 +170,8 @@ downloadNlTilesOLS <- function(nlYear, downloadMethod=pkgOptions("downloadMethod
   {
     message("Extracting ", ntLtsZipLocalNamePath, " ", base::date())
     
+    tileNum <- "dummyTileNum"
+    
     if (!file.exists(getNlTileTifLclNamePathOLS(nlYear, tileNum)))
     {
       message("Getting list of files in ", ntLtsZipLocalNamePath, " ", base::date())
@@ -183,14 +185,14 @@ downloadNlTilesOLS <- function(nlYear, downloadMethod=pkgOptions("downloadMethod
       tgzFile <- tarFileList[grep(".*stable_lights\\.avg_vis\\.tif\\.gz$", tarFileList, ignore.case = T)]
       
       #extract the nightlight data file
-      utils::untar(tarfile = ntLtsZipLocalNamePath, files = tgzFile, exdir = getNlDir("dirRasterOLS"), tar = "internal")
+      utils::untar(tarfile = ntLtsZipLocalNamePath, files = tgzFile, exdir = getNlDir("dirNlTiles"), tar = "internal")
       
       #the tif has the same name as the compressed file without the .gz
       tifFile <- stringr::str_replace(tgzFile, ".gz", "")
       
       message("Decompressing ", tgzFile, " ", date())
       
-      R.utils::gunzip(file.path(getNlDir("dirRasterOLS"), tgzFile), ntLtsTifLocalNamePath)
+      R.utils::gunzip(file.path(getNlDir("dirNlTiles"), tgzFile), ntLtsTifLocalNamePath)
       
     }
     else

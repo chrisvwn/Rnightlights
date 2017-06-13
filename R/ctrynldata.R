@@ -21,6 +21,8 @@ createCtryNlDataDF <- function(ctryCode)
   if(!validCtryCode(ctryCode))
     stop("Invalid ctryCode: ", ctryCode)
   
+  wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+  
   if(dir.exists(getPolyFnamePath(ctryCode)) && length(dir(getPolyFnamePath(ctryCode)))> 0)
     ctryPoly <- rgdal::readOGR(path.expand(getPolyFnamePath(ctryCode)), getCtryShpLowestLyrName(ctryCode))
   
@@ -274,32 +276,36 @@ getCtryNlDataFnamePath <- function(ctryCode)
 
 ######################## getCtryNlData ###################################
 
-#' Returns VIIRS nightlight data for the given ctryCode in the given year months
+#' Returns nightlight statistics for the given ctryCode and nlType in the given nPeriods
 #'
-#' Returns VIIRS nightlight data for the given ctryCode and stats in the given 
-#'     year months. Note that getCtryNldata only processes one ctryCode at a time.
+#' Returns nightlight data for the given ctryCode and stats in the given 
+#'     nlPeriods and of the specified nlType. Note that getCtryNldata only
+#'     processes one ctryCode at a time.
 #'     \code{ignoreMissing} plays a significant role here. It can take 3 values:
 #'     
 #'     \itemize{
-#'         \item NULL (default) only return data if found for all nlYearMonths
-#'            and all stats provided otherwise return NULL
+#'         \item NULL (default) only return data if found for all nlPeriods
+#'            and all stats provided otherwise return NULL.
 #'         \item TRUE return any partial data that is found for the provided 
-#'            nlYearMonths and stats. Ignore any missing data
+#'            nlPeriods and stats. Ignore any missing data.
 #'         \item FALSE return all data that is found and call \code{processNlData}
-#'            to download and process any missing nlYearMonths and stats
+#'            to download and process any missing nlPeriods and stats.
 #'     }
 #'    
-#'    Farther, if \code{nlYearMonths} is missing, it is assigned values based on
-#'    the value of ignoreMissing. If ignoreMissing is FALSE, nlYearMonths is 
-#'    assigned all existing nlYearMonths to date. This is the equivalent of 
+#'    Farther, if \code{nlPeriods} is missing, it is assigned values based on
+#'    the value of ignoreMissing. If ignoreMissing is FALSE, nlPeriods is 
+#'    assigned all existing nlPeriods to date. This is the equivalent of 
 #'    retrieving all nightlight data for the given country and stats. If 
 #'    ignoreMissing is TRUE or NULL then the existing data is returned.
 #'
-#' @param ctryCode the ISO3 code of the country. Only 1 country can be processed at a time
+#' @param ctryCode the ISO3 code of the country. Only 1 country can be 
+#'     processed at a time
 #'
-#' @param nlPeriods a vector of yearMonths
+#' @param nlPeriods a vector of nlPeriods. Must be appropriate nlPeriods
+#'     for the nlType.
 #' 
-#' @param stats a vector of stats. if not supplied defaults to all stats as listed in pkgOptions("stats")
+#' @param stats a vector of stats. if not supplied defaults to all stats
+#'     as listed in pkgOptions("stats")
 #' 
 #' @param nlType the nightlight type i.e. "OLS" or "VIIRS" (default)
 #' 
@@ -307,49 +313,51 @@ getCtryNlDataFnamePath <- function(ctryCode)
 #'     found in the data file
 #'     
 #'     \itemize{
-#'         \item NULL (default) only return data if found for all nlYearMonths
+#'         \item NULL (default) only return data if found for all nlPeriods
 #'            and all stats provided otherwise return NULL
 #'         \item TRUE return any partial data that is found for the provided 
-#'            nlYearMonths and stats. Ignore any missing data
+#'            nlPeriods and stats. Ignore any missing data
 #'         \item FALSE return all data that is found and call \code{processNlData}
-#'            to download and process any missing nlYearMonths and stats
+#'            to download and process any missing nlPeriods and stats
 #'     }
 #' 
 #' @param source "local" or "remote" Whether to download and process the
 #'     data locally or to download the pre-processed data from a remote 
 #'     source/repo
 #'     
-#' @return dataframe of data for one country in one or multiple yearmonths
+#' @return dataframe of data for one country in one nlType in one or multiple
+#'     nlPeriods
 #'
 #' @examples
-#' #missing stats implies all stats
+#' #missing stats implies all stats as given by pkgOptions("stats")
 #' 
 #' \dontrun{getCtryNlData("KEN", ignoreMissing=NULL)}
-#'     #returns all existing data i.e. all nlYearMonths and all stats for KEN
+#'     #returns all existing data i.e. all nlPeriods and all stats for KEN
 #'
 #' \dontrun{getCtryNlData("KEN", ignoreMissing=TRUE)}
-#'     #same as ignoreMissing=NULL. Returns all existing data i.e. all nlYearMonths
+#'     #same as ignoreMissing=NULL. Returns all existing data i.e. all nlPeriods
 #'     #and all stats for KEN
 #'  
-#' \dontrun{getCtryNlData("KEN", ignoreMissing=FALSE)}
+#' \dontrun{getCtryNlData(ctryCode="KEN", nlType="VIIRS", ignoreMissing=FALSE)}
 #'     #for any missing data between 201204 to present download and process the
 #'     #data then return all data
 #'  
 #' \dontrun{getCtryNlData("KEN", nlPeriod=c("existingNlPeriod", "missingNlPeriod"),
 #'     stats=c("sum", "unknownStat"), ignoreMissing=NULL)}
 #'     #Returns NULL
-#'     #(ignoreMissing==NULL returns all data if exists or if any is missing returns NULL)
+#'     #(ignoreMissing=NULL returns all data if exists or if any is missing returns NULL)
 #'
 #' \dontrun{getCtryNlData("KEN", nlPeriods=c("existingNlPeriod", "missingNlPeriod"),
 #'     stats=c("existingStat", "missingStat"), ignoreMissing=TRUE)}
-#'    #Returns existingStat for existingNlYearMonth
-#'    #(ignoreMissing==TRUE returns only existing data)
+#'    #Returns existingStat for existingNlPeriods
+#'    #(ignoreMissing=TRUE returns only existing data)
 #'  
-#' \dontrun{getCtryNlData("KEN", nlYearPeriods=c("existingNlPeriod", "missingnlPeriod"),
+#' \dontrun{getCtryNlData("KEN", nlYearPeriods=c("existingNlPeriod", "missingNlPeriod"),
 #'     stats=c("sum", "unknownStat"), ignoreMissing=FALSE)}
-#'     #Runs processNlData for missingStat in missingNlYearMonth and returns
-#'     #existingStat and missingStat for both existingNlYearMonth and missingNlYearMonth
-#'     #(ignoreMissing==FALSE must return all data: forces processing of any missing)
+#'     #Runs processNlData for missingStat in "missingNlPeriod" and returns
+#'     #"existingStat" and "missingStat" for both "existingNlPeriod" and
+#'     #"missingNlPeriod"
+#'     #(ignoreMissing=FALSE must return all data: forces processing of any missing)
 #'  
 #' @export
 getCtryNlData <- function(ctryCode, nlPeriods, nlType, stats=pkgOptions("stats"), ignoreMissing=NULL, source="local")
@@ -414,7 +422,7 @@ getCtryNlData <- function(ctryCode, nlPeriods, nlType, stats=pkgOptions("stats")
   }
   else
   {
-    #else if missing nlYearMonths
+    #else if missing nlPeriods
     #if !missing(stats) return only given stats
     #else return the whole data frame
     if(existsCtryNlDataFile(ctryCode))
@@ -428,7 +436,7 @@ getCtryNlData <- function(ctryCode, nlPeriods, nlType, stats=pkgOptions("stats")
     return(ctryData)
   }
   
-  #to remove any missing nlYearMonths if ignoreMissing==TRUE
+  #to remove any missing nlPeriods if ignoreMissing==TRUE
   if(is.null(ignoreMissing) || ignoreMissing) #shortcircuit if ignoreMissing is NULL to avoid crash
   {
     if(any(existnlPeriodStats))
@@ -473,7 +481,7 @@ getCtryNlData <- function(ctryCode, nlPeriods, nlType, stats=pkgOptions("stats")
   
   cols <- c(cols, nlCols)
   
-  #add the column with the relevant yearmonth
+  #add the column with the relevant nlPeriod
   ctryData <- ctryData[,cols]
   
   return(ctryData)
@@ -504,7 +512,7 @@ getCtryNlData <- function(ctryCode, nlPeriods, nlType, stats=pkgOptions("stats")
 getCtryNlDataColName <- function(nlPeriod, stat, nlType)
 {
   if(missing(nlPeriod))
-    stop("Missing required parameter nlYearMonth")
+    stop("Missing required parameter nlPeriod")
   
   if(missing(stat))
     stop("Missing required parameter stat")
@@ -524,11 +532,7 @@ getCtryNlDataColName <- function(nlPeriod, stat, nlType)
     colName <- paste0(colName, "VIIRS_")
   else if(nlType == "OLS")
     colName <- paste0(colName, "OLS_")
-  
-  # colName <- paste0(colName, nlYearMonth, "_")
-  # 
-  # colName <- paste0(colName, toupper(stat))
-  
+
   colName <- paste0(colName, sapply(nlPeriod, function(x) paste0(x, "_", toupper(stat))))
   
   colName <- sort(colName)
@@ -582,17 +586,17 @@ existsCtryNlDataFile <- function(ctryCode)
 #' @param source Character string. Whether to check data availability "local" or "remote"
 #'     Not in use.
 #' 
-#' @return a list of countries and the years and stats for each
+#' @return a list of countries and the periods and stats for each
 #'
 #' @examples
 #' #list all data
-#' listData()
+#' listCtryNlData()
 #' 
 #' #filter data
-#' listData(ctryCodes = c("KEN","RWA"), nlPeriods = c("2012", "2013"),nlTypes = "OLS")
+#' listCtryNlData(ctryCodes = c("KEN","RWA"), nlPeriods = c("2012", "2013"),nlTypes = "OLS")
 #'
 #' @export
-listData <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, source="local")
+listCtryNlData <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, source="local")
 {
   dataList <- NULL
   
@@ -617,7 +621,7 @@ listData <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, source="local
     
     #aggregate the colnames into a single row with stats for each unique 
     #nlType+nlPeriod converted to a single field
-    nlCtryHdr <- aggregate(V4 ~ V1 + V2 + V3, data=nlCtryHdr, FUN=paste, collapse=",")
+    nlCtryHdr <- stats::aggregate(V4 ~ V1 + V2 + V3, data=nlCtryHdr, FUN=paste, collapse=",")
     
     #add a ctryCode column
     nlCtryHdr <- cbind(rep(ctryCode, nrow(nlCtryHdr)), nlCtryHdr)
@@ -625,6 +629,9 @@ listData <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, source="local
     #combine into one table
     dataList <- rbind(dataList, nlCtryHdr)
   }
+  
+  if(is.null(dataList))
+    return(NULL)
   
   #convert into a dataframe with numbered rownames
   dataList <- as.data.frame(dataList, row.names = 1:nrow(dataList))
@@ -657,10 +664,11 @@ listData <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, source="local
 
 ######################## existsCtryNlData ###################################
 
-#' Check if VIIRS nightlight data for a country in a given year and month already exists locally
+#' Check if VIIRS nightlight stats exist locally
 #'
-#' Check if VIIRS nightlight data for the country exists in the country nightlight data file. 
-#'     First checks if the country nightlight data file exists.
+#' Check if VIIRS nightlight data for the country exists in the country 
+#'     nightlight data file. First checks if the country nightlight data
+#'     file exists.
 #'
 #' @param ctryCode character the ISO3 code of the country
 #'
@@ -711,3 +719,67 @@ existsCtryNlData <- function(ctryCode, nlPeriod, stat, nlType)
     return(FALSE)
 }
 
+######################## listCtryRasters ###################################
+
+#' List available cropped country rasters
+#'
+#' List available data. If source is "local" it lists data cached locally.
+#'     If source is remote lists available data on the remote repository.
+#' 
+#' @param ctryCodes  A character vector of ctryCodes to filter by
+#' 
+#' @param nlPeriods A character vector of nlPeriods to filter by
+#' 
+#' @param nlTypes A character vector of nlTypes to filter by
+#' 
+#' @param source Character string. Whether to check data availability "local" or "remote"
+#'     Not in use.
+#' 
+#' @return a list of countries and the periods and stats for each
+#'
+#' @examples
+#' #list all data
+#' listCtryNlData()
+#' 
+#' #filter data
+#' listCtryNlData(ctryCodes = c("KEN","RWA"), nlPeriods = c("2012", "2013"),nlTypes = "OLS")
+#'
+#' @export
+listCtryNlData <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, source="local")
+{
+  dataList <- NULL
+  
+  #get a list of country data files present
+  rasterList <- list.files(getNlDir("dirRasterOutput"), pattern = ".tif")
+
+  if(is.null(dataList))
+    return(NULL)
+  
+  #convert into a dataframe with numbered rownames
+  dataList <- as.data.frame(dataList, row.names = 1:nrow(dataList))
+  
+  #label the columns
+  names(dataList) <- c("ctryCode", "dataType", "nlType", "nlPeriod", paste0("stat", 1:(ncol(dataList)-4)))
+  
+  #filters
+  #filter by ctryCode if supplied
+  if(!is.null(ctryCodes))
+    dataList <- dataList[which(dataList[,"ctryCode"] %in% ctryCodes),]
+  
+  #filter by nlType if supplied
+  if(!is.null(nlTypes))
+    dataList <- dataList[which(dataList[,"nlType"] %in% nlTypes),]
+  
+  #filter by nlPeriod if supplied
+  if(!is.null(nlPeriods))
+    dataList <- dataList[which(dataList[,"nlPeriod"] %in% nlPeriods),]
+  
+  #Reorder the columns
+  dataList <- dplyr::select(dataList, dataType, ctryCode, nlType, nlPeriod, dplyr::contains("stat"))
+  
+  #only return dataList if we have records esp. after filtering else return NULL
+  if(nrow(dataList) > 0)
+    return(dataList)
+  else
+    return(NULL)
+}
