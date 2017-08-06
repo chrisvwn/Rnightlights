@@ -1,10 +1,14 @@
 Package: Rnightlights
 Version: 0.1.0
-Date: 2017-02-15
-Title: R Satellite Nightlight Data Extraction
+Date: 2017-08-01
+Title: Satellite Nightlight Data Extraction
 Description: Extract data from satellite nightlight imagery.
-Author: Christopher Wambugu <chris.njuguna@gmail.com>
-Maintainer: Christopher Wambugu Njuguna<chris.njuguna@gmail.com>
+Authors@R: c(person(given="Christopher", family="Njuguna", role=c("aut", "cre", "cph"), email="chris.njuguna@gmail.com"),
+            person(given="Henrik", family="Bengtsson", role="ctb", email="henrikb@braju.com", comment="data setup, https://cran.r-project.org/package=R.cache"),
+            person(given="Black", family="Guru", role="ctb", comment="gdal zonal, http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/"),
+            person(given="Jeff", family="Chen", role="ctb", comment="masq function, https://commercedataservice.github.io/tutorial_viirs_part1/"),
+            person(given="Star", family="Ying", role="ctb", comment="masq function, https://commercedataservice.github.io/tutorial_viirs_part1/"),
+            person(given="Chris", family="Elvidge", role="ctb", comment="information + masq function"))
 License: GPL-3
 Imports:
     cleangeo,
@@ -18,29 +22,33 @@ Imports:
     methods,
     raster,
     readr,
+    reshape2,
     rgdal,
     rgeos,
+    R.utils,
     rvest,
     rworldmap,
     settings,
     sp,
     stats,
+    stringr,
     utils,
     xml2
 Suggests:
     dendextend,
     ggdendro,
     ggplot2,
+    leaflet,
     plotly,
     RColorBrewer,
     reshape,
     shiny,
     shinydashboard
-Remotes:
-    rstudio/leaflet
 SystemRequirements:
     gdal
     wget
     curl
     aria2
 RoxygenNote: 6.0.1
+BugReports: https://github.com/chrisvwn/Rnightlights/issues
+URL: https://github.com/HenrikBengtsson/R.cache/issues

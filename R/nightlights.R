@@ -234,7 +234,7 @@ processNLCountry <- function(ctryCode, nlPeriod, nlType, cropMaskMethod=pkgOptio
       
       raster::writeRaster(ctryRastCropped, rstTmp)
       
-      output_file_vrt <- file.path(getDataPath(), paste0(ctryCode, "_", nlType, "_", nlPeriod, ".vrt"))
+      output_file_vrt <- file.path(getNlDataPath(), paste0(ctryCode, "_", nlType, "_", nlPeriod, ".vrt"))
       
       if (file.exists(output_file_vrt))
         file.remove(output_file_vrt)

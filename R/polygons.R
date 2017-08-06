@@ -89,7 +89,7 @@ existsPolyFnameZip <- function(ctryCode)
 #' @return Character layer name
 #'
 #' @examples
-#' \dontrun{lyrName <- getCtryShpLyrName("KEN","0") #top layer name}
+#' lyrName <- getCtryShpLyrName("KEN","0") #top layer name
 #'   #returns "KEN_adm0"
 #'
 #' #@export only due to exploreData() shiny app
@@ -233,7 +233,7 @@ getPolyFname <- function(ctryCode)
 #' @return character path to polygon directory
 #'
 #' @examples
-#' \dontrun{getPolyFnameZip("KEN")}
+#' getPolyFnamePath("KEN")
 #'  #returns "path/to/"
 #'  
 #' #@export only due to exploreData() shiny app

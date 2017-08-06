@@ -232,22 +232,26 @@ createNlTilesSpPolysDF <- function()
 #'
 #' Plot a country polygon as defined in the \pkg{rworldmap} package along with the VIIRS 
 #'     nightlight tiles for a visual inspection of the tiles required for download in order 
-#'     to process a country's nightlight data.
+#'     to process a country's nightlight data. Output corresponds to that of
+#'     \code{getCtryNlTiles()}
 #'     
-#'     It utilizes \code{rworldmap::rwmgetISO3} to resolve country codes as well as names
+#'     It utilizes \code{rworldmap::rwmgetISO3()} to resolve country codes as well as names
 #'
 #' @param idx character string or integer either the index of the country polygon in 
 #'     \code{rworldmap::getMap()} or the 3-letter ISO3 country code e.g. "KEN" or a common 
-#'     name of the country e.g. "Kenya" as found valid by \code{rworldmap::rwmgetISO3}
+#'     name of the country e.g. "Kenya" as found valid by \code{rworldmap::rwmgetISO3()}
 #'
 #' @return None
 #'
 #' @examples
+#' #by ctryCode
 #' plotCtryWithTilesVIIRS("KEN")
 #'
-#' plotCtryWithTilesVIIRS(115)
+#' #by index in rworldmap
+#' \donttest{plotCtryWithTilesVIIRS(115)}
 #' 
-#' plotCtryWithTilesVIIRS("24")
+#' #by index passed as char string
+#' \donttest{plotCtryWithTilesVIIRS("24")}
 #'
 #' @export
 plotCtryWithTilesVIIRS <- function(idx)
@@ -507,7 +511,7 @@ mapCtryPolyToTilesVIIRS <- function(ctryCodes="all", omitCountries=pkgOptions("o
 #'
 #' @examples
 #' 
-#' \dontrun{getTilesCtryIntersectVIIRS("KEN")}
+#' \donttest{getTilesCtryIntersectVIIRS("KEN")}
 #'
 getTilesCtryIntersectVIIRS <- function(ctryCode)
 {
@@ -568,7 +572,7 @@ getTilesCtryIntersectVIIRS <- function(ctryCode)
 #' @return TRUE/FALSE
 #'
 #' @examples
-#' \dontrun{validNlTileNameVIIRS("00N060W")}
+#' \donttest{validNlTileNameVIIRS("00N060W")}
 #'  #returns TRUE
 #'
 validNlTileNameVIIRS <- function(tileName)
@@ -598,7 +602,7 @@ validNlTileNameVIIRS <- function(tileName)
 #' @return Integer index of the tile
 #'
 #' @examples
-#' \dontrun{tileIdx <- tileName2Idx("00N060W", "VIIRS")}
+#' \donttest{tileIdx <- tileName2Idx("00N060W", "VIIRS")}
 #'
 tileName2Idx <- function(tileName, nlType)
 {
@@ -634,7 +638,7 @@ tileName2Idx <- function(tileName, nlType)
 #' @return Character name of the tile
 #'
 #' @examples
-#' \dontrun{tileIdx <- tileName2Idx("00N060W", "VIIRS")}
+#' \donttest{tileIdx <- tileName2Idx("00N060W", "VIIRS")}
 #'
 tileIdx2Name <- function(tileNum, nlType)
 {
@@ -721,10 +725,10 @@ tilesPolygonIntersectVIIRS <- function(shpPolygon)
 #' @return TRUE/FALSE
 #'
 #' @examples
-#' \dontrun{validNlTileNumVIIRS("1")}
+#' \donttest{validNlTileNumVIIRS("1")}
 #'  #returns TRUE
 #'
-#' \dontrun{validNlTileNumVIIRS("9")}
+#' \donttest{validNlTileNumVIIRS("9")}
 #'  #returns FALSE
 #'
 validNlTileNumVIIRS <- function(nlTileNum)

@@ -7,7 +7,7 @@
 #' @return None
 #'
 #' @examples
-#' \dontrun{exploreData()}
+#' \donttest{exploreData()}
 #'
 #' @export
 exploreData <- function()

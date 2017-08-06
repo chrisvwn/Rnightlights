@@ -11,20 +11,26 @@
 #' @return Character ISO3 ctryCode if found else NA
 #'
 #' @examples
-#' \dontrun{ctryNameToCode("kenya")}
+#' ctryNameToCode("kenya")
 #'   #returns "KEN"
 #'
 #' ctryNameToCode("ken")
 #'   #returns "KEN"
+#'   
+#' ctryNameToCode("jamaica") #returns JAM
+#' 
+#' 
 #'
 #' @export
 ctryNameToCode <- function(ctryName)
 {
+  NAME <- NULL #to avoid global variable note in CRAN
+  
   if(missing(ctryName))
   {
     ctryList <- rworldmap::getMap()@data[,c("NAME", "ISO3")]
     
-    ctryList <- dplyr::arrange(ctryList, "NAME")
+    ctryList <- dplyr::arrange(ctryList, NAME)
     
     return(ctryList)
   }
@@ -32,7 +38,7 @@ ctryNameToCode <- function(ctryName)
   if (class(ctryName) != "character" || is.null(ctryName) || is.na(ctryName) || ctryName =="" || length(grep("[^[:alpha:]| ]", ctryName) > 0))
     stop("Invalid ctryName: ", ctryName)
   
-  return (rworldmap::rwmGetISO3(ctryName))
+  return (suppressWarnings(rworldmap::rwmGetISO3(ctryName)))
 }
 
 ######################## ctryCodeToName ###################################
@@ -51,16 +57,24 @@ ctryNameToCode <- function(ctryName)
 #'     codes and their corresponding names
 #'
 #' @examples
-#' ctryCodeToName("KEN")
+#' ctryCodeToName("KEN") #Kenya
+#' 
+#' ctryCodeToName("ARE") #United Arab Emirates
+#' 
+#' ctryCodeToName("USA") #United States of America
+#' 
+#' ctryCodeToName("JAM") #Jamaica
 #'
 #' @export
 ctryCodeToName <- function(ctryCode)
 {
+  ISO3 <- NULL #to avoid global variable note in CRAN
+  
   if(missing(ctryCode))
   {
     ctryList <- rworldmap::getMap()@data[,c("ISO3", "NAME")]
     
-    ctryList <- dplyr::arrange(ctryList, "ISO3")
+    ctryList <- dplyr::arrange(ctryList, ISO3)
     
     return(ctryList)
   }
@@ -72,7 +86,7 @@ ctryCodeToName <- function(ctryCode)
   if(nchar(ctryCode) != 3)
     stop("Only 3-letter ISO3 codes allowed")
   
-  return(rworldmap::isoToName(ctryCode))
+  return( suppressWarnings(rworldmap::isoToName(ctryCode)))
 }
 
 ######################## validCtryCode ###################################

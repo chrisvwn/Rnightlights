@@ -385,6 +385,9 @@ fnAggRadRast <- function(ctryPoly, ctryRastCropped, stats, nlType)
   
   doParallel::registerDoParallel(cores=pkgOptions("numCores"))
   
+  #to avoid notes
+  i <- NULL
+  
   sumAvgRad <- foreach::foreach(i=1:nrow(ctryPoly@data), 
                                 .combine=rbind,
                                 .export = c("masqOLS", "masqVIIRS"),

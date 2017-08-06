@@ -72,11 +72,14 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
 #' @return if an option name is supplied as a parameter this returns the value, else a list of all options is returned.
 #' 
 #' @examples
+#' #retrieve the current cropMaskMethod
 #' pkgOptions("cropMaskMethod")
 #' 
-#' pkgOptions()
-#' 
+#' #set the cropMaskMethod
 #' pkgOptions(cropMaskMethod="gdal")
+#' 
+#' #retrieve all options
+#' pkgOptions()
 #' 
 #' @export
 pkgOptions <- function(...)
@@ -91,6 +94,22 @@ pkgOptions <- function(...)
 #' Reset global options for the Rnightlights package
 #' 
 #' Reset global options for the Rnightlights package
+#'
+#' @examples
+#' #get cropMaskMethod
+#' pkgOptions("cropMaskMethod")
+#' 
+#' #set cropMaskMethod to "gdal"
+#' pkgOptions(cropMaskMethod="gdal")
+#' 
+#' #check cropMaskMethod has changed
+#' pkgOptions("cropMaskMethod")
+#' 
+#' #reset pkgOptions
+#' pkgReset()
+#' 
+#' #check cropMaskMethod has been reset
+#' pkgOptions("cropMaskMethod")
 #'
 #' @export
 pkgReset <- function()

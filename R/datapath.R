@@ -11,7 +11,7 @@
 #' @return character string Returns (invisibly) the root path,
 #'     or @NULL if running a non-interactive session.
 #' 
-#' @seealso Internally, @see "setDataPath" is used to set the root path.
+#' @seealso Internally, @see "setNlDataPath" is used to set the root path.
 #'     The \code{"base::interactive"} function is used to test whether 
 #'     \code{R} is running interactively or not.
 #'
@@ -22,7 +22,7 @@ setupDataPath <- function(newDataPath="~", ...)
   
   defaultPath <- file.path("~")
   
-  dataPath <- getDataPath()
+  dataPath <- getNlDataPath()
   
   if (missing(newDataPath))
   {
@@ -47,7 +47,7 @@ setupDataPath <- function(newDataPath="~", ...)
         else if (ans == 2)
           dataPath <- tryCatch(
             {
-              path <- tcltk::tk_choose.dir(getDataPath())
+              path <- tcltk::tk_choose.dir(getNlDataPath())
             }, 
             error=function(ex) 
             {
@@ -60,13 +60,13 @@ setupDataPath <- function(newDataPath="~", ...)
         else if (ans == 0)
         {
           message("Exiting. dataPath not set: Re-run to set/change dataPath")
-          return(invisible(getDataPath()))
+          return(invisible(getNlDataPath()))
         }
         
         if (is.null(dataPath) || is.na(dataPath))
         {
           message("Exiting. dataPath not set: Re-run to set/change dataPath")
-          return(invisible(getDataPath()))
+          return(invisible(getNlDataPath()))
         }
       }
       else
@@ -76,7 +76,7 @@ setupDataPath <- function(newDataPath="~", ...)
         message("Creating data folder in default location ", path.expand(file.path(dataPath, dirName)))
       }
       
-      setDataPath(dataPath)
+      setNlDataPath(dataPath)
       #invisible(dataPath)
     }
     else
@@ -84,17 +84,17 @@ setupDataPath <- function(newDataPath="~", ...)
       #if a directory currently exists ask the user if they want to change it
       if (interactive())
       {
-        prompt <- paste0("The Rnightlights package needs to create a directory that will hold package files and data which may be large. Please choose a location with 3GB+ where this directory will be created to avoid running out of space. \nCurrently the data directory is set to '", path.expand(getDataPath()), "' \nWould you like to choose a different data directory?
+        prompt <- paste0("The Rnightlights package needs to create a directory that will hold package files and data which may be large. Please choose a location with 3GB+ where this directory will be created to avoid running out of space. \nCurrently the data directory is set to '", path.expand(getNlDataPath()), "' \nWould you like to choose a different data directory?
                          \nEnter 0 to Exit")
         
         
         ans <- utils::menu(choices = c(paste0("Use current directory '",  
-                                       path.expand(getDataPath()), " as the data path"), 
+                                       path.expand(getNlDataPath()), " as the data path"), 
                                 "Choose a different directory as the data path"),
                     graphics = F, title = prompt);
         
         if (ans == 1)
-          return(invisible(getDataPath()))
+          return(invisible(getNlDataPath()))
         else if (ans == 2)
         {
           dataPath <- tryCatch(
@@ -111,33 +111,33 @@ setupDataPath <- function(newDataPath="~", ...)
             })
           
           #this is a move
-          setDataPath(dataPath)
+          setNlDataPath(dataPath)
         }
         else if (ans == 0)
         {
           message("Exiting. dataPath not set: Re-run to set/change dataPath")
-          return(getDataPath())
+          return(getNlDataPath())
         }
         
         #is.na if dialog cancelled, is.null if readline empty
         if (is.null(dataPath) || is.na(dataPath)) 
         {
           message("Exiting. dataPath not set: Re-run to set/change dataPath")
-          return(getDataPath())
+          return(getNlDataPath())
         }
       }
       else
       {
-        dataPath <- getDataPath()
+        dataPath <- getNlDataPath()
         if(!is.null(dataPath))
         {
           message("Using previous install detected at ", path.expand(file.path(dataPath, dirName)))
           
-          setDataPath(dataPath)
+          setNlDataPath(dataPath)
         }
       }
       
-      #setDataPath(dataPath)
+      #setNlDataPath(dataPath)
     }
   }
   else
@@ -146,26 +146,26 @@ setupDataPath <- function(newDataPath="~", ...)
     {
       #create dir in newDataPath
       message("Creating default directory")
-      setDataPath("~")
+      setNlDataPath("~")
       
       message("Creating data directory")
-      setDataPath(newDataPath)
+      setNlDataPath(newDataPath)
     }
     else
     {
       message("Attempting data directory move")
-      setDataPath(newDataPath)
+      setNlDataPath(newDataPath)
       
       #invisible(newDataPath)
     }   
   }
   
-  dataPath <- getDataPath()
+  dataPath <- getNlDataPath()
   
   return(invisible(dataPath))
 } # setupCacheDataPath()
 
-######################## setDataPath ###################################
+######################## setNlDataPath ###################################
 #' Sets the root path to the package data directory
 #'
 #' By default, this function will set the root path to \code{~/.Rnightlights/}.
@@ -176,9 +176,9 @@ setupDataPath <- function(newDataPath="~", ...)
 #'   Returns (invisibly) the old root path.
 #'   
 #' @examples
-#' \dontrun{setDataPath("/new/path")}
+#' \dontrun{setNlDataPath("/new/path")}
 #' 
-setDataPath <- function(dataPath)
+setNlDataPath <- function(dataPath)
 {
   if(missing(dataPath))
     stop("Missing required parameter dataPath")
@@ -192,7 +192,7 @@ setDataPath <- function(dataPath)
   
   homePath <- file.path("~", ".Rnightlights")
   
-  existingPath <- getDataPath()
+  existingPath <- getNlDataPath()
   
   #if existingPath is not null we already have an existing directory. This is potentially a move
   if (!is.null(existingPath))
@@ -330,7 +330,7 @@ setDataPath <- function(dataPath)
   }
   
   #If dataPath was created
-  if(path.expand(getDataPath()) == path.expand(dataPath))
+  if(path.expand(getNlDataPath()) == path.expand(dataPath))
   {
     # Add a README.txt file, if missing.
     addREADME(to=file.path(dataPath, dataDirName))
@@ -339,25 +339,26 @@ setDataPath <- function(dataPath)
     createNlDataDirs()
   }
   
-  getDataPath()
-} # setdataPath()
+  getNlDataPath()
+} # setNlDataPath()
 
-######################## getDataPath ###################################
+######################## getNlDataPath ###################################
 
 #' Gets the root path to the file directory"
 #'
 #' Gets the root path to the file directory"
 #'
-#' @return Returns the root of the current data path as a @character string.
+#' @return Returns the folder containing the root of the current data path
+#'     as a @character string.
 #'
 #' @examples
-#'   print(getDataPath())
+#'   print(getNlDataPath())
 #'
 #' @seealso To set the directory where package data files are stored,
-#'     see @see "setDataPath".
+#'     see @see "setNlDataPath".
 #'     
 #' @export
-getDataPath <- function()
+getNlDataPath <- function()
 {
   
   homePath = "~"
@@ -402,9 +403,9 @@ getDataPath <- function()
 #' @return None
 #'
 #' @examples
-#'   \dontrun{removeDataPath(getDataPath())}
+#'   \dontrun{removeDataPath(getNlDataPath())}
 #'     
-removeDataPath <- function(dataPath = file.path(getDataPath(), ".Rnightlights"))
+removeDataPath <- function(dataPath = file.path(getNlDataPath(), ".Rnightlights"))
 {
   if(basename(dataPath) != ".Rnightlights")
     stop("You must specify the full path including .Rnightlights")
@@ -437,7 +438,7 @@ removeDataPath <- function(dataPath = file.path(getDataPath(), ".Rnightlights"))
 #' @examples
 #'   \dontrun{addREADME()}
 #'     
-addREADME <- function(to=getDataPath())
+addREADME <- function(to=getNlDataPath())
 {
   # Add a README.txt to dataPath (expaining what the directory is)
   filename <- "README.txt"
@@ -500,6 +501,15 @@ createNlDataDirs <- function()
 #'
 #' @param dirName character vector The name of the directory to retrieve
 #' 
+#' @examples
+#' getNlDir("dirRasterOutput")
+#' 
+#' getNlDir("dirNlTiles")
+#' 
+#' getNlDir("dirPolygon")
+#' 
+#' getNlDir("dirZonals")
+#' 
 #' @export
 getNlDir <- function(dirName)
 {
@@ -509,7 +519,7 @@ getNlDir <- function(dirName)
   if(!is.character(dirName) || is.null(dirName) || is.na(dirName) || dirName == "")
     stop("Invalid dirName: ", dirName)
   
-  dataPath <- getDataPath()
+  dataPath <- getNlDataPath()
   
   file.path(dataPath, pkgOptions("dirNlDataPath"), pkgOptions(dirName))
 }

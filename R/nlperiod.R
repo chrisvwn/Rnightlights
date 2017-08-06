@@ -222,9 +222,10 @@ validNlPeriod <- function(nlPeriod, nlType)
 
 #' Create a range of nlPeriods
 #'
-#' Create a range of nlPeriods. Autodetects the type of nlPeriod and if both
-#'     start and end range are valid and of the same type it creates a 
-#'     character vector of nlPeriods filling in the intermediate nlPeriods
+#' Create a range of nlPeriods. Autodetects the type of nlPeriod and creates a 
+#'     character vector of nlPeriods filling in the intermediate nlPeriods.
+#'     NOTE: Both start and end range must be valid and of the same type i.e.
+#'     "OLS" years or "VIIRS" yearMonths
 #' 
 #' @param startNlPeriod the nlPeriod start
 #'
@@ -233,8 +234,10 @@ validNlPeriod <- function(nlPeriod, nlType)
 #' @return character vector of nlPeriods
 #'
 #' @examples
+#' #get OLS years between 2004 and 2010
 #' nlRange("2004", "2010")
 #'
+#' #get VIIRS yearMonths between Apr 2012 and Dec 2014
 #' nlRange("201204", "201412")
 #'
 #' @export
@@ -251,7 +254,7 @@ nlRange <- function(startNlPeriod, endNlPeriod)
   else if(suppressWarnings(allValid(c(startNlPeriod, endNlPeriod), validNlPeriod, "VIIRS")))
     nlType <- "VIIRS"
   else
-    stop("Unknown nlPeriod")
+    stop("Invalid start/end nlPeriod")
   
   allNlPeriods <- getAllNlPeriods(nlType)
   

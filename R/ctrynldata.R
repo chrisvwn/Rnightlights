@@ -256,6 +256,9 @@ getCtryNlDataFname <- function(ctryCode)
 #' @return Character string the full path to the data file of a country
 #'
 #' @examples
+#' #get the full path to the file containing data for KEN
+#' getCtryNlDataFnamePath("KEN")
+#' 
 #' \dontrun{
 #' ctryDF <- read.csv(getCtryNlDataFnamePath("KEN"))
 #'  #returns DF with nightlight data for the country
@@ -313,8 +316,8 @@ getCtryNlDataFnamePath <- function(ctryCode)
 #'     found in the data file
 #'     
 #'     \itemize{
-#'         \item NULL (default) only return data if found for all nlPeriods
-#'            and all stats provided otherwise return NULL
+#'         \item NULL (default) only return data if found for ALL nlPeriods
+#'            and ALL stats provided otherwise return NULL
 #'         \item TRUE return any partial data that is found for the provided 
 #'            nlPeriods and stats. Ignore any missing data
 #'         \item FALSE return all data that is found and call \code{processNlData}
@@ -331,7 +334,7 @@ getCtryNlDataFnamePath <- function(ctryCode)
 #' @examples
 #' #missing stats implies all stats as given by pkgOptions("stats")
 #' 
-#' \dontrun{getCtryNlData("KEN", ignoreMissing=NULL)}
+#' \dontrun{getCtryNlData("KEN", nlType="VIIRS", ignoreMissing=NULL)}
 #'     #returns all existing data i.e. all nlPeriods and all stats for KEN
 #'
 #' \dontrun{getCtryNlData("KEN", ignoreMissing=TRUE)}
@@ -362,15 +365,22 @@ getCtryNlDataFnamePath <- function(ctryCode)
 #' @export
 getCtryNlData <- function(ctryCode, nlPeriods, nlType, stats=pkgOptions("stats"), ignoreMissing=NULL, source="local")
 {
+  if(source != "local")
+    stop("Non-local sources not currently supported. \n
+         Please request this feature at https://github.com/chrisvwn/Rnightlights to fasttrack it.")
+  
   if(missing(ctryCode))
     stop("Missing required ctryCode")
   
-  if(missing(nlType))
-    stop("Missing required parameter nlType")
-  
   if(missing(nlPeriods) && (!missing(ignoreMissing) && !ignoreMissing))
     nlPeriods <- getAllNlPeriods(nlType)
-  
+  else
+    stop("Missing required parameter nlPeriods.\n
+         Set ignoreMissing=FALSE to process all nlPeriods")
+
+  if(missing(nlType))
+    stop("Missing required parameter nlType")
+    
   if(!allValid(nlPeriods, validNlPeriod, nlType))
     stop("Invalid nlPeriods detected")
   
@@ -400,22 +410,31 @@ getCtryNlData <- function(ctryCode, nlPeriods, nlType, stats=pkgOptions("stats")
     {
       if (is.null(ignoreMissing)) #default
       {
-        message("No data found for ", ctryCode, " in ", missingData, ". Returning NULL. Note: Set ignoreMissing=TRUE to return only data found or ignoreMissing=FALSE to download and extract missing data")
+        message(paste0("No data found for ", ctryCode, " in ", missingData,
+                       ". Returning NULL. \nNote: Set ignoreMissing=TRUE to",
+                       "return only data found or \nignoreMissing=FALSE to download ",
+                       "and extract missing data"))
         return (NULL)
       }
       else if(!ignoreMissing)
       {
-        message("Processing missing data: ", ctryCode, " in ", missingData, ". This may take a while. Note: Set 'ignoreMissing=TRUE' to return only data found or 'ignoreMissing=NULL' to return NULL if not all the data is found")
+        message(paste0("Processing missing data: ", ctryCode, " in ", missingData, 
+                ". This may take a while. \nNote: Set 'ignoreMissing=TRUE' to ",
+                "return only data found or \n'ignoreMissing=NULL' to return NULL ",
+                "if not all the data is found"))
         
         processNlData(ctryCode, nlType = nlType, nlPeriods, stats = stats)
       }
       else if (ignoreMissing)
       {
-        message("Ignoring missing data for ", ctryCode, " in ", missingData, ". Returning existing data only.")
+        message(paste0("Ignoring missing data for ", ctryCode, " in ", missingData, 
+                ". \nReturning existing data only."))
       }
       else
       {
-        message("Invalid value for 'ignoreMissing'. Exiting. Note: Set ignoreMissing=TRUE to return only data found or ignoreMissing=FALSE to download and extract missing data")
+        message(paste0("Invalid value for 'ignoreMissing'. Exiting.",
+                       "\nNote: Set ignoreMissing=TRUE to return local data found ",
+                       "or \nignoreMissing=FALSE to download and extract missing data"))
         return(NULL)
       }
     }
@@ -448,23 +467,26 @@ getCtryNlData <- function(ctryCode, nlPeriods, nlType, stats=pkgOptions("stats")
   {
     #ignoreMissing == FALSE so we should have the missing data
     #check again to see that processNlData was successful
+    #check that each stat exists for given periods
     if (nlType == "VIIRS")
       existnlPeriodStats <- apply(nlPeriodStats, 1, function(x) existsCtryNlData(ctryCode, x[1], x[2], nlType))
     else if (nlType == "OLS")
       existnlPeriodStats <- apply(nlPeriodStats, 1, function(x) existsCtryNlData(ctryCode, x[1], x[2], nlType))
     
+    #if they all exist get the list of column names
     if(all(existnlPeriodStats))
       existingCols <- apply(nlPeriodStats[existnlPeriodStats,], 1, function(x) getCtryNlDataColName(x[1], x[2], nlType))
-    else
+    else #else processNlData was unsuccessful i.e. an error occurred
       stop("An error occurred")
   }
   
+  #if no nightlight columns return NULL
   if(length(existingCols) < 1)
   {
     message("No nightlight data. Returning ctry admin data only")
     #return(NULL)
   }
-  else
+  else #else we found nl data
   {
     message("Retrieving requested data")
   }
@@ -474,11 +496,13 @@ getCtryNlData <- function(ctryCode, nlPeriods, nlType, stats=pkgOptions("stats")
   #get the names of the columns in the data file
   cols <- names(ctryData)
   
-  #retain columns with country admin levels
+  #retain columns with country admin levels i.e. those that don't start with
+  #"NL_"
   cols <- cols[grep("^[^NL_]", cols)]
   
   nlCols <- existingCols
-  
+
+  #combine country admin levels and  existing cols  
   cols <- c(cols, nlCols)
   
   #add the column with the relevant nlPeriod
@@ -548,7 +572,6 @@ getCtryNlDataColName <- function(nlPeriod, stat, nlType)
 #'
 #' @param ctryCode the ISO3 country code
 #'
-#'
 #' @return TRUE/FALSE
 #'
 #' @examples
@@ -568,6 +591,63 @@ existsCtryNlDataFile <- function(ctryCode)
   
   #for polygons look for shapefile dir
   return(file.exists(getCtryNlDataFnamePath(ctryCode)))
+}
+
+######################## existsCtryNlData ###################################
+
+#' Check if VIIRS nightlight stats exist locally
+#'
+#' Check if VIIRS nightlight data for the country exists in the country 
+#'     nightlight data file. First checks if the country nightlight data
+#'     file exists.
+#'
+#' @param ctryCode character the ISO3 code of the country
+#'
+#' @param nlPeriod character the nlPeriod
+#' 
+#' @param stat character the stat to check for
+#' 
+#' @param nlType character the nlType
+#'
+#' @return TRUE/FALSE
+#'
+#' @examples
+#' \dontrun{existsCtryNlData("KEN", "201204", "sum", "VIIRS")}
+#'
+existsCtryNlData <- function(ctryCode, nlPeriod, stat, nlType)
+{
+  if(missing(ctryCode))
+    stop("Missing required parameter ctryCode")
+  
+  if(missing(nlPeriod))
+    stop("Missing required parameter nlPeriod")
+  
+  if(missing(stat))
+    stop("Missing required parameter stat")
+  
+  if(missing(nlType))
+    stop("Missing required parameter nlType")
+  
+  if(!validCtryCode(ctryCode))
+    stop("Invalid ctryCode: ", ctryCode)
+  
+  if(!validNlPeriod(nlPeriod, nlType))
+    stop("Invalid nlPeriod: ", nlPeriod, " for nlType: ", nlType)
+  
+  if(!validStat(stat))
+    stop("Invalid stat: ", stat)
+  
+  if (!existsCtryNlDataFile(ctryCode))
+    return (FALSE)
+  
+  dt <- utils::read.csv(getCtryNlDataFnamePath(ctryCode), nrow=1, header=TRUE)
+  
+  hd <- names(dt)
+  
+  if (length(grep(getCtryNlDataColName(nlPeriod, stat = stat, nlType), hd)) > 0)
+    return(TRUE)
+  else
+    return(FALSE)
 }
 
 ######################## listCtryNlData ###################################
@@ -592,13 +672,22 @@ existsCtryNlDataFile <- function(ctryCode)
 #' #list all data
 #' listCtryNlData()
 #' 
-#' #filter data
-#' listCtryNlData(ctryCodes = c("KEN","RWA"), nlPeriods = c("2012", "2013"),nlTypes = "OLS")
+#' #list all data available for KEN
+#' listCtryNlData(ctryCodes = "KEN")
+#' 
+#' #list all VIIRS data available for ECU
+#' listCtryNlData(ctryCodes = "ECU", nlTypes = "VIIRS")
+#' 
+#' #list available OLS data for KEN and RWA in 2012 & 2013
+#' listCtryNlData(ctryCodes = c("KEN","RWA"), nlPeriods = c("2012", "2013"), nlTypes = "OLS")
 #'
 #' @export
 listCtryNlData <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, source="local")
 {
   dataList <- NULL
+  dataType <- NULL #appease CRAN note for global variables
+  nlType <- NULL #appease CRAN note for global variables
+  nlPeriod <- NULL #appease CRAN note for global variables
   
   #get a list of country data files present
   countries <- list.files(getNlDir("dirNlData"))
@@ -662,64 +751,7 @@ listCtryNlData <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, source=
     return(NULL)
 }
 
-######################## existsCtryNlData ###################################
-
-#' Check if VIIRS nightlight stats exist locally
-#'
-#' Check if VIIRS nightlight data for the country exists in the country 
-#'     nightlight data file. First checks if the country nightlight data
-#'     file exists.
-#'
-#' @param ctryCode character the ISO3 code of the country
-#'
-#' @param nlPeriod character the nlPeriod
-#' 
-#' @param stat character the stat to check for
-#' 
-#' @param nlType character the nlType
-#'
-#' @return TRUE/FALSE
-#'
-#' @examples
-#' \dontrun{existsCtryNlData("KEN", "201204", "sum", "VIIRS")}
-#'
-existsCtryNlData <- function(ctryCode, nlPeriod, stat, nlType)
-{
-  if(missing(ctryCode))
-    stop("Missing required parameter ctryCode")
-  
-  if(missing(nlPeriod))
-    stop("Missing required parameter nlPeriod")
-  
-  if(missing(stat))
-    stop("Missing required parameter stat")
-  
-  if(missing(nlType))
-    stop("Missing required parameter nlType")
-  
-  if(!validCtryCode(ctryCode))
-    stop("Invalid ctryCode: ", ctryCode)
-  
-  if(!validNlPeriod(nlPeriod, nlType))
-    stop("Invalid nlPeriod: ", nlPeriod, " for nlType: ", nlType)
-  
-  if(!validStat(stat))
-    stop("Invalid stat: ", stat)
-  
-  if (!existsCtryNlDataFile(ctryCode))
-    return (FALSE)
-  
-  dt <- utils::read.csv(getCtryNlDataFnamePath(ctryCode), nrow=1, header=TRUE)
-  
-  hd <- names(dt)
-  
-  if (length(grep(getCtryNlDataColName(nlPeriod, stat = stat, nlType), hd)) > 0)
-    return(TRUE)
-  else
-    return(FALSE)
-}
-
-######################## listCtryRasters ###################################
+######################## listCtryNlRasters ###################################
 
 #' List available cropped country rasters
 #'
@@ -732,54 +764,143 @@ existsCtryNlData <- function(ctryCode, nlPeriod, stat, nlType)
 #' 
 #' @param nlTypes A character vector of nlTypes to filter by
 #' 
-#' @param source Character string. Whether to check data availability "local" or "remote"
-#'     Not in use.
+#' @param source Character string. Whether to check data availability
+#'  "local" or "remote". Default is "local".
 #' 
-#' @return a list of countries and the periods and stats for each
+#' @return a list of existing cropped rasters
 #'
 #' @examples
-#' #list all data
-#' listCtryNlData()
+#' #list all rasters
+#' listCtryNlRasters()
 #' 
-#' #filter data
-#' listCtryNlData(ctryCodes = c("KEN","RWA"), nlPeriods = c("2012", "2013"),nlTypes = "OLS")
+#' #list all rasters available for KEN
+#' listCtryNlData(ctryCodes = "KEN")
+#' 
+#' #list all VIIRS rasters available for ECU
+#' listCtryNlData(ctryCodes = "ECU", nlTypes = "VIIRS")
+#' 
+#' #list available OLS rasters for KEN and RWA in 2012 & 2013
+#' listCtryNlData(ctryCodes = c("KEN","RWA"), nlPeriods = c("2012", "2013"), nlTypes = "OLS")
 #'
 #' @export
-listCtryNlData <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, source="local")
+listCtryNlRasters <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, source="local")
 {
-  dataList <- NULL
+  ctryCode <- NULL #appease CRAN note for global variables
+  nlType <- NULL #appease CRAN note for global variables
+  nlPeriod <- NULL #appease CRAN note for global variables
   
   #get a list of country data files present
   rasterList <- list.files(getNlDir("dirRasterOutput"), pattern = ".tif")
 
-  if(is.null(dataList))
+  if(length(rasterList) == 0)
     return(NULL)
   
+  rasterList <- strsplit(gsub(".tif", "", rasterList), "_")
+  
+  rasterList <- t(unlist(sapply(rasterList, rbind)))
+  
   #convert into a dataframe with numbered rownames
-  dataList <- as.data.frame(dataList, row.names = 1:nrow(dataList))
+  rasterList <- as.data.frame(rasterList)
   
   #label the columns
-  names(dataList) <- c("ctryCode", "dataType", "nlType", "nlPeriod", paste0("stat", 1:(ncol(dataList)-4)))
+  names(rasterList) <- c("ctryCode", "nlType", "nlPeriod")
   
   #filters
   #filter by ctryCode if supplied
   if(!is.null(ctryCodes))
-    dataList <- dataList[which(dataList[,"ctryCode"] %in% ctryCodes),]
+    rasterList <- rasterList[which(rasterList[,"ctryCode"] %in% ctryCodes),]
   
   #filter by nlType if supplied
   if(!is.null(nlTypes))
-    dataList <- dataList[which(dataList[,"nlType"] %in% nlTypes),]
+    rasterList <- rasterList[which(rasterList[,"nlType"] %in% nlTypes),]
   
   #filter by nlPeriod if supplied
   if(!is.null(nlPeriods))
-    dataList <- dataList[which(dataList[,"nlPeriod"] %in% nlPeriods),]
+    rasterList <- rasterList[which(rasterList[,"nlPeriod"] %in% nlPeriods),]
   
   #Reorder the columns
-  dataList <- dplyr::select(dataList, dataType, ctryCode, nlType, nlPeriod, dplyr::contains("stat"))
+  rasterList <- dplyr::select(rasterList, ctryCode, nlType, nlPeriod)
   
   #only return dataList if we have records esp. after filtering else return NULL
-  if(nrow(dataList) > 0)
-    return(dataList)
+  if(nrow(rasterList) > 0)
+    return(rasterList)
+  else
+    return(NULL)
+}
+
+######################## listNlTiles ###################################
+
+#' List locally cached tiles
+#'
+#' List the tiles which have been downloaded previously and are currently
+#'     cached in the local tiles folder
+#' 
+#' @param nlPeriods A character vector of nlPeriods to filter by
+#' 
+#' @param nlTypes A character vector of nlTypes to filter by
+#' 
+#' @param source Character string. Whether to check data availability.
+#'     "local" or "remote". Default is "local".
+#' 
+#' @return a list of locally cached nlTiles or NULL
+#'
+#' @examples
+#' #list all tiles
+#' listNlTiles()
+#' 
+#' #list all VIIRS tiles
+#' listNlTiles(nlTypes = "VIIRS")
+#' 
+#' #list all VIIRS tiles available in the years 2012-2014
+#' listNlTiles(nlTypes = "VIIRS", nlPeriods = nlRange("201201", "201412"))
+#' 
+#' #filter data
+#' listNlTiles(nlTypes = "OLS", nlPeriods = c("2012", "2013"))
+#'
+#' @export
+listNlTiles <- function(nlTypes=NULL, nlPeriods=NULL, source="local")
+{
+  nlType <- NULL #appease CRAN note for global variables
+  nlPeriod <- NULL #appease CRAN note for global variables
+  
+  if(source=="remote")
+  {
+    message("Not yet implemented. Please notify us to fasttrack this feature.")
+    
+    return(NULL)
+  }
+  
+  #get a list of country data files present
+  rasterList <- list.files(getNlDir("dirNlTiles"), pattern = ".tif")
+  
+  if(length(rasterList) == 0)
+    return(NULL)
+  
+  rasterList <- strsplit(gsub(".tif", "", rasterList), "_")
+  
+  rasterList <- t(unlist(sapply(rasterList, rbind)))
+  
+  #convert into a dataframe with numbered rownames
+  rasterList <- as.data.frame(rasterList)
+  
+  #label the columns
+  names(rasterList) <- c("nlType", "nlPeriod")
+  
+  #filters
+  #filter by nlType if supplied
+  if(!is.null(nlTypes))
+    rasterList <- rasterList[which(rasterList[,"nlType"] %in% nlTypes),]
+  
+  #filter by nlPeriod if supplied
+  if(!is.null(nlPeriods))
+    rasterList <- rasterList[which(rasterList[,"nlPeriod"] %in% nlPeriods),]
+  
+  #Reorder the columns
+  rasterList <- dplyr::select(rasterList, nlType, nlPeriod)
+  
+  #only return list if we have records esp. after filtering else return NULL
+  if(nrow(rasterList) > 0)
+    return(rasterList)
   else
     return(NULL)
 }

@@ -16,7 +16,7 @@
   #startupMessage(pkg);
   
   # Setup the data path, possibly by prompting the user. if not found
-  if(is.null(getDataPath()))
+  if(is.null(getNlDataPath()))
     setupDataPath()
   
   #global constants
