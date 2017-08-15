@@ -371,12 +371,21 @@ getCtryNlData <- function(ctryCode, nlPeriods, nlType, stats=pkgOptions("stats")
   
   if(missing(ctryCode))
     stop("Missing required ctryCode")
+
+  #if both nlPeriods and ignoreMissing are not supplied we cannot deduce
+  #the nlPeriods. Error and stop
+  if(missing(nlPeriods) && missing(ignoreMissing))
+    stop("Missing required parameter nlPeriods")
+    
+  #if nlPeriods is not provided and ignoreMissing is present and FALSE
+  #process all nlPeriods
+  if(missing(nlPeriods) && !missing(ignoreMissing))
+    if (!ignoreMissing)
+      nlPeriods <- getAllNlPeriods(nlType)
   
-  if(missing(nlPeriods) && (!missing(ignoreMissing) && !ignoreMissing))
-    nlPeriods <- getAllNlPeriods(nlType)
-  else
-    stop("Missing required parameter nlPeriods.\n
-         Set ignoreMissing=FALSE to process all nlPeriods")
+  #else
+  #  stop("No data found for given nlPeriods.\n
+  #       Set ignoreMissing=FALSE to process all nlPeriods")
 
   if(missing(nlType))
     stop("Missing required parameter nlType")

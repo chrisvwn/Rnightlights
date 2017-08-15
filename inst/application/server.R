@@ -94,7 +94,7 @@ shiny::shinyServer(function(input, output, session){
   ######################## reactive ctryAdmLevels ###################################
   
     ctryAdmLevels <- shiny::reactive({
-      print(paste0("here: ctryAdmLevels"))
+      #print(paste0("here: ctryAdmLevels"))
       
       if (length(input$countries) != 1)
         return()
@@ -109,7 +109,7 @@ shiny::shinyServer(function(input, output, session){
   ######################## reactive ctryAdmLevelNames ###################################
   
     ctryAdmLevelNames <- shiny::reactive({
-      print(paste0("here: ctryAdmLevelNames"))
+      #print(paste0("here: ctryAdmLevelNames"))
       
       countries <- input$countries
       
@@ -129,7 +129,7 @@ shiny::shinyServer(function(input, output, session){
   ######################## reactive ctryAdmLevels ###################################
   
   ctryDataStats <- shiny::reactive({
-    print(paste0("here: ctryDataStats"))
+    #print(paste0("here: ctryDataStats"))
     
     if (length(input$countries) != 1)
       return()
@@ -148,7 +148,7 @@ shiny::shinyServer(function(input, output, session){
   ######################## reactive ctryNlData ###################################
   
     ctryNlData <- shiny::reactive({
-      print(paste0("here: ctryNlData"))
+      #print(paste0("here: ctryNlData"))
       input$btnGo
       
       countries <- shiny::isolate(input$countries)
@@ -166,7 +166,7 @@ shiny::shinyServer(function(input, output, session){
       {
         for (ctryCode in countries)
         {
-          print(ctryCode)
+          #print(ctryCode)
           temp <- data.table::fread(Rnightlights::getCtryNlDataFnamePath(ctryCode))
           
           ctryCols <- grep("country|area|NL_", names(temp))
@@ -188,7 +188,7 @@ shiny::shinyServer(function(input, output, session){
   ######################## reactive ctryNlDataMelted ###################################
   
     ctryNlDataMelted <- shiny::reactive({
-      print(paste0("here: ctryNlDataMelted"))
+      #print(paste0("here: ctryNlDataMelted"))
       
       if(is.null(ctryNlData()))
         return()
@@ -235,7 +235,6 @@ shiny::shinyServer(function(input, output, session){
   ######################## reactiveValues values ###################################
   
     values <- shiny::reactiveValues(
-      a=print(paste0("here: lastUpdated")),
       lastUpdated = NULL
     )
     
@@ -277,7 +276,7 @@ shiny::shinyServer(function(input, output, session){
     
     output$intraCountry <- shiny::renderUI({
       
-      print("here: renderUI intracountry")
+      #print("here: renderUI intracountry")
       countries <- input$countries
       
       if(length(countries) != 1)
@@ -320,7 +319,7 @@ shiny::shinyServer(function(input, output, session){
     ######################## observe selectAdms (intraCountry) ###################################
     
     shiny::observe({
-      print(paste0("here: observe selectAdms"))
+      #print(paste0("here: observe selectAdms"))
 
       admLvlCtrlsNames <- names(input)
       
@@ -354,10 +353,10 @@ shiny::shinyServer(function(input, output, session){
       if(lvlNum=="")
         return()
       
-      print(paste0("lastupdated:", values$lastUpdated))
+      #print(paste0("lastupdated:", values$lastUpdated))
       
-      print(paste0("x:", x))
-      print(paste0("lvlnum:", lvlNum))
+      #print(paste0("x:", x))
+      #print(paste0("lvlnum:", lvlNum))
       
       #set admLevel to match the selectizeInput level
       #if (length(input[[paste0("selectAdm", lvlNum)]]) > 0)
@@ -375,7 +374,7 @@ shiny::shinyServer(function(input, output, session){
         
         if (lvlIdx < lvlNum)
         {
-          print(paste0("lvlIdx:",lvlIdx,"lvlNum:",lvlNum))
+          #print(paste0("lvlIdx:",lvlIdx,"lvlNum:",lvlNum))
           
           if (length(input[[paste0("selectAdm", lvlIdx-1)]]) == 1)
           {
@@ -397,7 +396,7 @@ shiny::shinyServer(function(input, output, session){
         }
         else if(lvlIdx == lvlNum)
         {
-          print(paste0("lvlIdx:",lvlIdx,"lvlNum:",lvlNum))
+          #print(paste0("lvlIdx:",lvlIdx,"lvlNum:",lvlNum))
           
           if (length(input[[paste0("selectAdm", lvlIdx-1)]]) == 1)
           {
@@ -420,7 +419,7 @@ shiny::shinyServer(function(input, output, session){
         }
         else
         {
-          print(paste0("lvlIdx:",lvlIdx,"lvlNum:",lvlNum))
+          #print(paste0("lvlIdx:",lvlIdx,"lvlNum:",lvlNum))
           
           if (multipleSelected)
           {
@@ -457,7 +456,7 @@ shiny::shinyServer(function(input, output, session){
     ######################## sliderNlYearMonthRange ###################################
     
     output$sliderNlYearMonthRange <- shiny::renderUI({
-      print(paste0("here: sliderNlYearMonthRange"))
+      #print(paste0("here: sliderNlYearMonthRange"))
       ctryData <- ctryNlDataMelted()
       
       if (is.null(ctryData))
@@ -494,7 +493,7 @@ shiny::shinyServer(function(input, output, session){
     ######################## sliderNlYearMonth ###################################
     
     output$sliderNlYearMonth <- shiny::renderUI({
-      print(paste0("here: sliderNlYearMonth"))
+      #print(paste0("here: sliderNlYearMonth"))
       
       ctryData <- ctryNlDataMelted()
       
@@ -530,7 +529,7 @@ shiny::shinyServer(function(input, output, session){
     ######################## hCluster ###################################
     
     hCluster <- shiny::reactive({
-      print(paste0("here: reactive hCluster"))
+      #print(paste0("here: reactive hCluster"))
       input$btnGo
       
       countries <- shiny::isolate(input$countries)
@@ -577,7 +576,7 @@ shiny::shinyServer(function(input, output, session){
     ######################## plotHCluster ###################################
     
     output$plotHCluster <- shiny::renderPlot({
-      print(paste0("here: plotHCluster"))
+      #print(paste0("here: plotHCluster"))
       
       clusts <- hCluster()
       numClusters <- input$kClusters
@@ -604,7 +603,7 @@ shiny::shinyServer(function(input, output, session){
     ######################## plotPointsCluster ###################################
     
     output$plotPointsCluster <- plotly::renderPlotly({
-      print(paste0("here: plotPointsCluster"))
+      #print(paste0("here: plotPointsCluster"))
       
       input$btnGo
       
@@ -650,7 +649,7 @@ shiny::shinyServer(function(input, output, session){
     ######################## mapHCluster ###################################
     
     output$mapHCluster <- leaflet::renderLeaflet({
-      print(paste0("here: draw mapHCluster"))
+      #print(paste0("here: draw mapHCluster"))
       # Use leaflet() here, and only include aspects of the map that
       # won't need to change dynamically (at least, not unless the
       # entire map is being torn down and recreated).
@@ -672,7 +671,7 @@ shiny::shinyServer(function(input, output, session){
           return()
         }
 
-        print("drawing leaflet cluster")
+        #print("drawing leaflet cluster")
         
         clusts <- hCluster()
         
@@ -756,7 +755,7 @@ shiny::shinyServer(function(input, output, session){
     ######################## renderPlotly plotTSDecomposed ###################################
 
     output$plotTSDecomposed <- shiny::renderPlot({
-      print(paste0("here: plotTSDecomposed"))
+      #print(paste0("here: plotTSDecomposed"))
       input$btnGo
       
       countries <- shiny::isolate(input$countries)
@@ -799,7 +798,7 @@ shiny::shinyServer(function(input, output, session){
     ######################## plotYearly ###################################
     
     output$plotYearly <- plotly::renderPlotly({
-      print(paste0("here: renderPlotYearly"))
+      #print(paste0("here: renderPlotYearly"))
       input$btnGo
       
       countries <- shiny::isolate(input$countries)
@@ -827,8 +826,8 @@ shiny::shinyServer(function(input, output, session){
             admLvlNums <- c(admLvlNums, i)
           
           
-          print(paste0("x", x))
-          print(paste0("admlvlnums:", admLvlNums))
+          #print(paste0("x", x))
+          #print(paste0("admlvlnums:", admLvlNums))
           
           #if (admLvlNum=="" && length(countries)>0)
           #  return()
@@ -841,7 +840,7 @@ shiny::shinyServer(function(input, output, session){
           ctryAdmLevels <- ctryAdmLevels()
           admLevel <- ctryAdmLevels[as.numeric(data.table::last(admLvlNums))]
           
-          print(paste0("admLevel:", admLevel))
+          #print(paste0("admLevel:", admLevel))
           
           if (!exists("admLevel") || is.null(admLevel) || length(admLevel)==0)
             admLevel <- "country"
@@ -853,7 +852,7 @@ shiny::shinyServer(function(input, output, session){
             if (lvl == 1)
               next()
             
-            print(paste0("lvl:",lvl))
+            #print(paste0("lvl:",lvl))
             
             if (length(input[[x[lvl-1]]])>0)
             {
@@ -865,7 +864,7 @@ shiny::shinyServer(function(input, output, session){
           
           ctryData$month <- lubridate::month(ctryData$variable)
           
-          print(paste0("ctrydata nrow:", nrow(ctryData)))
+          #print(paste0("ctrydata nrow:", nrow(ctryData)))
           
           if ("norm_area" %in% scale)
             ctryData$value <- (ctryData$value)/ctryData$area_sq_km
@@ -931,7 +930,7 @@ shiny::shinyServer(function(input, output, session){
     ######################## plotNightLights ###################################
     
     output$plotNightLights <- plotly::renderPlotly({
-      print(paste0("here: renderPlot"))
+      #print(paste0("here: renderPlot"))
       input$btnGo
       
       countries <- shiny::isolate(input$countries)
@@ -959,8 +958,8 @@ shiny::shinyServer(function(input, output, session){
             admLvlNums <- c(admLvlNums, i)
           
           
-        print(paste0("x", x))
-        print(paste0("admlvlnums:", admLvlNums))
+        #print(paste0("x", x))
+        #print(paste0("admlvlnums:", admLvlNums))
         
         #if (admLvlNum=="" && length(countries)>0)
         #  return()
@@ -973,7 +972,7 @@ shiny::shinyServer(function(input, output, session){
         ctryAdmLevels <- ctryAdmLevels()
         admLevel <- ctryAdmLevels[as.numeric(data.table::last(admLvlNums))]
         
-        print(paste0("admLevel:", admLevel))
+        #print(paste0("admLevel:", admLevel))
         
         if (!exists("admLevel") || is.null(admLevel) || length(admLevel)==0)
           admLevel <- "country"
@@ -985,7 +984,7 @@ shiny::shinyServer(function(input, output, session){
         if (lvl == 1)
           next()
         
-        print(paste0("lvl:",lvl))
+        #print(paste0("lvl:",lvl))
         
         if (length(input[[x[lvl-1]]])>0)
         {
@@ -993,7 +992,7 @@ shiny::shinyServer(function(input, output, session){
         }
       }
       
-      print(paste0("ctrydata nrow:", nrow(ctryData)))
+      #print(paste0("ctrydata nrow:", nrow(ctryData)))
       
       if ("norm_area" %in% scale)
         ctryData$value <- (ctryData$value)/ctryData$area_sq_km
@@ -1106,7 +1105,7 @@ shiny::shinyServer(function(input, output, session){
     ######################## map ###################################
 
     output$map <- leaflet::renderLeaflet({
-      print(paste0("here: draw leaflet map"))
+      #print(paste0("here: draw leaflet map"))
       # Use leaflet() here, and only include aspects of the map that
       # won't need to change dynamically (at least, not unless the
       # entire map is being torn down and recreated).
@@ -1139,12 +1138,12 @@ shiny::shinyServer(function(input, output, session){
           admLvlNums <- c(admLvlNums, i)
         
         
-      print(paste0("x", x))
-      print(paste0("admlvlnums:", admLvlNums))
+      #print(paste0("x", x))
+      #print(paste0("admlvlnums:", admLvlNums))
 
       admLvlNums <- as.numeric(gsub("[^[:digit:]]","",admLvlNums))
       
-      print(paste0("admlvlNums:", admLvlNums))
+      #print(paste0("admlvlNums:", admLvlNums))
 
       #get the selected admLevel and convert to lyrnum
       ctryAdmLevels <- ctryAdmLevels()
@@ -1183,9 +1182,9 @@ shiny::shinyServer(function(input, output, session){
       if ("norm_area" %in% scale)
         ctryData$value <- (ctryData$value)/ctryData$area_sq_km
 
-      print(paste0("ctrydata nrow:", nrow(ctryData)))
+      #print(paste0("ctrydata nrow:", nrow(ctryData)))
       
-      print("drawing leaflet")
+      #print("drawing leaflet")
       
       ctryYearMonth <- paste0(countries, "_", nlYm)
       

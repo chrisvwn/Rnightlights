@@ -60,7 +60,7 @@ if(!is.null(missingPkgs))
 
 filenames <- list.files(file.path(Rnightlights::getNlDir("dirNlData")))
 
-print(file.path(Rnightlights::getNlDir("dirNlData")))
+#print(file.path(Rnightlights::getNlDir("dirNlData")))
 
 ctryCodesWithData <- substr(filenames, 1, 3)
 

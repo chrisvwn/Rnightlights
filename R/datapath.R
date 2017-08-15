@@ -1,8 +1,9 @@
 ######################## setupDataPath ###################################
 
-#' Interactively offers the user to set up the default root path
+#' Interactively allows the user to set up the default root path
 #'
-#' Interactively offers the user to set up the default root path
+#' Interactively allows the user to set up the default root path where data
+#'     is cached
 #'
 #' @param newDataPath Default root path to set
 #' 
@@ -16,7 +17,7 @@
 #'     \code{R} is running interactively or not.
 #'
 #' @export
-setupDataPath <- function(newDataPath="~", ...)
+setupDataPath <- function(newDataPath=tempdir(), ...)
 {
   dirName <- ".Rnightlights"
   
@@ -32,15 +33,20 @@ setupDataPath <- function(newDataPath="~", ...)
       #both null; ask user
       if (interactive())
       {
-        prompt <- "The Rnightlights package needs to create a directory that will hold package files and data which may be large. Please choose a location with 3GB+ where this directory will be created to avoid running out of space. If none is chosen the home directory will be used. 
-        \nWould you like to choose a different data directory? 
-        \nEnter 0 to Exit"
+        prompt <- paste0("The Rnightlights package needs to create a directory ",
+                         "that will hold package files and data which may be large.",
+                         "\n\nPlease choose a location where this directory will ",
+                         "be created. Recommend 3GB+ For multiple countries & periods.",
+                         "If none is chosen a temporary directory will be used ",
+                         "for this session only.",
+                         "\n\nWould you like to choose a different data directory?",
+                         "\n\nEnter 0 to use a temporary directory for this session only.")
         
         
         ans <- utils::menu(choices = c(paste0("Create data path under home directory '",  
-                                       path.expand("~")), 
-                                "Choose a different directory as the data path"),
-                    graphics = F, title = prompt);
+                                              path.expand("~")), 
+                                       "Choose a different directory as the data path"),
+                           graphics = F, title = prompt);
         
         if (ans == 1)
           dataPath <- defaultPath
@@ -59,8 +65,8 @@ setupDataPath <- function(newDataPath="~", ...)
             })
         else if (ans == 0)
         {
-          message("Exiting. dataPath not set: Re-run to set/change dataPath")
-          return(invisible(getNlDataPath()))
+          message("Using temporary directory for this session only")
+          dataPath <- tempdir()
         }
         
         if (is.null(dataPath) || is.na(dataPath))
@@ -71,9 +77,10 @@ setupDataPath <- function(newDataPath="~", ...)
       }
       else
       {
-        dataPath <- defaultPath
+        #if not interactive and the dataPath isn't set, set dataPath to tempdir()
+        dataPath <- tempdir()
         
-        message("Creating data folder in default location ", path.expand(file.path(dataPath, dirName)))
+        message("Creating data folder in temporary location ", path.expand(file.path(dataPath, dirName)))
       }
       
       setNlDataPath(dataPath)
@@ -84,14 +91,19 @@ setupDataPath <- function(newDataPath="~", ...)
       #if a directory currently exists ask the user if they want to change it
       if (interactive())
       {
-        prompt <- paste0("The Rnightlights package needs to create a directory that will hold package files and data which may be large. Please choose a location with 3GB+ where this directory will be created to avoid running out of space. \nCurrently the data directory is set to '", path.expand(getNlDataPath()), "' \nWould you like to choose a different data directory?
-                         \nEnter 0 to Exit")
+        prompt <- paste0("The Rnightlights package needs to create a directory ",
+                         "that will hold package files and data which may be large. ",
+                         "\n\nPlease choose a location with 3GB+ where this directory will ",
+                         "be created to avoid running out of space. If none is chosen ",
+                         "a temporary directory will be used for this session only.",
+                         "\n\nWould you like to choose a different data directory?",
+                         "\n\nEnter 0 to use a temporary directory for this session only.")
         
         
         ans <- utils::menu(choices = c(paste0("Use current directory '",  
-                                       path.expand(getNlDataPath()), " as the data path"), 
-                                "Choose a different directory as the data path"),
-                    graphics = F, title = prompt);
+                                              path.expand(getNlDataPath()), " as the data path"), 
+                                       "Choose a different directory as the data path"),
+                           graphics = F, title = prompt);
         
         if (ans == 1)
           return(invisible(getNlDataPath()))
@@ -115,8 +127,8 @@ setupDataPath <- function(newDataPath="~", ...)
         }
         else if (ans == 0)
         {
-          message("Exiting. dataPath not set: Re-run to set/change dataPath")
-          return(getNlDataPath())
+          message("Using temporary directory for this session only")
+          dataPath <- tempdir()
         }
         
         #is.na if dialog cancelled, is.null if readline empty
@@ -133,7 +145,7 @@ setupDataPath <- function(newDataPath="~", ...)
         {
           message("Using previous install detected at ", path.expand(file.path(dataPath, dirName)))
           
-          setNlDataPath(dataPath)
+          setNlDataPath(tempdir())
         }
       }
       
@@ -242,9 +254,9 @@ setNlDataPath <- function(dataPath)
     stop("Directory ", dataPath, " not found")
   
   #If we are here we have created a new directory
-  #Make sure the homePath exists and persist the dataPath
+  #If dataPath not the tempdir(), Make sure the homePath exists and persist the dataPath
   #~/.Rnightlights Must always exist even if it does not hold the data
-  if(!exists(file.path(homePath)))
+  if(dataPath != tempdir() && !exists(file.path(homePath)))
     if(dir.exists(file.path(homePath)) || dir.create(file.path(homePath)))
       if(!isMove) #only change the path if not a move since move may fail
         saveRDS(path.expand(dataPath), file.path(homePath, "datapath.rda"))
@@ -330,6 +342,7 @@ setNlDataPath <- function(dataPath)
   }
   
   #If dataPath was created
+  if(!is.null(getNlDataPath()))
   if(path.expand(getNlDataPath()) == path.expand(dataPath))
   {
     # Add a README.txt file, if missing.
@@ -361,7 +374,7 @@ setNlDataPath <- function(dataPath)
 getNlDataPath <- function()
 {
   
-  homePath = "~"
+  homePath = path.expand("~")
   dirName = ".Rnightlights"
   dataPathFile = "datapath.rda"
   
@@ -384,7 +397,12 @@ getNlDataPath <- function()
   }
   else
   {
-    dataPath <- NULL
+    #finally check if the .Rnightlights folder exists under tempdir()
+    #meaning user chose temporary location
+    if(dir.exists(file.path(tempdir(), dirName)))
+      dataPath <- tempdir()
+    else
+      dataPath <- NULL #if all else fails send NULL
   }
   
   dataPath
@@ -519,7 +537,19 @@ getNlDir <- function(dirName)
   if(!is.character(dirName) || is.null(dirName) || is.na(dirName) || dirName == "")
     stop("Invalid dirName: ", dirName)
   
+  #check if dataPath is already set
   dataPath <- getNlDataPath()
+  
+  #If getNlDataPath() returns NULL prompt the user to setupDataPath()
+  #Put here in case at installation user chooses temp directory so in
+  #a new R session it will be NULL. We also want all exported functions to
+  #work without explicitly loading the package
+  if(is.null(dataPath))
+  {
+    setupDataPath()
+
+    dataPath <- getNlDataPath()
+  }
   
   file.path(dataPath, pkgOptions("dirNlDataPath"), pkgOptions(dirName))
 }
