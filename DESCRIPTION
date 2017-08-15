@@ -2,7 +2,17 @@ Package: Rnightlights
 Version: 0.1.0
 Date: 2017-08-01
 Title: Satellite Nightlight Data Extraction
-Description: Extract data from satellite nightlight imagery.
+Description: The Rnightlights package extracts raster and zonal statistics
+    from satellite nightlight rasters downloaded from the United States 
+    National Oceanic and Atmospheric Administration (http://www.noaa.gov) 
+    free data repositories. Both the DMSP-OLS annual and SNPP-VIIRS monthly 
+    nightlight raster data are supported. Satellite nightlight raster tiles are 
+    downloaded and cropped to the country boundaries using shapefiles from the GADM
+    database of Global Administrative Areas (http://gadm.org). Zonal statistics
+    are then calculated at the lowest administrative boundary for the selected
+    country and cached locally for future retrieval. Finally, a simple data
+    explorer/browser is included that allows one to visualize the cached data e.g.
+    graphing, mapping and clustering regional data.
 Authors@R: c(person(given="Christopher", family="Njuguna", role=c("aut", "cre", "cph"), email="chris.njuguna@gmail.com"),
             person(given="Henrik", family="Bengtsson", role="ctb", email="henrikb@braju.com", comment="data setup, https://cran.r-project.org/package=R.cache"),
             person(given="Black", family="Guru", role="ctb", comment="gdal zonal, http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/"),
