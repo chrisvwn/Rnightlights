@@ -159,12 +159,14 @@ nlInit <- function(omitCountries="none")
 #'
 nlCleanup <- function()
 {
-  #remove any global vars we might have used
+  #remove any global vars we created in .onLoad
   #suppressWarnings(rm(map, shpTopLyrName, wgs84, nlTiles, tilesSpPolysDFs))
   
   #the destructor
   
-  #del temp files
+  #del temp dataPath directory if it was created
+  if(getNlDataPath() == tempdir())
+    unlink(file.path(tempdir(), ".Rnightlights"), recursive = TRUE, force = TRUE)
 }
 
 ######################## getRastPercentiles ###################################

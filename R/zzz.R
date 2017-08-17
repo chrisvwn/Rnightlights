@@ -25,6 +25,9 @@
 
 .onDetach <- function(libname)
 {
+  #remove any global vars we created in .onLoad
+  #suppressWarnings(rm(map, shpTopLyrName, wgs84, nlTiles, tilesSpPolysDFs))
+  
   #cleanup by removing any global vars created etc
   nlCleanup();
   compiler::enableJIT(0)

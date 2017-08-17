@@ -2,9 +2,9 @@
 % Please edit documentation in R/datapath.R
 \name{setupDataPath}
 \alias{setupDataPath}
-\title{Interactively offers the user to set up the default root path}
+\title{Interactively allows the user to set up the default root path}
 \usage{
-setupDataPath(newDataPath = "~", ...)
+setupDataPath(newDataPath = tempdir(), ...)
 }
 \arguments{
 \item{newDataPath}{Default root path to set}
@@ -16,7 +16,8 @@ character string Returns (invisibly) the root path,
     or @NULL if running a non-interactive session.
 }
 \description{
-Interactively offers the user to set up the default root path
+Interactively allows the user to set up the default root path where data
+    is cached
 }
 \seealso{
 Internally, @see "setNlDataPath" is used to set the root path.
