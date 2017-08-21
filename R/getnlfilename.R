@@ -145,7 +145,7 @@ getNlTileTifLclNamePath <- function(nlType, nlPeriod, tileNum)
 #' @examples
 #' #using default dirNlTiles
 #' \dontrun{getNlTileTifLclNameVIIRS("201401", "1")}
-#'  #returns "viirs_2014_01_75N180W.tif"
+#'  #returns "viirs_201401_75N180W.tif"
 #'
 getNlTileTifLclNameVIIRS <- function(nlYearMonth, tileNum)
 {
@@ -160,12 +160,8 @@ getNlTileTifLclNameVIIRS <- function(nlYearMonth, tileNum)
   
   if(!validNlTileNumVIIRS(tileNum))
     stop("Invalid tileNum: ", tileNum)
-  
-  nlYear <- substr(nlYearMonth, 1, 4)
-  
-  nlMonth <- substr(nlYearMonth, 5, 6)
-  
-  return (paste0("viirs_", nlYear, "_", nlMonth, "_", tileIdx2Name(tileNum, "VIIRS"), ".tif"))
+
+  return (paste0("viirs_", nlYearMonth, "_", tileIdx2Name(tileNum, "VIIRS"), ".tif"))
 }
 
 ######################## getNlTileTifLclNameOLS ###################################
@@ -181,7 +177,7 @@ getNlTileTifLclNameVIIRS <- function(nlYearMonth, tileNum)
 #' @examples
 #' #using default dirNlTiles
 #' \dontrun{getNlTileTifLclNameVIIRS("2004")}
-#'  #returns "OLS_2004.tif"
+#'  #returns "OLS_2004_00N180W.tif"
 #'
 getNlTileTifLclNameOLS <- function(nlYear)
 {
@@ -191,7 +187,7 @@ getNlTileTifLclNameOLS <- function(nlYear)
   if(!validNlPeriodOLS(nlYear))
     stop("Invalid nlYear: ", nlYear)
   
-  return (paste0("ols_", nlYear, ".tif"))
+  return (paste0("ols_", nlYear, "_00N180W.tif"))
 }
 
 ######################## getNlTileTifLclNamePathVIIRS ###################################

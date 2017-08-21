@@ -894,7 +894,7 @@ listNlTiles <- function(nlTypes=NULL, nlPeriods=NULL, source="local")
   rasterList <- as.data.frame(rasterList)
   
   #label the columns
-  names(rasterList) <- c("nlType", "nlPeriod")
+  names(rasterList) <- c("nlType", "nlPeriod", "tileName")
   
   #filters
   #filter by nlType if supplied
@@ -906,7 +906,7 @@ listNlTiles <- function(nlTypes=NULL, nlPeriods=NULL, source="local")
     rasterList <- rasterList[which(rasterList[,"nlPeriod"] %in% nlPeriods),]
   
   #Reorder the columns
-  rasterList <- dplyr::select(rasterList, nlType, nlPeriod)
+  rasterList <- dplyr::select(rasterList, nlType, nlPeriod, tileName)
   
   #only return list if we have records esp. after filtering else return NULL
   if(nrow(rasterList) > 0)
