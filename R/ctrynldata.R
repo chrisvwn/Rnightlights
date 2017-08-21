@@ -62,7 +62,7 @@ createCtryNlDataDF <- function(ctryCode)
     ctryNlDataDF <- as.data.frame(ctryPoly@data[,eval(ctryPolyAdmCols)])
     
     #add the area as reported by the polygon shapefile as a convenience
-    areas <- raster::area(ctryPoly)
+    areas <- raster::area(ctryPoly)/10e6
     
     #we add the country code to ensure even a renamed file is identifiable
     #repeat ctryCode for each row in the polygon. equiv of picking layer0
