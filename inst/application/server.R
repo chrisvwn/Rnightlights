@@ -50,7 +50,7 @@ if (!requireNamespace("ggdendro", quietly = TRUE))
 
 if (!requireNamespace("leaflet", quietly = TRUE))
 {
-  missingPkgs <- c(missingPkgs, "leaflet")
+  missingPkgs <- c(missingPkgs, "rstudio/leaflet")
 }
 
 if (!requireNamespace("plotly", quietly = TRUE))
@@ -75,7 +75,7 @@ if (!requireNamespace("rgdal", quietly = TRUE))
 
 if (!requireNamespace("Rnightlights", quietly = TRUE))
 {
-  missingPkgs <- c(missingPkgs, "DT")
+  missingPkgs <- c(missingPkgs, "rstudio/DT")
 }
 
 if(!is.null(missingPkgs))
