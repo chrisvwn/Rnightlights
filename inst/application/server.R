@@ -73,6 +73,11 @@ if (!requireNamespace("rgdal", quietly = TRUE))
   missingPkgs <- c(missingPkgs, "rgdal")
 }
 
+if (!requireNamespace("Rnightlights", quietly = TRUE))
+{
+  missingPkgs <- c(missingPkgs, "DT")
+}
+
 if(!is.null(missingPkgs))
  stop("Missing packages needed for this function to work. 
       Please install missing packages: '", paste0(missingPkgs, collapse = ", "), "'", call. = FALSE)

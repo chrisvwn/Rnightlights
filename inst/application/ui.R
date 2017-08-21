@@ -52,6 +52,11 @@ if (!requireNamespace("plotly", quietly = TRUE))
   missingPkgs <- c(missingPkgs, "plotly")
 }
 
+if (!requireNamespace("DT", quietly = TRUE))
+{
+  missingPkgs <- c(missingPkgs, "DT")
+}
+
 if(!is.null(missingPkgs))
   stop("Missing packages needed for this function to work. 
        Please install missing packages: '", paste0(missingPkgs, collapse = ", "), "'", call. = FALSE)
