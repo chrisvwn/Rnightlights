@@ -861,8 +861,9 @@ listCtryNlRasters <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, sour
 #' #list all VIIRS tiles
 #' listNlTiles(nlTypes = "VIIRS")
 #' 
-#' #list all VIIRS tiles available in the years 2012-2014
-#' listNlTiles(nlTypes = "VIIRS", nlPeriods = nlRange("201201", "201412"))
+#' #list all VIIRS tiles available in the years 2012-2014. Note VIIRS data
+#' #starts in 201204
+#' listNlTiles(nlTypes = "VIIRS", nlPeriods = nlRange("201204", "201412"))
 #' 
 #' #filter data
 #' listNlTiles(nlTypes = "OLS", nlPeriods = c("2012", "2013"))
@@ -872,6 +873,7 @@ listNlTiles <- function(nlTypes=NULL, nlPeriods=NULL, source="local")
 {
   nlType <- NULL #appease CRAN note for global variables
   nlPeriod <- NULL #appease CRAN note for global variables
+  tileName <- NULL #appease CRAN note for global variables
   
   if(source=="remote")
   {

@@ -20,6 +20,6 @@ Constructs the filename of the decompressed VIIRS .tif file
 \examples{
 #using default dirNlTiles
 \dontrun{getNlTileTifLclNameVIIRS("201401", "1")}
- #returns "viirs_2014_01_75N180W.tif"
+ #returns "viirs_201401_75N180W.tif"
 
 }
