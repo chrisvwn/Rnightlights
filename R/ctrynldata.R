@@ -37,7 +37,8 @@ createCtryNlDataDF <- function(ctryCode)
   ctryPolyAdmLevels <- tolower(ctryPolyAdmLevels)
   
   #add the area as reported by the polygon shapefile as a convenience
-  areas <- raster::area(ctryPoly)
+  #converted to sq. km.
+  areas <- raster::area(ctryPoly)/10e6
   
   if (length(ctryPolyAdmLevels) > 0)
   {
