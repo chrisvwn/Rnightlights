@@ -71,7 +71,9 @@ myZonal <- function (x, z, stats, digits = 0, na.rm = TRUE, ...)
   
   fun <- paste0(sapply(statsFn, function(stat) paste0(stat,"=", stat, "(x, na.rm = TRUE)")), collapse = ", ")
   
-  funs <- paste0("rDT[, as.list(unlist(lapply(data.table::.SD, function(x) list(", fun, ")))), by=z]")
+  #reference .SD as data.table::.SD yields empty output
+  #funs <- paste0("rDT[, as.list(unlist(lapply(data.table::.SD, function(x) list(", fun, ")))), by=z]")
+  funs <- paste0("rDT[, as.list(unlist(lapply(.SD, function(x) list(", fun, ")))), by=z]")
 
   vals <- NULL
   
