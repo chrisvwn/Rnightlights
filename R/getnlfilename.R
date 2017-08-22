@@ -80,7 +80,7 @@ getNlTileZipLclNameVIIRS <- function(nlYearMonth, tileNum)
   
   nlMonth <- substr(nlYearMonth, 5, 6)
   
-  return (paste0("viirs_", nlYear, "_", nlMonth, "_", tileIdx2Name(tileNum, "VIIRS"), ".tgz"))
+  return (paste0("viirs_", nlYearMonth, "_", tileIdx2Name(tileNum, "VIIRS"), ".tgz"))
 }
 
 ######################## getNlTileTifLclNamePath ###################################
