@@ -236,7 +236,6 @@ shiny::shinyServer(function(input, output, session){
       return(ctryData)
     })
 
-  
   ######################## reactiveValues values ###################################
   
     values <- shiny::reactiveValues(
@@ -1122,6 +1121,7 @@ shiny::shinyServer(function(input, output, session){
       nlYearMonth <- input$nlYearMonth
       admLevel <- shiny::isolate(input$admLevel)
       scale <- input$scale
+      nlType <- input$nltype
       
       shiny::isolate({      
       if (is.null(countries) || is.null(nlYearMonth) || is.null(admLevel))
@@ -1193,15 +1193,30 @@ shiny::shinyServer(function(input, output, session){
       
       ctryYearMonth <- paste0(countries, "_", nlYm)
       
-      message(ctryYearMonth)
+      #message(ctryYearMonth)
       
       ctryPoly0 <- rgdal::readOGR(Rnightlights::getPolyFnamePath(countries), Rnightlights::getCtryShpLyrName(countries,0))
+
+      if(nlType == "OLS")
+        nlPeriod <- substr(gsub("-","",nlYm),1,4)
+      else if(nlType=="VIIRS")
+        nlPeriod <- substr(gsub("-","",nlYm),1,6)
+      
+      ctryRastFilename <- Rnightlights::getCtryRasterOutputFname(countries, nlType, nlPeriod)
+      
+      if(file.exists(ctryRastFilename))
+        ctryRast <- raster::raster(ctryRastFilename)
+      else
+        ctryRast <- NULL
       
       map <- leaflet::leaflet(data=ctryPoly0) %>%
         #addTiles("http://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png") %>%
-        leaflet::addTiles() %>%
+        leaflet::addTiles()
         
-        leaflet::addWMSTiles(layerId="nlRaster",
+      if(inherits(ctryRast, "RasterLayer"))
+        map <- map %>% leaflet::addRasterImage(map = map, x = ctryRast,layerId = "1")
+        
+      map <-  map %>% leaflet::addWMSTiles(layerId="nlRaster",
                              baseUrl = "http://localhost/cgi-bin/mapserv?map=nightlights_wms.map", layers = "nightlights_201204",
                              options = leaflet::WMSTileOptions(format = "image/png",
                                                       transparent = TRUE, opacity=1)
@@ -1347,7 +1362,5 @@ shiny::shinyServer(function(input, output, session){
       map
       })
     })
-    
-    ######################## renderDataTable dtTblOutput ###################################
     
 })
