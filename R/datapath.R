@@ -92,10 +92,11 @@ setupDataPath <- function(newDataPath=tempdir(), ...)
       if (interactive())
       {
         prompt <- paste0("The Rnightlights package needs to create a directory ",
-                         "that will hold package files and data which may be large. ",
-                         "\n\nPlease choose a location with 3GB+ where this directory will ",
-                         "be created to avoid running out of space. If none is chosen ",
-                         "a temporary directory will be used for this session only.",
+                         "that will hold package files and data which may be large.",
+                         "\n\nPlease choose a location where this directory will ",
+                         "be created. Recommend 3GB+ For multiple countries & periods.",
+                         "If none is chosen a temporary directory will be used ",
+                         "for this session only.",
                          "\n\nWould you like to choose a different data directory?",
                          "\n\nEnter 0 to use a temporary directory for this session only.")
         
@@ -121,6 +122,12 @@ setupDataPath <- function(newDataPath=tempdir(), ...)
               else
                 stop(path, " not found")
             })
+          
+          if (is.null(dataPath) || is.na(dataPath))
+          {
+            message("Exiting. dataPath not set: Re-run to set/change dataPath")
+            return(invisible(getNlDataPath()))
+          }
           
           #this is a move
           setNlDataPath(dataPath)

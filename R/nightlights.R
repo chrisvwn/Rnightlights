@@ -321,6 +321,8 @@ processNLCountry <- function(ctryCode, nlPeriod, nlType, cropMaskMethod=pkgOptio
 #' @examples
 #' \dontrun{getCtryRasterOutputFname("KEN","VIIRS", "201412")}
 #'
+#'#export for exploreData() shiny app
+#'@export
 getCtryRasterOutputFname <- function(ctryCode, nlType, nlPeriod)
 {
   if(missing(ctryCode))
