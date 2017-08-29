@@ -38,7 +38,7 @@ createCtryNlDataDF <- function(ctryCode)
   
   #add the area as reported by the polygon shapefile as a convenience
   #converted to sq. km.
-  areas <- raster::area(ctryPoly)/10e6
+  areas <- raster::area(ctryPoly)/1e6
   
   if (length(ctryPolyAdmLevels) > 0)
   {
@@ -62,7 +62,7 @@ createCtryNlDataDF <- function(ctryCode)
     ctryNlDataDF <- as.data.frame(ctryPoly@data[,eval(ctryPolyAdmCols)])
     
     #add the area as reported by the polygon shapefile as a convenience
-    areas <- raster::area(ctryPoly)/10e6
+    areas <- raster::area(ctryPoly)/1e6
     
     #we add the country code to ensure even a renamed file is identifiable
     #repeat ctryCode for each row in the polygon. equiv of picking layer0
@@ -883,7 +883,7 @@ listNlTiles <- function(nlTypes=NULL, nlPeriods=NULL, source="local")
   }
   
   #get a list of country data files present
-  rasterList <- list.files(getNlDir("dirNlTiles"), pattern = ".tif")
+  rasterList <- list.files(getNlDir("dirNlTiles"), pattern = ".tif$")
   
   if(length(rasterList) == 0)
     return(NULL)
