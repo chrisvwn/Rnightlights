@@ -27,9 +27,9 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   
   #cropMaskMethod" Method used to crop and mask tiles to country polygons. 
   #options: "gdal" or "rast" gdal is usually faster but requires gdal to be installed on the system
-  cropMaskMethod = "gdal",
+  cropMaskMethod = "rast",
   
-  extractMethod = "gdal",
+  extractMethod = "rast",
   
   #gdal_cachemax Speeds up gdal_rasterize calculation of stats in function ZonalPipe with more cache (advice: max 1/3 of your total RAM) see: http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/
   gdal_cachemax = 2000,
@@ -40,6 +40,8 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   omitCountries = "missing",
   
   deleteTiles = FALSE,
+  
+  numCores = 2,
   
   .allowed = list(
     cropMaskMethod = settings::inlist("gdal","rast"),

@@ -83,50 +83,6 @@ dnldCtryPoly <- function(ctryCode)
   return (!is.null(result))
 }
 
-######################## getAllNlPeriods ###################################
-
-#' Generate a list of all possible nlPeriods for a given nlType
-#'
-#' Generate a list of all possible nlPeriods for a given nlType
-#'
-#' @param nlType type of nightlight either "VIIRS" or "OLS"
-#'
-#' @return character vector list of nlPeriods
-#'
-#' @examples
-#' \dontrun{getAllNlPeriods("OLS")}
-#'  #returns a vector of all years from 1994 to present
-#'
-#' \dontrun{getAllNlPeriods("VIIRS")}
-#'  #returns a vector of all yearMonths from 201204 to present
-#'
-getAllNlPeriods <- function(nlType)
-{
-  if (missing(nlType))
-    stop("Missing required parameter nlType")
-  
-  if (!validNlType(nlType))
-    stop("Invalid nlType: ", nlType)
-  
-  if (nlType == "OLS")
-    return (1992:2013)
-  else if (nlType == "VIIRS")
-  {
-    yrs <- 2012:lubridate::year(lubridate::now())
-    mths <- c(paste("0",1:9, sep= ""),10:12)
-    
-    currYrMth <- paste0(lubridate::year(lubridate::now()), ifelse(lubridate::month(lubridate::now())<10, paste("0", lubridate::month(lubridate::now()), sep=""), lubridate::month(lubridate::now())))
-    
-    nlYrMths <- unlist(lapply(yrs, FUN = function(x) paste(x,mths,sep="")))
-    
-    nlYrMths <- nlYrMths[nlYrMths >= "201204" & nlYrMths <= currYrMth]
-    
-    return (nlYrMths)
-  }
-  else
-    return()
-}
-
 ######################## nlInit ###################################
 
 #' Initialize some important variables and create directory structure
