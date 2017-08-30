@@ -736,7 +736,7 @@ listCtryNlData <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, source=
   dataList <- as.data.frame(dataList, row.names = 1:nrow(dataList))
   
   #label the columns
-  names(dataList) <- c("ctryCode", "dataType", "nlType", "nlPeriod", paste0("stat", 1:(ncol(dataList)-4)))
+  names(dataList) <- c("ctryCode", "dataType", "nlType", "nlPeriod", "stats")
   
   #filters
   #filter by ctryCode if supplied
