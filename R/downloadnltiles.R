@@ -143,7 +143,8 @@ downloadNlTilesOLS <- function(nlYear, downloadMethod=pkgOptions("downloadMethod
   #if (!file.exists(ntLtsZipLocalNameVIIRS) && !file.exists(ntLtsTifLocalNameVIIRS))
   if (!file.exists(ntLtsTifLocalNamePath))
   {
-    ntLtsFileUrl <- getNlUrlOLS(nlYear)
+    #get the first only to cater for Where multiple tiles exist 
+    ntLtsFileUrl <- getNlUrlOLS(nlYear)[1]
     
     ntLtsFileUrl <- gsub("\n", "", ntLtsFileUrl)
     
