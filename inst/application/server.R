@@ -13,7 +13,7 @@
 # 
 # library(shiny)
 # library(ggplot2)
-suppressMessages(library(plotly))
+# suppressMessages(library(plotly))
 # library(leaflet)
 # library(reshape)
 # library(rgdal)
@@ -157,6 +157,7 @@ shiny::shinyServer(function(input, output, session){
       input$btnGo
       
       countries <- shiny::isolate(input$countries)
+      nlType <- shiny::isolate(input$nltype)
       
       if (length(countries)<1)
         return()
@@ -174,7 +175,7 @@ shiny::shinyServer(function(input, output, session){
           #print(ctryCode)
           temp <- data.table::fread(Rnightlights::getCtryNlDataFnamePath(ctryCode))
           
-          ctryCols <- grep("country|area|NL_", names(temp))
+          ctryCols <- grep(paste0("country|area|NL_", nlType), names(temp))
           
           temp <- temp[, ctryCols, with=F]
           
@@ -187,6 +188,17 @@ shiny::shinyServer(function(input, output, session){
           }
         }
       }
+      
+      #get the nlType columns
+      ctryCols <- names(ctryData)
+      
+      ctryNonNLCols <- grep("NL_", ctryCols, invert = T, value = T)
+      ctryNLCols <- grep("NL_", ctryCols, value = T)
+      
+      ctryNLColsNlType <- grep(nlType, ctryNLCols, value = T)
+      
+      ctryData <- ctryData[, c(ctryNonNLCols, ctryNLColsNlType), with=F]
+      
       return(ctryData)
     })  
   
@@ -224,7 +236,7 @@ shiny::shinyServer(function(input, output, session){
       {
         ctryData$variable <- paste0(gsub("[^[:digit:]]","", ctryData$variable))
         
-        ctryData$variable <- as.Date(ctryData$variable, format="%Y")
+        ctryData$variable <- as.numeric(ctryData$variable)
       }
       else if(input$nltype == "VIIRS")
       {
@@ -945,6 +957,7 @@ shiny::shinyServer(function(input, output, session){
       scale <- input$scale
       nlYearMonthRange <- input$nlYearMonthRange
       graphType <- input$graphType
+      nlType <- shiny::isolate(input$nltype)
       
       ctryData <- ctryNlDataMelted()
 
@@ -1022,6 +1035,9 @@ shiny::shinyServer(function(input, output, session){
           #ctryData <- stats::setNames(aggregate(ctryData$value, by=list(ctryData[,admLevel], ctryData[,"variable"]), mean, na.rm=T), c(admLevel, "variable", "value"))
           ctryData <- stats::setNames(ctryData[,mean(value, na.rm = TRUE),by = list(ctryData[[admLevel]], variable)], c(admLevel, "variable", "value"))
           g <- ggplot2::ggplot(data=ctryData, aes(x=variable, y=value, col=ctryData[[admLevel]]))
+          
+          if(nlType == "VIIRS")
+            g <- g + ggplot2::scale_x_date(date_breaks = "1 month", date_labels = "%Y-%m")
         }
         else
         {
@@ -1029,6 +1045,9 @@ shiny::shinyServer(function(input, output, session){
           #switched to data.table aggregation
           ctryData <- stats::setNames(ctryData[,mean(value, na.rm = TRUE),by = list(country, variable)], c("country", "variable", "value"))
           g <- ggplot2::ggplot(data=ctryData, aes(x=variable, y=value, col=country))
+          
+          if(nlType == "VIIRS")
+            g <- g + ggplot2::scale_x_date(date_breaks = "1 month", date_labels = "%Y-%m")
         }
 
         g <- g+ ggplot2::geom_line() + ggplot2::geom_point()+ ggplot2::theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) + ggplot2::labs(col=admLevel)
@@ -1042,6 +1061,8 @@ shiny::shinyServer(function(input, output, session){
         g <- g + ggplot2::geom_histogram(aes(y=..density..), bins = 30, colour="black", fill="white") + ggplot2::geom_density(alpha=.2, fill="#FF6666") + ggplot2::facet_wrap(~ variable+country, ncol = length(countries)) # Overlay with transparent density plot
 
       }
+      else
+        return(NULL)
 
       if ("scale_y_log" %in% scale)
         g <- g + ggplot2::scale_y_log10()
