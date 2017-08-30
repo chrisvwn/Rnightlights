@@ -277,7 +277,7 @@ getNlTileZipLclNameOLS <- function(nlYear)
   if(!validNlPeriodOLS(nlYear))
     stop("Invalid nlYear")
   
-  return (paste0("ols_", nlYear, ".tgz"))
+  return (paste0("ols_", nlYear, "_00N180W.tgz"))
 }
 
 ######################## getNlTifLclNameOLS ###################################
