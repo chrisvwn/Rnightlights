@@ -2,7 +2,7 @@
 % Please edit documentation in R/nlperiod.R
 \name{validNlPeriod}
 \alias{validNlPeriod}
-\title{Check if a month number is valid for a given nightlight type}
+\title{Check if an nlPeriod is valid for a given nightlight type}
 \usage{
 validNlPeriod(nlPeriod, nlType)
 }
@@ -15,17 +15,16 @@ validNlPeriod(nlPeriod, nlType)
 TRUE/FALSE
 }
 \description{
-Check if a month number is valid for a given nightlight type. Note month num is only valid for
-"VIIRS" nightlight type
+Check if an nlPeriod is valid for a given nightlight type
 }
 \examples{
-\dontrun{validNlPeriod("201204","VIIRS")}
+validNlPeriod("201204","VIIRS")
  #returns TRUE
 
-\dontrun{validNlPeriod("201203","VIIRS")}
+validNlPeriod("201203","VIIRS")
  #returns FALSE
 
-\dontrun{validNlPeriod("2012","OLS")}
+validNlPeriod("2012","OLS")
  #returns TRUE
 
 }

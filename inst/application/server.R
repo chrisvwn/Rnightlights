@@ -528,17 +528,28 @@ shiny::shinyServer(function(input, output, session){
       {
         minDate <- min(ctryData$variable)
         maxDate <- max(ctryData$variable)
-        
-        shiny::sliderInput(inputId = "nlYearMonth",
+       
+        if(input$nltype == "OLS")  
+          shiny::sliderInput(inputId = "nlYearMonth",
                     label = "Time",
                     min = minDate,
                     max = maxDate,
-                    timeFormat = "%Y-%m",
-                    step = 31,
+                    #timeFormat = "%Y",
+                    sep = "",
+                    step = 1,
                     value = minDate,
                     animate = animationOptions(interval = 10000, loop = FALSE, playButton = "Play", pauseButton = NULL)
-                    
         )
+        else if(input$nltype == "VIIRS")  
+          shiny::sliderInput(inputId = "nlYearMonth",
+                             label = "Time",
+                             min = minDate,
+                             max = maxDate,
+                             timeFormat = "%Y-%m-%d",
+                             #step = 31,
+                             value = minDate,
+                             animate = animationOptions(interval = 10000, loop = FALSE, playButton = "Play", pauseButton = NULL)
+          )
       }
     })
     
@@ -1179,7 +1190,10 @@ shiny::shinyServer(function(input, output, session){
       #line weight increases. max=4 min=1
       deltaLineWt <- (4 - 1) / as.numeric(lyrNum)
 
-      nlYm <- as.Date(nlYearMonth[1], "%Y%m%d")
+      if(nlType == "OLS")
+        nlYm <- as.Date(nlYearMonth[1], "%Y")
+      else if (nlType=="VIIRS")
+        nlYm <- as.Date(nlYearMonth[1], "%Y%m%d")
 
       ctryData <- ctryNlDataMelted()
       
@@ -1226,19 +1240,25 @@ shiny::shinyServer(function(input, output, session){
       ctryRastFilename <- Rnightlights::getCtryRasterOutputFname(countries, nlType, nlPeriod)
       
       if(file.exists(ctryRastFilename))
+      {
         ctryRast <- raster::raster(ctryRastFilename)
+        
+        #raster::projection(ctryRast) <- wgs84
+      }
       else
         ctryRast <- NULL
       
+      leaflet::projectRasterForLeaflet(ctryRast)
+      
       map <- leaflet::leaflet(data=ctryPoly0) %>%
-        #addTiles("http://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png") %>%
+        #leaflet::addTiles("http://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png") %>%
         leaflet::addTiles()
         
       if(inherits(ctryRast, "RasterLayer"))
-        map <- map %>% leaflet::addRasterImage(map = map, x = ctryRast,layerId = "1")
+        map <- map %>% leaflet::addRasterImage(map = map, x = ctryRast,layerId = "1",project = F)
         
       map <-  map %>% leaflet::addWMSTiles(layerId="nlRaster",
-                             baseUrl = "http://localhost/cgi-bin/mapserv?map=nightlights_wms.map", layers = "nightlights_201204",
+                             baseUrl = "http://localhost/cgi-bin/mapserv?map=nightlights_wms.map", layers = "nightlights",
                              options = leaflet::WMSTileOptions(format = "image/png",
                                                       transparent = TRUE, opacity=1)
                              ) %>%
