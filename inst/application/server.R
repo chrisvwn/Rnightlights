@@ -131,15 +131,20 @@ shiny::shinyServer(function(input, output, session){
       data <- data.table::fread(Rnightlights::getCtryNlDataFnamePath(countries), colClasses = colClasses, header = T)
     })
     
-  ######################## reactive ctryAdmLevels ###################################
+  ######################## reactive ctryDataStats ###################################
   
   ctryDataStats <- shiny::reactive({
     #print(paste0("here: ctryDataStats"))
     
-    if (length(input$countries) != 1)
-      return()
+    # if (length(input$countries) != 1)
+    #   return()
     
-    temp <- data.table::fread(Rnightlights::getCtryNlDataFnamePath(input$countries), nrows = 1, header = T)
+    #temp <- data.table::fread(Rnightlights::getCtryNlDataFnamePath(input$countries), nrows = 1, header = T)
+    
+    temp <- ctryNlData()
+    
+    if(is.null(temp))
+      return(NULL)
     
     cols <- names(temp)
     
@@ -160,7 +165,7 @@ shiny::shinyServer(function(input, output, session){
       nlType <- shiny::isolate(input$nltype)
       
       if (length(countries)<1)
-        return()
+        return(NULL)
       
       ctryData <- NULL
       
@@ -255,12 +260,17 @@ shiny::shinyServer(function(input, output, session){
     )
     
     output$radioStats <- shiny::renderUI({
-      if(length(input$countries) != 1)
-        return()
+      # if(length(input$countries) != 1)
+      #   return()
+      
+      ctryDtStats <- ctryDataStats()
+      
+      if(is.null(ctryDtStats))
+        return(NULL)
       
       shiny::radioButtons(inputId = "ctryStat",
                           label = "Stats",
-                          choices = ctryDataStats(),
+                          choices = ctryDtStats,
                           inline = TRUE
       )
     })
@@ -1191,7 +1201,7 @@ shiny::shinyServer(function(input, output, session){
       deltaLineWt <- (4 - 1) / as.numeric(lyrNum)
 
       if(nlType == "OLS")
-        nlYm <- as.Date(nlYearMonth[1], "%Y")
+        nlYm <- nlYearMonth[1]
       else if (nlType=="VIIRS")
         nlYm <- as.Date(nlYearMonth[1], "%Y%m%d")
 
@@ -1202,8 +1212,10 @@ shiny::shinyServer(function(input, output, session){
       
       #get our data ready to match with polygons
       #subset data based on level selections
-      ctryData <- subset(ctryData, lubridate::year(variable) == lubridate::year(nlYm) & lubridate::month(variable) == lubridate::month(nlYm))
-
+      if(nlType == "OLS")
+        ctryData <- subset(ctryData, variable == nlYm)
+      else if(nlType == "VIIRS")
+        ctryData <- subset(ctryData, lubridate::year(variable) == lubridate::year(nlYm) & lubridate::month(variable) == lubridate::month(nlYm))
       #only used when we want to show only the selected features
       #for now we want all features shown and then highlight the selected features
 #       for (lvl in admLvlNums)
@@ -1248,17 +1260,21 @@ shiny::shinyServer(function(input, output, session){
       else
         ctryRast <- NULL
       
-      leaflet::projectRasterForLeaflet(ctryRast)
-      
       map <- leaflet::leaflet(data=ctryPoly0) %>%
         #leaflet::addTiles("http://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png") %>%
         leaflet::addTiles()
         
       if(inherits(ctryRast, "RasterLayer"))
-        map <- map %>% leaflet::addRasterImage(map = map, x = ctryRast,layerId = "1",project = F)
-        
+      {
+        map <- map %>% leaflet::addRasterImage(x = ctryRast,layerId = "ctryRasterLocal", group = "ctryRaster", project = F)
+
+        #leaflet::projectRasterForLeaflet(ctryRast)
+      }
+              
       map <-  map %>% leaflet::addWMSTiles(layerId="nlRaster",
-                             baseUrl = "http://localhost/cgi-bin/mapserv?map=nightlights_wms.map", layers = "nightlights",
+                             baseUrl = "http://localhost/cgi-bin/mapserv?map=nightlights_wms.map", 
+                             layers = "ctryRasterWMS",
+                             group = "ctryRaster",
                              options = leaflet::WMSTileOptions(format = "image/png",
                                                       transparent = TRUE, opacity=1)
                              ) %>%
@@ -1386,7 +1402,7 @@ shiny::shinyServer(function(input, output, session){
             }
 
         }
-      map <- map %>% leaflet::addLayersControl(overlayGroups = c(ctryAdmLevels[2:lyrNum], "selected"))
+      map <- map %>% leaflet::addLayersControl(overlayGroups = c("ctryRaster", ctryAdmLevels[2:lyrNum], "selected"))
       
       if (admLevel != "country")
         map <- map %>% leaflet::addLegend(position = "bottomright", 
