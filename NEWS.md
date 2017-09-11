@@ -13,3 +13,8 @@ v0.1.2:
 + Exported getCtryRasterOutputFname to allow exploreData to access clipped country rasters
 + Modified exploreData to embed the country raster in the map
 + Exported nlPeriod functions to list and check validity of nlPeriods
++ General updates in shiny app
++ Fixed raster display in maps. Still large maps will be slow
++ Made stats radio buttons dynamic
++ Fixed OLS tile download where multiple URLs were returned. Picking only first. May be prudent to download both and process returning average of the two.
++ Added missing pkgOption numCores for parallel processing when raster pkgOptions are selected
