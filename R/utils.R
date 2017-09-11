@@ -66,12 +66,33 @@ dnldCtryPoly <- function(ctryCode)
     {
       if(utils::download.file(url = getCtryPolyUrl(ctryCode), destfile = getPolyFnameZip(ctryCode), method = "auto", mode = "wb", extra = "-c") == 0)
       {
-        result <- utils::unzip(getPolyFnameZip(ctryCode), exdir = getPolyFnamePath(ctryCode))
+        #unzip does not like double slashes!
+        
+        polyFnameZip <- getPolyFnameZip(ctryCode)
+        polyFnameZip <- gsub("//", "/", polyFnameZip, perl=TRUE)
+        polyFnameZip <- gsub("\\\\\\\\", "\\\\", polyFnameZip, perl=TRUE)
+        
+        polyFnamePath <- getPolyFnamePath(ctryCode)
+        polyFnamePath <- gsub("//", "/", polyFnamePath, perl=TRUE)
+        polyFnamePath <- gsub("\\\\\\\\", "\\\\", polyFnamePath, perl=TRUE)
+        
+        result <- utils::unzip(polyFnameZip, exdir = polyFnamePath)
         file.remove(getPolyFnameZip(ctryCode))
       }
     }else
     {
-      result <- utils::unzip(getPolyFnameZip(ctryCode), exdir = getPolyFnamePath(ctryCode))
+      #unzip does not like double slashes!
+      
+      #Convert double forward slashes to single
+      polyFnameZip <- getPolyFnameZip(ctryCode)
+      polyFnameZip <- gsub("//", "/", polyFnameZip, perl=TRUE) #forward
+      polyFnameZip <- gsub("\\\\\\\\", "\\\\", polyFnameZip, perl=TRUE) #back
+      
+      polyFnamePath <- getPolyFnamePath(ctryCode)
+      polyFnamePath <- gsub("//", "/", polyFnamePath, perl=TRUE)
+      polyFnamePath <- gsub("\\\\\\\\", "\\\\", polyFnamePath, perl=TRUE)
+      
+      result <- utils::unzip(polyFnameZip, exdir = polyFnamePath)
       file.remove(getPolyFnameZip(ctryCode))
     }
   }

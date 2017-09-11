@@ -54,9 +54,6 @@ setupDataPath <- function(newDataPath=tempdir(), ...)
           dataPath <- tryCatch(
             {
               path <- tcltk::tk_choose.dir(getNlDataPath())
-              
-              if(.Platform$OS.type == "windows")
-                path <- sub("(\\\\|/)?$", "", path, perl=TRUE)
             }, 
             error=function(ex) 
             {
@@ -116,9 +113,6 @@ setupDataPath <- function(newDataPath=tempdir(), ...)
           dataPath <- tryCatch(
             {
               path <- tcltk::tk_choose.dir("~/")
-              
-              if(.Platform$OS.type == "windows")
-                path <- sub("(\\\\|/)?$", "", path, perl=TRUE)
             }, 
             error=function(ex) 
             {
