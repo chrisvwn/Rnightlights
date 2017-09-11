@@ -253,11 +253,7 @@ shiny::shinyServer(function(input, output, session){
       return(ctryData)
     })
 
-  ######################## reactiveValues values ###################################
-  
-    values <- shiny::reactiveValues(
-      lastUpdated = NULL
-    )
+  ######################## renderUI radioStats ###################################
     
     output$radioStats <- shiny::renderUI({
       # if(length(input$countries) != 1)
@@ -275,7 +271,13 @@ shiny::shinyServer(function(input, output, session){
       )
     })
   
+  ######################## reactiveValues values ###################################
+  
+    values <- shiny::reactiveValues(
+      lastUpdated = NULL
+    )
     
+
     ######################## observe lastUpdated ###################################
     
     observe({
@@ -296,8 +298,7 @@ shiny::shinyServer(function(input, output, session){
                      choices = ctryAdmLevels()
                    )
     })
-    
-    
+
     ######################## render UI: intraCountry ###################################
     
     output$intraCountry <- shiny::renderUI({
