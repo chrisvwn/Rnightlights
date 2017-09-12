@@ -1267,9 +1267,9 @@ shiny::shinyServer(function(input, output, session){
         
       if(inherits(ctryRast, "RasterLayer"))
       {
-        map <- map %>% leaflet::addRasterImage(x = ctryRast,layerId = "ctryRasterLocal", group = "ctryRaster", project = F)
+        map <- map %>% leaflet::addRasterImage(x = ctryRast,layerId = "ctryRasterLocal", group = "ctryRaster", project = T)
 
-        #leaflet::projectRasterForLeaflet(ctryRast)
+        leaflet::projectRasterForLeaflet(ctryRast)
       }
               
       map <-  map %>% leaflet::addWMSTiles(layerId="nlRaster",
