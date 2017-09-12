@@ -1,19 +1,20 @@
 ######################## RNIGHTLIGHTSOPTIONS ###################################
 
 RNIGHTLIGHTSOPTIONS <- settings::options_manager(
-  #Change the temp dir to use e.g. if the system temp dir does not have enough space
-  tmpDir = raster::tmpDir(),
+  #cropMaskMethod" Method used to crop and mask tiles to country polygons. 
+  #options: "gdal" or "rast" gdal is usually faster but requires gdal to be installed on the system
+  cropMaskMethod = "rast",
   
-  ntLtsIndexUrlVIIRS = "https://www.ngdc.noaa.gov/eog/viirs/download_dnb_composites_iframe.html",
+  deleteTiles = FALSE,
   
-  ntLtsIndexUrlOLS = "https://www.ngdc.noaa.gov/eog/data/web_data/v4composites/",
-  
-  stats = c("sum", "mean"),
+  #Set directory paths
+  dirNlDataPath = ".Rnightlights",
   
   dirNlDataPath = ".Rnightlights",
   
-  #Set directory path
   dirNlTiles = "tiles",
+  
+  dirPolygon = "polygons",
   
   dirRasterOutput = "outputrasters",
   
@@ -21,28 +22,35 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   
   dirZonals = "zonals",
   
-  dirPolygon = "polygons",
-  
-  dirNlData = "data",
-  
-  #cropMaskMethod" Method used to crop and mask tiles to country polygons. 
-  #options: "gdal" or "rast" gdal is usually faster but requires gdal to be installed on the system
-  cropMaskMethod = "rast",
-  
-  extractMethod = "rast",
-  
-  #gdal_cachemax Speeds up gdal_rasterize calculation of stats in function ZonalPipe with more cache (advice: max 1/3 of your total RAM) see: http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/
-  gdal_cachemax = 2000,
-  
   #downloadMethod used options: auto, aria, curl, libcurl, wget
   downloadMethod = "auto",
   
-  omitCountries = "missing",
+  #methods to extract data. Options: raster, gdal
+  extractMethod = "rast",
+
+  #gdal_cachemax Speeds up gdal_rasterize calculation of stats in function ZonalPipe with more cache (advice: max 1/3 of your total RAM) see: http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/
+  gdal_cachemax = 2000,
   
-  deleteTiles = FALSE,
+  #urls for raster tile listings. In theory, can be used to override the 
+  #url if it is changed while the package is being updated
+  ntLtsIndexUrlVIIRS = "https://www.ngdc.noaa.gov/eog/viirs/download_dnb_composites_iframe.html",
   
+  ntLtsIndexUrlOLS = "https://www.ngdc.noaa.gov/eog/data/web_data/v4composites/",
+
   numCores = 2,
   
+  #countries to not process. useful if many countries being processed
+  #and want to exclude a few
+  omitCountries = "missing",
+  
+  #stats to calculate in processNlData. Can be added to if the function exists
+  #i.e. if not a standard function can be created in workspace
+  stats = c("sum", "mean"),
+  
+  #Change the temp dir to use e.g. if the system temp dir does not have enough space
+  #Not used yet
+  tmpDir = raster::tmpDir(),
+
   .allowed = list(
     cropMaskMethod = settings::inlist("gdal","rast"),
     extractMethod = settings::inlist("gdal", "rast"),
@@ -99,19 +107,19 @@ pkgOptions <- function(...)
 #'
 #' @examples
 #' #get cropMaskMethod
-#' pkgOptions("cropMaskMethod")
+#' pkgOptions("cropMaskMethod") #returns default "rast"
 #' 
 #' #set cropMaskMethod to "gdal"
-#' pkgOptions(cropMaskMethod="gdal")
+#' pkgOptions(cropMaskMethod="gdal") #sets to "gdal"
 #' 
 #' #check cropMaskMethod has changed
-#' pkgOptions("cropMaskMethod")
+#' pkgOptions("cropMaskMethod") #returns "gdal"
 #' 
 #' #reset pkgOptions
 #' pkgReset()
 #' 
 #' #check cropMaskMethod has been reset
-#' pkgOptions("cropMaskMethod")
+#' pkgOptions("cropMaskMethod") #returns default "rast"
 #'
 #' @export
 pkgReset <- function()
