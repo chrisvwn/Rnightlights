@@ -94,7 +94,7 @@ downloadNlTilesVIIRS <- function(nlYearMonth, tileNum, downloadMethod=pkgOptions
         
         file.rename(file.path(getNlDir("dirNlTiles"), tgzAvgRadFilename), getNlTileTifLclNamePathVIIRS(nlYearMonth, tileNum))
         
-        file.remove(ntLtsZipLocalNamePathVIIRS)
+        unlink(ntLtsZipLocalNamePathVIIRS, force = TRUE)
       }
     }
     else
@@ -196,7 +196,7 @@ downloadNlTilesOLS <- function(nlYear, downloadMethod=pkgOptions("downloadMethod
       
       R.utils::gunzip(file.path(getNlDir("dirNlTiles"), tgzFile), ntLtsTifLocalNamePathOLS)
       
-      file.remove(ntLtsZipLocalNamePathOLS)
+      unlink(ntLtsZipLocalNamePathOLS, force = TRUE)
     }
     else
     {
