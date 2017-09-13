@@ -29,12 +29,12 @@ List available data. If source is "local" it lists data cached locally.
 listCtryNlRasters()
 
 #list all rasters available for KEN
-listCtryNlData(ctryCodes = "KEN")
+listCtryNlRasters(ctryCodes = "KEN")
 
 #list all VIIRS rasters available for ECU
-listCtryNlData(ctryCodes = "ECU", nlTypes = "VIIRS")
+listCtryNlRasters(ctryCodes = "ECU", nlTypes = "VIIRS")
 
 #list available OLS rasters for KEN and RWA in 2012 & 2013
-listCtryNlData(ctryCodes = c("KEN","RWA"), nlPeriods = c("2012", "2013"), nlTypes = "OLS")
+listCtryNlRasters(ctryCodes = c("KEN","RWA"), nlPeriods = c("2012", "2013"), nlTypes = "OLS")
 
 }

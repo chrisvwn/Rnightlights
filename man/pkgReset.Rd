@@ -11,18 +11,18 @@ Reset global options for the Rnightlights package
 }
 \examples{
 #get cropMaskMethod
-pkgOptions("cropMaskMethod")
+pkgOptions("cropMaskMethod") #returns default "rast"
 
 #set cropMaskMethod to "gdal"
-pkgOptions(cropMaskMethod="gdal")
+pkgOptions(cropMaskMethod="gdal") #sets to "gdal"
 
 #check cropMaskMethod has changed
-pkgOptions("cropMaskMethod")
+pkgOptions("cropMaskMethod") #returns "gdal"
 
 #reset pkgOptions
 pkgReset()
 
 #check cropMaskMethod has been reset
-pkgOptions("cropMaskMethod")
+pkgOptions("cropMaskMethod") #returns default "rast"
 
 }

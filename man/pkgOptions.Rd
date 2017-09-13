@@ -10,7 +10,8 @@ pkgOptions(...)
 \item{...}{Option names to retrieve option values or \code{[key]=[value]} pairs to set options.}
 }
 \value{
-if an option name is supplied as a parameter this returns the value, else a list of all options is returned.
+if an option name is supplied as a parameter this returns the 
+    value, else a list of all options is returned.
 }
 \description{
 Set or get options for the Rnightlights package
@@ -19,16 +20,44 @@ Set or get options for the Rnightlights package
 
 The following options are supported
 \itemize{
- \item{\code{dirNlTiles}}{(\code{character}) The directory in which to store the downloaded VIIRS raster tiles }
- \item{\code{dirRasterOutput}}{(\code{character}) The directory in which to store the clipped country rasters }
- \item{\code{dirRasterWeb}}{(\code{character}) The directory in which to store the rasters resampled for web display }
- \item{\code{dirZonals}}{(\code{character}) The directory in which to store the zonal statistics country polygon }
- \item{\code{dirPolygon}}{(\code{character}) The directory to store the downloaded country administration level polygons }
- \item{\code{dirNlData}}{(\code{character}) The directory to store the extracted data files in }
- \item{\code{cropMaskMethod}}{(\code{character}) The method to use to clip the nightlight raster tiles to the country boundaries }
- \item{\code{extractMethod}}{(\code{character}) The method to use to extract data from the rasters }
- \item{\code{downloadMethod}}{(\code{character}) The download method to use }
- \item{\code{omitCountries}}{(\code{character}) The countries to exclude in processing }
+ \item{\code{cropMaskMethod}}{(\code{character}) The method to use to 
+     clip the nightlight raster tiles to the country boundaries }
+ \item{\code{deleteTiles}}{(\code{character}) whether to delete tiles 
+     after processing may be useful where diskspace is a concern }
+ \item{\code{dirNlData}}{(\code{character}) The directory to store 
+     the extracted data files in }
+ \item{\code{dirNlDataPath}}{\code{character}) The root directory 
+     storing the package data}
+ \item{\code{dirNlTiles}}{(\code{character}) The directory in which 
+     to store the downloaded VIIRS raster tiles }
+ \item{\code{dirPolygon}}{(\code{character}) The directory to store 
+     the downloaded country administration level polygons }
+ \item{\code{dirRasterOutput}}{(\code{character}) The directory in 
+     which to store the clipped country rasters }
+ \item{\code{dirRasterWeb}}{(\code{character}) The directory in which 
+     to store the rasters resampled for web display }
+ \item{\code{dirZonals}}{(\code{character}) The directory in which to 
+     store the zonal statistics country polygon }
+ \item{\code{downloadMethod}}{(\code{character}) The download method 
+     to use }
+ \item{\code{extractMethod}}{(\code{character}) The method to use to 
+     extract data from the rasters }
+ \item{\code{gdal_cachemax}}{(\code{character}) The maximum memory gdal 
+     should use in gdal_rasterize }
+ \item{\code{ntLtsIndexUrlOLS}}{(\code{character}) The url with the OLS 
+     tile index }
+ \item{\code{ntLtsIndexUrlVIIRS}}{(\code{character}) The url with the 
+     VIIRS tile index }
+ \item{\code{numCores}}{(\code{character}) The number of processor cores 
+     to use when extractMethod = "raster" }
+ \item{\code{omitCountries}}{(\code{character}) The countries to exclude 
+     in processing }
+ \item{\code{stats}}{(\code{character}) The statistics to calculate for 
+     country regions. The default are sum and mean. Any other aggregate 
+     statistics can be included. Also any aggregate function accessible 
+     in the current environment can be added. }
+ \item{\code{tmpDir}}{(\code{character}) The countries to exclude in 
+     processing }
 }
 }
 

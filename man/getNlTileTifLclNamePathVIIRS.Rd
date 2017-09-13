@@ -20,6 +20,6 @@ Constructs the full path used to save/access the decompressed VIIRS .tif file
 \examples{
 #using default dirNlTiles
 \dontrun{getNlTileTifLclNamePathVIIRS("201401", "1")}
- #returns "/dataPath/tiles/viirs_2014_01_75N180W.tif"
+ #returns "/dataPath/tiles/VIIRS_2014_01_75N180W.tif"
 
 }

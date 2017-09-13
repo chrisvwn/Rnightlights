@@ -22,9 +22,9 @@ Constructs the full path used to save/access the compressed downloaded tile
 }
 \examples{
 \dontrun{getNlTileZipLclNamePath("VIIRS", "201401", "1")}
- #returns "/dataPath/viirs_2014_01_75N180W.tgz"
+ #returns "/dataPath/VIIRS_2014_01_75N180W.tgz"
  
 \dontrun{getNlTileZipLclNamePath("OLS", "2004", "1")}
- #returns "/dataPath/ols_2004.tgz"
+ #returns "/dataPath/OLS_2004.tgz"
 
 }

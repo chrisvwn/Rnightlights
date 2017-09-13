@@ -20,6 +20,6 @@ Constructs the full path used to save/access the decompressed OLS .tif file
 \examples{
 #using default dirNlTiles
 \dontrun{getNlTileTifLclNamePathOLS("2014", "1")}
- #returns "/dataPath/tiles/ols_2014.tif"
+ #returns "/dataPath/tiles/OLS_2014.tif"
 
 }

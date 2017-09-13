@@ -19,6 +19,6 @@ Constructs the filename used to save/access the downloaded VIIRS tile .tgz file
 }
 \examples{
 \dontrun{getNlTileZipLclNameVIIRS("201401", "1")}
- #returns "./tiles/viirs_2014_01_75N180W.tgz"
+ #returns "./tiles/VIIRS_2014_01_75N180W.tgz"
 
 }
