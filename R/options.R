@@ -8,7 +8,7 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   deleteTiles = FALSE,
   
   #Set directory paths
-  dirNlDataPath = ".Rnightlights",
+  dirNlData = "data",
   
   dirNlDataPath = ".Rnightlights",
   
