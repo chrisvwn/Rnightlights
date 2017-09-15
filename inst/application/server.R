@@ -556,8 +556,8 @@ shiny::shinyServer(function(input, output, session){
                              label = "Time",
                              min = minDate,
                              max = maxDate,
-                             timeFormat = "%Y-%m-%d",
-                             #step = 31,
+                             timeFormat = "%Y-%m",
+                             step = 31,
                              value = minDate,
                              animate = animationOptions(interval = 10000, loop = FALSE, playButton = "Play", pauseButton = NULL)
           )
