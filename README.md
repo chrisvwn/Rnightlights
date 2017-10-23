@@ -16,7 +16,8 @@ install.packages('Rnightlights')
 
 ### Example
 
-An example to process VIIRS monthly nightlights for Kenya for the year 2014
+An example to process VIIRS monthly nightlights for Kenya for the year 2014 from the
+[Ishara Data blog post](http://isharadata.blogspot.co.ke/2017/09/rnightlights-satellite-nightlight-data.html)
 
 ```
 install.packages(“Rnightlights”)
