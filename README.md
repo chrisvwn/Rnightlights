@@ -10,4 +10,25 @@ Both the DMSP-OLS annual and SNPP-VIIRS monthly nightlight raster data are suppo
 
 R package Rnightlights is available on CRAN and can be installed in R as:
 
+```
 install.packages('Rnightlights')
+```
+
+### Example
+
+An example to process VIIRS monthly nightlights for Kenya for the year 2014
+
+```
+install.packages(“Rnightlights”)
+
+library(Rnightlights)
+
+#(Optional performance enhancement if you have aria2c and gdal installed)
+pkgOptions(downloadMethod = "aria", cropMaskMethod = "gdal", extractMethod = "gdal", deleteTiles = TRUE) 
+
+kenyaWards <- getCtryNlData(ctryCode = "KEN", nlPeriods = nlRange("201401", "201412"), nlType = "VIIRS", stats = "sum")
+
+kenyaWardsMelted <-  reshape2::melt(kenyaWards, value.name="sum")
+
+kenyaCounties <- aggregate(kenyaWardsMelted$sum, by=list(kenyaWardsMelted$county), FUN=sum, na.rm=T))
+```
