@@ -31,7 +31,10 @@ kenyaWards <- getCtryNlData(ctryCode = "KEN", nlPeriods = nlRange("201401", "201
 kenyaWardsMelted <-  reshape2::melt(kenyaWards, value.name="sum")
 
 kenyaCounties <- aggregate(kenyaWardsMelted$sum, by=list(kenyaWardsMelted$county), FUN=sum, na.rm=T))
+<<<<<<< HEAD
 
 #browse the cached data
 exploreData()
+=======
+>>>>>>> 8764a5c4c6ec226eb32d85831e36158e99eee5eb
 ```
