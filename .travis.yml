@@ -1,2 +1,10 @@
 language: r
 cache: packages
+sudo: required
+dist: trusty
+
+addons:
+  apt:
+    packages:
+      - libgdal-dev
+      - libproj-dev
