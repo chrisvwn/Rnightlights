@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/chrisvwn/Rnightlights.svg?branch=master)](https://travis-ci.org/chrisvwn/Rnightlights)
+
 # Rnightlights
 
 ## Nightlights for R
