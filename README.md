@@ -39,19 +39,31 @@ ctry <- "KEN" #replace to do for any other country
 pkgOptions(downloadMethod = "aria", cropMaskMethod = "gdal", extractMethod = "gdal", deleteTiles = TRUE) 
 
 #download and process stats
-lowestAdmLevelStats <- getCtryNlData(ctryCode = ctry, nlPeriods = nlRange("201401", "201412"), nlType = "VIIRS", stats = "sum")
-
+lowestAdmLevelStats <- getCtryNlData(ctryCode = ctry, 
+                                     nlPeriods = nlRange("201401", "201412"), 
+                                     nlType = "VIIRS", stats = "sum")
+                                     
 #melt the stats into key-value format
-lowestAdmLevelStatsMelted <- melt(lowestAdmLevelStats, id.vars = grep("NL_", names(lowestAdmLevelStats), invert=TRUE), variable.name = "nlPeriod", value.name = "radiancesum")
+lowestAdmLevelStatsMelted <- melt(lowestAdmLevelStats, 
+                                  id.vars = grep("NL_", names(lowestAdmLevelStats), 
+                                                 invert=TRUE), 
+                                  variable.name = "nlPeriod", 
+                                  value.name = "radiancesum")
 
 #reformat the period titles into semitime periods
 lowestAdmLevelStatsMelted$nlPeriod <- substr(lowestAdmLevelStatsMelted$nlPeriod, 10, 15)
 
 #aggregate the data to 2nd country admin level
-highestAdmLevelStatsAgg <- setNames(aggregate(lowestAdmLevelStatsMelted$radiancesum, by=list(lowestAdmLevelStatsMelted[[2]], lowestAdmLevelStatsMelted$nlPeriod), FUN=sum, na.rm=T), c(names(lowestAdmLevelStatsMelted)[2], "nlperiod", "sumradiancesums"))
+highestAdmLevelStatsAgg <- setNames(aggregate(lowestAdmLevelStatsMelted$radiancesum, 
+                                              by=list(lowestAdmLevelStatsMelted[[2]], 
+                                                      lowestAdmLevelStatsMelted$nlPeriod), 
+                                              FUN=sum, na.rm=T), 
+                                    c(names(lowestAdmLevelStatsMelted)[2], "nlperiod", "sumradiancesums"))
 
 #format period as date
-highestAdmLevelStatsAgg$nlperiod <- lubridate::ymd(paste0(substr(highestAdmLevelStatsAgg$nlperiod, 1,4), "-",substr(highestAdmLevelStatsAgg$nlperiod, 5,6), "-01"))
+highestAdmLevelStatsAgg$nlperiod <- ymd(paste0(substr(highestAdmLevelStatsAgg$nlperiod, 1,4), 
+                                               "-",substr(highestAdmLevelStatsAgg$nlperiod, 5,6), "-01"))
+
 
 #(optionally plot the data)
 library(ggplot2)
