@@ -70,12 +70,14 @@ library(ggplot2)
 library(plotly)
 
 #plot 2nd admin level sums for the year
-g <- ggplot(data = highestAdmLevelStatsAgg, aes(x=nlperiod, y=sumradiancesums, color=highestAdmLevelStatsAgg[[1]])) + 
-      scale_x_date(date_breaks = "1 month", date_labels = "%Y-%m")+
-      geom_line()+geom_point() + labs(color = names(highestAdmLevelStatsAgg)[1]) + 
-      xlab("Month") + 
-      ylab("Sum of Radiances") +
-      ggtitle(paste0("Sum of radiances for ", ctry))
+g <- ggplot(data = highestAdmLevelStatsAgg, 
+            aes(x=nlperiod, y=sumradiancesums, 
+                color=highestAdmLevelStatsAgg[[1]])) +
+  scale_x_date(date_breaks = "1 month", date_labels = "%Y-%m")+
+  geom_line()+geom_point() + labs(color = names(highestAdmLevelStatsAgg)[1]) + 
+  xlab("Month") + 
+  ylab("Sum of Radiances") +
+  ggtitle(paste0("Sum of radiances for ", ctry))
 
 print(g)
 
