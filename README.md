@@ -19,21 +19,59 @@ install.packages('Rnightlights')
 An example to process VIIRS monthly nightlights for Kenya for the year 2014 from the
 [Ishara Data blog post](http://isharadata.blogspot.co.ke/2017/09/rnightlights-satellite-nightlight-data.html)
 
+####Note 1: This will not work for countries without admin levels below the country level e.g. ATA (Antarctica)
+####Note 2: This calculates total radiances per region and so may be biased by area. Normalize by area to see regions with higher radiances per unit area e.g. to estimate areas with higher economic activity
+
 ```
-install.packages(“Rnightlights”)
+#install.packages(“Rnightlights”)
+#install.packages("reshape2")
+#install.packages("lubridate")
+#install.packages("ggplot2")
+#install.packages("plotly")
 
 library(Rnightlights)
+library(reshape2)
+library(lubridate)
+
+ctry <- "KEN" #replace to do for any other country
 
 #(Optional performance enhancement if you have aria2c and gdal installed)
 pkgOptions(downloadMethod = "aria", cropMaskMethod = "gdal", extractMethod = "gdal", deleteTiles = TRUE) 
 
-kenyaWards <- getCtryNlData(ctryCode = "KEN", nlPeriods = nlRange("201401", "201412"), nlType = "VIIRS", stats = "sum")
+#download and process stats
+lowestAdmLevelStats <- getCtryNlData(ctryCode = ctry, nlPeriods = nlRange("201401", "201412"), nlType = "VIIRS", stats = "sum")
 
-kenyaWardsMelted <-  reshape2::melt(kenyaWards, value.name="sum")
+#melt the stats into key-value format
+lowestAdmLevelStatsMelted <- melt(lowestAdmLevelStats, id.vars = grep("NL_", names(lowestAdmLevelStats), invert=TRUE), variable.name = "nlPeriod", value.name = "radiancesum")
 
-kenyaCounties <- aggregate(kenyaWardsMelted$sum, by=list(kenyaWardsMelted$county), FUN=sum, na.rm=T))
+#reformat the period titles into semitime periods
+lowestAdmLevelStatsMelted$nlPeriod <- substr(lowestAdmLevelStatsMelted$nlPeriod, 10, 15)
 
-#browse the cached data
+#aggregate the data to 2nd country admin level
+highestAdmLevelStatsAgg <- setNames(aggregate(lowestAdmLevelStatsMelted$radiancesum, by=list(lowestAdmLevelStatsMelted[[2]], lowestAdmLevelStatsMelted$nlPeriod), FUN=sum, na.rm=T), c(names(lowestAdmLevelStatsMelted)[2], "nlperiod", "sumradiancesums"))
+
+#format period as date
+highestAdmLevelStatsAgg$nlperiod <- lubridate::ymd(paste0(substr(highestAdmLevelStatsAgg$nlperiod, 1,4), "-",substr(highestAdmLevelStatsAgg$nlperiod, 5,6), "-01"))
+
+#(optionally plot the data)
+library(ggplot2)
+library(plotly)
+
+#plot 2nd admin level sums for the year
+g <- ggplot(data = highestAdmLevelStatsAgg, aes(x=nlperiod, y=sumradiancesums, color=highestAdmLevelStatsAgg[[1]])) + 
+      scale_x_date(date_breaks = "1 month", date_labels = "%Y-%m")+
+      geom_line()+geom_point() + labs(color = names(highestAdmLevelStatsAgg)[1]) + 
+      xlab("Month") + 
+      ylab("Sum of Radiances") +
+      ggtitle(paste0("Sum of radiances for ", ctry))
+
+print(g)
+
+#quick conversion to interactive map with plotly
+ggplotly(g)
+
+
+#browse the cached data with internal Shiny app
 exploreData()
 
 ```
