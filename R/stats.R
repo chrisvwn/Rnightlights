@@ -65,11 +65,11 @@ myZonal <- function (x, z, stats, digits = 0, na.rm = TRUE, ...)
 {
   #http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/
 
-  varx <- function(x, ...) ifelse(length(x) > 1, stats::var(x, ...), x)
+  #varx <- function(x, ...) ifelse(length(x) > 1, stats::var(x, ...), x)
   
-  statsFn <- lapply(stats, function(x) switch(x, sum="sum", mean="mean", var="varx"))
+  #statsFn <- lapply(stats, function(x) switch(x, sum="sum", mean="mean", var="varx", x))
   
-  fun <- paste0(sapply(statsFn, function(stat) paste0(stat,"=", stat, "(x, na.rm = TRUE)")), collapse = ", ")
+  fun <- paste0(sapply(stats, function(stat) paste0(stat,"=", stat, "(x, na.rm = TRUE)")), collapse = ", ")
   
   #reference .SD as data.table::.SD yields empty output
   #funs <- paste0("rDT[, as.list(unlist(lapply(data.table::.SD, function(x) list(", fun, ")))), by=z]")
@@ -102,7 +102,7 @@ myZonal <- function (x, z, stats, digits = 0, na.rm = TRUE, ...)
     result <- rbind(result, eval(parse(text = funs)))
   }
   
-  resultfun <- paste0(paste0(stats,"="),paste0(statsFn, paste0("(",names(result)[2:ncol(result)],", na.rm=TRUE)")), collapse = ", ")
+  resultfun <- paste0(paste0(stats,"="),paste0(stats, paste0("(",names(result)[2:ncol(result)],", na.rm=TRUE)")), collapse = ", ")
   
   resultfuns <- paste0("result[, list(", resultfun, "), by=z]")
   
