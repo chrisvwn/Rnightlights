@@ -1,3 +1,8 @@
+---
+output: 
+  html_document: 
+    fig_caption: yes
+---
 # Rnightlights [![Build Status](https://travis-ci.org/chrisvwn/Rnightlights.svg?branch=master)](https://travis-ci.org/chrisvwn/Rnightlights)
 
 ## Nightlights for R
@@ -19,10 +24,12 @@ install.packages('Rnightlights')
 An example to process VIIRS monthly nightlights for Kenya for the year 2014 from the
 [Ishara Data blog post](http://isharadata.blogspot.co.ke/2017/09/rnightlights-satellite-nightlight-data.html)
 
-####Note 1: This will not work for countries without admin levels below the country level e.g. ATA (Antarctica)
-####Note 2: This calculates total radiances per region and so may be biased by area. Normalize by area to see regions with higher radiances per unit area e.g. to estimate areas with higher economic activity
+Note 1: Change the "ctry" variable to run the example on another country
+Note 2: This will not work for countries without admin levels below the country level e.g. ATA (Antarctica)
+Note 3: This calculates total radiances per region and so may be biased by area. Normalize by area to see 
+        regions with higher radiances per unit area e.g. to estimate areas with higher economic activity
 
-```
+```{r}
 #install.packages(“Rnightlights”)
 #install.packages("reshape2")
 #install.packages("lubridate")
