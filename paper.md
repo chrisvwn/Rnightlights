@@ -26,16 +26,17 @@ Researchers often spend an inordinate amount of time gathering and pre-processin
 
 4. For each month in 2014:
 
-  a. load the tiles and Kenya county polygons
+    * load the tiles and Kenya county polygons
     
-  b. Calculate the sum of nightlights at the county level. In QGIS you can use the “zonal statistics” function
+    * Calculate the sum of nightlights at the county level. In QGIS you can use the “zonal statistics” function
     
-  c. Save the output as a CSV
+    * Save the output as a CSV
 
 5. Load the CSVs in R and perform the analysis
 
 
 This can be reduced to a few lines of code in R using the Rnightlights package. For this example one can run:
+
 
 ```
 library(Rnightlights)
@@ -51,11 +52,6 @@ kenyaWardsMelted <-  reshape2::melt(kenyaWards, value.name="sum")
 
 kenyaCounties <- aggregate(kenyaWardsMelted$sum, by=list(kenyaWardsMelted$county), FUN=sum, na.rm=T))
 ```
-
-- A clear statement of need that illustrates the purpose of the software
-- A list of key references including a link to the software archive
-- Mentions (if applicable) of any ongoing research projects using the software
-or recent scholarly publications enabled by it
 
 # References
 [Rnightlights Github repository](http://github.com/chrisvwn/Rnightlights)
