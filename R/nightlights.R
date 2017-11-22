@@ -96,9 +96,9 @@
 #'
 #' @examples
 #' 
-#' #calculate only the sum of VIIRS radiances for Dec 2012 using gdal
+#' #calculate only the sum of VIIRS radiances for Dec 2014 using gdal
 #' #for both cropMask and extraction for KEN
-#' \dontrun{processNLCountry("KEN", "201212", "VIIRS", "gdal", "gdal", "sum")}
+#' \dontrun{processNLCountry("KEN", "201412", "VIIRS", "gdal", "gdal", "sum")}
 #'
 processNLCountry <- function(ctryCode, nlPeriod, nlType, cropMaskMethod=pkgOptions("cropMaskMethod"), extractMethod=pkgOptions("extractMethod"), fnStats=pkgOptions("stats"))
 {
@@ -408,7 +408,7 @@ getCtryRasterOutputFname <- function(ctryCode, nlType, nlPeriod)
 #'
 #'     nlPeriods <- getAllNlPeriods("VIIRS")
 #'
-#'     nlPeriods <- nlPeriods[grep("^20120[1-5]", nlPeriods)]
+#'     nlPeriods <- nlPeriods[grep("^20140[1-5]", nlPeriods)]
 #'
 #'     processNlData(ctryCodes=cCodes, nlPeriods=nlPeriods)
 #' 
@@ -429,13 +429,13 @@ getCtryRasterOutputFname <- function(ctryCode, nlType, nlPeriod)
 #' 
 #'     nlPeriods <- getAllNlYears("VIIRS")
 #' 
-#'     nlPeriods_2012 <- nlPeriods[grep("^2012", nlPeriods)]
+#'     nlPeriods_2014 <- nlPeriods[grep("^2014", nlPeriods)]
 #' 
-#'     processNlData(nlPeriods=nlPeriods_2012)
+#'     processNlData(nlPeriods=nlPeriods_2014)
 #' 
 #'     #Run the script from the command line as:
 #'     
-#'     #R CMD BATCH script_name_2012.R
+#'     #R CMD BATCH script_name_2014.R
 #'     }
 #' @export
 processNlData <- function (ctryCodes=getAllNlCtryCodes("all"), nlPeriods=getAllNlPeriods(nlType), nlType="VIIRS", stats=pkgOptions("stats"))

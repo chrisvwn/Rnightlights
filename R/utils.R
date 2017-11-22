@@ -227,7 +227,7 @@ writeNightlightsMap <- function()
   
   EXTENT	<VAL_EXTENT>
   DATA	\"<VAL_NAME>.tif\"
-  #    TILEINDEX	/btrfs/shiny_nightlights/outputrasters/nightlights_201204.tif
+  #    TILEINDEX	/btrfs/shiny_nightlights/outputrasters/nightlights_201401.tif
   #    TILEITEM	\"location\"
   STATUS	OFF
   TYPE	RASTER

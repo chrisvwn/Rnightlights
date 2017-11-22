@@ -7,7 +7,7 @@
 validNlPeriodVIIRS(nlYearMonth)
 }
 \arguments{
-\item{nlYearMonth}{the yearmonth in "YYYYMM" format e.g. "201210", "201401"}
+\item{nlYearMonth}{the yearmonth in "YYYYMM" format e.g. "201410", "201701"}
 }
 \value{
 TRUE/FALSE
@@ -20,9 +20,9 @@ Check if a VIIRS nlYearMonth is valid Note this function is only valid for the "
  #returns TRUE
 
 \dontrun{validNlPeriodVIIRS("201513")}
- #returns FALSE
+ #returns FALSE; invalid month 13
 
-\dontrun{validNlPeriodVIIRS("201201")}
- #returns FALSE #VIIRS starts in "201204"
+\dontrun{validNlPeriodVIIRS("201401")}
+ #returns FALSE #VIIRS starts in "201401"
 
 }

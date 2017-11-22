@@ -38,7 +38,7 @@ validNlYearNum <- function(yearNum, nlType)
   else
     if (nlType=="VIIRS")
     {
-      if (nlY >= 2012 && nlY <= lubridate::year(lubridate::now()))
+      if (nlY >= 2014 && nlY <= lubridate::year(lubridate::now()))
         return(TRUE)
       else
         return(FALSE)
@@ -98,7 +98,7 @@ validNlMonthNum <- function(monthNum, nlType="VIIRS")
 #'
 #' Check if a VIIRS nlYearMonth is valid Note this function is only valid for the "VIIRS" nightlight type
 #'
-#' @param nlYearMonth the yearmonth in "YYYYMM" format e.g. "201210", "201401"
+#' @param nlYearMonth the yearmonth in "YYYYMM" format e.g. "201410", "201701"
 #'
 #' @return TRUE/FALSE
 #'
@@ -107,10 +107,10 @@ validNlMonthNum <- function(monthNum, nlType="VIIRS")
 #'  #returns TRUE
 #'
 #' \dontrun{validNlPeriodVIIRS("201513")}
-#'  #returns FALSE
+#'  #returns FALSE; invalid month 13
 #'
-#' \dontrun{validNlPeriodVIIRS("201201")}
-#'  #returns FALSE #VIIRS starts in "201204"
+#' \dontrun{validNlPeriodVIIRS("201401")}
+#'  #returns FALSE #VIIRS starts in "201401"
 #'
 validNlPeriodVIIRS <- function(nlYearMonth)
 {
@@ -127,9 +127,6 @@ validNlPeriodVIIRS <- function(nlYearMonth)
   
   nlY <- as.numeric(substr(nlYearMonth, 1, 4))
   nlM <- as.numeric(substr(nlYearMonth, 5, 6))
-  
-  if (as.numeric(nlY) == 2012 && as.numeric(nlM) < 4) #Special cases. first VIIRS in 201204
-    return(FALSE)
   
   if (validNlYearNum(yearNum = nlY, nlType = "VIIRS") && validNlMonthNum(monthNum = nlM, nlType = "VIIRS"))
     return(TRUE)
@@ -186,7 +183,7 @@ validNlPeriodOLS <- function(nlYear)
 #' @return TRUE/FALSE
 #'
 #' @examples
-#' validNlPeriod("201204","VIIRS")
+#' validNlPeriod("201401","VIIRS")
 #'  #returns TRUE
 #'
 #' validNlPeriod("201203","VIIRS")
@@ -237,8 +234,8 @@ validNlPeriod <- function(nlPeriod, nlType)
 #' #get OLS years between 2004 and 2010
 #' nlRange("2004", "2010")
 #'
-#' #get VIIRS yearMonths between Apr 2012 and Dec 2014
-#' nlRange("201204", "201412")
+#' #get VIIRS yearMonths between Jan 2014 and Dec 2014
+#' nlRange("201401", "201412")
 #'
 #' @export
 nlRange <- function(startNlPeriod, endNlPeriod)
@@ -248,16 +245,16 @@ nlRange <- function(startNlPeriod, endNlPeriod)
   
   if(missing(endNlPeriod))
     stop("Missing required parameter endNlPeriod")
-  
+ 
   if(suppressWarnings(allValid(c(startNlPeriod, endNlPeriod), validNlPeriod, "OLS")))
     nlType <- "OLS"
   else if(suppressWarnings(allValid(c(startNlPeriod, endNlPeriod), validNlPeriod, "VIIRS")))
     nlType <- "VIIRS"
   else
     stop("Invalid start/end nlPeriod")
-  
+
   allNlPeriods <- getAllNlPeriods(nlType)
-  
+    
   start <- grep(startNlPeriod, allNlPeriods)
   
   end <- grep(endNlPeriod, allNlPeriods)
@@ -278,10 +275,10 @@ nlRange <- function(startNlPeriod, endNlPeriod)
 #'
 #' @examples
 #' getAllNlPeriods("OLS")
-#'  #returns a vector of all years from 1994 to present
+#'  #returns a vector of all years from 1994 to 2013
 #'
 #' getAllNlPeriods("VIIRS")
-#'  #returns a vector of all yearMonths from 201204 to present
+#'  #returns a vector of all yearMonths from 201401 to present
 #'
 #' @export
 getAllNlPeriods <- function(nlType)
@@ -296,14 +293,15 @@ getAllNlPeriods <- function(nlType)
     return (1992:2013)
   else if (nlType == "VIIRS")
   {
-    yrs <- 2012:lubridate::year(lubridate::now())
+    yrs <- 2014:lubridate::year(lubridate::now())
+    
     mths <- c(paste("0",1:9, sep= ""),10:12)
     
     currYrMth <- paste0(lubridate::year(lubridate::now()), ifelse(lubridate::month(lubridate::now())<10, paste("0", lubridate::month(lubridate::now()), sep=""), lubridate::month(lubridate::now())))
     
     nlYrMths <- unlist(lapply(yrs, FUN = function(x) paste(x,mths,sep="")))
     
-    nlYrMths <- nlYrMths[nlYrMths >= "201204" & nlYrMths <= currYrMth]
+    nlYrMths <- nlYrMths[nlYrMths >= "201401" & nlYrMths <= currYrMth]
     
     return (nlYrMths)
   }

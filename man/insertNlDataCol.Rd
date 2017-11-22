@@ -27,7 +27,7 @@ Insert an aggregate nightlight data column in a country nightlights dataframe. T
 }
 \examples{
 
-\dontrun{ctryNlDataDF <- insertNlDataCol(ctryNlDataDF, dataCol, "sum", "201209", "VIIRS")}
+\dontrun{ctryNlDataDF <- insertNlDataCol(ctryNlDataDF, dataCol, "sum", "201409", "VIIRS")}
 
 \dontrun{ctryNlDataDF <- insertNlDataCol(ctryNlDataDF, dataCol, "mean", "2012", "OLS")}
 

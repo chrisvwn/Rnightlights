@@ -7,7 +7,7 @@
 getNlUrlVIIRS(nlYearMonth, tileNum)
 }
 \arguments{
-\item{nlYearMonth}{character string yearmonth in "YYYYMM' format e.g. "201204"}
+\item{nlYearMonth}{character string yearmonth in "YYYYMM' format e.g. "201401"}
 
 \item{tileNum}{The integer index of the tile to download as given by getNlTiles("VIIRS")}
 }
@@ -18,6 +18,6 @@ Character string Url of the VIIRS tile file
 Function to return the url of the VIIRS tile to download given the year, month, and nlTile index
 }
 \examples{
-\dontrun{tileUrl <- getNlUrlVIIRS("201204", "1")}
+\dontrun{tileUrl <- getNlUrlVIIRS("201401", "1")}
 
 }

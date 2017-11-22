@@ -24,6 +24,6 @@ Check if VIIRS nightlight data for the country exists in the country
     file exists.
 }
 \examples{
-\dontrun{existsCtryNlData("KEN", "201204", "sum", "VIIRS")}
+\dontrun{existsCtryNlData("KEN", "201401", "sum", "VIIRS")}
 
 }

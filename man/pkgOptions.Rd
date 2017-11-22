@@ -56,8 +56,8 @@ The following options are supported
      country regions. The default are sum and mean. Any other aggregate 
      statistics can be included. Also any aggregate function accessible 
      in the current environment can be added. }
- \item{\code{tmpDir}}{(\code{character}) The countries to exclude in 
-     processing }
+ \item{\code{tmpDir}}{(\code{character}) Change the temporary directory
+     for processing rasters. Not in use }
 }
 }
 

@@ -19,7 +19,7 @@ Download OLS nightlight tile
 }
 \examples{
 \dontrun{
-if(downloadNlTilesOLS("201205"))
+if(downloadNlTilesOLS("201405"))
   print("download successful")
   }
 

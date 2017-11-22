@@ -70,7 +70,7 @@ This is the main entry-point to the package and the main user-facing function. H
 
     nlPeriods <- getAllNlPeriods("VIIRS")
 
-    nlPeriods <- nlPeriods[grep("^20120[1-5]", nlPeriods)]
+    nlPeriods <- nlPeriods[grep("^20140[1-5]", nlPeriods)]
 
     processNlData(ctryCodes=cCodes, nlPeriods=nlPeriods)
 
@@ -91,12 +91,12 @@ This is the main entry-point to the package and the main user-facing function. H
 
     nlPeriods <- getAllNlYears("VIIRS")
 
-    nlPeriods_2012 <- nlPeriods[grep("^2012", nlPeriods)]
+    nlPeriods_2014 <- nlPeriods[grep("^2014", nlPeriods)]
 
-    processNlData(nlPeriods=nlPeriods_2012)
+    processNlData(nlPeriods=nlPeriods_2014)
 
     #Run the script from the command line as:
     
-    #R CMD BATCH script_name_2012.R
+    #R CMD BATCH script_name_2014.R
     }
 }

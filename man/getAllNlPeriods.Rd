@@ -17,9 +17,9 @@ Generate a list of all possible nlPeriods for a given nlType
 }
 \examples{
 getAllNlPeriods("OLS")
- #returns a vector of all years from 1994 to present
+ #returns a vector of all years from 1994 to 2013
 
 getAllNlPeriods("VIIRS")
- #returns a vector of all yearMonths from 201204 to present
+ #returns a vector of all yearMonths from 201401 to present
 
 }

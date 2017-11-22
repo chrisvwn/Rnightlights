@@ -8,7 +8,7 @@ downloadNlTilesVIIRS(nlYearMonth, tileNum,
   downloadMethod = pkgOptions("downloadMethod"))
 }
 \arguments{
-\item{nlYearMonth}{the year in "YYYYMM" format e.g. "201204"}
+\item{nlYearMonth}{the year in "YYYYMM" format e.g. "201401"}
 
 \item{tileNum}{the index of the tile as given by getNlTiles("VIIRS")}
 
@@ -22,7 +22,7 @@ Download VIIRS nightlight tile
 }
 \examples{
 \dontrun{
-if(downloadNlTilesVIIRS("201205", "1"))
+if(downloadNlTilesVIIRS("201401", "1"))
   print("download successful")
   }
 

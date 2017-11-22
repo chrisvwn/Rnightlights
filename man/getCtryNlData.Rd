@@ -71,7 +71,7 @@ Returns nightlight data for the given ctryCode and stats in the given
     #and all stats for KEN
  
 \dontrun{getCtryNlData(ctryCode="KEN", nlType="VIIRS", ignoreMissing=FALSE)}
-    #for any missing data between 201204 to present download and process the
+    #for any missing data between 201401 to present download and process the
     #data then return all data
  
 \dontrun{getCtryNlData("KEN", nlPeriod=c("existingNlPeriod", "missingNlPeriod"),

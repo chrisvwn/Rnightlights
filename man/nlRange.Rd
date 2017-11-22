@@ -24,7 +24,7 @@ Create a range of nlPeriods. Autodetects the type of nlPeriod and creates a
 #get OLS years between 2004 and 2010
 nlRange("2004", "2010")
 
-#get VIIRS yearMonths between Apr 2012 and Dec 2014
-nlRange("201204", "201412")
+#get VIIRS yearMonths between Jan 2014 and Dec 2014
+nlRange("201401", "201412")
 
 }

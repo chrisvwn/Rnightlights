@@ -25,11 +25,11 @@ Download the listed tiles for a given nlType in a given nlPeriod
 \examples{
 #download VIIRS tiles for "KEN" which are tiles 2 and 5 for the specified
     #time periods
-\dontrun{downloadNlTiles("VIIRS", "201201", c(2, 5))}
+\dontrun{downloadNlTiles("VIIRS", "201401", c(2, 5))}
 
 #same as above but getting the tileList automatically
 \dontrun{
-downloadNlTiles("VIIRS", "201201", 
+downloadNlTiles("VIIRS", "201401", 
     tileName2Idx(getCtryTileList(ctryCodes="KEN", 
     nlType="VIIRS")))
     }

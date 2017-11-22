@@ -73,14 +73,14 @@ getNlUrlOLS <- function(nlYear)
 #'
 #' Function to return the url of the VIIRS tile to download given the year, month, and nlTile index
 #'
-#' @param nlYearMonth character string yearmonth in "YYYYMM' format e.g. "201204"
+#' @param nlYearMonth character string yearmonth in "YYYYMM' format e.g. "201401"
 #'
 #' @param tileNum The integer index of the tile to download as given by getNlTiles("VIIRS")
 #'
 #' @return Character string Url of the VIIRS tile file
 #'
 #' @examples
-#' \dontrun{tileUrl <- getNlUrlVIIRS("201204", "1")}
+#' \dontrun{tileUrl <- getNlUrlVIIRS("201401", "1")}
 #'
 getNlUrlVIIRS <- function(nlYearMonth, tileNum)
 {
@@ -122,7 +122,7 @@ getNlUrlVIIRS <- function(nlYearMonth, tileNum)
   ntLtsPage <- readr::read_lines(ntLtsPageLocalName)
   
   #search for a line containing the patterns that make the files unique i.e.
-  #1. SVDNB_npp_20121001 - year+month+01
+  #1. SVDNB_npp_20141001 - year+month+01
   #2. vcmcfg - for file with intensity as opposed to cloud-free counts (vcmslcfg)
   #sample url: https://data.ngdc.noaa.gov/instruments/remote-sensing/passive/spectrometers-radiometers/imaging/viirs/dnb_composites/v10//201210/vcmcfg/SVDNB_npp_20121001-20121031_75N180W_vcmcfg_v10_c201602051401.tgz
   

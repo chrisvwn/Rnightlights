@@ -18,7 +18,7 @@ TRUE/FALSE
 Check if an nlPeriod is valid for a given nightlight type
 }
 \examples{
-validNlPeriod("201204","VIIRS")
+validNlPeriod("201401","VIIRS")
  #returns TRUE
 
 validNlPeriod("201203","VIIRS")

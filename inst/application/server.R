@@ -490,11 +490,11 @@ shiny::shinyServer(function(input, output, session){
       {
         shiny::sliderInput(inputId = "nlYearMonthRange",
                     label = "Time",
-                    min = as.Date("2012-04-01", "%Y-%m-%d"),
-                    max = as.Date("2016-12-31", "%Y-%m-%d"),
+                    min = as.Date("2014-01-01", "%Y-%m-%d"),
+                    max = as.Date("2017-10-31", "%Y-%m-%d"),
                     timeFormat = "%Y-%m",
                     step = 31,
-                    value = c(as.Date("2012-01-01","%Y-%m-%d"),as.Date("2016-12-31","%Y-%m-%d"))
+                    value = c(as.Date("2014-01-01","%Y-%m-%d"),as.Date("2017-10-31","%Y-%m-%d"))
         )
       }
       else
@@ -528,11 +528,11 @@ shiny::shinyServer(function(input, output, session){
       {
         shiny::sliderInput(inputId = "nlYearMonth",
                     label = "Time",
-                    min = as.Date("2012-04-01", "%Y-%m-%d"),
-                    max = as.Date("2016-12-31", "%Y-%m-%d"),
+                    min = as.Date("2014-01-01", "%Y-%m-%d"),
+                    max = as.Date("2017-10-31", "%Y-%m-%d"),
                     timeFormat = "%Y-%m",
                     step = 31,
-                    value = as.Date("2012-04-01", "%Y-%m-%d")
+                    value = as.Date("2014-01-01", "%Y-%m-%d")
         )
       }
       else
@@ -727,7 +727,7 @@ shiny::shinyServer(function(input, output, session){
         map <- leaflet::leaflet(data=ctryPoly0) %>%
           #addTiles("http://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png") %>%
           leaflet::addTiles() %>%
-          leaflet::addWMSTiles(layerId="nlRaster", baseUrl = "http://localhost/cgi-bin/mapserv?map=nightlights_wms.map", layers = "nightlights_201204", options = leaflet::WMSTileOptions(format = "image/png", transparent = TRUE, opacity=1)) %>%
+          leaflet::addWMSTiles(layerId="nlRaster", baseUrl = "http://localhost/cgi-bin/mapserv?map=nightlights_wms.map", layers = "nightlights_201401", options = leaflet::WMSTileOptions(format = "image/png", transparent = TRUE, opacity=1)) %>%
           leaflet::addPolygons(layerId = countries, fill = FALSE, fillColor = "#fefe40", stroke = TRUE, weight=4, smoothFactor = 0.7, opacity = 1, color="white", dashArray = "5", group = "country")
         
         
@@ -1267,7 +1267,7 @@ shiny::shinyServer(function(input, output, session){
         
       if(inherits(ctryRast, "RasterLayer"))
       {
-        map <- map %>% leaflet::addRasterImage(x = ctryRast,layerId = "ctryRasterLocal", group = "ctryRaster", project = T)
+        map <- map %>% leaflet::addRasterImage(x = ctryRast,layerId = "ctryRasterLocal", group = "ctryRaster", project = T, colors = "Grays")
 
         leaflet::projectRasterForLeaflet(ctryRast)
       }

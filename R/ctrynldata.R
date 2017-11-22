@@ -108,7 +108,7 @@ createCtryNlDataDF <- function(ctryCode)
 #'
 #' @examples
 #' 
-#' \dontrun{ctryNlDataDF <- insertNlDataCol(ctryNlDataDF, dataCol, "sum", "201209", "VIIRS")}
+#' \dontrun{ctryNlDataDF <- insertNlDataCol(ctryNlDataDF, dataCol, "sum", "201409", "VIIRS")}
 #' 
 #' \dontrun{ctryNlDataDF <- insertNlDataCol(ctryNlDataDF, dataCol, "mean", "2012", "OLS")}
 #'
@@ -343,7 +343,7 @@ getCtryNlDataFnamePath <- function(ctryCode)
 #'     #and all stats for KEN
 #'  
 #' \dontrun{getCtryNlData(ctryCode="KEN", nlType="VIIRS", ignoreMissing=FALSE)}
-#'     #for any missing data between 201204 to present download and process the
+#'     #for any missing data between 201401 to present download and process the
 #'     #data then return all data
 #'  
 #' \dontrun{getCtryNlData("KEN", nlPeriod=c("existingNlPeriod", "missingNlPeriod"),
@@ -622,7 +622,7 @@ existsCtryNlDataFile <- function(ctryCode)
 #' @return TRUE/FALSE
 #'
 #' @examples
-#' \dontrun{existsCtryNlData("KEN", "201204", "sum", "VIIRS")}
+#' \dontrun{existsCtryNlData("KEN", "201401", "sum", "VIIRS")}
 #'
 existsCtryNlData <- function(ctryCode, nlPeriod, stat, nlType)
 {
@@ -861,9 +861,9 @@ listCtryNlRasters <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, sour
 #' #list all VIIRS tiles
 #' listNlTiles(nlTypes = "VIIRS")
 #' 
-#' #list all VIIRS tiles available in the years 2012-2014. Note VIIRS data
-#' #starts in 201204
-#' listNlTiles(nlTypes = "VIIRS", nlPeriods = nlRange("201204", "201412"))
+#' #list all VIIRS tiles available in the years 2014-2015. Note VIIRS data
+#' #starts in 201401
+#' listNlTiles(nlTypes = "VIIRS", nlPeriods = nlRange("201401", "201512"))
 #' 
 #' #filter data
 #' listNlTiles(nlTypes = "OLS", nlPeriods = c("2012", "2013"))

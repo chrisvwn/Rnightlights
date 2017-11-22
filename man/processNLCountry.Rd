@@ -56,8 +56,8 @@ NOTE: \code{processNLCountry()} assumes that all inputs are available and will n
 }
 \examples{
 
-#calculate only the sum of VIIRS radiances for Dec 2012 using gdal
+#calculate only the sum of VIIRS radiances for Dec 2014 using gdal
 #for both cropMask and extraction for KEN
-\dontrun{processNLCountry("KEN", "201212", "VIIRS", "gdal", "gdal", "sum")}
+\dontrun{processNLCountry("KEN", "201412", "VIIRS", "gdal", "gdal", "sum")}
 
 }

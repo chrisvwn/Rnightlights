@@ -4,7 +4,7 @@
 #'
 #' Download VIIRS nightlight tile
 #'
-#' @param nlYearMonth the year in "YYYYMM" format e.g. "201204"
+#' @param nlYearMonth the year in "YYYYMM" format e.g. "201401"
 #'
 #' @param tileNum the index of the tile as given by getNlTiles("VIIRS")
 #' 
@@ -14,7 +14,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' if(downloadNlTilesVIIRS("201205", "1"))
+#' if(downloadNlTilesVIIRS("201401", "1"))
 #'   print("download successful")
 #'   }
 #'
@@ -120,7 +120,7 @@ downloadNlTilesVIIRS <- function(nlYearMonth, tileNum, downloadMethod=pkgOptions
 #'
 #' @examples
 #' \dontrun{
-#' if(downloadNlTilesOLS("201205"))
+#' if(downloadNlTilesOLS("201405"))
 #'   print("download successful")
 #'   }
 #'
