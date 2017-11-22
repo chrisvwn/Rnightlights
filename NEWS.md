@@ -18,3 +18,8 @@ v0.1.2:
 + Made stats radio buttons dynamic
 + Fixed OLS tile download where multiple URLs were returned. Picking only first. May be prudent to download both and process returning average of the two.
 + Added missing pkgOption numCores for parallel processing when raster pkgOptions are selected
+
+v0.1.3:
++Fixed a bug in calculation of stats using "gdal" where functions apart from mean, sum and var would fail.
++Introduction of the raster layer in the exploreData map display
++Various minor code and documentation updates
