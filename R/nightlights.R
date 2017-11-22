@@ -396,7 +396,7 @@ getCtryRasterOutputFname <- function(ctryCode, nlType, nlPeriod)
 #'
 #'     nlPeriods <- getAllNlYears("VIIRS") #get a list of all nightlight periods to present-day
 #'
-#'     nlPeriods <- nlPeriods[grep("^2012", nlPeriods)] #filter only periods in 2012
+#'     nlPeriods <- nlPeriods[grep("^2014", nlPeriods)] #filter only periods in 2014
 #'
 #'     processNlData(nlPeriods=nlPeriods)
 #'
