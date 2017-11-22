@@ -1,8 +1,3 @@
----
-output: 
-  html_document: 
-    fig_caption: yes
----
 # Rnightlights [![Build Status](https://travis-ci.org/chrisvwn/Rnightlights.svg?branch=master)](https://travis-ci.org/chrisvwn/Rnightlights)
 
 ## Nightlights Data Extraction in R
