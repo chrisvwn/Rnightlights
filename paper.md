@@ -1,5 +1,5 @@
 ---
-title: 'Nightlights for R'
+title: 'Nightlights Imagery Data Extraction in R'
 tags:
   - satellite imagery
   - nightlights
@@ -40,17 +40,27 @@ This can be reduced to a few lines of code in R using the Rnightlights package. 
 
 ```
 library(Rnightlights)
+library(reshape2)
+library(lubridate)
 
-#(Optional)
-pkgOptions(downloadMethod = "aria", cropMaskMethod = "gdal", extractMethod = "gdal", deleteTiles = TRUE)
-
-#get data at the lowest admin level i.e. ward
+#get satellite data at the lowest admin level in the country i.e. ward
 kenyaWards <- getCtryNlData(ctryCode = "KEN", nlPeriods = nlRange("201401", "201412"), nlType = "VIIRS", stats = "sum")
 
-#sum the ward radiances to the county level
-kenyaWardsMelted <-  reshape2::melt(kenyaWards, value.name="sum")
+#melt the ward radiances in preparation for aggregation
+kenyaWardsMelted <-  melt(kenyaWards, 
+                          id.vars = grep("NL_", names(kenyaWards), 
+                                         invert=TRUE), 
+                          variable.name = "nlPeriod", 
+                          value.name = "radiancesum")
+                                  
+#convert the period string into a date string
+kenyaWardsMelted$nlPeriod <- substr(kenyaWardsMelted$nlPeriod, 10, 15)
 
-kenyaCounties <- aggregate(kenyaWardsMelted$sum, by=list(kenyaWardsMelted$county), FUN=sum, na.rm=T))
+#aggregate radiance sums to the county level
+kenyaCounties <- setNames(aggregate(kenyaWardsMelted$radiancesum, 
+                            by=list(kenyaWardsMelted$county, kenyaWardsMelted$nlPeriod),
+                            FUN=sum, na.rm=T),
+                            c("county", "month", "sumradiances"))
 ```
 
 # References
