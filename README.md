@@ -45,12 +45,14 @@ library(lubridate)
 ctry <- "KEN" #replace to do for any other country
 
 #(Optional performance enhancement if you have aria2c and gdal installed)
-pkgOptions(downloadMethod = "aria", cropMaskMethod = "gdal", extractMethod = "gdal", deleteTiles = TRUE) 
+#pkgOptions(downloadMethod = "aria", cropMaskMethod = "gdal", extractMethod = "gdal", deleteTiles = TRUE) 
 
 #download and process stats
 lowestAdmLevelStats <- getCtryNlData(ctryCode = ctry, 
                                      nlPeriods = nlRange("201401", "201412"), 
-                                     nlType = "VIIRS", stats = "sum")
+                                     nlType = "VIIRS", 
+                                     stats = "sum",
+                                     ignoreMissing=FALSE)
                                      
 #melt the stats into key-value format
 lowestAdmLevelStatsMelted <- melt(lowestAdmLevelStats, 
