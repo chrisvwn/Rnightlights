@@ -38,7 +38,7 @@ validNlYearNum <- function(yearNum, nlType)
   else
     if (nlType=="VIIRS")
     {
-      if (nlY >= 2014 && nlY <= lubridate::year(lubridate::now()))
+      if (nlY >= 2012 && nlY <= lubridate::year(lubridate::now()))
         return(TRUE)
       else
         return(FALSE)
@@ -127,6 +127,9 @@ validNlPeriodVIIRS <- function(nlYearMonth)
   
   nlY <- as.numeric(substr(nlYearMonth, 1, 4))
   nlM <- as.numeric(substr(nlYearMonth, 5, 6))
+  
+  if (as.numeric(nlY) == 2012 && as.numeric(nlM) < 4) #Special cases. first VIIRS in 201204
+    return(FALSE)
   
   if (validNlYearNum(yearNum = nlY, nlType = "VIIRS") && validNlMonthNum(monthNum = nlM, nlType = "VIIRS"))
     return(TRUE)
@@ -293,7 +296,7 @@ getAllNlPeriods <- function(nlType)
     return (1992:2013)
   else if (nlType == "VIIRS")
   {
-    yrs <- 2014:lubridate::year(lubridate::now())
+    yrs <- 2012:lubridate::year(lubridate::now())
     
     mths <- c(paste("0",1:9, sep= ""),10:12)
     
@@ -301,7 +304,7 @@ getAllNlPeriods <- function(nlType)
     
     nlYrMths <- unlist(lapply(yrs, FUN = function(x) paste(x,mths,sep="")))
     
-    nlYrMths <- nlYrMths[nlYrMths >= "201401" & nlYrMths <= currYrMth]
+    nlYrMths <- nlYrMths[nlYrMths >= "201204" & nlYrMths <= currYrMth]
     
     return (nlYrMths)
   }
