@@ -392,7 +392,7 @@ fnAggRadRast <- function(ctryPoly, ctryRastCropped, stats, nlType)
   
   sumAvgRad <- foreach::foreach(i=1:nrow(ctryPoly@data), 
                                 .combine=rbind,
-                                .export = c("masqOLS", "masqVIIRS"),
+                                .export = c("masqOLS", "masqVIIRS", stats),
                                 .packages = c("raster")) %dopar% {
                                   
                                   message("Extracting data from polygon " , i, " ", base::date())
