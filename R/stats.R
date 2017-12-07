@@ -384,25 +384,33 @@ fnAggRadRast <- function(ctryPoly, ctryRastCropped, stats, nlType)
   
   if(!allValid(stats, validStat))
     stop("Invalid stat(s) detected")
+
+  cl <- snow::makeCluster(pkgOptions("numCores"), outfile="")
   
-  doParallel::registerDoParallel(cores=pkgOptions("numCores"))
+  doSNOW::registerDoSNOW(cl = cl)
   
-  #to avoid notes
+  pb <- txtProgressBar(min=1, max=nrow(ctryPoly@data), style=3)
+  progress <- function(n) setTxtProgressBar(pb, n)
+  
+  #to avoid RCheck notes
   i <- NULL
   
   sumAvgRad <- foreach::foreach(i=1:nrow(ctryPoly@data), 
                                 .combine=rbind,
                                 .export = c("masqOLS", "masqVIIRS", stats),
-                                .packages = c("raster")) %dopar% {
+                                .packages = c("raster"),
+                                .options.snow = list(progress=progress)) %dopar% {
                                   
-                                  message("Extracting data from polygon " , i, " ", base::date())
+                                  pid <- Sys.getpid()
+                                  
+                                  message("PID:", pid, " Extracting data from polygon " , i, " ", base::date())
                                   
                                   if(nlType=="OLS")
                                     dat <- masqOLS(ctryPoly, ctryRastCropped, i)
                                   else if(nlType=="VIIRS")
                                     dat <- masqVIIRS(ctryPoly, ctryRastCropped, i)
                                   
-                                  message("Calculating the NL stats of polygon ", i, " ", base::date())
+                                  message("PID:", pid, " Calculating the NL stats of polygon ", i, " ", base::date())
                                   
                                   #calculate and return the mean of all the pixels
                                   #data.frame(sum = sum(dat, na.rm=TRUE))
@@ -411,6 +419,9 @@ fnAggRadRast <- function(ctryPoly, ctryRastCropped, stats, nlType)
                                   
                                   stats::setNames(sumAvgRad, stats)
                                 }
+  
+  close(pb)
+  snow::stopCluster(cl)
   
   raster::removeTmpFiles(h=0)
   
