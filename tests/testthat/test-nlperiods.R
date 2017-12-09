@@ -21,6 +21,6 @@ test_that("nlPeriod nlTypes are correct", {
   
   expect_that(getAllNlPeriods("OLS"), is_a("integer"))
   expect_equal(getAllNlPeriods("OLS"), 1992:2013)
-  expect_that(getAllNlPeriods("VIIRS"), is_a("integer"))
+  expect_that(getAllNlPeriods("VIIRS"), is_a("character"))
   expect_equal(getAllNlPeriods("VIIRS"), gsub("-","",format.Date(as.character(seq.Date(from = as.Date("2012-04-01"), to = as.Date(date(), "%a %b %d %H:%M:%S %Y"), by = "month")), "%Y-%m")))
 })
