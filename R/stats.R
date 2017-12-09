@@ -81,6 +81,9 @@ myZonal <- function (x, z, stats, digits = 0, na.rm = TRUE, ...)
   
   blocks <- raster::blockSize(x)
   
+  pb <- utils::txtProgressBar(min=1, max=blocks$n, style=3)
+  progress <- function(n) utils::setTxtProgressBar(pb, n)
+  
   result <- NULL
   
   for (i in 1:blocks$n)
@@ -100,7 +103,10 @@ myZonal <- function (x, z, stats, digits = 0, na.rm = TRUE, ...)
     message("Calculating partial stats")
     #result <- rbind(result, rDT[, lapply(.SD, fun, na.rm = TRUE), by=z])
     result <- rbind(result, eval(parse(text = funs)))
+    utils::setTxtProgressBar(pb, i)
   }
+  
+  close(pb)
   
   resultfun <- paste0(paste0(stats,"="),paste0(stats, paste0("(",names(result)[2:ncol(result)],", na.rm=TRUE)")), collapse = ", ")
   
@@ -389,8 +395,8 @@ fnAggRadRast <- function(ctryPoly, ctryRastCropped, stats, nlType)
   
   doSNOW::registerDoSNOW(cl = cl)
   
-  pb <- txtProgressBar(min=1, max=nrow(ctryPoly@data), style=3)
-  progress <- function(n) setTxtProgressBar(pb, n)
+  pb <- utils::txtProgressBar(min=1, max=nrow(ctryPoly@data), style=3)
+  progress <- function(n) utils::setTxtProgressBar(pb, n)
   
   #to avoid RCheck notes
   i <- NULL
