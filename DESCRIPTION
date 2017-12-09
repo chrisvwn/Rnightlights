@@ -2,7 +2,7 @@ Package: Rnightlights
 Version: 0.1.4
 Date: 2017-11-21
 Title: Satellite Nightlight Data Extraction
-Description: The Rnightlights package extracts raster and zonal statistics
+Description: Extracts raster and zonal statistics
     from satellite nightlight rasters downloaded from the United States 
     National Oceanic and Atmospheric Administration (<http://www.noaa.gov>) 
     free data repositories. Both the DMSP-OLS annual and SNPP-VIIRS monthly 
@@ -13,12 +13,7 @@ Description: The Rnightlights package extracts raster and zonal statistics
     country and cached locally for future retrieval. Finally, a simple data
     explorer/browser is included that allows one to visualize the cached data e.g.
     graphing, mapping and clustering regional data.
-Authors@R: c(person(given="Christopher", family="Njuguna", role=c("aut", "cre", "cph"), email="chris.njuguna@gmail.com"),
-            person(given="Henrik", family="Bengtsson", role="ctb", email="henrikb@braju.com", comment="data setup, https://cran.r-project.org/package=R.cache"),
-            person(given="Black", family="Guru", role="ctb", comment="gdal zonal, http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/"),
-            person(given="Jeff", family="Chen", role="ctb", comment="masq function, https://commercedataservice.github.io/tutorial_viirs_part1/"),
-            person(given="Star", family="Ying", role="ctb", comment="masq function, https://commercedataservice.github.io/tutorial_viirs_part1/"),
-            person(given="Chris", family="Elvidge", role="ctb", comment="information + masq function"))
+Authors@R: c(person(given="Christopher", family="Njuguna", role=c("aut", "cre", "cph"), email="chris.njuguna@gmail.com"))
 License: GPL-3
 Imports:
     cleangeo,
@@ -51,9 +46,9 @@ Suggests:
     leaflet,
     plotly,
     RColorBrewer,
-    reshape,
     shiny,
-    shinydashboard
+    shinydashboard,
+    testthat
 SystemRequirements:
     gdal
     wget
