@@ -84,7 +84,7 @@ downloadNlTilesVIIRS <- function(nlYearMonth, tileNum, downloadMethod=pkgOptions
         return (-1)
       }
       
-      tgzAvgRadFilename <- tgzFileList[grep("svdnb.*.avg_rade9.tif$",tgzFileList, ignore.case = T)]
+      tgzAvgRadFilename <- tgzFileList[grep("svdnb.*.avg_rade9.*.tif$",tgzFileList, ignore.case = T)]
       
       message("Decompressing ", tgzAvgRadFilename, " ", base::date())
       
