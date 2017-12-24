@@ -39,6 +39,210 @@ validStat <- function(stat)
     return(TRUE)
 }
 
+raster2FFDF <- function(rast, zone, ...)
+{
+  message("Reading in raster data")
+  
+  file.remove("rast.ff", "zone.ff")
+  
+  nc <- ncol(rast)
+  
+  tr <- raster::blockSize(rast)
+  
+  pb <- utils::txtProgressBar(min=1, max=tr$n, style=3)
+  
+  for (i in 1:tr$n)
+  {
+    start <- ((tr$row[i]-1) * nc) + 1
+    
+    end <- start + (tr$nrows[i] * nc) - 1
+    
+    rastVals <- raster::getValues(rast, row=tr$row[i], nrows=tr$nrows[i])
+    zoneVals <- raster::getValues(zone, row=tr$row[i], nrows=tr$nrows[i])
+    
+    rastVals[rastVals < 0] <- NA
+    
+    idxZone0 <- which(zoneVals == 0)
+    
+    #zoneVals <- zoneVals[-idxZone0]
+    #rastVals <- rastVals[-idxZone0]
+    
+    if (i == 1)
+    {
+      vals <- ff::ff(initdata = rastVals, filename = "rast.ff", overwrite = T)
+      zones <- ff::ff(initdata = zoneVals, filename = "zone.ff", overwrite = T)
+    } 
+    else 
+    {
+      vals <- ffbase::ffappend(vals, rastVals, adjustvmode = T)
+      zones <- ffbase::ffappend(zones, zoneVals, adjustvmode = T)
+    }
+    
+    utils::setTxtProgressBar(pb, i)
+  }
+  
+  close(pb)
+  
+  rDT <- ff::ffdf(zones, vals)
+  
+  rDT
+}
+
+raster2FFDF1 <- function(rast, filename="")
+{
+  message("Reading in raster data")
+  
+  #file.remove("rast.ff", "zone.ff")
+  
+  nc <- ncol(rast)
+  
+  tr <- raster::blockSize(rast)
+  
+  pb <- utils::txtProgressBar(min=1, max=tr$n, style=3)
+  
+  for (i in 1:tr$n)
+  {
+    start <- ((tr$row[i]-1) * nc) + 1
+    
+    end <- start + (tr$nrows[i] * nc) - 1
+    
+    rastVals <- raster::getValues(rast, row=tr$row[i], nrows=tr$nrows[i])
+    #zoneVals <- raster::getValues(zone, row=tr$row[i], nrows=tr$nrows[i])
+    
+    #rastVals[rastVals < 0] <- NA
+    
+    #idxZone0 <- which(zoneVals == 0)
+    
+    #zoneVals <- zoneVals[-idxZone0]
+    #rastVals <- rastVals[-idxZone0]
+    
+    if (i == 1)
+    {
+      vals <- ff::ff(initdata = rastVals, filename = filename, overwrite = T)
+      #zones <- ff::ff(initdata = zoneVals, filename = "zone.ff", overwrite = T)
+    } 
+    else 
+    {
+      vals <- ffbase::ffappend(vals, rastVals, adjustvmode = T)
+      #zones <- ffbase::ffappend(zones, zoneVals, adjustvmode = T)
+    }
+    
+    utils::setTxtProgressBar(pb, i)
+  }
+  
+  close(pb)
+  
+  #rDT <- ff::ffdf(zones, vals)
+  
+  vals
+}
+
+raster2BigMat <- function(rast, filename="") {
+  b <- bigmemory::big.matrix(raster::ncell(rast), raster::nlayers(rast), backingfile=filename, descriptorfile = paste0(filename, ".desc") )
+  
+  bigmemory::describe(b)
+  
+  b <- big.matrix(ncell(from), nlayers(from), backingfile=filename )
+  nc <- ncol(from)
+  tr <- blockSize(from)
+  for (i in 1:tr$n) {
+    start <- ((tr$row[i]-1) * nc) + 1
+    end <- start + (tr$nrows[i] * nc) - 1
+    b[start:end, ] <- getValues(from, row=tr$row[i], nrows=tr$nrows[i])
+  }
+  b
+}
+
+myZonal <- function (x, z, stats, digits = 0, na.rm = TRUE, ...)
+{
+  options(fftempdir=tempdir())
+  
+  fun <- paste0(sapply(stats, function(stat) paste0(stat,"=", stat, "(x, na.rm = TRUE)")), collapse = ", ")
+
+  funs <- paste0("data[, as.list(unlist(lapply(.SD, function(x) list(", fun, ")))), by=zones]")
+  
+  vals <- NULL
+  
+  zones <- NULL
+  
+  progress <- function(n) utils::setTxtProgressBar(pb, n)
+  
+  message("Reading in raster data")
+  
+  gc()
+  
+  file.remove("rast.ff", "zone.ff")
+  
+  nc <- ncol(x)
+  
+  tr <- raster::blockSize(x)
+  
+  pb <- utils::txtProgressBar(min=1, max=tr$n, style=3)
+  
+  for (i in 1:tr$n)
+  {
+    start <- ((tr$row[i]-1) * nc) + 1
+    
+    end <- start + (tr$nrows[i] * nc) - 1
+    
+    rastVals <- raster::getValues(x, row=tr$row[i], nrows=tr$nrows[i])
+    zoneVals <- raster::getValues(z, row=tr$row[i], nrows=tr$nrows[i])
+    
+    rastVals[rastVals < 0] <- NA
+    
+    idxZone0 <- which(zoneVals == 0)
+    
+    zoneVals <- zoneVals[-idxZone0]
+    rastVals <- rastVals[-idxZone0]
+    
+    if (i == 1)
+    {
+      vals <- ff::ff(initdata = rastVals, filename = "rast.ff", overwrite = T)
+      zones <- ff::ff(initdata = zoneVals, filename = "zone.ff", overwrite = T)
+    } 
+    else 
+    {
+      vals <- ffbase::ffappend(vals, rastVals, adjustvmode = T)
+      zones <- ffbase::ffappend(zones, zoneVals, adjustvmode = T)
+    }
+    
+    utils::setTxtProgressBar(pb, i)
+  }
+  
+  close(pb)
+  
+  rDT <- ff::ffdf(zones, vals)
+  
+  #pb <- utils::txtProgressBar(min=1, max=length(unique(zones)), style=3)
+  
+  #pbIdx <- 0
+  
+  message("Calculating stats on ffdf ", base::date())
+  
+  result <- ffbase::ffdfdply(x=rDT,
+                             split=as.character(zones),
+                             trace=TRUE,
+                             BATCHBYTES = 80.85,
+                             FUN = function(data){
+                               ## This happens in RAM - containing **several** split 
+                               #elements so here we can use data.table which works 
+                               #fine for in RAM computing
+                               data <- data.table::as.data.table(data)
+                               result <- eval(parse(text = funs))
+                               
+                               as.data.frame(result)
+                             })
+  
+  #close(pb)
+  
+  result <- stats::setNames(result, c("z", stats))
+  
+  file.remove("rast.ff", "zone.ff")
+  
+  gc()
+  
+  return(result)
+}
 ######################## myZonal ###################################
 
 #' Calculate zonal statistics. Used internally
@@ -61,7 +265,7 @@ validStat <- function(stat)
 #' @return numeric value result of the given stat function
 #' 
 #' @import data.table
-myZonal <- function (x, z, stats, digits = 0, na.rm = TRUE, ...)
+myZonal1 <- function (x, z, stats, digits = 0, na.rm = TRUE, ...)
 {
   #http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/
 
@@ -197,7 +401,7 @@ ZonalPipe <- function (ctryCode, ctryPoly, path.in.shp, path.in.r, path.out.r, p
   
   if (!file.exists(path.out.r))
   {
-    message("Zonal file ", path.out.r, " doesn't exist. Creating")
+    message("Zonal file ", path.out.r, " doesn't exist. Creating", date())
     
     #get the extent and change to minx, miny, maxx, maxy order for use in gdal_rasterize. Explanation below
     ext<-raster::extent(r)
@@ -239,10 +443,10 @@ ZonalPipe <- function (ctryCode, ctryPoly, path.in.shp, path.in.r, path.out.r, p
   # 2/ Zonal Stat using myZonal function
   zone<-raster::raster(path.out.r)
   
-  message("Calculating zonal stats ...")
+  message("Calculating zonal stats ...", date())
   Zstat<-data.frame(myZonal(r, zone, stats))
   
-  message("Calculating zonal stats ... DONE")
+  message("Calculating zonal stats ... DONE", date())
 
   colnames(Zstat)[2:length(Zstat)] <- stats
   
