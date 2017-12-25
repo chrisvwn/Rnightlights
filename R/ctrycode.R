@@ -11,15 +11,13 @@
 #' @return Character ISO3 ctryCode if found else NA
 #'
 #' @examples
-#' ctryNameToCode("kenya")
+#' Rnightlights::ctryNameToCode("kenya")
 #'   #returns "KEN"
 #'
-#' ctryNameToCode("ken")
+#' Rnightlights::ctryNameToCode("ken")
 #'   #returns "KEN"
 #'   
-#' ctryNameToCode("jamaica") #returns JAM
-#' 
-#' 
+#' Rnightlights::ctryNameToCode("jamaica") #returns JAM
 #'
 #' @export
 ctryNameToCode <- function(ctryName)
@@ -57,13 +55,13 @@ ctryNameToCode <- function(ctryName)
 #'     codes and their corresponding names
 #'
 #' @examples
-#' ctryCodeToName("KEN") #Kenya
+#' Rnightlights::ctryCodeToName("KEN") #Kenya
 #' 
-#' ctryCodeToName("ARE") #United Arab Emirates
+#' Rnightlights::ctryCodeToName("ARE") #United Arab Emirates
 #' 
-#' ctryCodeToName("USA") #United States of America
+#' Rnightlights::ctryCodeToName("USA") #United States of America
 #' 
-#' ctryCodeToName("JAM") #Jamaica
+#' Rnightlights::ctryCodeToName("JAM") #Jamaica
 #'
 #' @export
 ctryCodeToName <- function(ctryCode)
@@ -101,10 +99,10 @@ ctryCodeToName <- function(ctryCode)
 #' @return TRUE/FALSE
 #'
 #' @examples
-#' \dontrun{validCtryCode("KEN")}
+#' \dontrun{Rnightlights::validCtryCode("KEN")}
 #'  #returns TRUE
 #'
-#' \dontrun{validCtryCode("UAE")}
+#' \dontrun{Rnightlights::validCtryCode("UAE")}
 #'  #returns FALSE. "United Arab Emirates" ISO3 code = "ARE"
 #'
 validCtryCode <- function(ctryCode)
