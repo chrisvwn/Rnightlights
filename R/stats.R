@@ -153,6 +153,28 @@ raster2BigMat <- function(rast, filename="") {
   b
 }
 
+######################## myZonal ###################################
+
+#' Calculate zonal statistics. Used internally
+#'
+#' Calculate zonal statistics. Used internally by zonalpipe. Modified from 
+#'     \url{http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/}
+#'
+#' @param x the country raster
+#'
+#' @param z the zonal country polygon layer
+#'
+#' @param stats a character list of statistics to calculate
+#'
+#' @param digits round off to how many decimals
+#'
+#' @param na.rm how to handle NAs
+#'
+#' @param ... Other params to pass to the stats function
+#'
+#' @return numeric value result of the given stat function
+#' 
+#' @import data.table
 myZonal <- function (x, z, stats, digits = 0, na.rm = TRUE, ...)
 {
   options(fftempdir=tempdir())
@@ -169,9 +191,29 @@ myZonal <- function (x, z, stats, digits = 0, na.rm = TRUE, ...)
   
   message("Reading in raster data")
   
-  gc()
+  zoneFnamePath <- file.path(tempdir(), "zone.ff")
   
-  file.remove("rast.ff", "zone.ff")
+  rastFnamePath <- file.path(tempdir(), "rast.ff")
+  
+  if(file.exists(rastFnamePath) || file.exists(zoneFnamePath))
+  {
+    if(exists("rDT"))
+      rm(rDT)
+    
+    if(exists("vals"))
+      rm(vals)
+    
+    if(exists("zones"))
+      rm(zones)
+    
+    gc()
+    
+    if(file.exists(rastFnamePath))
+      file.remove(rastFnamePath)
+    
+    if(file.exists(zoneFnamePath))
+      file.remove(zoneFnamePath)
+  }
   
   nc <- ncol(x)
   
@@ -197,8 +239,8 @@ myZonal <- function (x, z, stats, digits = 0, na.rm = TRUE, ...)
     
     if (i == 1)
     {
-      vals <- ff::ff(initdata = rastVals, filename = "rast.ff", overwrite = T)
-      zones <- ff::ff(initdata = zoneVals, filename = "zone.ff", overwrite = T)
+      vals <- ff::ff(initdata = rastVals, filename = rastFnamePath, overwrite = T)
+      zones <- ff::ff(initdata = zoneVals, filename = zoneFnamePath, overwrite = T)
     } 
     else 
     {
@@ -217,12 +259,12 @@ myZonal <- function (x, z, stats, digits = 0, na.rm = TRUE, ...)
   
   #pbIdx <- 0
   
-  message("Calculating stats on ffdf ", base::date())
+  message("Calculating stats ", base::date())
   
   result <- ffbase::ffdfdply(x=rDT,
                              split=as.character(zones),
                              trace=TRUE,
-                             BATCHBYTES = 80.85,
+                             BATCHBYTES = 80.85*2^20,
                              FUN = function(data){
                                ## This happens in RAM - containing **several** split 
                                #elements so here we can use data.table which works 
@@ -236,35 +278,31 @@ myZonal <- function (x, z, stats, digits = 0, na.rm = TRUE, ...)
   #close(pb)
   
   result <- stats::setNames(result, c("z", stats))
-  
-  file.remove("rast.ff", "zone.ff")
-  
-  gc()
+
+  if(file.exists(rastFnamePath) || file.exists(zoneFnamePath))
+  {
+    if(exists("rDT"))
+      rm(rDT)
+    
+    if(exists("vals"))
+      rm(vals)
+    
+    if(exists("zones"))
+      rm(zones)
+    
+    gc()
+    
+    if(file.exists(rastFnamePath))
+      file.remove(rastFnamePath)
+
+    if(file.exists(zoneFnamePath))
+      file.remove(zoneFnamePath)
+  }
   
   return(result)
 }
-######################## myZonal ###################################
 
-#' Calculate zonal statistics. Used internally
-#'
-#' Calculate zonal statistics. Used internally by zonalpipe. Modified from 
-#'     \url{http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/}
-#'
-#' @param x the country raster
-#'
-#' @param z the zonal country polygon layer
-#'
-#' @param stats a character list of statistics to calculate
-#'
-#' @param digits round off to how many decimals
-#'
-#' @param na.rm how to handle NAs
-#'
-#' @param ... Other params to pass to the stats function
-#'
-#' @return numeric value result of the given stat function
-#' 
-#' @import data.table
+
 myZonal1 <- function (x, z, stats, digits = 0, na.rm = TRUE, ...)
 {
   #http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/
@@ -510,11 +548,12 @@ fnAggRadGdal <- function(ctryCode, ctryPoly, nlPeriod, fnStats=pkgOptions("stats
   path.in.shp<- getPolyFnamePath(ctryCode)
   
   path.in.r<- getCtryRasterOutputFname(ctryCode, nlType, nlPeriod) #or path.in.r<-list.files("/home/, pattern=".tif$")
+  
   path.out.r<- file.path(getNlDir("dirZonals"), paste0(ctryCode, "_zone_", nlType, ".tif"))
   
-  path.out.shp<-file.path(getNlDir("dirZonals"), "zone_withZstat.shp")
+  path.out.shp <- file.path(getNlDir("dirZonals"), "zone_withZstat.shp")
   
-  zone.attribute<-paste0("ID_", gsub("[^[:digit:]]", "", getCtryShpLowestLyrName(ctryCode)))
+  zone.attribute <- paste0("ID_", gsub("[^[:digit:]]", "", getCtryShpLowestLyrName(ctryCode)))
   
   lowestLyrName <- getCtryShpLowestLyrName(ctryCode)
   
