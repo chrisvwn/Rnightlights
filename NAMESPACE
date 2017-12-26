@@ -2,6 +2,7 @@
 
 export(ctryCodeToName)
 export(ctryNameToCode)
+export(deleteNlDataCol)
 export(exploreData)
 export(getAllNlPeriods)
 export(getCtryNlData)

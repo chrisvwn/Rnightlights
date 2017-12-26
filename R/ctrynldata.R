@@ -10,7 +10,7 @@
 #' @return dataframe with the country admin level data
 #'
 #' @examples
-#' \dontrun{initCtryNlData <- createCtryNlDataDF("KEN")}
+#' \dontrun{initCtryNlData <- Rnightlights::createCtryNlDataDF("KEN")}
 #'  #returns a data frame
 #'
 createCtryNlDataDF <- function(ctryCode)
@@ -103,14 +103,15 @@ createCtryNlDataDF <- function(ctryCode)
 #' 
 #' @param nlType the type of nightlight data i.e. "OLS" or "VIIRS"
 #'
-#' @return Character full path to the cropped VIIRS country raster 
-#'     for a country and a given year and month
+#' @return the updated dataframe
 #'
 #' @examples
 #' 
-#' \dontrun{ctryNlDataDF <- insertNlDataCol(ctryNlDataDF, dataCol, "sum", "201409", "VIIRS")}
+#' \dontrun{ctryNlDataDF <- Rnightlights::insertNlDataCol(ctryNlDataDF, 
+#'     dataCol, "sum", "201409", "VIIRS")}
 #' 
-#' \dontrun{ctryNlDataDF <- insertNlDataCol(ctryNlDataDF, dataCol, "mean", "2012", "OLS")}
+#' \dontrun{ctryNlDataDF <- Rnightlights::insertNlDataCol(ctryNlDataDF, 
+#'     dataCol, "mean", "2012", "OLS")}
 #'
 insertNlDataCol <- function (ctryNlDataDF, dataCol, statType, nlPeriod, nlType)
 {
@@ -155,6 +156,68 @@ insertNlDataCol <- function (ctryNlDataDF, dataCol, statType, nlPeriod, nlType)
   ctryNlDataDF <- ctryNlDataDF[ , newNlDataColNames]
   
   return(ctryNlDataDF)
+}
+
+######################## deleteNlDataCol ###################################
+
+#' Delete an aggregate nightlight data column in a country nightlights dataframe
+#'
+#' Delete an aggregate nightlight data column in a country nightlights dataframe. The number
+#'     of elements in the vector MUST match the number of rows in the country dataframe.
+#'
+#' @param ctryCode country with the  data column to remove
+#' 
+#' @param nlType  the type of nightlight data i.e. "OLS" or "VIIRS"
+#' 
+#' @param nlPeriod the nlPeriod that the dataCol belongs to
+#' 
+#' @param statType the stat which produced the dataCol vector
+#'
+#' @examples
+#' 
+#' \dontrun{ctryNlDataDF <- Rnightlights::deleteNlDataCol(ctryNlDataDF, 
+#'      "VIIRS", "201409", "sum")}
+#' 
+#' \dontrun{Rnightlights::deleteNlDataCol(ctryNlDataDF, 
+#'     "OLS", "2012", "mean")}
+#'
+#' @export
+deleteNlDataCol <- function (ctryCode,nlType, nlPeriod, statType)
+{
+  if(missing(ctryCode))
+    stop("Missing required parameter ctryCode")
+
+  if(missing(nlType))
+    warning("Missing required parameter nlType")
+  
+  if(missing(nlPeriod))
+    stop("Missing required parameter nlPeriod")
+  
+  if(missing(statType))
+    stop("Missing required parameter statType")
+  
+  ctryNlDataDF <- getCtryNlData(ctryCode = ctryCode, 
+                                nlPeriods = getAllNlPeriods(nlType), 
+                                nlType = nlType,
+                                ignoreMissing = TRUE)
+  
+  #read in all column names in the dataframe
+  cols <- names(ctryNlDataDF)
+  
+  colName <- paste0("NL", nlType, toupper(statType), collapse = "_")
+  
+  #get only the named nightlight data column(s)
+  nlDataColIdx <- grep(colName, cols)
+  
+  if(length(nlDataColIdx) == 0)
+    stop("Specified column not found")
+  
+  #write back the dataframe with the new column order
+  ctryNlDataDF <- ctryNlDataDF[ , -c(nlDataColIdx)]
+  
+  saveCtryNlData(ctryNlDataDF, ctryCode)
+  
+  return(TRUE)
 }
 
 ######################## saveCtryNlData ###################################
@@ -405,7 +468,7 @@ getCtryNlData <- function(ctryCode, nlPeriods, nlType, stats=pkgOptions("stats")
     
   if(!is.null(ignoreMissing))
     if(ignoreMissing && !existsCtryNlDataFile(ctryCode))
-      stop("No data exists for ", ctryCode, ". Set IgnoreMissing= to download and process")
+      stop("No data exists for ", ctryCode, ". Set IgnoreMissing=FALSE to download and process")
   
   if (!missing(nlPeriods)) #if nlPeriods is provided process else return all ctry data
   {
@@ -700,7 +763,7 @@ listCtryNlData <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, source=
   nlPeriod <- NULL #appease CRAN note for global variables
   
   #get a list of country data files present
-  countries <- list.files(getNlDir("dirNlData"))
+  countries <- list.files(getNlDir("dirNlData"), pattern = ".csv$")
   
   #for each country filename
   for (ctry in countries)
@@ -737,7 +800,10 @@ listCtryNlData <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, source=
   
   #label the columns
   names(dataList) <- c("ctryCode", "dataType", "nlType", "nlPeriod", "stats")
-  
+
+  dataList$ctryCode <- as.character(dataList$ctryCode)
+  dataList$nlPeriod <- as.character(dataList$nlPeriod)
+    
   #filters
   #filter by ctryCode if supplied
   if(!is.null(ctryCodes))

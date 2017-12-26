@@ -7,7 +7,7 @@
 # 
 # if (!require("pacman")) install.packages('pacman', repos='http://cran.r-project.org')
 # 
-# pacman::p_load(shiny, ggplot2, plotly, reshape, rgdal, RColorBrewer, ggdendro, dendextend)
+# pacman::p_load(shiny, ggplot2, plotly, reshape2, rgdal, RColorBrewer, ggdendro, dendextend)
 # 
 # pacman::p_load_gh("rstudio/leaflet", "cloudyr/aws.s3")
 # 
@@ -15,7 +15,7 @@
 # library(ggplot2)
 # suppressMessages(library(plotly))
 # library(leaflet)
-# library(reshape)
+# library(reshape2)
 # library(rgdal)
 # library(RColorBrewer)
 # library(ggdendro)
@@ -63,9 +63,9 @@ if (!requireNamespace("RColorBrewer", quietly = TRUE))
   missingPkgs <- c(missingPkgs, "RColorBrewer")
 }
 
-if (!requireNamespace("reshape", quietly = TRUE))
+if (!requireNamespace("reshape2", quietly = TRUE))
 {
-  missingPkgs <- c(missingPkgs, "reshape")
+  missingPkgs <- c(missingPkgs, "reshape2")
 }
 
 if (!requireNamespace("rgdal", quietly = TRUE))
@@ -1267,7 +1267,7 @@ shiny::shinyServer(function(input, output, session){
         
       if(inherits(ctryRast, "RasterLayer"))
       {
-        map <- map %>% leaflet::addRasterImage(x = ctryRast,layerId = "ctryRasterLocal", group = "ctryRaster", project = T, colors = "Grays")
+        map <- map %>% leaflet::addRasterImage(x = ctryRast,layerId = "ctryRasterLocal", group = "ctryRaster", project = T)
 
         leaflet::projectRasterForLeaflet(ctryRast)
       }

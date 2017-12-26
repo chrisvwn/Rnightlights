@@ -230,7 +230,7 @@ processNLCountry <- function(ctryCode, nlPeriod, nlType, cropMaskMethod=pkgOptio
       #GDALWARP
       rstTmp <- file.path(getNlDir("dirNlTiles"), paste0(basename(tempfile()), ".tif"))
       
-      message("Writing merged raster to disk for gdal")
+      message("Writing merged raster to disk for gdalwarp masking")
       
       raster::writeRaster(ctryRastCropped, rstTmp)
       
@@ -239,7 +239,7 @@ processNLCountry <- function(ctryCode, nlPeriod, nlType, cropMaskMethod=pkgOptio
       if (file.exists(output_file_vrt))
         file.remove(output_file_vrt)
       
-      message("gdalwarp ",base::date())
+      message("gdalwarp masking",base::date())
       
       gdalUtils::gdalwarp(srcfile=rstTmp, dstfile=output_file_vrt, s_srs=wgs84, t_srs=wgs84, cutline=getPolyFnamePath(ctryCode), cl= getCtryShpLyrName(ctryCode,0), multi=TRUE, wm=2048, wo="NUM_THREADS=ALL_CPUS")
       

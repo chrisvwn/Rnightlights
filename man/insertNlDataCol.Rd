@@ -18,8 +18,7 @@ insertNlDataCol(ctryNlDataDF, dataCol, statType, nlPeriod, nlType)
 \item{nlType}{the type of nightlight data i.e. "OLS" or "VIIRS"}
 }
 \value{
-Character full path to the cropped VIIRS country raster 
-    for a country and a given year and month
+the updated dataframe
 }
 \description{
 Insert an aggregate nightlight data column in a country nightlights dataframe. The number
@@ -27,8 +26,10 @@ Insert an aggregate nightlight data column in a country nightlights dataframe. T
 }
 \examples{
 
-\dontrun{ctryNlDataDF <- insertNlDataCol(ctryNlDataDF, dataCol, "sum", "201409", "VIIRS")}
+\dontrun{ctryNlDataDF <- Rnightlights::insertNlDataCol(ctryNlDataDF, 
+    dataCol, "sum", "201409", "VIIRS")}
 
-\dontrun{ctryNlDataDF <- insertNlDataCol(ctryNlDataDF, dataCol, "mean", "2012", "OLS")}
+\dontrun{ctryNlDataDF <- Rnightlights::insertNlDataCol(ctryNlDataDF, 
+    dataCol, "mean", "2012", "OLS")}
 
 }

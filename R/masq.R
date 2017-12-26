@@ -74,7 +74,7 @@ masqVIIRS <- function(ctryPoly, ctryRast, idx)
 #' ctryRaster <- raster(getCtryRasterOutputFname("KEN", "OLS", "1999"))
 #' temp <- NULL
 #' KenAdm1Sum <- NULL
-#' for (i in 1:5)#length(ctryPoly@polygons))
+#' for (i in 1:length(ctryPoly@polygons))
 #' {
 #'  temp$name <- as.character(ctryPoly@data$NAME_1[i])
 #'  temp$sum <- sum(masqOLS(ctryPoly, ctryRaster, i), na.rm=T)

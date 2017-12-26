@@ -104,7 +104,7 @@ myZonal <- function (x, z, stats, digits = 0, na.rm = TRUE, ...)
   }
   
   #the number of columns in the raster/zone file which are identical in size
-  nc <- ncol(x)
+  nc <- base::ncol(x)
   
   #get the block size recommendation
   tr <- raster::blockSize(x)

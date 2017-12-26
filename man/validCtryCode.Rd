@@ -17,10 +17,10 @@ Check if a month number is valid for a given nightlight type. Note month num is 
 "VIIRS" nightlight type
 }
 \examples{
-\dontrun{validCtryCode("KEN")}
+\dontrun{Rnightlights::validCtryCode("KEN")}
  #returns TRUE
 
-\dontrun{validCtryCode("UAE")}
+\dontrun{Rnightlights::validCtryCode("UAE")}
  #returns FALSE. "United Arab Emirates" ISO3 code = "ARE"
 
 }

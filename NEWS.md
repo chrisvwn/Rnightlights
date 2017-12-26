@@ -26,3 +26,7 @@ Initial release
 
 ####v0.1.4
 * Updated the package code and documentation to reflect a change in available VIIRS data. The earliest available downloadable data is changed to "201401" from "201204".
+
+####v0.1.5
+* Returned the VIIRS range to start in "201204" as it seems to have been a temporary problem.
+* Updated file extraction from downloaded tile tgz. Raster data has been reduced to 100 significant digits reducing tile sizes. Raster filename is now rade9h.tgz rather than rade9.tgz

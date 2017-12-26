@@ -21,6 +21,8 @@ Imports:
     data.table,
     doSNOW,
     dplyr,
+    ff,
+    ffbase,
     foreach,
     gdalUtils,
     lubridate,
