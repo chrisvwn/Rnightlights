@@ -427,7 +427,7 @@ getCtryNlDataFnamePath <- function(ctryCode)
 #'     #(ignoreMissing=FALSE must return all data: forces processing of any missing)
 #'  
 #' @export
-getCtryNlData <- function(ctryCode, nlPeriods, nlType, stats=pkgOptions("stats"), ignoreMissing=NULL, source="local")
+getCtryNlData <- function(ctryCode, nlType, nlPeriods, stats=pkgOptions("stats"), ignoreMissing=NULL, source="local")
 {
   if(source != "local")
     stop("Non-local sources not currently supported. \n
