@@ -7,7 +7,7 @@
 processNLCountry(ctryCode, nlPeriod, nlType,
   cropMaskMethod = pkgOptions("cropMaskMethod"),
   extractMethod = pkgOptions("extractMethod"),
-  fnStats = pkgOptions("stats"))
+  nlStats = pkgOptions("nlStats"))
 }
 \arguments{
 \item{ctryCode}{character string The ctryCode of interest}
@@ -22,8 +22,8 @@ crop and mask the country rasters}
 \item{extractMethod}{("rast" or "gdal") Whether to use rasterize or gdal-based functions 
 to crop and mask the country rasters}
 
-\item{fnStats}{the statistics to calculate. If not provided will calculate the stats specified 
-in \code{pkgOptions("stats")}}
+\item{nlStats}{the statistics to calculate. If not provided will calculate the stats specified 
+in \code{pkgOptions("nlStats")}}
 }
 \value{
 None

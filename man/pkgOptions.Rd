@@ -42,7 +42,7 @@ The following options are supported
      to use }
  \item{\code{extractMethod}}{(\code{character}) The method to use to 
      extract data from the rasters }
- \item{\code{gdal_cachemax}}{(\code{character}) The maximum memory gdal 
+ \item{\code{gdalCacheMax}}{(\code{character}) The maximum memory gdal 
      should use in gdal_rasterize }
  \item{\code{ntLtsIndexUrlOLS}}{(\code{character}) The url with the OLS 
      tile index }

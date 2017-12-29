@@ -6,7 +6,7 @@
 \usage{
 processNlData(ctryCodes = getAllNlCtryCodes("all"),
   nlPeriods = getAllNlPeriods(nlType), nlType = "VIIRS",
-  stats = pkgOptions("stats"))
+  nlStats = pkgOptions("nlStats"))
 }
 \arguments{
 \item{ctryCodes}{the list of countries to be processed}
@@ -15,8 +15,8 @@ processNlData(ctryCodes = getAllNlCtryCodes("all"),
 
 \item{nlType}{the type of nightlights to process i.e. "OLS" or "VIIRS". Default "VIIRS"}
 
-\item{stats}{the statistics to calculate. If not provided will calculate the stats specified 
-in \code{pkgOptions("stats")}}
+\item{nlStats}{the statistics to calculate. If not provided will calculate the stats specified 
+in \code{pkgOptions("nlStats")}}
 }
 \value{
 None
