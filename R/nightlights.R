@@ -89,8 +89,8 @@
 #' @param extractMethod ("rast" or "gdal") Whether to use rasterize or gdal-based functions 
 #'     to crop and mask the country rasters
 #' 
-#' @param fnStats the statistics to calculate. If not provided will calculate the stats specified 
-#'     in \code{pkgOptions("stats")}
+#' @param nlStats the statistics to calculate. If not provided will calculate the stats specified 
+#'     in \code{pkgOptions("nlStats")}
 #'
 #' @return None
 #'
@@ -100,7 +100,7 @@
 #' #for both cropMask and extraction for KEN
 #' \dontrun{processNLCountry("KEN", "201412", "VIIRS", "gdal", "gdal", "sum")}
 #'
-processNLCountry <- function(ctryCode, nlPeriod, nlType, cropMaskMethod=pkgOptions("cropMaskMethod"), extractMethod=pkgOptions("extractMethod"), fnStats=pkgOptions("stats"))
+processNLCountry <- function(ctryCode, nlPeriod, nlType, cropMaskMethod=pkgOptions("cropMaskMethod"), extractMethod=pkgOptions("extractMethod"), nlStats=pkgOptions("nlStats"))
 {
   if(missing(ctryCode))
     stop("Missing required parameter ctryCode")
@@ -130,7 +130,7 @@ processNLCountry <- function(ctryCode, nlPeriod, nlType, cropMaskMethod=pkgOptio
   {
     message("Data file found: ", getCtryNlDataFnamePath(ctryCode))
     
-    if(all(sapply(fnStats, function(stat) existsCtryNlData(ctryCode, nlPeriod, stat, nlType))))
+    if(all(sapply(nlStats, function(nlStat) existsCtryNlData(ctryCode, nlPeriod, nlStat, nlType))))
     {
       message("All stats exist for ", ctryCode, " ", nlPeriod, ". Skipping")
 
@@ -230,18 +230,18 @@ processNLCountry <- function(ctryCode, nlPeriod, nlType, cropMaskMethod=pkgOptio
       #GDALWARP
       rstTmp <- file.path(getNlDir("dirNlTiles"), paste0(basename(tempfile()), ".tif"))
       
-      message("Writing merged raster to disk for gdalwarp masking")
+      message("Writing merged raster to disk for gdalwarp masking", base::date())
       
       raster::writeRaster(ctryRastCropped, rstTmp)
       
-      output_file_vrt <- file.path(getNlDataPath(), paste0(ctryCode, "_", nlType, "_", nlPeriod, ".vrt"))
+      output_file_vrt <- file.path(tempdir(), paste0(ctryCode, "_", nlType, "_", nlPeriod, ".vrt"))
       
       if (file.exists(output_file_vrt))
         file.remove(output_file_vrt)
       
       message("gdalwarp masking",base::date())
       
-      gdalUtils::gdalwarp(srcfile=rstTmp, dstfile=output_file_vrt, s_srs=wgs84, t_srs=wgs84, cutline=getPolyFnamePath(ctryCode), cl= getCtryShpLyrName(ctryCode,0), multi=TRUE, wm=2048, wo="NUM_THREADS=ALL_CPUS")
+      gdalUtils::gdalwarp(srcfile=rstTmp, dstfile=output_file_vrt, s_srs=wgs84, t_srs=wgs84, cutline=getPolyFnamePath(ctryCode), cl= getCtryShpLyrName(ctryCode,0), multi=TRUE, wm=pkgOptions("gdalCacheMax"), wo=paste0("NUM_THREADS=", pkgOptions("numCores")))
       
       message("gdal_translate ", base::date())
       gdalUtils::gdal_translate(co = "compress=LZW", src_dataset = output_file_vrt, dst_dataset = getCtryRasterOutputFname(ctryCode, nlType, nlPeriod))
@@ -282,12 +282,12 @@ processNLCountry <- function(ctryCode, nlPeriod, nlType, cropMaskMethod=pkgOptio
   message("Begin extracting the data from the merged raster ", base::date())
   
   if (extractMethod == "rast")
-    sumAvgRad <- fnAggRadRast(ctryPoly, ctryRastCropped, fnStats, nlType)
+    sumAvgRad <- fnAggRadRast(ctryPoly, ctryRastCropped, nlStats, nlType)
   else if (extractMethod == "gdal")
-    sumAvgRad <- fnAggRadGdal(ctryCode, ctryPoly, nlPeriod, fnStats, nlType)
+    sumAvgRad <- fnAggRadGdal(ctryCode, ctryPoly, nlPeriod, nlStats, nlType)
   
-  for(stat in fnStats)
-    ctryNlDataDF <- insertNlDataCol(ctryNlDataDF, sumAvgRad[,stat], stat, nlPeriod, nlType = nlType)
+  for(nlStat in nlStats)
+    ctryNlDataDF <- insertNlDataCol(ctryNlDataDF, sumAvgRad[,nlStat], nlStat, nlPeriod, nlType = nlType)
   
   message("DONE processing ", ctryCode, " ", nlPeriod, " ", base::date())
   
@@ -374,8 +374,8 @@ getCtryRasterOutputFname <- function(ctryCode, nlType, nlPeriod)
 #'
 #' @param nlType the type of nightlights to process i.e. "OLS" or "VIIRS". Default "VIIRS"
 #' 
-#' @param stats the statistics to calculate. If not provided will calculate the stats specified 
-#'     in \code{pkgOptions("stats")}
+#' @param nlStats the statistics to calculate. If not provided will calculate the stats specified 
+#'     in \code{pkgOptions("nlStats")}
 #'
 #' @return None
 #'
@@ -438,7 +438,7 @@ getCtryRasterOutputFname <- function(ctryCode, nlType, nlPeriod)
 #'     #R CMD BATCH script_name_2014.R
 #'     }
 #' @export
-processNlData <- function (ctryCodes=getAllNlCtryCodes("all"), nlPeriods=getAllNlPeriods(nlType), nlType="VIIRS", stats=pkgOptions("stats"))
+processNlData <- function (ctryCodes=getAllNlCtryCodes("all"), nlPeriods=getAllNlPeriods(nlType), nlType="VIIRS", nlStats=pkgOptions("nlStats"))
 {
   #if the period is not given process all available periods
   if(missing("nlPeriods") || is.null(nlPeriods) || length(nlPeriods) == 0 || nlPeriods == "")
@@ -499,7 +499,7 @@ processNlData <- function (ctryCodes=getAllNlCtryCodes("all"), nlPeriods=getAllN
     for (ctryCode in unique(ctryCodes))
     {
       #Check if all stats exist for the ctryCode
-      if (all(sapply(stats, function(stat) existsCtryNlData(ctryCode, nlPeriod, stat, nlType))))
+      if (all(sapply(nlStats, function(nlStat) existsCtryNlData(ctryCode, nlPeriod, nlStat, nlType))))
       {
         message ("All stats exist for ", ctryCode, ":", nlPeriod)
 
@@ -549,7 +549,7 @@ processNlData <- function (ctryCodes=getAllNlCtryCodes("all"), nlPeriods=getAllN
     #for all required countries
     for (ctryCode in unique(ctryCodes))
     {
-      processNLCountry(ctryCode, nlPeriod, nlType, cropMaskMethod = pkgOptions("cropMaskMethod"), extractMethod = pkgOptions("extractMethod"), fnStats = stats)
+      processNLCountry(ctryCode, nlPeriod, nlType, cropMaskMethod = pkgOptions("cropMaskMethod"), extractMethod = pkgOptions("extractMethod"), nlStats = nlStats)
     }
     
     #post-processing. Delete the downloaded tiles to release disk space

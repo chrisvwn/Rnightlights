@@ -299,7 +299,7 @@ ZonalPipe <- function (ctryCode, ctryPoly, path.in.shp, path.in.r, path.out.r, p
     #Gdal_rasterize
     message("Creating zonal raster")
     command<-'gdal_rasterize'
-    command<-paste(command, paste0("--config GDAL_CACHEMAX ", pkgOptions("gdal_cachemax"))) #Speed-up with more cache (avice: max 1/3 of your total RAM)
+    command<-paste(command, paste0("--config GDAL_CACHEMAX ", pkgOptions("gdalCacheMax"))) #Speed-up with more cache (avice: max 1/3 of your total RAM)
     command<-paste(command, "-l", lowestLyrName)
     #command<-paste(command, "-where", paste0(lowestIDCol, "=", i))
     command<-paste(command, "-a", zone.attribute) #Identifies an attribute field on the features to be used for a burn in value. The value will be burned into all output bands.

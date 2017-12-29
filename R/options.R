@@ -28,8 +28,12 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   #methods to extract data. Options: raster, gdal
   extractMethod = "rast",
 
-  #gdal_cachemax Speeds up gdal_rasterize calculation of stats in function ZonalPipe with more cache (advice: max 1/3 of your total RAM) see: http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/
-  gdal_cachemax = 2000,
+  #gdalCacheMax Speeds up gdal_rasterize calculation of stats in function ZonalPipe with more cache (advice: max 1/3 of your total RAM) see: http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/
+  gdalCacheMax = 2000,
+
+  #stats to calculate in processNlData. Can be added to if the function exists
+  #i.e. if not a standard function can be created in workspace
+  nlStats = c("sum", "mean"),
   
   #urls for raster tile listings. In theory, can be used to override the 
   #url if it is changed while the package is being updated
@@ -42,10 +46,6 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   #countries to not process. useful if many countries being processed
   #and want to exclude a few
   omitCountries = "missing",
-  
-  #stats to calculate in processNlData. Can be added to if the function exists
-  #i.e. if not a standard function can be created in workspace
-  stats = c("sum", "mean"),
   
   #Change the temp dir to use e.g. if the system temp dir does not have enough space
   #Not used yet
@@ -90,7 +90,7 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
 #'      to use }
 #'  \item{\code{extractMethod}}{(\code{character}) The method to use to 
 #'      extract data from the rasters }
-#'  \item{\code{gdal_cachemax}}{(\code{character}) The maximum memory gdal 
+#'  \item{\code{gdalCacheMax}}{(\code{character}) The maximum memory gdal 
 #'      should use in gdal_rasterize }
 #'  \item{\code{ntLtsIndexUrlOLS}}{(\code{character}) The url with the OLS 
 #'      tile index }

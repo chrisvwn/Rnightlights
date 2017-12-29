@@ -197,8 +197,8 @@ deleteNlDataCol <- function (ctryCode,nlType, nlPeriod, statType)
     stop("Missing required parameter statType")
   
   ctryNlDataDF <- getCtryNlData(ctryCode = ctryCode, 
-                                nlPeriods = getAllNlPeriods(nlType), 
                                 nlType = nlType,
+                                nlPeriods = getAllNlPeriods(nlType), 
                                 ignoreMissing = TRUE)
   
   #read in all column names in the dataframe
@@ -345,18 +345,18 @@ getCtryNlDataFnamePath <- function(ctryCode)
 
 #' Returns nightlight statistics for the given ctryCode and nlType in the given nPeriods
 #'
-#' Returns nightlight data for the given ctryCode and stats in the given 
+#' Returns nightlight data for the given ctryCode and nlStats in the given 
 #'     nlPeriods and of the specified nlType. Note that getCtryNldata only
 #'     processes one ctryCode at a time.
 #'     \code{ignoreMissing} plays a significant role here. It can take 3 values:
 #'     
 #'     \itemize{
 #'         \item NULL (default) only return data if found for all nlPeriods
-#'            and all stats provided otherwise return NULL.
+#'            and all nlStats provided otherwise return NULL.
 #'         \item TRUE return any partial data that is found for the provided 
-#'            nlPeriods and stats. Ignore any missing data.
+#'            nlPeriods and nlStats. Ignore any missing data.
 #'         \item FALSE return all data that is found and call \code{processNlData}
-#'            to download and process any missing nlPeriods and stats.
+#'            to download and process any missing nlPeriods and nlStats.
 #'     }
 #'    
 #'    Farther, if \code{nlPeriods} is missing, it is assigned values based on
@@ -371,8 +371,8 @@ getCtryNlDataFnamePath <- function(ctryCode)
 #' @param nlPeriods a vector of nlPeriods. Must be appropriate nlPeriods
 #'     for the nlType.
 #' 
-#' @param stats a vector of stats. if not supplied defaults to all stats
-#'     as listed in pkgOptions("stats")
+#' @param nlStats a vector of stats. if not supplied defaults to all stats
+#'     as listed in pkgOptions("nlStats")
 #' 
 #' @param nlType the nightlight type i.e. "OLS" or "VIIRS" (default)
 #' 
@@ -396,38 +396,38 @@ getCtryNlDataFnamePath <- function(ctryCode)
 #'     nlPeriods
 #'
 #' @examples
-#' #missing stats implies all stats as given by pkgOptions("stats")
+#' #missing stats implies all stats as given by pkgOptions("nlStats")
 #' 
 #' \dontrun{getCtryNlData("KEN", nlType="VIIRS", ignoreMissing=NULL)}
-#'     #returns all existing data i.e. all nlPeriods and all stats for KEN
+#'     #returns all existing data i.e. all nlPeriods and all nlStats for KEN
 #'
 #' \dontrun{getCtryNlData("KEN", ignoreMissing=TRUE)}
 #'     #same as ignoreMissing=NULL. Returns all existing data i.e. all nlPeriods
-#'     #and all stats for KEN
+#'     #and all nlStats for KEN
 #'  
 #' \dontrun{getCtryNlData(ctryCode="KEN", nlType="VIIRS", ignoreMissing=FALSE)}
 #'     #for any missing data between 201401 to present download and process the
 #'     #data then return all data
 #'  
 #' \dontrun{getCtryNlData("KEN", nlPeriod=c("existingNlPeriod", "missingNlPeriod"),
-#'     stats=c("sum", "unknownStat"), ignoreMissing=NULL)}
+#'     nlStats=c("sum", "unknownStat"), ignoreMissing=NULL)}
 #'     #Returns NULL
 #'     #(ignoreMissing=NULL returns all data if exists or if any is missing returns NULL)
 #'
 #' \dontrun{getCtryNlData("KEN", nlPeriods=c("existingNlPeriod", "missingNlPeriod"),
-#'     stats=c("existingStat", "missingStat"), ignoreMissing=TRUE)}
+#'     nlStats=c("existingStat", "missingStat"), ignoreMissing=TRUE)}
 #'    #Returns existingStat for existingNlPeriods
 #'    #(ignoreMissing=TRUE returns only existing data)
 #'  
 #' \dontrun{getCtryNlData("KEN", nlYearPeriods=c("existingNlPeriod", "missingNlPeriod"),
-#'     stats=c("sum", "unknownStat"), ignoreMissing=FALSE)}
+#'     nlStats=c("sum", "unknownStat"), ignoreMissing=FALSE)}
 #'     #Runs processNlData for missingStat in "missingNlPeriod" and returns
 #'     #"existingStat" and "missingStat" for both "existingNlPeriod" and
 #'     #"missingNlPeriod"
 #'     #(ignoreMissing=FALSE must return all data: forces processing of any missing)
 #'  
 #' @export
-getCtryNlData <- function(ctryCode, nlType, nlPeriods, stats=pkgOptions("stats"), ignoreMissing=NULL, source="local")
+getCtryNlData <- function(ctryCode, nlType, nlPeriods, nlStats=pkgOptions("nlStats"), ignoreMissing=NULL, source="local")
 {
   if(source != "local")
     stop("Non-local sources not currently supported. \n
@@ -473,7 +473,7 @@ getCtryNlData <- function(ctryCode, nlType, nlPeriods, stats=pkgOptions("stats")
   if (!missing(nlPeriods)) #if nlPeriods is provided process else return all ctry data
   {
     #check if the stats exist in the given year months will test nlYm1+stat1, nlYm2+stat1, ..., nlYm1+stat2, nlYm2+stat2
-    nlPeriodStats <- expand.grid(nlPeriods, stats)
+    nlPeriodStats <- expand.grid(nlPeriods, nlStats)
     
     existnlPeriodStats <- apply(nlPeriodStats, 1, function(x) existsCtryNlData(ctryCode, x[1], x[2], nlType))
     
@@ -496,7 +496,7 @@ getCtryNlData <- function(ctryCode, nlType, nlPeriods, stats=pkgOptions("stats")
                 "return only data found or \n'ignoreMissing=NULL' to return NULL ",
                 "if not all the data is found"))
         
-        processNlData(ctryCode, nlType = nlType, nlPeriods, stats = stats)
+        processNlData(ctryCode, nlType = nlType, nlPeriods, nlStats = nlStats)
       }
       else if (ignoreMissing)
       {
@@ -799,7 +799,7 @@ listCtryNlData <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, source=
   dataList <- as.data.frame(dataList, row.names = 1:nrow(dataList))
   
   #label the columns
-  names(dataList) <- c("ctryCode", "dataType", "nlType", "nlPeriod", "stats")
+  names(dataList) <- c("ctryCode", "dataType", "nlType", "nlPeriod", "nlStats")
 
   dataList$ctryCode <- as.character(dataList$ctryCode)
   dataList$nlPeriod <- as.character(dataList$nlPeriod)

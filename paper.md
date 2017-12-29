@@ -44,7 +44,7 @@ library(reshape2)
 library(lubridate)
 
 #get satellite data at the lowest admin level in the country i.e. ward
-kenyaWards <- getCtryNlData(ctryCode = "KEN", nlPeriods = nlRange("201401", "201412"), nlType = "VIIRS", stats = "sum")
+kenyaWards <- getCtryNlData(ctryCode = "KEN", nlType = "VIIRS", nlPeriods = nlRange("201401", "201412"), stats = "sum")
 
 #melt the ward radiances in preparation for aggregation
 kenyaWardsMelted <-  melt(kenyaWards, 
