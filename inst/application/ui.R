@@ -147,14 +147,14 @@ alignCenter <- function(el) {
 
       # body
       shinydashboard::dashboardBody(
-        shinydashboard::tabItems(
-          shinydashboard::tabItem(tabName = "plots",
-                   plotly::plotlyOutput(outputId = "plotNightLights"),
+        shinydashboard::tabBox(width = 12,
+          shiny::tabPanel(title = "plots",
+                   plotly::plotlyOutput(outputId = "plotNightLights", height = "80%"),
                    
                    shiny::uiOutput("sliderNlYearMonthRange")
                    ),
 
-          shinydashboard::tabItem(tabName = "maps",
+          shiny::tabPanel(title = "maps",
                   tags$style(type = "text/css", "#map {height: calc(100vh - 80px) !important;}"),
                   leaflet::leafletOutput("map"),
                   
@@ -164,7 +164,7 @@ alignCenter <- function(el) {
 #                                label = "Draw Map")
                   ),
 
-          shinydashboard::tabItem(tabName = "stats",
+          shiny::tabPanel(title = "stats",
                    shiny::fluidRow(
                      shinydashboard::box(title = "Annual Trends", 
                          plotly::plotlyOutput("plotYearly")),
@@ -194,11 +194,11 @@ alignCenter <- function(el) {
                   )
                 ),
           
-          shinydashboard::tabItem(tabName = "models",
+          shiny::tabPanel(title = "models",
                    shiny::textOutput("Models")
                    ),
           
-          shinydashboard::tabItem(tabName = "data",
+          shiny::tabPanel(title = "data",
                   DT::dataTableOutput("dataset")
                    )
         )
