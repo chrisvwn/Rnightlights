@@ -20,6 +20,7 @@
 #+ logic of getCtryPolyAdmLevelNames esp lvlEngName assignment needs scrutiny: DONE
 #+ OLS : DONE
 #+ store data in RDS format instead of CSV(?): V2
+#+ Name all parameters in function calls to future proof code
 
 #Notes: gdalwarp is not used for cropping because the crop_to_cutline option causes a shift in the cell locations which then affects the stats extracted. A gdal-based crop to extent would be highly desirable for performance reasons though so seeking other gdal-based workarounds
 
@@ -79,10 +80,10 @@
 #'
 #' @param ctryCode character string The ctryCode of interest
 #'
-#' @param nlPeriod character string The nlPeriod of interest
-#' 
 #' @param nlType character string The nlType of interest
 #'
+#' @param nlPeriod character string The nlPeriod of interest
+#' 
 #' @param cropMaskMethod ("rast" or "gdal") Whether to use rasterize or gdal-based functions to 
 #'     crop and mask the country rasters
 #'     
@@ -100,7 +101,7 @@
 #' #for both cropMask and extraction for KEN
 #' \dontrun{processNLCountry("KEN", "201412", "VIIRS", "gdal", "gdal", "sum")}
 #'
-processNLCountry <- function(ctryCode, nlPeriod, nlType, cropMaskMethod=pkgOptions("cropMaskMethod"), extractMethod=pkgOptions("extractMethod"), nlStats=pkgOptions("nlStats"))
+processNLCountry <- function(ctryCode, nlType, nlPeriod, cropMaskMethod=pkgOptions("cropMaskMethod"), extractMethod=pkgOptions("extractMethod"), nlStats=pkgOptions("nlStats"))
 {
   if(missing(ctryCode))
     stop("Missing required parameter ctryCode")
@@ -560,7 +561,7 @@ processNlData <- function (ctryCodes=getAllNlCtryCodes("all"), nlType="VIIRS", n
     #for all required countries
     for (ctryCode in unique(ctryCodes))
     {
-      processNLCountry(ctryCode, nlPeriod, nlType, cropMaskMethod = pkgOptions("cropMaskMethod"), extractMethod = pkgOptions("extractMethod"), nlStats = nlStats)
+      processNLCountry(ctryCode, nlType, nlPeriod, cropMaskMethod = pkgOptions("cropMaskMethod"), extractMethod = pkgOptions("extractMethod"), nlStats = nlStats)
     }
     
     #post-processing. Delete the downloaded tiles to release disk space
