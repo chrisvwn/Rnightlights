@@ -29,7 +29,7 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   extractMethod = "rast",
 
   #gdalCacheMax Speeds up gdal_rasterize calculation of stats in function ZonalPipe with more cache (advice: max 1/3 of your total RAM) see: http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/
-  gdalCacheMax = 2000,
+  gdalCacheMax = 1024,
 
   #stats to calculate in processNlData. Can be added to if the function exists
   #i.e. if not a standard function can be created in workspace
