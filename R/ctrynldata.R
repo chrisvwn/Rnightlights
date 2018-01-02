@@ -491,7 +491,7 @@ getCtryNlData <- function(ctryCode, nlType, nlPeriods, nlStats=pkgOptions("nlSta
       }
       else if(!ignoreMissing)
       {
-        message(paste0("Processing missing data: ", ctryCode, " in ", missingData, 
+        message(paste0("Processing missing data: ", ctryCode, ":", missingData, 
                 ". This may take a while. \nNote: Set 'ignoreMissing=TRUE' to ",
                 "return only data found or \n'ignoreMissing=NULL' to return NULL ",
                 "if not all the data is found"))
@@ -548,7 +548,11 @@ getCtryNlData <- function(ctryCode, nlType, nlPeriods, nlStats=pkgOptions("nlSta
     
     #if they all exist get the list of column names
     if(all(existnlPeriodStats))
+    {
       existingCols <- apply(nlPeriodStats[existnlPeriodStats,], 1, function(x) getCtryNlDataColName(x[1], x[2], nlType))
+      
+      message("All stats exist")
+    }
     else #else processNlData was unsuccessful i.e. an error occurred
       stop("An error occurred")
   }
