@@ -284,11 +284,14 @@ ZonalPipe <- function (ctryCode, ctryPoly, path.in.shp, path.in.r, path.out.r, p
   {
     message("Zonal file ", path.out.r, " doesn't exist. Creating", date())
     
-    #get the extent and change to minx, miny, maxx, maxy order for use in gdal_rasterize. Explanation below
+    #get the extent and change to minx, miny, maxx, maxy order for use
+    #in gdal_rasterize. Explanation below
     ext<-raster::extent(r)
     ext<-paste(ext[1], ext[3], ext[2], ext[4])
     
-    #get the resolution of the raster. will be used in gdal_rasterize for target resolution which should be the same as the source resolution. Specifying makes it run faster (?)
+    #get the resolution of the raster. will be used in gdal_rasterize
+    #for target resolution which should be the same as the source resolution.
+    #Specifying makes it run faster (?)
     res<-paste(raster::res(r)[1], raster::res(r)[2])
     
     lowestLyrName <- getCtryShpLowestLyrName(ctryCode)
@@ -299,19 +302,28 @@ ZonalPipe <- function (ctryCode, ctryPoly, path.in.shp, path.in.r, path.out.r, p
     #Gdal_rasterize
     message("Creating zonal raster")
     command<-'gdal_rasterize'
-    command<-paste(command, paste0("--config GDAL_CACHEMAX ", pkgOptions("gdalCacheMax"))) #Speed-up with more cache (avice: max 1/3 of your total RAM)
+    #Speed-up with more cache (avice: max 1/3 of your total RAM)
+    command<-paste(command, paste0("--config GDAL_CACHEMAX ", pkgOptions("gdalCacheMax")))
     command<-paste(command, "-l", lowestLyrName)
-    #command<-paste(command, "-where", paste0(lowestIDCol, "=", i))
-    command<-paste(command, "-a", zone.attribute) #Identifies an attribute field on the features to be used for a burn in value. The value will be burned into all output bands.
-    command<-paste(command, "-te", as.character(ext)) #(GDAL >= 1.8.0) set georeferenced extents. The values must be expressed in georeferenced units. If not specified, the extent of the output file will be the extent of the vector layers.
-    command<-paste(command, "-tr", res) #(GDAL >= 1.8.0) set target resolution. The values must be expressed in georeferenced units. Both must be positive values.
+    #Identifies an attribute field on the features to be used for a burn
+    #in value. The value will be burned into all output bands.
+    command<-paste(command, "-a", zone.attribute) 
+    #(GDAL >= 1.8.0) set georeferenced extents. The values must be expressed
+    #in georeferenced units. If not specified, the extent of the output file
+    #will be the extent of the vector layers.
+    command<-paste(command, "-te", as.character(ext))
+    #(GDAL >= 1.8.0) set target resolution. The values must be expressed in
+    #georeferenced units. Both must be positive values.
+    command<-paste(command, "-tr", res)
     command<-paste(command, path.in.shp)
     command<-paste(command, tempRast)
     
     system(command)
     
     message("Compressing zonal raster")
-    gdalUtils::gdal_translate(co = "compress=LZW", src_dataset = tempRast, dst_dataset = path.out.r)
+    gdalUtils::gdal_translate(co = "compress=LZW", 
+                              src_dataset = tempRast, 
+                              dst_dataset = path.out.r)
     
     file.remove(tempRast)
   }

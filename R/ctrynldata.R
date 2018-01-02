@@ -717,7 +717,7 @@ existsCtryNlData <- function(ctryCode, nlPeriod, stat, nlType)
   
   hd <- names(dt)
   
-  if (length(grep(getCtryNlDataColName(nlPeriod, stat = stat, nlType), hd)) > 0)
+  if (length(grep(getCtryNlDataColName(nlPeriod = nlPeriod, stat = stat, nlType = nlType), hd, ignore.case = TRUE)) > 0)
     return(TRUE)
   else
     return(FALSE)

@@ -353,7 +353,7 @@ shiny::shinyServer(function(input, output, session){
   ######################## renderUI nlType ###################################
   
   output$nlType <- shiny::renderUI({
-    if(length(input$countries) < 1)
+    if(length(input$countries) != 1)
       return()
     
     nlTypes <- ctryNlTypes()
