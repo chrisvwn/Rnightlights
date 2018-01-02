@@ -130,11 +130,18 @@ processNLCountry <- function(ctryCode, nlPeriod, nlType, cropMaskMethod=pkgOptio
   {
     message("Data file found: ", getCtryNlDataFnamePath(ctryCode))
     
-    if(all(sapply(nlStats, function(nlStat) existsCtryNlData(ctryCode, nlPeriod, nlStat, nlType))))
+    existStats <- sapply(nlStats, function(nlStat) existsCtryNlData(ctryCode, nlPeriod, nlStat, nlType))
+    
+    if(all(existStats))
     {
       message("All stats exist for ", ctryCode, " ", nlPeriod, ". Skipping")
 
       return(-1)
+    }
+    else
+    {
+      nlStats <- nlStats[!existStats]
+      message("Processing stats: ", paste0(nlStats, collapse = ","))
     }
     
     message("Load country data file")
@@ -164,7 +171,7 @@ processNLCountry <- function(ctryCode, nlPeriod, nlType, cropMaskMethod=pkgOptio
   {
     message("Begin processing ", nlPeriod, " ", base::date())
     
-    message("Reading in the rasters " , base::date())
+    message("Reading in the raster tiles " , base::date())
     
     tileList <- getCtryTileList(ctryCode, nlType)
     
@@ -178,11 +185,11 @@ processNLCountry <- function(ctryCode, nlPeriod, nlType, cropMaskMethod=pkgOptio
       
       raster::projection(rastTile) <- sp::CRS(wgs84)
       
-      message("Cropping the rasters", base::date())
+      message("Cropping the raster tiles ", base::date())
       
       #extTempCrop <- crop(rastTile, ctryExtent)
       
-      tempCrop <- raster::crop(rastTile, ctryPoly)
+      tempCrop <- raster::crop(rastTile, ctryPoly, progress='text')
       
       if(is.null(ctryRastCropped))
       {
@@ -214,12 +221,12 @@ processNLCountry <- function(ctryCode, nlPeriod, nlType, cropMaskMethod=pkgOptio
     {
       
       #RASTERIZE
-      message("Crop and mask using rasterize ", base::date())
-      ctryRastCropped <- raster::rasterize(ctryPoly, ctryRastCropped, mask=TRUE) #crops to polygon edge & converts to raster
+      message("Mask using rasterize ", base::date())
+      ctryRastCropped <- raster::rasterize(ctryPoly, ctryRastCropped, mask=TRUE, progress="text") #crops to polygon edge & converts to raster
       
       message("Writing the merged raster to disk ", base::date())
       
-      raster::writeRaster(x = ctryRastCropped, filename = getCtryRasterOutputFname(ctryCode, nlType, nlPeriod), overwrite=TRUE)
+      raster::writeRaster(x = ctryRastCropped, filename = getCtryRasterOutputFname(ctryCode, nlType, nlPeriod), overwrite=TRUE, progress="text")
       
       message("Crop and mask using rasterize ... Done", base::date())
     }
@@ -232,18 +239,22 @@ processNLCountry <- function(ctryCode, nlPeriod, nlType, cropMaskMethod=pkgOptio
       
       message("Writing merged raster to disk for gdalwarp masking", base::date())
       
-      raster::writeRaster(ctryRastCropped, rstTmp)
+      raster::writeRaster(ctryRastCropped, rstTmp, progress="text")
       
-      output_file_vrt <- file.path(tempdir(), paste0(ctryCode, "_", nlType, "_", nlPeriod, ".vrt"))
+      ctryRastCropped <- NULL
+      
+      gc()
+      
+      output_file_vrt <- file.path(tempdir(), paste0(ctryCode, "_", nlType, "_", nlPeriod, ".vrt"), fsep = )
       
       if (file.exists(output_file_vrt))
         file.remove(output_file_vrt)
       
-      message("gdalwarp masking",base::date())
+      message("gdalwarp masking to VRT ",base::date())
       
-      gdalUtils::gdalwarp(srcfile=rstTmp, dstfile=output_file_vrt, s_srs=wgs84, t_srs=wgs84, cutline=getPolyFnamePath(ctryCode), cl= getCtryShpLyrName(ctryCode,0), multi=TRUE, wm=pkgOptions("gdalCacheMax"), wo=paste0("NUM_THREADS=", pkgOptions("numCores")))
-      
-      message("gdal_translate ", base::date())
+      gdalUtils::gdalwarp(srcfile=rstTmp, dstfile=output_file_vrt, s_srs=wgs84, t_srs=wgs84, cutline=getPolyFnamePath(ctryCode), cl= getCtryShpLyrName(ctryCode,0), multi=TRUE, wm=pkgOptions("gdalCacheMax"), wo=paste0("NUM_THREADS=", pkgOptions("numCores")), q = FALSE)
+
+      message("gdal_translate converting VRT to TIFF ", base::date())
       gdalUtils::gdal_translate(co = "compress=LZW", src_dataset = output_file_vrt, dst_dataset = getCtryRasterOutputFname(ctryCode, nlType, nlPeriod))
       
       message("Deleting the component rasters ", base::date())
