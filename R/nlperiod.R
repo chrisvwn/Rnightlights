@@ -207,6 +207,9 @@ validNlPeriod <- function(nlPeriod, nlType)
   if(!validNlType(nlType))
     stop("Invalid nlType")
   
+  if(length(nlPeriod) > 1)
+    return(FALSE)
+  
   nlPeriod <- as.character(nlPeriod)
   nlType <- as.character(nlType)
   
