@@ -92,7 +92,7 @@ alignCenter <- function(el) {
     shinydashboard::dashboardSidebar(
       shinydashboard::sidebarMenu(
       
-        shinydashboard::menuItem("inputs", selected = TRUE,
+        #shinydashboard::menuItem("inputs", selected = TRUE,
                  
                  shiny::selectizeInput(inputId = "countries",
                                 label = "Select Country(ies)",
@@ -100,14 +100,10 @@ alignCenter <- function(el) {
                                 multiple = TRUE
                  ),
                  
-                 shiny::radioButtons(inputId = "nltype", 
-                                     label = "NL Type",
-                                     choices = c("OLS","VIIRS"),
-                                     selected = "OLS",
-                                     inline = T
-                                      ),
+
+                 shiny::uiOutput("nlType"),
                  
-                 shiny::uiOutput("radioStats"),
+                 shiny::uiOutput("ctryStats"),
                  
                  shiny::uiOutput(outputId = "intraCountry"),
                  
@@ -131,25 +127,25 @@ alignCenter <- function(el) {
                                         choices = c("norm_area", "scale_x_log", "scale_y_log")
                           )
                 )
-        ),
+        )#,
         
-        shinydashboard::menuItem("plots", tabName = "plots"),
-        
-        shinydashboard::menuItem("maps", tabName = "maps"),
-        
-        shinydashboard::menuItem("stats", tabName = "stats"),
-        
-        shinydashboard::menuItem("models", tabName = "models"),
-        
-        shinydashboard::menuItem("data", tabName = "data")
-        )
+        # shinydashboard::menuItem("plots", tabName = "plots"),
+        # 
+        # shinydashboard::menuItem("maps", tabName = "maps"),
+        # 
+        # shinydashboard::menuItem("stats", tabName = "stats"),
+        # 
+        # shinydashboard::menuItem("models", tabName = "models"),
+        # 
+        # shinydashboard::menuItem("data", tabName = "data")
+        #)
       ),
 
       # body
       shinydashboard::dashboardBody(
         shinydashboard::tabBox(width = 12,
           shiny::tabPanel(title = "plots",
-                   plotly::plotlyOutput(outputId = "plotNightLights", height = "80%"),
+                   plotly::plotlyOutput(outputId = "plotNightLights"),
                    
                    shiny::uiOutput("sliderNlYearMonthRange")
                    ),

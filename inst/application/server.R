@@ -75,7 +75,7 @@ if (!requireNamespace("rgdal", quietly = TRUE))
 
 if (!requireNamespace("Rnightlights", quietly = TRUE))
 {
-  missingPkgs <- c(missingPkgs, "rstudio/DT")
+  missingPkgs <- c(missingPkgs, "Rnightlights")
 }
 
 if(!is.null(missingPkgs))
@@ -130,30 +130,102 @@ shiny::shinyServer(function(input, output, session){
       
       data <- data.table::fread(Rnightlights::getCtryNlDataFnamePath(countries), colClasses = colClasses, header = T)
     })
+  
+  ######################## reactive ctryNlTypes ###################################
+  
+  ctryNlTypes <- shiny::reactive({
+    #print(paste0("here: ctryNlTypes"))
     
+    countries <- input$countries
+    
+    if (length(countries) < 1)
+     return()
+    
+    #temp <- data.table::fread(Rnightlights::getCtryNlDataFnamePath(input$countries), nrows = 1, header = T)
+    
+    #temp <- ctryNlData()
+    
+    nlTypes <- NULL
+    
+    if (length(countries) == 1)
+    {
+      hdrs <- data.table::fread(Rnightlights::getCtryNlDataFnamePath(countries), nrows = 1, header = T)
+      
+      cols <- grep(pattern = "NL_", x = names(hdrs), value = T)
+      
+      nlTypes <- list(unique(sapply(cols, function(x)unlist(strsplit(x, "_"))[2])))
+    }
+    else if(length(countries) > 1) #remove subcountry admin levels
+    {
+      for (ctryCode in countries)
+      {
+        hdrs <- data.table::fread(Rnightlights::getCtryNlDataFnamePath(ctryCode), nrows = 1, header = T)
+        
+        cols <- grep(pattern = "NL_", x = names(hdrs), value = T)
+        
+        temp <- list(unique(sapply(cols, function(x)unlist(strsplit(x, "_"))[2])))
+        
+        nlTypes <- c(nlTypes, temp)
+      }
+    }
+    
+    if(is.null(nlTypes))
+      return(NULL)
+    
+    if(length(nlTypes) == 1)
+      nlTypes <- unlist(nlTypes)
+    else
+      nlTypes <- unlist(Reduce(intersect, nlTypes))
+
+    return(nlTypes)
+  })
+  
   ######################## reactive ctryDataStats ###################################
   
   ctryDataStats <- shiny::reactive({
     #print(paste0("here: ctryDataStats"))
+    #print(paste0("here: ctryNlTypes"))
     
-    # if (length(input$countries) != 1)
-    #   return()
+    countries <- input$countries
     
-    #temp <- data.table::fread(Rnightlights::getCtryNlDataFnamePath(input$countries), nrows = 1, header = T)
+    if (length(countries) < 1)
+      return()
     
-    temp <- ctryNlData()
+    nlStats <- NULL
     
-    if(is.null(temp))
+    if (length(countries) == 1)
+    {
+      hdrs <- data.table::fread(Rnightlights::getCtryNlDataFnamePath(countries), nrows = 1, header = T)
+      
+      cols <- grep(pattern = "NL_", x = names(hdrs), value = T)
+      
+      nlStats <- list(unique(gsub(".*._.*._.*._", "", cols)))
+    }
+    else if(length(countries) > 1) #remove subcountry admin levels
+    {
+      for (ctryCode in countries)
+      {
+        hdrs <- data.table::fread(Rnightlights::getCtryNlDataFnamePath(ctryCode), nrows = 1, header = T)
+        
+        cols <- grep(pattern = "NL_", x = names(hdrs), value = T)
+        
+        temp <- list(unique(gsub(".*._.*._.*._", "", cols)))
+        
+        nlStats <- c(nlStats, temp)
+      }
+    }
+    
+    if(is.null(nlStats))
       return(NULL)
     
-    cols <- names(temp)
-    
-    cols <- cols[grep("NL_", cols)]
-    
-    stats <- unique(gsub(".*._.*._.*._", "", cols))
-    
-    
+    if(length(nlStats) == 1)
+      nlStats <- unlist(nlStats)
+    else
+      nlStats <- unlist(Reduce(intersect, nlStats))
+
+    return(nlStats)
   })
+  
   
   ######################## reactive ctryNlData ###################################
   
@@ -162,9 +234,9 @@ shiny::shinyServer(function(input, output, session){
       input$btnGo
       
       countries <- shiny::isolate(input$countries)
-      nlType <- shiny::isolate(input$nltype)
+      nlType <- shiny::isolate(input$nlType)
       
-      if (length(countries)<1)
+      if (length(countries) < 1)
         return(NULL)
       
       ctryData <- NULL
@@ -232,18 +304,18 @@ shiny::shinyServer(function(input, output, session){
       #combine the non-nightlight cols and the cols with the stats we want
       ctryData <- subset(ctryData, select=c(ctryDataCols, meltMeasureVars))
 
-      #
+      #remove non-digits to get only stat cols
       meltVarNames <- gsub("[^[:digit:]]", "", meltMeasureVars)
       
       ctryData <- data.table::data.table(reshape2::melt(ctryData, measure.vars=meltMeasureVars))
 
-      if(input$nltype == "OLS")
+      if(input$nlType == "OLS")
       {
         ctryData$variable <- paste0(gsub("[^[:digit:]]","", ctryData$variable))
         
         ctryData$variable <- as.numeric(ctryData$variable)
       }
-      else if(input$nltype == "VIIRS")
+      else if(input$nlType == "VIIRS")
       {
         ctryData$variable <- paste0(gsub("[^[:digit:]]","", ctryData$variable),"01")
       
@@ -253,9 +325,9 @@ shiny::shinyServer(function(input, output, session){
       return(ctryData)
     })
 
-  ######################## renderUI radioStats ###################################
+  ######################## renderUI ctryStats ###################################
     
-    output$radioStats <- shiny::renderUI({
+    output$ctryStats <- shiny::renderUI({
       # if(length(input$countries) != 1)
       #   return()
       
@@ -264,12 +336,37 @@ shiny::shinyServer(function(input, output, session){
       if(is.null(ctryDtStats))
         return(NULL)
       
+      if(!is.null(input$ctryStats))
+        chosenStat <- input$ctryStats
+      else
+        chosenStat <- NULL
+      
       shiny::radioButtons(inputId = "ctryStat",
                           label = "Stats",
                           choices = ctryDtStats,
-                          inline = TRUE
+                          inline = TRUE,
+                          selected = chosenStat
       )
     })
+  
+  
+  ######################## renderUI nlType ###################################
+  
+  output$nlType <- shiny::renderUI({
+    if(length(input$countries) < 1)
+      return()
+    
+    nlTypes <- ctryNlTypes()
+    
+    if(is.null(nlTypes))
+      return(NULL)
+    
+    shiny::radioButtons(inputId = "nlType",
+                        label = "NL Type",
+                        choices = nlTypes,
+                        inline = TRUE
+    )
+  })
   
   ######################## reactiveValues values ###################################
   
@@ -540,7 +637,7 @@ shiny::shinyServer(function(input, output, session){
         minDate <- min(ctryData$variable)
         maxDate <- max(ctryData$variable)
        
-        if(input$nltype == "OLS")  
+        if(input$nlType == "OLS")  
           shiny::sliderInput(inputId = "nlYearMonth",
                     label = "Time",
                     min = minDate,
@@ -551,7 +648,7 @@ shiny::shinyServer(function(input, output, session){
                     value = minDate,
                     animate = animationOptions(interval = 10000, loop = FALSE, playButton = "Play", pauseButton = NULL)
         )
-        else if(input$nltype == "VIIRS")  
+        else if(input$nlType == "VIIRS")  
           shiny::sliderInput(inputId = "nlYearMonth",
                              label = "Time",
                              min = minDate,
@@ -827,7 +924,7 @@ shiny::shinyServer(function(input, output, session){
         ctryDataTS <- stats::ts(ctryAvg$value, start = c(startYear,startMonth), end = c(endYear,endMonth), frequency = 12)
 
         ctryDataTScomponents <- stats::decompose(ctryDataTS)
-        g <- ggplot2::autoplot(ctryDataTScomponents)
+        #g <- ggplot2::autoplot(ctryDataTScomponents)
         
         graphics::plot(ctryDataTScomponents)
       })
@@ -915,7 +1012,7 @@ shiny::shinyServer(function(input, output, session){
             }
             else
             {
-              g <- ggplot2::ggplot(data=ctryData, aes(x=factor(variable), y=value, col=country)) + ggplot2::theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) + ggplot2::labs(col=admLevel)
+              g <- ggplot2::ggplot(data=ctryData, aes(x=factor(variable), y=value, col=country)) + ggplot2::theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) + ggplot2::facet_grid(facets = year(variable) ~ month(variable)) + ggplot2::labs(col=admLevel)
             }
             
             g <- g + ggplot2::geom_boxplot()# +facet_grid(.~variable)
@@ -979,7 +1076,7 @@ shiny::shinyServer(function(input, output, session){
       scale <- input$scale
       nlYearMonthRange <- input$nlYearMonthRange
       graphType <- input$graphType
-      nlType <- shiny::isolate(input$nltype)
+      nlType <- shiny::isolate(input$nlType)
       
       ctryData <- ctryNlDataMelted()
 
@@ -1164,7 +1261,7 @@ shiny::shinyServer(function(input, output, session){
       nlYearMonth <- input$nlYearMonth
       admLevel <- shiny::isolate(input$admLevel)
       scale <- input$scale
-      nlType <- input$nltype
+      nlType <- input$nlType
       
       shiny::isolate({      
       if (is.null(countries) || is.null(nlYearMonth) || is.null(admLevel))
@@ -1213,7 +1310,7 @@ shiny::shinyServer(function(input, output, session){
       
       #get our data ready to match with polygons
       #subset data based on level selections
-      if(nlType == "OLS")
+      if(nlType == "OLS") 
         ctryData <- subset(ctryData, variable == nlYm)
       else if(nlType == "VIIRS")
         ctryData <- subset(ctryData, lubridate::year(variable) == lubridate::year(nlYm) & lubridate::month(variable) == lubridate::month(nlYm))
