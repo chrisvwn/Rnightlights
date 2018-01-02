@@ -381,9 +381,9 @@ getCtryRasterOutputFname <- function(ctryCode, nlType, nlPeriod)
 #' 
 #' @param ctryCodes the list of countries to be processed
 #'
-#' @param nlPeriods the nlPeriods of interest
-#'
 #' @param nlType the type of nightlights to process i.e. "OLS" or "VIIRS". Default "VIIRS"
+#' 
+#' @param nlPeriods the nlPeriods of interest
 #' 
 #' @param nlStats the statistics to calculate. If not provided will calculate the stats specified 
 #'     in \code{pkgOptions("nlStats")}
@@ -449,7 +449,7 @@ getCtryRasterOutputFname <- function(ctryCode, nlType, nlPeriod)
 #'     #R CMD BATCH script_name_2014.R
 #'     }
 #' @export
-processNlData <- function (ctryCodes=getAllNlCtryCodes("all"), nlPeriods=getAllNlPeriods(nlType), nlType="VIIRS", nlStats=pkgOptions("nlStats"))
+processNlData <- function (ctryCodes=getAllNlCtryCodes("all"), nlType="VIIRS", nlPeriods=getAllNlPeriods(nlType), nlStats=pkgOptions("nlStats"))
 {
   #if the period is not given process all available periods
   if(missing("nlPeriods") || is.null(nlPeriods) || length(nlPeriods) == 0 || nlPeriods == "")
