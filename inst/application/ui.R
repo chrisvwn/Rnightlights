@@ -99,7 +99,8 @@ alignCenter <- function(el) {
                                 choices = ctryCodesWithData,
                                 multiple = TRUE
                  ),
-                 
+
+                 shiny::actionButton("btnGo", "LOAD"),                 
 
                  shiny::uiOutput("nlType"),
                  
@@ -108,8 +109,6 @@ alignCenter <- function(el) {
                  shiny::uiOutput(outputId = "intraCountry"),
                  
                  shiny::uiOutput("intraCountry1"),
-
-                 shiny::actionButton("btnGo", "Go"),
 
 #                 actionButton("btnIntraCtry", "Done"),
                  
