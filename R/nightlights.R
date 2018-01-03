@@ -279,14 +279,18 @@ processNLCountry <- function(ctryCode, nlType, nlPeriod, cropMaskMethod=pkgOptio
   
   message("Create web version of raster", base::date())
   
-  #attempting to obtain QGIS display style grayscale stretch minmax of 2%-98% of values
-  #message("calculating quantile 2 and 98 ", base::date())
-  #system.time(qnts <- sapply(1:1000,FUN =  function(x) quantile(sampleRandom(ctryRastCropped,100), c(0.02,0.98)),simplify = T))
+  #gdal_translate -co COMPRESS=JPEG -co PHOTOMETRIC=YCBCR -co TILED=YES 5255C.tif 5255C_JPEG_YCBCR.tif
   
-  #qnt2 <- mean(qnts[1,])
-  #qnt98 <- mean(qnts[2,])
+  #gdalUtils::gdal_translate(src_dataset = rastFilename,
+  #                          dst_dataset = rastWebFilename,
+  #                          co = "COMPRESS=JPEG PHOTOMETRIC=YCBCR TILED=YES")
   
-  #cmd <- paste0("gdal_translate -co TILED=YES -co COMPRESS=JPEG -ot Byte -scale ", qnt2, " ", qnt98," 0 255 ", getCtryRasterOutputFname(ctryCode,nlYearMonth), " ", dirRasterWeb, "/", ctryCode, "_", nlYearMonth, "_JPEG.tif")
+  #gdaladdo --config COMPRESS_OVERVIEW JPEG --config PHOTOMETRIC_OVERVIEW YCBCR 
+  #--config INTERLEAVE_OVERVIEW PIXEL -r average 5255C_JPEG_YCBCR.tif 2 4 8 16
+  
+  #rastWebFilename <- file.path(getNlDir("dirRasterWeb"), basename(rastFilename))
+  
+  #gdalUtils::gdaladdo(filename = rastWebFilename, r = "average", levels = c(2, 4, 8, 16))
   
   #message("Create web raster ", base::date())
   #system(cmd)
