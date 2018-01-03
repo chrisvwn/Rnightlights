@@ -190,14 +190,19 @@ shiny::shinyServer(function(input, output, session){
     
     if (length(countries) < 1)
       return()
+
+    nlType <- input$nlType
     
+    if(is.null(nlType))
+      return(NULL)
+        
     nlStats <- NULL
     
     if (length(countries) == 1)
     {
       hdrs <- data.table::fread(Rnightlights::getCtryNlDataFnamePath(countries), nrows = 1, header = T)
       
-      cols <- grep(pattern = "NL_", x = names(hdrs), value = T)
+      cols <- grep(pattern = paste0("NL_", nlType), x = names(hdrs), value = T)
       
       nlStats <- list(unique(gsub(".*._.*._.*._", "", cols)))
     }
@@ -207,7 +212,7 @@ shiny::shinyServer(function(input, output, session){
       {
         hdrs <- data.table::fread(Rnightlights::getCtryNlDataFnamePath(ctryCode), nrows = 1, header = T)
         
-        cols <- grep(pattern = "NL_", x = names(hdrs), value = T)
+        cols <- grep(pattern = paste0("NL_", nlType), x = names(hdrs), value = T)
         
         temp <- list(unique(gsub(".*._.*._.*._", "", cols)))
         
