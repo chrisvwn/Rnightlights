@@ -29,4 +29,8 @@ Initial release
 
 ####v0.1.5
 * Returned the VIIRS range to start in "201204" as it seems to have been a temporary problem.
-* Updated file extraction from downloaded tile tgz. Raster data has been reduced to 100 significant digits reducing tile sizes. Raster filename is now rade9h.tgz rather than rade9.tgz
+* Updated file extraction from downloaded tile tgz. Raster data has been reduced to 100 significant digits reducing tile sizes and filename changed. Raster filename now ends in "rade9h.tgz"" rather than "rade9.tgz"
+* Minor updates to the exploreData() shiny interface 
+* Changed the gdal calculation of zonal stats to use ff and ffbase packages to store large raster data to disk allowing accurate calculation of all stats
+* Changed the order of parameters in getCtryNlData and processNlData for consistency
+* 
