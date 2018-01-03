@@ -22,6 +22,8 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   
   dirZonals = "zonals",
   
+  dirNlTemp = "temp",
+  
   #downloadMethod used options: auto, aria, curl, libcurl, wget
   downloadMethod = "auto",
   

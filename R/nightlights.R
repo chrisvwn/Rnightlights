@@ -236,7 +236,7 @@ processNLCountry <- function(ctryCode, nlType, nlPeriod, cropMaskMethod=pkgOptio
       message("Crop and mask using gdalwarp ... ", base::date())
       
       #GDALWARP
-      rstTmp <- file.path(getNlDir("dirNlTiles"), paste0(basename(tempfile()), ".tif"))
+      rstTmp <- file.path(getNlDir("dirNlTemp"), paste0(basename(tempfile()), ".tif"))
       
       message("Writing merged raster to disk for gdalwarp masking", base::date())
       
@@ -246,7 +246,7 @@ processNLCountry <- function(ctryCode, nlType, nlPeriod, cropMaskMethod=pkgOptio
       
       gc()
       
-      output_file_vrt <- file.path(tempdir(), paste0(ctryCode, "_", nlType, "_", nlPeriod, ".vrt"), fsep = )
+      output_file_vrt <- file.path(getNlDir("dirNlTemp"), paste0(ctryCode, "_", nlType, "_", nlPeriod, ".vrt"), fsep = )
       
       if (file.exists(output_file_vrt))
         file.remove(output_file_vrt)

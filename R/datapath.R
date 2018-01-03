@@ -512,6 +512,9 @@ createNlDataDirs <- function()
   if(!dir.exists(getNlDir("dirRasterWeb")))
     dir.create(getNlDir("dirRasterWeb"))
   
+  if(!dir.exists(getNlDir("dirNlTemp")))
+    dir.create(getNlDir("dirNlTemp"))
+  
   if(!dir.exists(getNlDir("dirZonals")))
     dir.create(getNlDir("dirZonals"))
 }

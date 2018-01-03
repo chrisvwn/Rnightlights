@@ -63,7 +63,7 @@ validStat <- function(stat)
 #' @import data.table
 myZonal <- function (x, z, stats, digits = 0, na.rm = TRUE, ...)
 {
-  options(fftempdir=tempdir())
+  options(fftempdir=getNlDir("dirNlTemp"), fffinalizer="delete")
   
   #vreate the text for the functions
   fun <- paste0(sapply(stats, function(stat) paste0(stat,"=", stat, "(x, na.rm = TRUE)")), collapse = ", ")
@@ -76,33 +76,7 @@ myZonal <- function (x, z, stats, digits = 0, na.rm = TRUE, ...)
   zones <- NULL
   
   message("Reading in raster data")
-  
-  #create path names for the zone and raster ff files
-  zoneFnamePath <- file.path(tempdir(), "zone.ff")
-  
-  rastFnamePath <- file.path(tempdir(), "rast.ff")
-  
-  #remove any ff files if they exist from a previous run
-  if(file.exists(rastFnamePath) || file.exists(zoneFnamePath))
-  {
-    if(exists("rDT"))
-      rm(rDT)
-    
-    if(exists("vals"))
-      rm(vals)
-    
-    if(exists("zones"))
-      rm(zones)
-    
-    gc()
-    
-    if(file.exists(rastFnamePath))
-      file.remove(rastFnamePath)
-    
-    if(file.exists(zoneFnamePath))
-      file.remove(zoneFnamePath)
-  }
-  
+
   #the number of columns in the raster/zone file which are identical in size
   nc <- base::ncol(x)
   
@@ -137,8 +111,8 @@ myZonal <- function (x, z, stats, digits = 0, na.rm = TRUE, ...)
     #for first block init the ff to the given filename
     if (i == 1)
     {
-      vals <- ff::ff(initdata = rastVals, filename = rastFnamePath, overwrite = T)
-      zones <- ff::ff(initdata = zoneVals, filename = zoneFnamePath, overwrite = T)
+      vals <- ff::ff(initdata = rastVals, finalizer = "delete", overwrite = T)
+      zones <- ff::ff(initdata = zoneVals, finalizer = "delete", overwrite = T)
     } 
     else 
     {
@@ -182,28 +156,14 @@ myZonal <- function (x, z, stats, digits = 0, na.rm = TRUE, ...)
   #name the columns
   result <- stats::setNames(result, c("z", stats))
 
-  #remove the ff files
-  if(file.exists(rastFnamePath) || file.exists(zoneFnamePath))
-  {
-    if(exists("rDT"))
-      rm(rDT)
-    
-    if(exists("vals"))
-      rm(vals)
-    
-    if(exists("zones"))
-      rm(zones)
-    
-    gc()
-    
-    if(file.exists(rastFnamePath))
-      file.remove(rastFnamePath)
-
-    if(file.exists(zoneFnamePath))
-      file.remove(zoneFnamePath)
-  }
+  resultDF <- as.data.frame(result)
   
-  return(result)
+  ff::delete(rDT, result)
+  rm(rDT, result)
+
+  gc()
+
+  return(resultDF)
 }
 
 ######################## ZonalPipe ###################################
