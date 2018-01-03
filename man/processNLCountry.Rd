@@ -4,7 +4,7 @@
 \alias{processNLCountry}
 \title{Processes nightlights for an individual country in a particular nlPeriod}
 \usage{
-processNLCountry(ctryCode, nlPeriod, nlType,
+processNLCountry(ctryCode, nlType, nlPeriod,
   cropMaskMethod = pkgOptions("cropMaskMethod"),
   extractMethod = pkgOptions("extractMethod"),
   nlStats = pkgOptions("nlStats"))
@@ -12,9 +12,9 @@ processNLCountry(ctryCode, nlPeriod, nlType,
 \arguments{
 \item{ctryCode}{character string The ctryCode of interest}
 
-\item{nlPeriod}{character string The nlPeriod of interest}
-
 \item{nlType}{character string The nlType of interest}
+
+\item{nlPeriod}{character string The nlPeriod of interest}
 
 \item{cropMaskMethod}{("rast" or "gdal") Whether to use rasterize or gdal-based functions to 
 crop and mask the country rasters}

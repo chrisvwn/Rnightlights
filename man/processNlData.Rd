@@ -4,16 +4,15 @@
 \alias{processNlData}
 \title{Downloads nightlight tiles and country polygons and calls the function to process them}
 \usage{
-processNlData(ctryCodes = getAllNlCtryCodes("all"),
-  nlPeriods = getAllNlPeriods(nlType), nlType = "VIIRS",
-  nlStats = pkgOptions("nlStats"))
+processNlData(ctryCodes = getAllNlCtryCodes("all"), nlType = "VIIRS",
+  nlPeriods = getAllNlPeriods(nlType), nlStats = pkgOptions("nlStats"))
 }
 \arguments{
 \item{ctryCodes}{the list of countries to be processed}
 
-\item{nlPeriods}{the nlPeriods of interest}
-
 \item{nlType}{the type of nightlights to process i.e. "OLS" or "VIIRS". Default "VIIRS"}
+
+\item{nlPeriods}{the nlPeriods of interest}
 
 \item{nlStats}{the statistics to calculate. If not provided will calculate the stats specified 
 in \code{pkgOptions("nlStats")}}
