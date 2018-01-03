@@ -51,7 +51,7 @@ ctry <- "KEN" #replace to do for any other country
 lowestAdmLevelStats <- getCtryNlData(ctryCode = ctry, 
                                      nlType = "VIIRS", 
                                      nlPeriods = nlRange("201401", "201412"), 
-                                     stats = "sum",
+                                     nlStats = "sum",
                                      ignoreMissing=FALSE)
                                      
 #melt the stats into key-value format
