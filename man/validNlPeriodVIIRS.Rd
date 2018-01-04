@@ -16,13 +16,13 @@ TRUE/FALSE
 Check if a VIIRS nlYearMonth is valid Note this function is only valid for the "VIIRS" nightlight type
 }
 \examples{
-\dontrun{validNlPeriodVIIRS("201512")}
+Rnightlights:::validNlPeriodVIIRS("201512")
  #returns TRUE
 
-\dontrun{validNlPeriodVIIRS("201513")}
+Rnightlights:::validNlPeriodVIIRS("201513")
  #returns FALSE; invalid month 13
 
-\dontrun{validNlPeriodVIIRS("201401")}
- #returns FALSE #VIIRS starts in "201401"
+Rnightlights:::validNlPeriodVIIRS("201201")
+ #returns FALSE #VIIRS starts in "201204"
 
 }

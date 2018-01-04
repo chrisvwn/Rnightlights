@@ -17,7 +17,7 @@ Check if a tile number is valid for a given nightlight type. Note tile num is on
 "VIIRS" nightlight type
 }
 \examples{
-\donttest{validNlTileNameVIIRS("00N060W")}
+Rnightlights:::validNlTileNameVIIRS("00N060W")
  #returns TRUE
 
 }

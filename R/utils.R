@@ -18,9 +18,13 @@
 #'
 #' @examples
 #' 
-#' \dontrun{allValid(c("KE", "UGA", "RWA", "TZ"), validCtryCode)}
+#' \donttest{
+#' Rnightlights:::allValid(c("KEZ", "UGA", "RWA", "TZA"), Rnightlights:::validCtryCode)
+#' }
 #'  
-#' \dontrun{allValid(c("2012", "2015"), validNlPeriod, "OLS")}
+#' \donttest{
+#' Rnightlights:::allValid(c("2012", "2015"), validNlPeriod, "OLS")
+#' }
 #'
 allValid <- function(testData, testFun, ...)
 {
@@ -45,7 +49,9 @@ allValid <- function(testData, testFun, ...)
 #' @return TRUE/FALSE Success/Failure of the download
 #'
 #' @examples
-#' \dontrun{downloadCtryPoly("KEN")}
+#' \donttest{
+#' Rnightlights:::dnldCtryPoly("KEN")
+#' }
 #'
 dnldCtryPoly <- function(ctryCode)
 {
@@ -116,7 +122,9 @@ dnldCtryPoly <- function(ctryCode)
 #'
 #' @examples
 #'
-#'  \dontrun{nlInit()}
+#'  \dontrun{
+#'  Rnightlights:::nlInit()
+#'  }
 #'
 nlInit <- function(omitCountries="none")
 {
@@ -132,7 +140,9 @@ nlInit <- function(omitCountries="none")
 #' @return NULL
 #'
 #' @examples
-#'  \dontrun{nlCleanup()}
+#'  \dontrun{
+#'  Rnightlights:::nlCleanup()
+#'  }
 #'
 nlCleanup <- function()
 {
@@ -142,8 +152,8 @@ nlCleanup <- function()
   #the destructor
   
   #del temp dataPath directory if it was created
-  if(getNlDataPath() == tempdir())
-    unlink(file.path(tempdir(), ".Rnightlights"), recursive = TRUE, force = TRUE)
+  #if(getNlDataPath() == tempdir())
+  #  unlink(file.path(tempdir(), ".Rnightlights"), recursive = TRUE, force = TRUE)
 }
 
 ######################## getRastPercentiles ###################################

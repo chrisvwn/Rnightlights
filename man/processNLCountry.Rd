@@ -58,6 +58,8 @@ NOTE: \code{processNLCountry()} assumes that all inputs are available and will n
 
 #calculate only the sum of VIIRS radiances for Dec 2014 using gdal
 #for both cropMask and extraction for KEN
-\dontrun{processNLCountry("KEN", "201412", "VIIRS", "gdal", "gdal", "sum")}
+\dontrun{
+Rnightlights:::processNLCountry("KEN", "VIIRS", "201412", "gdal", "gdal", "sum")
+}
 
 }

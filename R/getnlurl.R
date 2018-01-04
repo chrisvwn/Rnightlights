@@ -9,7 +9,9 @@
 #' @return character string Url of the OLS tile file
 #'
 #' @examples
-#' \dontrun{tileUrl <- getNlUrlOLS("1999")}
+#' \dontrun{
+#' tileUrl <- Rnightlights:::getNlUrlOLS("1999")
+#' }
 #'
 getNlUrlOLS <- function(nlYear)
 {
@@ -80,7 +82,9 @@ getNlUrlOLS <- function(nlYear)
 #' @return Character string Url of the VIIRS tile file
 #'
 #' @examples
-#' \dontrun{tileUrl <- getNlUrlVIIRS("201401", "1")}
+#' \dontrun{
+#' tileUrl <- Rnightlights:::getNlUrlVIIRS("201401", "1")
+#' }
 #'
 getNlUrlVIIRS <- function(nlYearMonth, tileNum)
 {

@@ -16,7 +16,7 @@ TRUE/FALSE
 Check if the decompressed country polygon has been downloaded and stored in the polygon folder
 }
 \examples{
-\dontrun{existsPolyFnamePath("KEN")}
+Rnightlights:::existsPolyFnamePath("KEN")
  #returns TRUE/FALSE
 
 }

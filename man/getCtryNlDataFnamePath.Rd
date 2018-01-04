@@ -2,7 +2,7 @@
 % Please edit documentation in R/ctrynldata.R
 \name{getCtryNlDataFnamePath}
 \alias{getCtryNlDataFnamePath}
-\title{Get the full path to the file containing the country data}
+\title{Construct the full path to save the file containing the country data}
 \usage{
 getCtryNlDataFnamePath(ctryCode)
 }
@@ -13,16 +13,15 @@ getCtryNlDataFnamePath(ctryCode)
 Character string the full path to the data file of a country
 }
 \description{
-Get the full path to the file containing the country data
+Construct the full path to save the file containing the country data. Note
+    it does not indicate if the file exists
 }
 \examples{
 #get the full path to the file containing data for KEN
 getCtryNlDataFnamePath("KEN")
 
-\dontrun{
-ctryDF <- read.csv(getCtryNlDataFnamePath("KEN"))
- #returns DF with nightlight data for the country
- }
+Rnightlights:::getCtryNlDataFnamePath("KEN")
+ #returns full path of the nightlight data file for the country
 
 #@export only due to exploreData() shiny app
 }

@@ -14,11 +14,15 @@
 #' @return a character string filename of the compressed .tgz VIIRS tile
 #'
 #' @examples
-#' \dontrun{getNlTileZipLclNamePath("VIIRS", "201401", "1")}
+#' \dontrun{
+#' Rnightlights:::getNlTileZipLclNamePath("VIIRS", "201401", 1)
 #'  #returns "/dataPath/VIIRS_2014_01_75N180W.tgz"
+#'  }
 #'  
-#' \dontrun{getNlTileZipLclNamePath("OLS", "2004", "1")}
-#'  #returns "/dataPath/OLS_2004.tgz"
+#' \dontrun{
+#' Rnightlights:::getNlTileZipLclNamePath("OLS", "2004", 1)
+#'  #returns "/dataPath/OLS_2004_00N180W.tar"
+#'  }
 #'
 getNlTileZipLclNamePath <- function(nlType, nlPeriod, tileNum)
 {
@@ -59,8 +63,10 @@ getNlTileZipLclNamePath <- function(nlType, nlPeriod, tileNum)
 #' @return A character string filename of the compressed .tgz VIIRS tile
 #'
 #' @examples
-#' \dontrun{getNlTileZipLclNameVIIRS("201401", "1")}
+#' \dontrun{
+#' Rnightlights:::getNlTileZipLclNameVIIRS("201401", 1)
 #'  #returns "./tiles/VIIRS_2014_01_75N180W.tgz"
+#'  }
 #'
 getNlTileZipLclNameVIIRS <- function(nlYearMonth, tileNum)
 {
@@ -98,11 +104,15 @@ getNlTileZipLclNameVIIRS <- function(nlYearMonth, tileNum)
 #' @return a character string filename of the compressed .tgz VIIRS tile
 #'
 #' @examples
-#' \dontrun{getNlTileZipLclNamePath("OLS", "2014")}
-#'  #returns "/dataPath/ols_2014_01.tgz"
+#' \dontrun{
+#' Rnightlights:::getNlTileZipLclNamePath("OLS", "2012", 1)
+#'  #returns "/dataPath/ols_2012_00N180W.tgz"
+#'  }
 #'
-#' \dontrun{getNlTileZipLclNamePath("VIIRS", "201412", "1")}
-#'  #returns "/dataPath/viirs_2014_12_75N180W.tgz"
+#' \dontrun{
+#' Rnightlights:::getNlTileZipLclNamePath("VIIRS", "201412", 1)
+#'  #returns "/dataPath/viirs_201412_75N180W.tgz"
+#'  }
 #'  
 getNlTileTifLclNamePath <- function(nlType, nlPeriod, tileNum)
 {
@@ -144,8 +154,10 @@ getNlTileTifLclNamePath <- function(nlType, nlPeriod, tileNum)
 #'
 #' @examples
 #' #using default dirNlTiles
-#' \dontrun{getNlTileTifLclNameVIIRS("201401", "1")}
+#' \dontrun{
+#' Rnightlights:::getNlTileTifLclNameVIIRS("201401", 1)
 #'  #returns "VIIRS_201401_75N180W.tif"
+#'  }
 #'
 getNlTileTifLclNameVIIRS <- function(nlYearMonth, tileNum)
 {
@@ -176,8 +188,10 @@ getNlTileTifLclNameVIIRS <- function(nlYearMonth, tileNum)
 #'
 #' @examples
 #' #using default dirNlTiles
-#' \dontrun{getNlTileTifLclNameVIIRS("2004")}
+#' \dontrun{
+#' Rnightlights:::getNlTileTifLclNameOLS("2004")
 #'  #returns "OLS_2004_00N180W.tif"
+#'  }
 #'
 getNlTileTifLclNameOLS <- function(nlYear)
 {
@@ -204,8 +218,10 @@ getNlTileTifLclNameOLS <- function(nlYear)
 #'
 #' @examples
 #' #using default dirNlTiles
-#' \dontrun{getNlTileTifLclNamePathVIIRS("201401", "1")}
+#' \dontrun{
+#' Rnightlights:::getNlTileTifLclNamePathVIIRS("201401", 1)
 #'  #returns "/dataPath/tiles/VIIRS_2014_01_75N180W.tif"
+#'  }
 #'
 getNlTileTifLclNamePathVIIRS <- function(nlYearMonth, tileNum)
 {
@@ -240,8 +256,10 @@ getNlTileTifLclNamePathVIIRS <- function(nlYearMonth, tileNum)
 #'
 #' @examples
 #' #using default dirNlTiles
-#' \dontrun{getNlTileTifLclNamePathOLS("2014", "1")}
-#'  #returns "/dataPath/tiles/OLS_2014.tif"
+#' \dontrun{
+#' Rnightlights:::getNlTileTifLclNamePathOLS("2012", 1)
+#'  #returns "/dataPath/tiles/OLS_2012.tif"
+#'  }
 #'
 getNlTileTifLclNamePathOLS <- function(nlYear, tileNum)
 {
@@ -267,7 +285,10 @@ getNlTileTifLclNamePathOLS <- function(nlYear, tileNum)
 #' @return character string filename
 #'
 #' @examples
-#' \dontrun{getNlTileZipLclNameOLS("2012")}
+#' \dontrun{
+#' Rnightlights:::getNlTileZipLclNameOLS("2012")
+#' #returns "OLS_2012_00N180W.tar"
+#' }
 #'
 getNlTileZipLclNameOLS <- function(nlYear)
 {
@@ -292,9 +313,10 @@ getNlTileZipLclNameOLS <- function(nlYear)
 #'
 #' @examples
 #' #using default dirNlTiles
-#' \dontrun{getNlTifLclNameOLS("2004")}
+#' \dontrun{
+#' Rnightlights:::getNlTifLclNameOLS("2004")
 #'  #returns "OLS_2004.tif"
-#'
+#'  }
 #'
 getNlTifLclNameOLS <- function(nlYear)
 {

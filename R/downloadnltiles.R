@@ -14,7 +14,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' if(downloadNlTilesVIIRS("201401", "1"))
+#' if(Rnightlights:::downloadNlTilesVIIRS("201401", "1"))
 #'   print("download successful")
 #'   }
 #'
@@ -120,7 +120,7 @@ downloadNlTilesVIIRS <- function(nlYearMonth, tileNum, downloadMethod=pkgOptions
 #'
 #' @examples
 #' \dontrun{
-#' if(downloadNlTilesOLS("201405"))
+#' if(Rnightlights:::downloadNlTilesOLS("201405"))
 #'   print("download successful")
 #'   }
 #'

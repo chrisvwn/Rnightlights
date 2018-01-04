@@ -21,10 +21,8 @@ Construct the name of a nightlight data column given the nightlight type and nlP
     creating and retrieving data columns from the nightlight data file
 }
 \examples{
-\dontrun{
-ctryCode <- "KEN"
-dt <- read.csv(getCtryNlDataFnamePath(ctryCode))
-dt <- dt[,getCtryNlDataColName("201612", "sum", nlType="VIIRS")]
-  #returns the column "NL_201612_SUM" if it exists in the KEN data file
-  }
+
+Rnightlights:::getCtryNlDataColName("201612", "sum", nlType="VIIRS")
+  #returns the character string "NL_VIIRS_201612_SUM"
+  
 }

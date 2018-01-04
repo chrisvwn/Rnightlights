@@ -18,12 +18,18 @@ This is simply another name for mapCtryPolyToTilesVIIRS with ctryCodes="all"
 }
 \examples{
 #no countries omitted
-\dontrun{mapAllCtryPolyToTilesVIIRS()}
+\dontrun{
+tileMap <- Rnightlights:::mapAllCtryPolyToTilesVIIRS()
+}
 
 #no countries omitted
-\dontrun{mapAllCtryPolyToTilesVIIRS(omitCountries="none")}
+\dontrun{
+tileMap <- Rnightlights:::mapAllCtryPolyToTilesVIIRS(omitCountries="none")
+}
 
 #include countries that take long to process
-\dontrun{mapAllCtryPolyToTilesVIIRS(omitCountries=c("error", "long"))}
+\dontrun{
+tileMap <- Rnightlights:::mapAllCtryPolyToTilesVIIRS(omitCountries=c("error", "long"))
+}
 
 }

@@ -22,7 +22,7 @@ Download VIIRS nightlight tile
 }
 \examples{
 \dontrun{
-if(downloadNlTilesVIIRS("201401", "1"))
+if(Rnightlights:::downloadNlTilesVIIRS("201401", "1"))
   print("download successful")
   }
 

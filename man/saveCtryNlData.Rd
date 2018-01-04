@@ -21,6 +21,8 @@ Saves the data frame created from processNlCountry* to the appropriate location.
 }
 \examples{
 
-\dontrun{saveCtryNlData(ctryNlDataDF, ctryCode)}
+\dontrun{
+Rnightlights:::saveCtryNlData(ctryNlDataDF, ctryCode)
+}
 
 }

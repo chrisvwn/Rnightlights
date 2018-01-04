@@ -21,10 +21,14 @@ Delete an aggregate nightlight data column in a country nightlights dataframe. T
 }
 \examples{
 
-\dontrun{ctryNlDataDF <- Rnightlights::deleteNlDataCol(ctryNlDataDF, 
-     "VIIRS", "201409", "sum")}
+\dontrun{
+ctryNlDataDF <- Rnightlights:::deleteNlDataCol(ctryNlDataDF, 
+     "VIIRS", "201409", "sum")
+     }
 
-\dontrun{Rnightlights::deleteNlDataCol(ctryNlDataDF, 
-    "OLS", "2012", "mean")}
+\dontrun{
+Rnightlights:::deleteNlDataCol(ctryNlDataDF, 
+    "OLS", "2012", "mean")
+    }
 
 }

@@ -16,6 +16,8 @@ character string Url of the OLS tile file
 Function to return the url of the OLS tile to download given the year
 }
 \examples{
-\dontrun{tileUrl <- getNlUrlOLS("1999")}
+\dontrun{
+tileUrl <- Rnightlights:::getNlUrlOLS("1999")
+}
 
 }

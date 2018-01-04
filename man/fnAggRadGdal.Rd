@@ -4,29 +4,36 @@
 \alias{fnAggRadGdal}
 \title{Calculate zonal statistics using GDAL. Faster than fnAggRadRast for large polygons.}
 \usage{
-fnAggRadGdal(ctryCode, ctryPoly, nlPeriod, fnStats = pkgOptions("stats"),
-  nlType)
+fnAggRadGdal(ctryCode, ctryPoly, nlType, nlPeriod,
+  nlStats = pkgOptions("nlStats"))
 }
 \arguments{
 \item{ctryCode}{character string the ISO3 country code to be processed}
 
 \item{ctryPoly}{Polygon the loaded country polygon layer}
 
+\item{nlType}{the nlType of interest}
+
 \item{nlPeriod}{character string the nlPeriod to be processed}
 
-\item{fnStats}{character vector The stats to calculate}
-
-\item{nlType}{the nlType of interest}
+\item{nlStats}{character vector The stats to calculate}
 }
 \value{
-data.frame of polygon attributes and the calculated stats
+data.frame of polygon attributes and the calculated stats, one column per stat
 }
 \description{
 Calculate zonal statistics. Alternative to fnAggRadRast using GDAL. Faster for large polygons. 
     Modified from \url{http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/}
 }
 \examples{
-\dontrun{validNlMonthNum("01","VIIRS")}
- #returns TRUE
+#read the Kenya polygon downloaded from GADM and load the lowest admin level (ward)
+\dontrun{
+ctryPoly <- rgdal::readOGR(Rnightlights:::getPolyFnamePath(ctryCode="KEN"), 
+    Rnightlights:::getCtryShpLowestLyrName(ctryCode="KEN"))
+    
+#calculate the sum of radiances for the wards in Kenya
+sumAvgRadRast <- Rnightlights:::fnAggRadGdal(ctryCode="KEN", ctryPoly=ctryPoly,
+    nlType="VIIRS", nlPeriod="201401", nlStats=c("sum","mean"))
+}
 
 }

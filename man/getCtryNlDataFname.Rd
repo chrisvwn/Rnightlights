@@ -20,7 +20,7 @@ Get the name of the data file. This function can be altered to name the file as
 }
 \examples{
 ctryCode <- "KEN"
-\dontrun{getCtryNlDataFname(ctryCode)}
- #returns name of the ctry data file
+Rnightlights:::getCtryNlDataFname(ctryCode)
+#returns string of name of the ctry data file
 
 }

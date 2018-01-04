@@ -17,8 +17,9 @@ Constructs the filename used to save/access the decompressed OLS .tif file
 }
 \examples{
 #using default dirNlTiles
-\dontrun{getNlTifLclNameOLS("2004")}
+\dontrun{
+Rnightlights:::getNlTifLclNameOLS("2004")
  #returns "OLS_2004.tif"
-
+ }
 
 }

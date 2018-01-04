@@ -17,10 +17,10 @@ Check if a tile number is valid for a given nightlight type. Note tile num is on
 "VIIRS" nightlight type
 }
 \examples{
-\donttest{validNlTileNumVIIRS("1")}
+Rnightlights:::validNlTileNumVIIRS("1")
  #returns TRUE
 
-\donttest{validNlTileNumVIIRS("9")}
+Rnightlights:::validNlTileNumVIIRS("9")
  #returns FALSE
 
 }

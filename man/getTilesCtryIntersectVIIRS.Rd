@@ -23,6 +23,8 @@ Create a dataframe mapping each country in the rworldmap to the VIIRS
 }
 \examples{
 
-\donttest{getTilesCtryIntersectVIIRS("KEN")}
+\dontrun{
+Rnightlights:::getTilesCtryIntersectVIIRS("KEN")
+}
 
 }

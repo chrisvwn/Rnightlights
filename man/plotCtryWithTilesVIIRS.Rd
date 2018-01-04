@@ -27,9 +27,9 @@ Plot a country polygon as defined in the \pkg{rworldmap} package along with the 
 plotCtryWithTilesVIIRS("KEN")
 
 #by index in rworldmap
-\donttest{plotCtryWithTilesVIIRS(115)}
+plotCtryWithTilesVIIRS(115)
 
 #by index passed as char string
-\donttest{plotCtryWithTilesVIIRS("24")}
+plotCtryWithTilesVIIRS("24")
 
 }

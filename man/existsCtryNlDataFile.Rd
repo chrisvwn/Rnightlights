@@ -16,10 +16,9 @@ TRUE/FALSE
 Check if a country's data file exists
 }
 \examples{
-\dontrun{
 ctryCode <- "KEN"
-if(existsCtryNlDataFile(ctryCode))
- message("Data file for ", ctryCode, " found")
- }
+message("Data file for ", ctryCode, 
+    ifelse(Rnightlights:::existsCtryNlDataFile(ctryCode), 
+        " FOUND", " NOT FOUND"))
 
 }

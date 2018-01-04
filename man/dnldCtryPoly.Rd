@@ -16,6 +16,8 @@ TRUE/FALSE Success/Failure of the download
 Download a country's polygon shapefile from \url{http://gadm.org}
 }
 \examples{
-\dontrun{downloadCtryPoly("KEN")}
+\dontrun{
+Rnightlights:::dnldCtryPoly("KEN")
+}
 
 }

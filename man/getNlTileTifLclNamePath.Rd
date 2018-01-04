@@ -20,10 +20,14 @@ a character string filename of the compressed .tgz VIIRS tile
 Constructs the full path used to save/access the downloaded tile .tgz file
 }
 \examples{
-\dontrun{getNlTileZipLclNamePath("OLS", "2014")}
- #returns "/dataPath/ols_2014_01.tgz"
+\dontrun{
+Rnightlights:::getNlTileZipLclNamePath("OLS", "2012", 1)
+ #returns "/dataPath/ols_2012_00N180W.tgz"
+ }
 
-\dontrun{getNlTileZipLclNamePath("VIIRS", "201412", "1")}
- #returns "/dataPath/viirs_2014_12_75N180W.tgz"
+\dontrun{
+Rnightlights:::getNlTileZipLclNamePath("VIIRS", "201412", 1)
+ #returns "/dataPath/viirs_201412_75N180W.tgz"
+ }
  
 }

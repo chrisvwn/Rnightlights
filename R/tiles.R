@@ -18,16 +18,20 @@
 #' @examples
 #' #download VIIRS tiles for "KEN" which are tiles 2 and 5 for the specified
 #'     #time periods
-#' \dontrun{downloadNlTiles("VIIRS", "201401", c(2, 5))}
+#' \dontrun{
+#' Rnightlights:::downloadNlTiles("VIIRS", "201401", c(2, 5))
+#' }
 #'
 #' #same as above but getting the tileList automatically
 #' \dontrun{
-#' downloadNlTiles("VIIRS", "201401", 
-#'     tileName2Idx(getCtryTileList(ctryCodes="KEN", 
-#'     nlType="VIIRS")))
-#'     }
+#' Rnightlights:::downloadNlTiles(nlType="VIIRS", 
+#'     nlPeriod="201401", 
+#'     tileList=Rnightlights:::getCtryTileList(ctryCodes="KEN", 
+#'         nlType="VIIRS")
+#' )
+#' }
 #' 
-#' #returns TRUE if the download was successful
+#' #returns TRUE if the download was successful or tile is cached locally
 #'
 downloadNlTiles <- function(nlType, nlPeriod, tileList)
 {
@@ -92,12 +96,13 @@ downloadNlTiles <- function(nlType, nlPeriod, tileList)
 #' @return TRUE/FALSE
 #'
 #' @examples
-#' \dontrun{
-#' getCtryTileList(ctryCodes=c("BUR", "KEN", "RWA", "UGA", "TZA"), 
+#' Rnightlights:::getCtryTileList(ctryCodes=c("BDI", "KEN", "RWA", "TZA", "UGA"), 
 #'     nlType="VIIRS", omitCountries="none")
 #' 
-#' getCtryTileList(ctryCodes="all", nlType="OLS", omitCountries="long")
-#' }
+#' #only 1 tile for OLS
+#' Rnightlights:::getCtryTileList(ctryCodes=c("BDI", "KEN", "RWA", "TZA", "UGA"), 
+#'     nlType="OLS", omitCountries="none")
+#'     #returns "DUMMY"
 #'
 getCtryTileList <- function(ctryCodes, nlType, omitCountries="none")
 {
@@ -135,9 +140,9 @@ getCtryTileList <- function(ctryCodes, nlType, omitCountries="none")
 #' @return A data.frame of names of tiles and lon-lat coordinate of top-left corner of each
 #'
 #' @examples
-#' \dontrun{getNlTiles("VIIRS")}
+#' Rnightlights:::getNlTiles("VIIRS")
 #' 
-#' \dontrun{getNlTiles("OLS")}
+#' Rnightlights:::getNlTiles("OLS")
 #'
 getNlTiles <- function(nlType)
 {
@@ -172,7 +177,7 @@ getNlTiles <- function(nlType)
 #' @return TRUE/FALSE
 #'
 #' @examples
-#'   \dontrun{tilesSpPolysDFs <- createNlTilesSpPolysDF()}
+#'   tilesSpPolysDFs <- Rnightlights:::createNlTilesSpPolysDF()
 #'
 createNlTilesSpPolysDF <- function()
 {
@@ -248,10 +253,10 @@ createNlTilesSpPolysDF <- function()
 #' plotCtryWithTilesVIIRS("KEN")
 #'
 #' #by index in rworldmap
-#' \donttest{plotCtryWithTilesVIIRS(115)}
+#' plotCtryWithTilesVIIRS(115)
 #' 
 #' #by index passed as char string
-#' \donttest{plotCtryWithTilesVIIRS("24")}
+#' plotCtryWithTilesVIIRS("24")
 #'
 #' @export
 plotCtryWithTilesVIIRS <- function(idx)
@@ -395,13 +400,19 @@ plotCtryWithTilesVIIRS <- function(idx)
 #'
 #' @examples
 #' #no countries omitted
-#' \dontrun{mapAllCtryPolyToTilesVIIRS()}
+#' \dontrun{
+#' tileMap <- Rnightlights:::mapAllCtryPolyToTilesVIIRS()
+#' }
 #'
 #' #no countries omitted
-#' \dontrun{mapAllCtryPolyToTilesVIIRS(omitCountries="none")}
+#' \dontrun{
+#' tileMap <- Rnightlights:::mapAllCtryPolyToTilesVIIRS(omitCountries="none")
+#' }
 #'
 #' #include countries that take long to process
-#' \dontrun{mapAllCtryPolyToTilesVIIRS(omitCountries=c("error", "long"))}
+#' \dontrun{
+#' tileMap <- Rnightlights:::mapAllCtryPolyToTilesVIIRS(omitCountries=c("error", "long"))
+#' }
 #'
 mapAllCtryPolyToTilesVIIRS <- function(omitCountries=pkgOptions("omitCountries"))
 {
@@ -429,13 +440,19 @@ mapAllCtryPolyToTilesVIIRS <- function(omitCountries=pkgOptions("omitCountries")
 #'
 #' @examples
 #' #map all countries
-#' \dontrun{mapCtryPolyToTilesVIIRS()}
+#' \dontrun{
+#' tileMap <- Rnightlights:::mapCtryPolyToTilesVIIRS()
+#' }
 #'
 #' #map all countries, no countries omitted
-#' \dontrun{mapCtryPolyToTilesVIIRS(ctryCodes="all", omitCountries="none")}
+#' \dontrun{
+#' tileMap <- Rnightlights:::mapCtryPolyToTilesVIIRS(ctryCodes="all", omitCountries="none")
+#' }
 #'
 #' #will not omit countries that do not have polygons on GADM
-#' \dontrun{mapCtryPolyToTilesVIIRS(omitCountries=c("error", "missing"))}
+#' \dontrun{
+#' tileMap <- Rnightlights:::mapCtryPolyToTilesVIIRS(omitCountries=c("error", "missing"))
+#' }
 #'
 mapCtryPolyToTilesVIIRS <- function(ctryCodes="all", omitCountries=pkgOptions("omitCountries"))
 {
@@ -511,7 +528,7 @@ mapCtryPolyToTilesVIIRS <- function(ctryCodes="all", omitCountries=pkgOptions("o
 #'
 #' @examples
 #' 
-#' \donttest{getTilesCtryIntersectVIIRS("KEN")}
+#' Rnightlights:::getTilesCtryIntersectVIIRS("KEN")
 #'
 getTilesCtryIntersectVIIRS <- function(ctryCode)
 {
@@ -572,7 +589,7 @@ getTilesCtryIntersectVIIRS <- function(ctryCode)
 #' @return TRUE/FALSE
 #'
 #' @examples
-#' \donttest{validNlTileNameVIIRS("00N060W")}
+#' Rnightlights:::validNlTileNameVIIRS("00N060W")
 #'  #returns TRUE
 #'
 validNlTileNameVIIRS <- function(tileName)
@@ -602,7 +619,7 @@ validNlTileNameVIIRS <- function(tileName)
 #' @return Integer index of the tile
 #'
 #' @examples
-#' \donttest{tileIdx <- tileName2Idx("00N060W", "VIIRS")}
+#' Rnightlights:::tileName2Idx("00N060W", "VIIRS")
 #'
 tileName2Idx <- function(tileName, nlType)
 {
@@ -638,7 +655,7 @@ tileName2Idx <- function(tileName, nlType)
 #' @return Character name of the tile
 #'
 #' @examples
-#' \donttest{tileIdx <- tileName2Idx("00N060W", "VIIRS")}
+#' Rnightlights:::tileName2Idx("00N060W", "VIIRS")
 #'
 tileIdx2Name <- function(tileNum, nlType)
 {
@@ -672,9 +689,15 @@ tileIdx2Name <- function(tileNum, nlType)
 #'
 #' @examples
 #' \dontrun{
-#' ctryShapefile <- dnldCtryPoly("KEN")
-#' ctryPoly <- rgdal::readOGR(getPolyFnamePath("KEN"), getCtryShpLyrName("KEN",0))
-#' tileList <- tilesPolygonIntersectVIIRS(ctryPoly)
+#' #download shapefile if it doesn't exist
+#' ctryShapefile <- Rnightlights:::dnldCtryPoly("KEN")
+#' 
+#' #read in shapefile top layer
+#' ctryPoly <- rgdal::readOGR(Rnightlights:::getPolyFnamePath("KEN"), 
+#'     Rnightlights:::getCtryShpLyrName("KEN",0))
+#' 
+#' #get list of intersecting tiles
+#' tileList <- Rnightlights:::tilesPolygonIntersectVIIRS(ctryPoly)
 #' }
 #'
 tilesPolygonIntersectVIIRS <- function(shpPolygon)
@@ -725,10 +748,10 @@ tilesPolygonIntersectVIIRS <- function(shpPolygon)
 #' @return TRUE/FALSE
 #'
 #' @examples
-#' \donttest{validNlTileNumVIIRS("1")}
+#' Rnightlights:::validNlTileNumVIIRS("1")
 #'  #returns TRUE
 #'
-#' \donttest{validNlTileNumVIIRS("9")}
+#' Rnightlights:::validNlTileNumVIIRS("9")
 #'  #returns FALSE
 #'
 validNlTileNumVIIRS <- function(nlTileNum)

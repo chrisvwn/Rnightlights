@@ -16,6 +16,9 @@ character string filename
 The name with which to save the OLS tile locally
 }
 \examples{
-\dontrun{getNlTileZipLclNameOLS("2012")}
+\dontrun{
+Rnightlights:::getNlTileZipLclNameOLS("2012")
+#returns "OLS_2012_00N180W.tar"
+}
 
 }

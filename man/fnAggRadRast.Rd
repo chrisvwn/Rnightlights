@@ -4,7 +4,7 @@
 \alias{fnAggRadRast}
 \title{Calculate statistics on a nightlight raster that fall within a polygon}
 \usage{
-fnAggRadRast(ctryPoly, ctryRastCropped, stats, nlType)
+fnAggRadRast(ctryPoly, ctryRastCropped, nlType, nlStats)
 }
 \arguments{
 \item{ctryPoly}{The polygon of the admin level/region of interest. In general is a country polygon
@@ -13,12 +13,12 @@ with sub-regions usually the lowest known admin level as given by the GADM polyg
 \item{ctryRastCropped}{The raster containing nightlight radiances to sum. Usually will have already be
 cropped to the country outline}
 
-\item{stats}{The statistics to calculate}
-
 \item{nlType}{Character vector The nlType to process}
+
+\item{nlStats}{The statistics to calculate}
 }
 \value{
-Integer Sum of radiances of all pixels in a raster that fall within a polygon region
+data.frame of polygon attributes and the calculated stats, one column per nlStat
 }
 \description{
 Calculate stats on the radiance of the pixels in a nightlight raster
@@ -31,12 +31,15 @@ Calculate stats on the radiance of the pixels in a nightlight raster
 \examples{
 #read the Kenya polygon downloaded from GADM and load the lowest admin level (ward)
 \dontrun{
-ctryPoly <- readOGR(getPolyFnamePath("KEN"), getCtryShpLowestLyrName("KEN"))
+ctryPoly <- rgdal::readOGR(Rnightlights:::getPolyFnamePath(ctryCode="KEN"), 
+    Rnightlights:::getCtryShpLowestLyrName(ctryCode="KEN"))
     
 # the VIIRS nightlight raster cropped earlier to the country outline
-ctryRastCropped <- getCtryRasterOutputFname("KEN","VIIRS","201401")
+ctryRastCropped <- raster::raster(Rnightlights:::getCtryRasterOutputFname(ctryCode="KEN",
+    nlType="VIIRS", nlPeriod="201401"))
 
 #calculate the sum of radiances for the wards in Kenya
-sumAvgRadRast <- fnAggRadRast(ctryPoly, ctryRastCropped)
+sumAvgRadRast <- Rnightlights:::fnAggRadRast(ctryPoly=ctryPoly,
+    ctryRastCropped=ctryRastCropped, nlType="VIIRS", nlStats=c("sum","mean"))
 }
 }

@@ -26,10 +26,14 @@ Insert an aggregate nightlight data column in a country nightlights dataframe. T
 }
 \examples{
 
-\dontrun{ctryNlDataDF <- Rnightlights::insertNlDataCol(ctryNlDataDF, 
-    dataCol, "sum", "201409", "VIIRS")}
+\dontrun{
+ctryNlDataDF <- Rnightlights:::insertNlDataCol(ctryNlDataDF, 
+    dataCol, "sum", "201409", "VIIRS")
+    }
 
-\dontrun{ctryNlDataDF <- Rnightlights::insertNlDataCol(ctryNlDataDF, 
-    dataCol, "mean", "2012", "OLS")}
+\dontrun{
+ctryNlDataDF <- Rnightlights:::insertNlDataCol(ctryNlDataDF, 
+    dataCol, "mean", "2012", "OLS")
+    }
 
 }

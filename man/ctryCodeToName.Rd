@@ -21,12 +21,12 @@ Convert a country ISO3 code to the full name. Exposes the rworldmap function
     of ctryCodes and their corresponding names as given by rworldMap::getMap@data
 }
 \examples{
-Rnightlights::ctryCodeToName("KEN") #Kenya
+ctryCodeToName("KEN") #returns Kenya
 
-Rnightlights::ctryCodeToName("ARE") #United Arab Emirates
+ctryCodeToName("ARE") #returns United Arab Emirates
 
-Rnightlights::ctryCodeToName("USA") #United States of America
+ctryCodeToName("USA") #returns United States of America
 
-Rnightlights::ctryCodeToName("JAM") #Jamaica
+ctryCodeToName("JAM") #returns Jamaica
 
 }

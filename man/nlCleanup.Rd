@@ -10,6 +10,8 @@ nlCleanup()
 Clean up the environment after processing (Not yet implemented)
 }
 \examples{
- \dontrun{nlCleanup()}
+ \dontrun{
+ Rnightlights:::nlCleanup()
+ }
 
 }

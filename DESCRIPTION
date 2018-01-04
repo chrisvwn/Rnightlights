@@ -1,6 +1,6 @@
 Package: Rnightlights
 Version: 0.1.5
-Date: 2017-01-03
+Date: 2018-01-03
 Title: Satellite Nightlight Data Extraction
 Description: Extracts raster and zonal statistics
     from satellite nightlight rasters downloaded from the United States 

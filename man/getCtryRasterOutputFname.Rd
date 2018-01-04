@@ -21,7 +21,9 @@ Get the full path to the file where the cropped VIIRS country raster is stored. 
     when processing the country before extracting the data. It can be used to re-process a country much faster
 }
 \examples{
-\dontrun{getCtryRasterOutputFname("KEN","VIIRS", "201412")}
+\dontrun{
+getCtryRasterOutputFname("KEN","VIIRS", "201412")
+}
 
 #export for exploreData() shiny app
 }

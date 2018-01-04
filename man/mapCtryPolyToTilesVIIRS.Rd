@@ -28,12 +28,18 @@ Create a dataframe mapping each country in the rworldmap to the VIIRS
 }
 \examples{
 #map all countries
-\dontrun{mapCtryPolyToTilesVIIRS()}
+\dontrun{
+tileMap <- Rnightlights:::mapCtryPolyToTilesVIIRS()
+}
 
 #map all countries, no countries omitted
-\dontrun{mapCtryPolyToTilesVIIRS(ctryCodes="all", omitCountries="none")}
+\dontrun{
+tileMap <- Rnightlights:::mapCtryPolyToTilesVIIRS(ctryCodes="all", omitCountries="none")
+}
 
 #will not omit countries that do not have polygons on GADM
-\dontrun{mapCtryPolyToTilesVIIRS(omitCountries=c("error", "missing"))}
+\dontrun{
+tileMap <- Rnightlights:::mapCtryPolyToTilesVIIRS(omitCountries=c("error", "missing"))
+}
 
 }

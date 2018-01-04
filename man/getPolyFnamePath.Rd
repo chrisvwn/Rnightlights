@@ -10,7 +10,7 @@ getPolyFnamePath(ctryCode)
 \item{ctryCode}{character the ISO3 code of the country}
 }
 \value{
-character path to polygon directory
+character path to polygon shapefile directory
 }
 \description{
 Get the path of the unzipped polygon directory downloaded from GADM.ORG. Note the polygons are in ESRI
@@ -20,8 +20,8 @@ Get the path of the unzipped polygon directory downloaded from GADM.ORG. Note th
     determine which files to read.
 }
 \examples{
-getPolyFnamePath("KEN")
- #returns "path/to/"
+Rnightlights:::getPolyFnamePath("KEN")
+ #returns "dataPath/polygons/KEN_adm_shp"
  
 #@export only due to exploreData() shiny app
 }

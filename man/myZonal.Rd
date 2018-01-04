@@ -4,23 +4,23 @@
 \alias{myZonal}
 \title{Calculate zonal statistics. Used internally}
 \usage{
-myZonal(x, z, stats, digits = 0, na.rm = TRUE, ...)
+myZonal(x, z, nlStats, digits = 0, na.rm = TRUE, ...)
 }
 \arguments{
 \item{x}{the country raster}
 
 \item{z}{the zonal country polygon layer}
 
-\item{stats}{a character list of statistics to calculate}
+\item{nlStats}{a character list of statistics to calculate}
 
 \item{digits}{round off to how many decimals}
 
 \item{na.rm}{how to handle NAs}
 
-\item{...}{Other params to pass to the stats function}
+\item{...}{Other params to pass to the nlStats functions e.g. na.rm}
 }
 \value{
-numeric value result of the given stat function
+numeric value result of the given nlStat function
 }
 \description{
 Calculate zonal statistics. Used internally by zonalpipe. Modified from 

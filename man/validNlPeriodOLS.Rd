@@ -16,13 +16,13 @@ TRUE/FALSE
 Check if an OLS nlYear is valid
 }
 \examples{
-\dontrun{validNlPeriodOLS("2015")}
+Rnightlights:::validNlPeriodOLS("2015")
  #returns FALSE
 
-\dontrun{validNlPeriodOLS("2004")}
+Rnightlights:::validNlPeriodOLS("2004")
  #returns TRUE
 
-\dontrun{validNlPeriodOLS("201201")}
+Rnightlights:::validNlPeriodOLS("201201")
  #returns FALSE
 
 }

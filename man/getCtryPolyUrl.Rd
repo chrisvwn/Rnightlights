@@ -20,7 +20,8 @@ Get the url from which to download country polygons. Polygons are downloaded fro
     http://biogeo.ucdavis.edu/data/gadm2.8/shp/AFG_adm_shp.zip
 }
 \examples{
-\dontrun{getCtryPolyUrl(ctryCode)}
+ctryCode <- "KEN"
+Rnightlights:::getCtryPolyUrl(ctryCode)
  #returns url for the zipped country ESRI shapefile
 
 }

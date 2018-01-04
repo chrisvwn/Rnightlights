@@ -2,7 +2,8 @@
 % Please edit documentation in R/polygons.R
 \name{getPolyFname}
 \alias{getPolyFname}
-\title{Returns the directory name of the unzipped shapefile downloaded from GADM.ORG without the path}
+\title{Returns the directory name of the unzipped shapefile downloaded from
+    GADM.ORG without the path}
 \usage{
 getPolyFname(ctryCode)
 }
@@ -10,13 +11,14 @@ getPolyFname(ctryCode)
 \item{ctryCode}{character the ISO3 code of the country}
 }
 \value{
-character path to zip
+character name of shapefile directory
 }
 \description{
-Returns the directory name of the unzipped shapefile downloaded from \url{www.GADM.ORG} without the path
+Returns the directory name of the unzipped shapefile downloaded from 
+    \url{www.GADM.ORG} without the path
 }
 \examples{
-\dontrun{getPolyFnameZip("KEN")}
- #returns "path/to/"
+Rnightlights:::getPolyFname("KEN")
+ #returns "KEN_adm_shp"
 
 }

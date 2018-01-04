@@ -63,32 +63,46 @@ Returns nightlight data for the given ctryCode and nlStats in the given
 \examples{
 #missing stats implies all stats as given by pkgOptions("nlStats")
 
-\dontrun{getCtryNlData("KEN", nlType="VIIRS", ignoreMissing=NULL)}
-    #returns all existing data i.e. all nlPeriods and all nlStats for KEN
+#long running examples which also require large downloads
+\dontrun{
+getCtryNlData("KEN", nlType="VIIRS", ignoreMissing=NULL)
+    #returns either all requested data if it exists i.e. all nlPeriods
+    #and all nlStats for KEN otherwise NULL
+}
 
-\dontrun{getCtryNlData("KEN", ignoreMissing=TRUE)}
-    #same as ignoreMissing=NULL. Returns all existing data i.e. all nlPeriods
-    #and all nlStats for KEN
+\dontrun{
+getCtryNlData("KEN", nlType="VIIRS", ignoreMissing=TRUE)
+    #Returns all requested data if it exists i.e. all nlPeriods and all
+    #nlStats for KEN but omits any missing data
+    }
  
-\dontrun{getCtryNlData(ctryCode="KEN", nlType="VIIRS", ignoreMissing=FALSE)}
-    #for any missing data between 201401 to present download and process the
-    #data then return all data
+\dontrun{
+getCtryNlData(ctryCode="KEN", nlType="VIIRS", ignoreMissing=FALSE)
+    #Returns all requested data i.e. all nlPeriods and all
+    #nlStats for KEN. All missing data will be downloaded and processed
+    }
  
-\dontrun{getCtryNlData("KEN", nlPeriod=c("existingNlPeriod", "missingNlPeriod"),
-    nlStats=c("sum", "unknownStat"), ignoreMissing=NULL)}
-    #Returns NULL
+\dontrun{
+getCtryNlData("KEN", nlPeriod=c("existingNlPeriod", "missingNlPeriod"),
+    nlStats=c("sum", "unknownStat"), ignoreMissing=NULL)
+    #Returns NULL due to missingNlPeriod and unknownStat not already existing
     #(ignoreMissing=NULL returns all data if exists or if any is missing returns NULL)
+    }
 
-\dontrun{getCtryNlData("KEN", nlPeriods=c("existingNlPeriod", "missingNlPeriod"),
-    nlStats=c("existingStat", "missingStat"), ignoreMissing=TRUE)}
-   #Returns existingStat for existingNlPeriods
+\dontrun{
+getCtryNlData("KEN", nlPeriods=c("existingNlPeriod", "missingNlPeriod"),
+    nlStats=c("existingStat", "missingStat"), ignoreMissing=TRUE)
+   #Returns existingStat for existingNlPeriods omits missingNlPeriod and missingStat
    #(ignoreMissing=TRUE returns only existing data)
+   }
  
-\dontrun{getCtryNlData("KEN", nlYearPeriods=c("existingNlPeriod", "missingNlPeriod"),
-    nlStats=c("sum", "unknownStat"), ignoreMissing=FALSE)}
+\dontrun{
+getCtryNlData("KEN", nlYearPeriods=c("existingNlPeriod", "missingNlPeriod"),
+    nlStats=c("sum", "unknownStat"), ignoreMissing=FALSE)
     #Runs processNlData for missingStat in "missingNlPeriod" and returns
     #"existingStat" and "missingStat" for both "existingNlPeriod" and
     #"missingNlPeriod"
     #(ignoreMissing=FALSE must return all data: forces processing of any missing)
+    }
  
 }

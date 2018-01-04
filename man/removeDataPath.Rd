@@ -18,6 +18,8 @@ Deletes a root data path and all sub-directories. It can be the current
     has the default folder structure of a root data path.
 }
 \examples{
-  \dontrun{removeDataPath(getNlDataPath())}
+  \dontrun{
+  Rnightlights:::removeDataPath(getNlDataPath())
+  }
     
 }

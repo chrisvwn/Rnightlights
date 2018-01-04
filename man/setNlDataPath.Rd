@@ -16,6 +16,8 @@ Returns (invisibly) the old root path.
 By default, this function will set the root path to \code{~/.Rnightlights/}.
 }
 \examples{
-\dontrun{setNlDataPath("/new/path")}
+\dontrun{
+Rnightlights:::setNlDataPath("/new/path")
+}
 
 }

@@ -18,7 +18,9 @@ A character string filename of the compressed .tgz VIIRS tile
 Constructs the filename used to save/access the downloaded VIIRS tile .tgz file
 }
 \examples{
-\dontrun{getNlTileZipLclNameVIIRS("201401", "1")}
+\dontrun{
+Rnightlights:::getNlTileZipLclNameVIIRS("201401", 1)
  #returns "./tiles/VIIRS_2014_01_75N180W.tgz"
+ }
 
 }

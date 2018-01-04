@@ -16,7 +16,7 @@ Integer layer number
 Get the integer number of the layer. Is the last character in the name and is a digit. E.g. for the 3rd layer in Kenya shapefile polygon named "KEN_adm3" the layer number is "3"
 }
 \examples{
-\dontrun{ctryShpLyrName2Num("KEN_adm1")}
+Rnightlights:::ctryShpLyrName2Num("KEN_adm1")
   #returns 1
 
 }

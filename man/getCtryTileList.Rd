@@ -29,11 +29,12 @@ Given a list of countries, this function will provide alist of VIIRS
     processing.
 }
 \examples{
-\dontrun{
-getCtryTileList(ctryCodes=c("BUR", "KEN", "RWA", "UGA", "TZA"), 
+Rnightlights:::getCtryTileList(ctryCodes=c("BDI", "KEN", "RWA", "TZA", "UGA"), 
     nlType="VIIRS", omitCountries="none")
 
-getCtryTileList(ctryCodes="all", nlType="OLS", omitCountries="long")
-}
+#only 1 tile for OLS
+Rnightlights:::getCtryTileList(ctryCodes=c("BDI", "KEN", "RWA", "TZA", "UGA"), 
+    nlType="OLS", omitCountries="none")
+    #returns "DUMMY"
 
 }

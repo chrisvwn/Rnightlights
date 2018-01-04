@@ -4,10 +4,10 @@
 \alias{validStat}
 \title{Check if a statistic given is valid}
 \usage{
-validStat(stat)
+validStat(nlStat)
 }
 \arguments{
-\item{stat}{the statistic to check}
+\item{nlStat}{the statistic to check}
 }
 \value{
 TRUE/FALSE
@@ -17,7 +17,10 @@ Check if a statistic given is valid
 }
 \examples{
 
-\dontrun{validStat("sum")}
+Rnightlights:::validStat("sum")
  #returns TRUE
+ 
+Rnightlights:::validStat("unknownFunction")
+ #returns FALSE
 
 }

@@ -14,6 +14,8 @@ Initialize some important variables and create directory structure
 }
 \examples{
 
- \dontrun{nlInit()}
+ \dontrun{
+ Rnightlights:::nlInit()
+ }
 
 }

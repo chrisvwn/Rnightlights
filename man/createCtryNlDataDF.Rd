@@ -17,7 +17,10 @@ Initiates the country nightlight dataframe with the country data read from the p
     This includes admin levels, level names and area
 }
 \examples{
-\dontrun{initCtryNlData <- Rnightlights::createCtryNlDataDF("KEN")}
+\dontrun{
+initCtryNlData <- Rnightlights:::createCtryNlDataDF("KEN")
  #returns a data frame
+}
+
 
 }

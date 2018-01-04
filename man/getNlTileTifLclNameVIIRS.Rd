@@ -19,7 +19,9 @@ Constructs the filename of the decompressed VIIRS .tif file
 }
 \examples{
 #using default dirNlTiles
-\dontrun{getNlTileTifLclNameVIIRS("201401", "1")}
+\dontrun{
+Rnightlights:::getNlTileTifLclNameVIIRS("201401", 1)
  #returns "VIIRS_201401_75N180W.tif"
+ }
 
 }

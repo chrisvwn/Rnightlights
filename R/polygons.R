@@ -13,7 +13,8 @@
 #' @return Character string url of the zipped ESRI shapefile for the ctryCode
 #'
 #' @examples
-#' \dontrun{getCtryPolyUrl(ctryCode)}
+#' ctryCode <- "KEN"
+#' Rnightlights:::getCtryPolyUrl(ctryCode)
 #'  #returns url for the zipped country ESRI shapefile
 #'
 getCtryPolyUrl <- function(ctryCode)
@@ -41,7 +42,7 @@ getCtryPolyUrl <- function(ctryCode)
 #' @return TRUE/FALSE
 #'
 #' @examples
-#' \dontrun{existsPolyFnamePath("KEN")}
+#' Rnightlights:::existsPolyFnamePath("KEN")
 #'  #returns TRUE/FALSE
 #'
 existsPolyFnamePath <- function(ctryCode)
@@ -61,7 +62,7 @@ existsPolyFnamePath <- function(ctryCode)
 #' @return TRUE/FALSE
 #'
 #' @examples
-#' \dontrun{existsPolyFnameZip("KEN")}
+#' Rnightlights:::existsPolyFnameZip("KEN")
 #'  #returns TRUE/FALSE
 #'
 existsPolyFnameZip <- function(ctryCode)
@@ -145,7 +146,11 @@ getCtryShpLowestLyrName <- function(ctryCode)
 #' @return character vector of admin level names
 #'
 #' @examples
-#' \dontrun{getCtryPolyAdmLevelsNames("KEN")}
+#' \dontrun{
+#' Rnightlights:::getCtryPolyAdmLevelNames("KEN")
+#' #returns vector [1] "County"       "Constituency" "Ward"
+#' #if KEN shapefile exists otherwise errors
+#' }
 #'
 getCtryPolyAdmLevelNames <- function(ctryCode)
 {
@@ -192,17 +197,19 @@ getCtryPolyAdmLevelNames <- function(ctryCode)
 
 ######################## getPolyFname ###################################
 
-#' Returns the directory name of the unzipped shapefile downloaded from GADM.ORG without the path
+#' Returns the directory name of the unzipped shapefile downloaded from
+#'     GADM.ORG without the path
 #'
-#' Returns the directory name of the unzipped shapefile downloaded from \url{www.GADM.ORG} without the path
+#' Returns the directory name of the unzipped shapefile downloaded from 
+#'     \url{www.GADM.ORG} without the path
 #'
 #' @param ctryCode character the ISO3 code of the country
 #'
-#' @return character path to zip
+#' @return character name of shapefile directory
 #'
 #' @examples
-#' \dontrun{getPolyFnameZip("KEN")}
-#'  #returns "path/to/"
+#' Rnightlights:::getPolyFname("KEN")
+#'  #returns "KEN_adm_shp"
 #'
 getPolyFname <- function(ctryCode)
 {
@@ -230,11 +237,11 @@ getPolyFname <- function(ctryCode)
 #'
 #' @param ctryCode character the ISO3 code of the country
 #'
-#' @return character path to polygon directory
+#' @return character path to polygon shapefile directory
 #'
 #' @examples
-#' getPolyFnamePath("KEN")
-#'  #returns "path/to/"
+#' Rnightlights:::getPolyFnamePath("KEN")
+#'  #returns "dataPath/polygons/KEN_adm_shp"
 #'  
 #' #@export only due to exploreData() shiny app
 #' @export
@@ -264,7 +271,7 @@ getPolyFnamePath <- function(ctryCode)
 #' @return character path to zip
 #'
 #' @examples
-#' \dontrun{getPolyFnameZip("KEN")}
+#' Rnightlights:::getPolyFnameZip("KEN")
 #'  #returns "path/to/"
 #'
 getPolyFnameZip <- function(ctryCode)
@@ -283,17 +290,19 @@ getPolyFnameZip <- function(ctryCode)
 
 ######################## ctryShpLyrName2Num ###################################
 
-#' Get the integer number of the layer. topmost country layer=0
+#' Get the integer number of the layer.
 #'
-#' Get the integer number of the layer. Is the last character in the name and is a digit. E.g. for the 3rd layer in Kenya shapefile polygon named "KEN_adm3" the layer number is "3"
+#' Get the integer number of the layer. Is the last character in the name 
+#'     and is a digit. E.g. for the 3rd layer in Kenya shapefile polygon 
+#'     named "KEN_adm3" the layer number is \code{3}. The lowest layer number
+#'     is \code{0}
 #'
 #' @param layerName - the name of the polygon layer
 #'
 #' @return Integer layer number
 #'
 #' @examples
-#' \dontrun{ctryShpLyrName2Num("KEN_adm1")}
-#'   #returns 1
+#' Rnightlights:::ctryShpLyrName2Num("KEN_adm1") #returns 1
 #'
 ctryShpLyrName2Num <- function(layerName)
 {

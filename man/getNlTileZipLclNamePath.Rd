@@ -21,10 +21,14 @@ Constructs the full path used to save/access the compressed downloaded tile
     Calls the relevant function for the given nlType
 }
 \examples{
-\dontrun{getNlTileZipLclNamePath("VIIRS", "201401", "1")}
+\dontrun{
+Rnightlights:::getNlTileZipLclNamePath("VIIRS", "201401", 1)
  #returns "/dataPath/VIIRS_2014_01_75N180W.tgz"
+ }
  
-\dontrun{getNlTileZipLclNamePath("OLS", "2004", "1")}
- #returns "/dataPath/OLS_2004.tgz"
+\dontrun{
+Rnightlights:::getNlTileZipLclNamePath("OLS", "2004", 1)
+ #returns "/dataPath/OLS_2004_00N180W.tar"
+ }
 
 }

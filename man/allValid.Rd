@@ -25,8 +25,12 @@ Check if a vector/list of values given is valid as per the given
 }
 \examples{
 
-\dontrun{allValid(c("KE", "UGA", "RWA", "TZ"), validCtryCode)}
+\dontrun{
+Rnightlights:::allValid(c("KEZ", "UGA", "RWA", "TZA"), Rnightlights:::validCtryCode)
+}
  
-\dontrun{allValid(c("2012", "2015"), validNlPeriod, "OLS")}
+\dontrun{
+Rnightlights:::allValid(c("2012", "2015"), validNlPeriod, "OLS")
+}
 
 }

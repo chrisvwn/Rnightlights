@@ -18,6 +18,6 @@ TRUE/FALSE
 Check if a year is valid for a given nightlight type
 }
 \examples{
-\dontrun{validNlYearNum("2014","VIIRS")}
+Rnightlights:::validNlYearNum("2014","VIIRS")
 
 }

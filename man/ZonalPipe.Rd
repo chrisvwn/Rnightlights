@@ -5,7 +5,7 @@
 \title{Create a zonal file if it does not exist and calculate the zonal stats}
 \usage{
 ZonalPipe(ctryCode, ctryPoly, path.in.shp, path.in.r, path.out.r, path.out.shp,
-  zone.attribute, stats)
+  zone.attribute, nlStats)
 }
 \arguments{
 \item{ctryCode}{the ctryCode of interest}
@@ -22,7 +22,7 @@ ZonalPipe(ctryCode, ctryPoly, path.in.shp, path.in.r, path.out.r, path.out.shp,
 
 \item{zone.attribute}{The zonal attribute to calculate}
 
-\item{stats}{The stats to calculate}
+\item{nlStats}{The stats to calculate}
 }
 \value{
 TRUE/FALSE

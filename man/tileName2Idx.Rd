@@ -18,6 +18,6 @@ Integer index of the tile
 Get the index of a VIIRS tile as given by getNlTiles() given its name
 }
 \examples{
-\donttest{tileIdx <- tileName2Idx("00N060W", "VIIRS")}
+Rnightlights:::tileName2Idx("00N060W", "VIIRS")
 
 }

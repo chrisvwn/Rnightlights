@@ -19,13 +19,15 @@ Check if a month number is valid for a given nightlight type. Note month num is 
 "VIIRS" nightlight type
 }
 \examples{
-\dontrun{validNlMonthNum("01","VIIRS")}
+Rnightlights:::validNlMonthNum("01","VIIRS")
  #returns TRUE
 
-\dontrun{validNlMonthNum("13","VIIRS")}
+Rnightlights:::validNlMonthNum("13","VIIRS")
  #returns FALSE
 
-\dontrun{validNlMonthNum("01","OLS")}
- #returns FALSE
+\dontrun{
+Rnightlights:::validNlMonthNum("01","OLS")
+}
+ #returns Error since OLS doesn't have months
 
 }

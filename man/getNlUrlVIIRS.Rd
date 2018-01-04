@@ -18,6 +18,8 @@ Character string Url of the VIIRS tile file
 Function to return the url of the VIIRS tile to download given the year, month, and nlTile index
 }
 \examples{
-\dontrun{tileUrl <- getNlUrlVIIRS("201401", "1")}
+\dontrun{
+tileUrl <- Rnightlights:::getNlUrlVIIRS("201401", "1")
+}
 
 }

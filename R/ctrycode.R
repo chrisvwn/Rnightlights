@@ -11,13 +11,11 @@
 #' @return Character ISO3 ctryCode if found else NA
 #'
 #' @examples
-#' Rnightlights::ctryNameToCode("kenya")
-#'   #returns "KEN"
+#' ctryNameToCode("kenya") #returns "KEN"
 #'
-#' Rnightlights::ctryNameToCode("ken")
-#'   #returns "KEN"
+#' ctryNameToCode("ken") #returns "KEN"
 #'   
-#' Rnightlights::ctryNameToCode("jamaica") #returns JAM
+#' ctryNameToCode("jamaica") #returns JAM
 #'
 #' @export
 ctryNameToCode <- function(ctryName)
@@ -55,13 +53,13 @@ ctryNameToCode <- function(ctryName)
 #'     codes and their corresponding names
 #'
 #' @examples
-#' Rnightlights::ctryCodeToName("KEN") #Kenya
+#' ctryCodeToName("KEN") #returns Kenya
 #' 
-#' Rnightlights::ctryCodeToName("ARE") #United Arab Emirates
+#' ctryCodeToName("ARE") #returns United Arab Emirates
 #' 
-#' Rnightlights::ctryCodeToName("USA") #United States of America
+#' ctryCodeToName("USA") #returns United States of America
 #' 
-#' Rnightlights::ctryCodeToName("JAM") #Jamaica
+#' ctryCodeToName("JAM") #returns Jamaica
 #'
 #' @export
 ctryCodeToName <- function(ctryCode)
@@ -82,7 +80,10 @@ ctryCodeToName <- function(ctryCode)
   
   #rworldmap::isoToName can resolve 2-letter ctryCodes but we only want 3-letter ISO3 codes
   if(nchar(ctryCode) != 3)
-    stop("Only 3-letter ISO3 codes allowed")
+  {
+    warning("Only 3-letter ISO3 codes allowed")
+    return(NA)
+  }
   
   return( suppressWarnings(rworldmap::isoToName(ctryCode)))
 }
@@ -99,12 +100,11 @@ ctryCodeToName <- function(ctryCode)
 #' @return TRUE/FALSE
 #'
 #' @examples
-#' \dontrun{Rnightlights::validCtryCode("KEN")}
-#'  #returns TRUE
+#' validCtryCode("KEN") #returns TRUE
 #'
-#' \dontrun{Rnightlights::validCtryCode("UAE")}
-#'  #returns FALSE. "United Arab Emirates" ISO3 code = "ARE"
+#' validCtryCode("UAE") #returns FALSE. "United Arab Emirates" ISO3 code = "ARE"
 #'
+#'@export
 validCtryCode <- function(ctryCode)
 {
   if(missing(ctryCode))

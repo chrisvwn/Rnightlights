@@ -13,6 +13,8 @@ None
 Create required data subdirectories in the root data path
 }
 \examples{
-  \dontrun{createNlDataDirs()}
+  \dontrun{
+  Rnightlights:::createNlDataDirs()
+  }
     
 }

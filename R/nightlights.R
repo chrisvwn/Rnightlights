@@ -99,7 +99,9 @@
 #' 
 #' #calculate only the sum of VIIRS radiances for Dec 2014 using gdal
 #' #for both cropMask and extraction for KEN
-#' \dontrun{processNLCountry("KEN", "201412", "VIIRS", "gdal", "gdal", "sum")}
+#' \dontrun{
+#' Rnightlights:::processNLCountry("KEN", "VIIRS", "201412", "gdal", "gdal", "sum")
+#' }
 #'
 processNLCountry <- function(ctryCode, nlType, nlPeriod, cropMaskMethod=pkgOptions("cropMaskMethod"), extractMethod=pkgOptions("extractMethod"), nlStats=pkgOptions("nlStats"))
 {
@@ -298,9 +300,9 @@ processNLCountry <- function(ctryCode, nlType, nlPeriod, cropMaskMethod=pkgOptio
   message("Begin extracting the data from the merged raster ", base::date())
   
   if (extractMethod == "rast")
-    sumAvgRad <- fnAggRadRast(ctryPoly, ctryRastCropped, nlStats, nlType)
+    sumAvgRad <- fnAggRadRast(ctryPoly, ctryRastCropped, nlType, nlStats)
   else if (extractMethod == "gdal")
-    sumAvgRad <- fnAggRadGdal(ctryCode, ctryPoly, nlPeriod, nlStats, nlType)
+    sumAvgRad <- fnAggRadGdal(ctryCode, ctryPoly, nlType, nlPeriod, nlStats)
   
   for(nlStat in nlStats)
     ctryNlDataDF <- insertNlDataCol(ctryNlDataDF, sumAvgRad[,nlStat], nlStat, nlPeriod, nlType = nlType)
@@ -335,7 +337,9 @@ processNLCountry <- function(ctryCode, nlType, nlPeriod, cropMaskMethod=pkgOptio
 #' @return Character full path to the cropped VIIRS country raster for a country and a given year and month
 #'
 #' @examples
-#' \dontrun{getCtryRasterOutputFname("KEN","VIIRS", "201412")}
+#' \dontrun{
+#' getCtryRasterOutputFname("KEN","VIIRS", "201412")
+#' }
 #'
 #'#export for exploreData() shiny app
 #'@export
@@ -396,29 +400,23 @@ getCtryRasterOutputFname <- function(ctryCode, nlType, nlPeriod)
 #' @return None
 #'
 #' @examples
+#' 
+#' #long running examples which may require large downloads
 #' \dontrun{
 #' #Example 1: process VIIRS nightlights for all countries and all periods available e.g. to create 
 #'     #a local cache or repo
 #'     
-#'     #Recommend running nlInit() to improve performance. It stores some global variables 
-#'     #so that they do not have to be re-evaluated multiply
-#'     nlInit() 
-#'     
 #'     processNlData() #process VIIRS nightlights for all countries and all periods
 #'
 #' #Example 2: process nightlights for all countries in 2012 only
-#'     
-#'     nlInit() #for performance. See Example 1
 #'
-#'     nlPeriods <- getAllNlYears("VIIRS") #get a list of all nightlight periods to present-day
+#'     nlPeriods <- getAllNlPeriods("VIIRS") #get a list of all nightlight periods to present-day
 #'
 #'     nlPeriods <- nlPeriods[grep("^2014", nlPeriods)] #filter only periods in 2014
 #'
 #'     processNlData(nlPeriods=nlPeriods)
 #'
 #' #Example 3: process VIIRS nightlights for countries KEN & RWA in 2014 Jan to 2014 May only
-#'     
-#'     nlInit()
 #'
 #'     cCodes <- c("KEN", "RWA")
 #'
@@ -440,8 +438,6 @@ getCtryRasterOutputFname <- function(ctryCode, nlType, nlPeriod)
 #' #   year in a separate thread. Create a separate R script for each year as follows:
 #' 
 #'     library(Rnightlights)
-#' 
-#'     nlInit()
 #' 
 #'     nlPeriods <- getAllNlYears("VIIRS")
 #' 

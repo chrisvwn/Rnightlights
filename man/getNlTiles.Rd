@@ -19,8 +19,8 @@ Creates a data.frame mapping nightlight tile names to their vertice coordinates.
     prevent code duplication by writing separate functions for OLS.
 }
 \examples{
-\dontrun{getNlTiles("VIIRS")}
+Rnightlights:::getNlTiles("VIIRS")
 
-\dontrun{getNlTiles("OLS")}
+Rnightlights:::getNlTiles("OLS")
 
 }

@@ -195,7 +195,9 @@ setupDataPath <- function(newDataPath=tempdir(), ...)
 #'   Returns (invisibly) the old root path.
 #'   
 #' @examples
-#' \dontrun{setNlDataPath("/new/path")}
+#' \dontrun{
+#' Rnightlights:::setNlDataPath("/new/path")
+#' }
 #' 
 setNlDataPath <- function(dataPath)
 {
@@ -428,7 +430,9 @@ getNlDataPath <- function()
 #' @return None
 #'
 #' @examples
-#'   \dontrun{removeDataPath(getNlDataPath())}
+#'   \dontrun{
+#'   Rnightlights:::removeDataPath(getNlDataPath())
+#'   }
 #'     
 removeDataPath <- function(dataPath = file.path(getNlDataPath(), ".Rnightlights"))
 {
@@ -461,7 +465,9 @@ removeDataPath <- function(dataPath = file.path(getNlDataPath(), ".Rnightlights"
 #' @return None
 #'
 #' @examples
-#'   \dontrun{addREADME()}
+#'   \dontrun{
+#'   Rnightlights:::addREADME()
+#'   }
 #'     
 addREADME <- function(to=getNlDataPath())
 {
@@ -487,7 +493,9 @@ addREADME <- function(to=getNlDataPath())
 #' @return None
 #'
 #' @examples
-#'   \dontrun{createNlDataDirs()}
+#'   \dontrun{
+#'   Rnightlights:::createNlDataDirs()
+#'   }
 #'     
 createNlDataDirs <- function()
 {

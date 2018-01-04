@@ -11,7 +11,7 @@
 #' @return TRUE/FALSE
 #'
 #' @examples
-#' \dontrun{validNlYearNum("2014","VIIRS")}
+#' Rnightlights:::validNlYearNum("2014","VIIRS")
 #'
 validNlYearNum <- function(yearNum, nlType)
 {
@@ -61,14 +61,16 @@ validNlYearNum <- function(yearNum, nlType)
 #' @return TRUE/FALSE
 #'
 #' @examples
-#' \dontrun{validNlMonthNum("01","VIIRS")}
+#' Rnightlights:::validNlMonthNum("01","VIIRS")
 #'  #returns TRUE
 #'
-#' \dontrun{validNlMonthNum("13","VIIRS")}
+#' Rnightlights:::validNlMonthNum("13","VIIRS")
 #'  #returns FALSE
 #'
-#' \dontrun{validNlMonthNum("01","OLS")}
-#'  #returns FALSE
+#' \dontrun{
+#' Rnightlights:::validNlMonthNum("01","OLS")
+#' }
+#'  #returns Error since OLS doesn't have months
 #'
 validNlMonthNum <- function(monthNum, nlType="VIIRS")
 {
@@ -103,14 +105,14 @@ validNlMonthNum <- function(monthNum, nlType="VIIRS")
 #' @return TRUE/FALSE
 #'
 #' @examples
-#' \dontrun{validNlPeriodVIIRS("201512")}
+#' Rnightlights:::validNlPeriodVIIRS("201512")
 #'  #returns TRUE
 #'
-#' \dontrun{validNlPeriodVIIRS("201513")}
+#' Rnightlights:::validNlPeriodVIIRS("201513")
 #'  #returns FALSE; invalid month 13
 #'
-#' \dontrun{validNlPeriodVIIRS("201401")}
-#'  #returns FALSE #VIIRS starts in "201401"
+#' Rnightlights:::validNlPeriodVIIRS("201201")
+#'  #returns FALSE #VIIRS starts in "201204"
 #'
 validNlPeriodVIIRS <- function(nlYearMonth)
 {
@@ -148,13 +150,13 @@ validNlPeriodVIIRS <- function(nlYearMonth)
 #' @return TRUE/FALSE
 #'
 #' @examples
-#' \dontrun{validNlPeriodOLS("2015")}
+#' Rnightlights:::validNlPeriodOLS("2015")
 #'  #returns FALSE
 #'
-#' \dontrun{validNlPeriodOLS("2004")}
+#' Rnightlights:::validNlPeriodOLS("2004")
 #'  #returns TRUE
 #'
-#' \dontrun{validNlPeriodOLS("201201")}
+#' Rnightlights:::validNlPeriodOLS("201201")
 #'  #returns FALSE
 #'
 validNlPeriodOLS <- function(nlYear)

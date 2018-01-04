@@ -16,6 +16,10 @@ character vector of admin level names
 Get the list of admin level names in a polygon shapefile
 }
 \examples{
-\dontrun{getCtryPolyAdmLevelsNames("KEN")}
+\dontrun{
+Rnightlights:::getCtryPolyAdmLevelNames("KEN")
+#returns vector [1] "County"       "Constituency" "Ward"
+#if KEN shapefile exists otherwise errors
+}
 
 }

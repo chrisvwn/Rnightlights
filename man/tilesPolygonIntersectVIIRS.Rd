@@ -17,9 +17,15 @@ Get the list a VIIRS tiles that a polygon intersects with
 }
 \examples{
 \dontrun{
-ctryShapefile <- dnldCtryPoly("KEN")
-ctryPoly <- rgdal::readOGR(getPolyFnamePath("KEN"), getCtryShpLyrName("KEN",0))
-tileList <- tilesPolygonIntersectVIIRS(ctryPoly)
+#download shapefile if it doesn't exist
+ctryShapefile <- Rnightlights:::dnldCtryPoly("KEN")
+
+#read in shapefile top layer
+ctryPoly <- rgdal::readOGR(Rnightlights:::getPolyFnamePath("KEN"), 
+    Rnightlights:::getCtryShpLyrName("KEN",0))
+
+#get list of intersecting tiles
+tileList <- Rnightlights:::tilesPolygonIntersectVIIRS(ctryPoly)
 }
 
 }

@@ -16,7 +16,7 @@ character path to zip
 Get the filename of the polygon zip file as downloaded from \url{http://www.GADM.ORG}
 }
 \examples{
-\dontrun{getPolyFnameZip("KEN")}
+Rnightlights:::getPolyFnameZip("KEN")
  #returns "path/to/"
 
 }
