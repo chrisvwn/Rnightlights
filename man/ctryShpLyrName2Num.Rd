@@ -2,7 +2,7 @@
 % Please edit documentation in R/polygons.R
 \name{ctryShpLyrName2Num}
 \alias{ctryShpLyrName2Num}
-\title{Get the integer number of the layer. topmost country layer=0}
+\title{Get the integer number of the layer.}
 \usage{
 ctryShpLyrName2Num(layerName)
 }
@@ -13,10 +13,12 @@ ctryShpLyrName2Num(layerName)
 Integer layer number
 }
 \description{
-Get the integer number of the layer. Is the last character in the name and is a digit. E.g. for the 3rd layer in Kenya shapefile polygon named "KEN_adm3" the layer number is "3"
+Get the integer number of the layer. Is the last character in the name 
+    and is a digit. E.g. for the 3rd layer in Kenya shapefile polygon 
+    named "KEN_adm3" the layer number is \code{3}. The lowest layer number
+    is \code{0}
 }
 \examples{
-Rnightlights:::ctryShpLyrName2Num("KEN_adm1")
-  #returns 1
+Rnightlights:::ctryShpLyrName2Num("KEN_adm1") #returns 1
 
 }

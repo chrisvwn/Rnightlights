@@ -2,7 +2,7 @@
 % Please edit documentation in R/ctrynldata.R
 \name{getCtryNlDataFname}
 \alias{getCtryNlDataFname}
-\title{Check if a month number is valid for a given nightlight type}
+\title{Construct the name of the country data file.}
 \usage{
 getCtryNlDataFname(ctryCode)
 }
@@ -13,7 +13,7 @@ getCtryNlDataFname(ctryCode)
 Character filename of the country data file
 }
 \description{
-Get the name of the data file. This function can be altered to name the file as 
+Construct the name of the data file. This function can be altered to name the file as 
     required and consistently retrieve the name. Used in the function getCtryNlDataFnamePath 
     to concat the directory path and this filename. Currently all nlTypes are stored in one 
     file. Can be altered to separate VIIRS and OLS data files for example.

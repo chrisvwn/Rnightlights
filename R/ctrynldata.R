@@ -297,9 +297,9 @@ validCtryNlDataDF <- function(ctryNlDataDF)
 
 ######################## getCtryNlDataFname ###################################
 
-#' Check if a month number is valid for a given nightlight type
+#' Construct the name of the country data file.
 #'
-#' Get the name of the data file. This function can be altered to name the file as 
+#' Construct the name of the data file. This function can be altered to name the file as 
 #'     required and consistently retrieve the name. Used in the function getCtryNlDataFnamePath 
 #'     to concat the directory path and this filename. Currently all nlTypes are stored in one 
 #'     file. Can be altered to separate VIIRS and OLS data files for example.
