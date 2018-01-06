@@ -465,7 +465,7 @@ fnAggRadRast <- function(ctryPoly, ctryRastCropped, nlType, nlStats)
   if(!allValid(nlStats, validStat))
     stop("Invalid stat(s) detected")
 
-  cl <- snow::makeCluster(pkgOptions("numCores"), outfile="")
+  cl <- snow::makeCluster(pkgOptions("numCores"))
   
   doSNOW::registerDoSNOW(cl = cl)
   
