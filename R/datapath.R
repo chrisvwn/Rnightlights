@@ -271,7 +271,7 @@ setNlDataPath <- function(dataPath)
         saveRDS(path.expand(dataPath), file.path(homePath, "datapath.rda"))
   
   #only if this is a move
-  if(isMove)
+  if(isMove && dataPath != tempdir())
   {
     message("Moving dataPath .Rnightlights from ", existingPath, " to ", dataPath)
     
@@ -327,26 +327,29 @@ setNlDataPath <- function(dataPath)
     }
     else
     {
-      #roll back copy
-      message("Rolling back partial copy")
-      
-      successRollback <- tryCatch(
-        {
-          unlink(file.path(dataPath, dataDirName), recursive = TRUE)
-        }, error = function(err)
-        {
-          message("Error: ", err, "\n")
-          return(FALSE)
-        }, warning = function(war)
-        {
-          message("Warning: ", war, "\n")
-          return(FALSE)
-        })
-      
-      if(successRollback == 0)
-        message("Rolled back. Please fix errors and try again.")
-      else
-        message("Rollback failed. Please manually delete folder ", file.path(dataPath, dataDirName))
+      if(dataPath != tempdir())
+      {  
+        #roll back copy
+        message("Rolling back partial copy")
+        
+        successRollback <- tryCatch(
+          {
+            unlink(file.path(dataPath, dataDirName), recursive = TRUE)
+          }, error = function(err)
+          {
+            message("Error: ", err, "\n")
+            return(FALSE)
+          }, warning = function(war)
+          {
+            message("Warning: ", war, "\n")
+            return(FALSE)
+          })
+        
+        if(successRollback == 0)
+          message("Rolled back. Please fix errors and try again.")
+        else
+          message("Rollback failed. Please manually delete folder ", file.path(dataPath, dataDirName))
+      }
     }
   }
   
@@ -386,6 +389,9 @@ getNlDataPath <- function()
   homePath = path.expand("~")
   dirName = ".Rnightlights"
   dataPathFile = "datapath.rda"
+  
+  if(dir.exists(file.path(tempdir(), dirName)))
+    return(file.path(tempdir()))
   
   if (dir.exists(file.path(homePath, dirName)))
   {

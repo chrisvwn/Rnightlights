@@ -148,13 +148,12 @@ getNlTiles <- function(nlType)
 {
   #6 nightlight tiles named by top-left geo coordinate numbered from left-right & top-bottom
   #creates columns as strings. createSpPolysDF converts relevant columns to numeric
-  nlTiles <- as.data.frame(
-    cbind(id=c(1,2,3,4,5,6,7),
+  nlTiles <- data.frame(
+    id=c(1,2,3,4,5,6,7),
           type=c("OLS","VIIRS","VIIRS","VIIRS","VIIRS","VIIRS","VIIRS"),
           name=c("DUMMY", "75N180W", "75N060W", "75N060E", "00N180W", "00N060W", "00N060E"),
           minx=c(-1, -180, -60, 60, -180, -60, 60), maxx=c(-1, -60, 60, 180, -60, 60, 180),
-          miny=c(-1, 0, 0, 0, -75, -75, -75), maxy=c(-1, 75, 75, 75, 0, 0, 0)
-    ), 
+          miny=c(-1, 0, 0, 0, -75, -75, -75), maxy=c(-1, 75, 75, 75, 0, 0, 0), 
     stringsAsFactors=FALSE)
   
   if(!missing(nlType))
@@ -250,13 +249,13 @@ createNlTilesSpPolysDF <- function()
 #'
 #' @examples
 #' #by ctryCode
-#' plotCtryWithTilesVIIRS("KEN")
+#' \dontrun{plotCtryWithTilesVIIRS("KEN")}
 #'
 #' #by index in rworldmap
-#' plotCtryWithTilesVIIRS(115)
+#' \dontrun{plotCtryWithTilesVIIRS(115)}
 #' 
 #' #by index passed as char string
-#' plotCtryWithTilesVIIRS("24")
+#' \dontrun{plotCtryWithTilesVIIRS("24")}
 #'
 #' @export
 plotCtryWithTilesVIIRS <- function(idx)

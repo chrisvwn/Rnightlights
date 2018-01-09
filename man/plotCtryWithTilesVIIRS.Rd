@@ -24,12 +24,12 @@ Plot a country polygon as defined in the \pkg{rworldmap} package along with the 
 }
 \examples{
 #by ctryCode
-plotCtryWithTilesVIIRS("KEN")
+\dontrun{plotCtryWithTilesVIIRS("KEN")}
 
 #by index in rworldmap
-plotCtryWithTilesVIIRS(115)
+\dontrun{plotCtryWithTilesVIIRS(115)}
 
 #by index passed as char string
-plotCtryWithTilesVIIRS("24")
+\dontrun{plotCtryWithTilesVIIRS("24")}
 
 }
