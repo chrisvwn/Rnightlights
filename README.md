@@ -11,7 +11,7 @@ Both the DMSP-OLS annual and SNPP-VIIRS monthly nightlight raster data are suppo
 R package Rnightlights is available on CRAN and can be installed in R as:
 
 ```
-install.packages('Rnightlights')
+install.packages("Rnightlights", dependencies=TRUE)
 ```
 
 To install the development version run:
@@ -25,7 +25,7 @@ devtools::install_github("chrisvwn/Rnightlights")
 An example to process VIIRS monthly nightlights for Kenya for the year 2014 from the
 [Ishara Data blog post](http://isharadata.blogspot.co.ke/2017/09/rnightlights-satellite-nightlight-data.html)
 
-####Notes
+#### Notes
 1. Change the "ctry" variable to run the example on another country
 2. This will not work for countries without admin levels below the country level e.g. ATA (Antarctica)
 3. This calculates total radiances per region and so may be biased by area. Normalize by area to see 

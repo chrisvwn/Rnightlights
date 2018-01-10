@@ -17,7 +17,7 @@
 # 
 # suppressMessages(library(leaflet))
 # 
- suppressMessages(library(plotly))
+ suppressMessages(library(plotly)) #some functions don't work unless library is imported
 # 
 # suppressMessages(library(aws.s3))
 
@@ -54,7 +54,7 @@ if (!requireNamespace("plotly", quietly = TRUE))
 
 if (!requireNamespace("DT", quietly = TRUE))
 {
-  missingPkgs <- c(missingPkgs, "rstudio/DT")
+  missingPkgs <- c(missingPkgs, "DT")
 }
 
 if(!is.null(missingPkgs))

@@ -83,7 +83,7 @@ if(!is.null(missingPkgs))
       Please install missing packages: '", paste0(missingPkgs, collapse = ", "), "'", call. = FALSE)
  
  
-options(shiny.trace=F)
+#options(shiny.trace=T)
 
 shiny::shinyServer(function(input, output, session){
   
@@ -669,7 +669,7 @@ shiny::shinyServer(function(input, output, session){
     ######################## hCluster ###################################
     
     hCluster <- shiny::reactive({
-      #print(paste0("here: reactive hCluster"))
+      print(paste0("here: reactive hCluster"))
       input$btnGo
       
       countries <- shiny::isolate(input$countries)
@@ -789,13 +789,12 @@ shiny::shinyServer(function(input, output, session){
     ######################## mapHCluster ###################################
     
     output$mapHCluster <- leaflet::renderLeaflet({
-      #print(paste0("here: draw mapHCluster"))
+      print(paste0("here: draw mapHCluster"))
       # Use leaflet() here, and only include aspects of the map that
       # won't need to change dynamically (at least, not unless the
       # entire map is being torn down and recreated).
       
       input$btnGo
-      
       
       countries <- shiny::isolate(input$countries)
       scale <- input$scale
