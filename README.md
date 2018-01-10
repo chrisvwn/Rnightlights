@@ -1,4 +1,4 @@
-# Rnightlights [![Build Status](https://travis-ci.org/chrisvwn/Rnightlights.svg?branch=master)](https://travis-ci.org/chrisvwn/Rnightlights)
+# Rnightlights [![Build Status](https://travis-ci.org/chrisvwn/Rnightlights.svg?branch=master)](https://travis-ci.org/chrisvwn/Rnightlights) [![codecov.io](https://codecov.io/github/Rnightlights/covr/coverage.svg?branch=master)](https://codecov.io/github/Rnightlights/covr?branch=master)
 
 ## Nightlights Data Extraction in R
 
