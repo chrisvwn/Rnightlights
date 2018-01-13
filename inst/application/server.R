@@ -427,6 +427,8 @@ shiny::shinyServer(function(input, output, session){
           lvlSelect <- group_by(lvlSelect, ctryAdmLevels[lvlIdx-1])
           
           lvlSelect <- split(lvlSelect[[ctryAdmLevels[lvlIdx]]], lvlSelect[[ctryAdmLevels[lvlIdx-1]]])
+          
+          names(lvlSelect) <- paste(ctryAdmLevels[lvlIdx-1], names(lvlSelect), sep = ":")
 
           b <- shiny::selectizeInput(inputId = paste0("selectAdm", lvlIdx),
                               label = ctryAdmLevels[lvlIdx],
@@ -517,6 +519,8 @@ shiny::shinyServer(function(input, output, session){
             lvlSelect <- group_by(lvlSelect, ctryAdmLevels[lvlIdx-1])
             
             lvlSelect <- split(lvlSelect[[ctryAdmLevels[lvlIdx]]], lvlSelect[[ctryAdmLevels[lvlIdx-1]]])
+            
+            names(lvlSelect) <- paste(ctryAdmLevels[lvlIdx-1], names(lvlSelect), sep = ":")
           }
           else
           {
@@ -527,6 +531,8 @@ shiny::shinyServer(function(input, output, session){
             lvlSelect <- group_by(lvlSelect, ctryAdmLevels[lvlIdx-1])
             
             lvlSelect <- split(lvlSelect[[ctryAdmLevels[lvlIdx]]], lvlSelect[[ctryAdmLevels[lvlIdx-1]]])
+            
+            names(lvlSelect) <- paste(ctryAdmLevels[lvlIdx-1], names(lvlSelect), sep=":")
           }
           #print(paste0("lvlSelect:",lvlSelect))
           
@@ -552,6 +558,8 @@ shiny::shinyServer(function(input, output, session){
             
             lvlSelect <- split(lvlSelect[[ctryAdmLevels[lvlIdx]]], lvlSelect[[ctryAdmLevels[lvlIdx-1]]])
             
+            names(lvlSelect) <- paste(ctryAdmLevels[lvlIdx-1], names(lvlSelect), sep=":")
+            
             #top10 <- if(length(lvlSelect) > 1) lvlSelect[1] else no = lvlSelect
             
             #print(paste0("lvlselect: ", lvlSelect))
@@ -563,18 +571,18 @@ shiny::shinyServer(function(input, output, session){
               shiny::updateSelectizeInput(session, paste0("selectAdm",lvlIdx), choices = lvlSelect, selected = input[[paste0("selectAdm",lvlIdx)]])
           }else
           {
-            shiny::updateSelectizeInput(session, paste0("selectAdm", lvlIdx), choices = NULL, selected = NULL)
+            shiny::updateSelectizeInput(session, paste0("selectAdm", lvlIdx), choices = NULL)
           }
         }
         else
         {
           #print(paste0("lvlIdx:",lvlIdx,"lvlNum:",lvlNum))
           
-          if (multipleSelected)
-          {
-            shiny::updateSelectizeInput(session, paste0("selectAdm", lvlIdx), choices = "", selected = NULL)
-            next()
-          }
+#          if (multipleSelected)
+#          {
+#            shiny::updateSelectizeInput(session, paste0("selectAdm", lvlIdx), choices = "")
+#            next()
+#          }
           
           if(length(input[[paste0("selectAdm",lvlIdx-1)]]) == 1)
           {
@@ -587,9 +595,11 @@ shiny::shinyServer(function(input, output, session){
             
             lvlSelect <- split(lvlSelect[[ctryAdmLevels[lvlIdx]]], lvlSelect[[ctryAdmLevels[lvlIdx-1]]])
             
+            names(lvlSelect) <- paste(ctryAdmLevels[lvlIdx-1], names(lvlSelect), sep=":")
+            
             #updateCheckboxInput(session, paste0("radioAdm", lvlIdx),value = FALSE)
 
-            shiny::updateSelectizeInput(session, paste0("selectAdm", lvlIdx), choices = lvlSelect, selected = NULL)
+            shiny::updateSelectizeInput(session, paste0("selectAdm", lvlIdx), choices = lvlSelect)
           }
           else if(length(input[[paste0("selectAdm",lvlIdx-1)]]) == 0 && length(input[[paste0("selectAdm", lvlNum)]])==1)
           {
@@ -601,10 +611,23 @@ shiny::shinyServer(function(input, output, session){
             
             lvlSelect <- split(lvlSelect[[ctryAdmLevels[lvlIdx]]], lvlSelect[[ctryAdmLevels[lvlIdx-1]]])
             
-            shiny::updateSelectizeInput(session, paste0("selectAdm", lvlIdx), choices = lvlSelect, selected = NULL)
+            names(lvlSelect) <- paste(ctryAdmLevels[lvlIdx-1], names(lvlSelect), sep=":")
+            
+            shiny::updateSelectizeInput(session, paste0("selectAdm", lvlIdx), choices = lvlSelect)
           }
           else
           {
+            ##lvlSelect <- unique(ctryAdmLevelNamesFilter[[ctryAdmLevels[lvlIdx]]])
+            
+            #lvlSelect <- unique(dplyr::select(ctryAdmLevelNamesFilter, lvlIdx-1,lvlIdx))
+            
+            #lvlSelect <- group_by(lvlSelect, ctryAdmLevels[lvlIdx-1])
+            
+            #lvlSelect <- split(lvlSelect[[ctryAdmLevels[lvlIdx]]], lvlSelect[[ctryAdmLevels[lvlIdx-1]]])
+            
+            #shiny::updateSelectizeInput(session, paste0("selectAdm", lvlIdx), choices = lvlSelect, selected = NULL)
+            if(length(input[[paste0("selectAdm", lvlIdx-1)]]) > 0)
+              ctryAdmLevelNamesFilter <- subset(ctryAdmLevelNamesFilter,ctryAdmLevelNamesFilter[[ctryAdmLevels[[lvlIdx-1]]]] %in% input[[paste0("selectAdm", lvlIdx-1)]])
             #lvlSelect <- unique(ctryAdmLevelNamesFilter[[ctryAdmLevels[lvlIdx]]])
             
             lvlSelect <- unique(dplyr::select(ctryAdmLevelNamesFilter, lvlIdx-1,lvlIdx))
@@ -613,7 +636,11 @@ shiny::shinyServer(function(input, output, session){
             
             lvlSelect <- split(lvlSelect[[ctryAdmLevels[lvlIdx]]], lvlSelect[[ctryAdmLevels[lvlIdx-1]]])
             
-            shiny::updateSelectizeInput(session, paste0("selectAdm", lvlIdx), choices = lvlSelect, selected = NULL)
+            names(lvlSelect) <- paste(ctryAdmLevels[lvlIdx-1], names(lvlSelect), sep = ":")
+            
+            #updateCheckboxInput(session, paste0("radioAdm", lvlIdx),value = FALSE)
+            
+            shiny::updateSelectizeInput(session, paste0("selectAdm", lvlIdx), choices = lvlSelect)
           }
         }
       }

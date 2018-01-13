@@ -100,6 +100,10 @@ alignCenter <- function(el) {
                                 multiple = TRUE
                  ),
 
+                 tags$head(
+                   tags$style(HTML('#btnGo{background-color:lightblue}'))
+                 ),
+                 
                  shiny::actionButton("btnGo", "LOAD"),                 
 
                  shiny::uiOutput(outputId = "intraCountry"),
