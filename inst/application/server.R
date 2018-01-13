@@ -674,7 +674,7 @@ shiny::shinyServer(function(input, output, session){
       
       countries <- shiny::isolate(input$countries)
       
-      if (is.null(countries))
+      if (is.null(countries) || length(countries) > 1)
         return()
       
       scale <- input$scale
@@ -685,7 +685,7 @@ shiny::shinyServer(function(input, output, session){
       admLevel <- ctryAdmLevels()[2]
 
       #return if the country doesn't have adm levels below country
-      if (is.na(admLevel))
+      if (is.null(admLevel) || is.na(admLevel))
         return()
       
       meltCtryData <- ctryNlDataMelted()
@@ -693,7 +693,7 @@ shiny::shinyServer(function(input, output, session){
       if (is.null(countries) || is.null(meltCtryData))
         return()
       
-      if ("norm_area" %in% scale)
+      if (normArea)
         meltCtryData$value <- (meltCtryData$value)/meltCtryData$area_sq_km
       
       #aggMeltCtryData <- stats::aggregate(mean(value), by=list(eval(admLevel)+variable), data=meltCtryData, mean)
@@ -770,7 +770,7 @@ shiny::shinyServer(function(input, output, session){
       isolate({
         meltCtryData <- ctryNlDataMelted()
         
-        if ("norm_area" %in% scale)
+        if (normArea)
           meltCtryData$value <- (meltCtryData$value)/meltCtryData$area_sq_km
         
         cutClusts <- stats::cutree(clusts, k=numClusters)
@@ -820,7 +820,7 @@ shiny::shinyServer(function(input, output, session){
         
         meltCtryData <- ctryNlDataMelted()
         
-        if ("norm_area" %in% scale)
+        if (normArea)
           meltCtryData$value <- (meltCtryData$value)/meltCtryData$area_sq_km
         
         ctryPoly0 <- rgdal::readOGR(Rnightlights::getPolyFnamePath(countries), Rnightlights::getCtryShpLyrName(countries,0))
@@ -914,7 +914,7 @@ shiny::shinyServer(function(input, output, session){
       shiny::isolate({
         meltCtryData <- ctryNlDataMelted()
         
-        if ("norm_area" %in% scale)
+        if (normArea)
           meltCtryData$value <- (meltCtryData$value)/meltCtryData$area_sq_km
 
         #ctryAvg <- aggregate(value ~ admLevel, data=meltCtryData, mean)
@@ -1005,7 +1005,7 @@ shiny::shinyServer(function(input, output, session){
           
           #print(paste0("ctrydata nrow:", nrow(ctryData)))
           
-          if ("norm_area" %in% scale)
+          if (normArea)
             ctryData$value <- (ctryData$value)/ctryData$area_sq_km
           
           if (graphType == "boxplot")
@@ -1016,10 +1016,10 @@ shiny::shinyServer(function(input, output, session){
             }
             else
             {
-              g <- ggplot2::ggplot(data=ctryData, aes(x=factor(variable), y=value, col=country)) + ggplot2::theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) + ggplot2::facet_grid(facets = year(variable) ~ month(variable)) + ggplot2::labs(col=admLevel)
+              g <- ggplot2::ggplot(data=ctryData, aes(x=factor(variable), y=value, col=country)) + ggplot2::theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) + ggplot2::labs(col=admLevel)
             }
-            
-            g <- g + ggplot2::geom_boxplot()# +facet_grid(.~variable)
+            browser()
+            g <- g + ggplot2::geom_boxplot() +facet_grid(.~variable)
           }
           else if (graphType == "line")
           {
@@ -1056,7 +1056,7 @@ shiny::shinyServer(function(input, output, session){
           if ("scale_x_log" %in% scale)
             g <- g + ggplot2::scale_x_log10()
           
-          if ("norm_area" %in% scale)
+          if (normArea)
             g <- g + ggplot2::labs(title="Nightlight Radiances", x = "Month", y = "Avg Rad (W.Sr^-1.cm^-2/Km2)") #y=expression(paste("Avg Rad W" %.% "Sr" ^{-1} %.% "cm" ^{-2}, "per Km" ^{2})))
           else
             g <- g + ggplot2::labs(title="Nightlight Radiances", x = "Month", y = "Total Rad (W.Sr^-1.cm^-2)") #y=expression(~Total~Rad~W %.% Sr^{-1}%.%cm^{-2}))
@@ -1068,7 +1068,8 @@ shiny::shinyServer(function(input, output, session){
     
     ######################## plotNightLights ###################################
     
-    output$plotNightLights <- plotly::renderPlotly({
+    #output$plotNightLights <- plotly::renderPlotly({
+    output$plotNightLights <- shiny::renderPlot({
       #print(paste0("here: renderPlot"))
       input$btnGo
       
@@ -1081,6 +1082,7 @@ shiny::shinyServer(function(input, output, session){
       nlYearMonthRange <- input$nlYearMonthRange
       graphType <- input$graphType
       nlType <- shiny::isolate(input$nlType)
+      normArea <- input$norm_area
       
       ctryData <- ctryNlDataMelted()
 
@@ -1134,19 +1136,21 @@ shiny::shinyServer(function(input, output, session){
       
       #print(paste0("ctrydata nrow:", nrow(ctryData)))
       
-      if ("norm_area" %in% scale)
+      if (input$norm_area)
         ctryData$value <- (ctryData$value)/ctryData$area_sq_km
 
       if (graphType == "boxplot")
       {
         if (length(countries)==1)
         {
-          g <- ggplot2::ggplot(data=ctryData, ggplot2::aes(x=factor(variable), y=value, col=ctryData[[admLevel]])) + ggplot2::theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) + ggplot2::labs(col=admLevel)
+          g <- ggplot2::ggplot(data=ctryData, ggplot2::aes(x=ctryData[[admLevel]], y=value, col=ctryData[[admLevel]])) + ggplot2::theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) + ggplot2::labs(col=admLevel) + facet_grid(lubridate::year(variable) ~ lubridate::month(x=variable, label=T, abbr=T))
         }
         else
         {
-          g <- ggplot2::ggplot(data=ctryData, ggplot2::aes(x=factor(variable), y=value, col=country)) + ggplot2::theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) + ggplot2::labs(col=admLevel)
+          g <- ggplot2::ggplot(data=ctryData, ggplot2::aes(x=country, y=value, col=country)) + ggplot2::theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5),panel.spacing.x=unit(0.1, "lines")) + ggplot2::labs(col=admLevel) + facet_grid(lubridate::year(variable) ~ lubridate::month(x=variable, label=T, abbr=T))
         }
+        
+        #ggplot2::ggplot(data = ctryData, ggplot2::aes(x = factor(variable), y = value, col = country)) + ggplot2::theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) + ggplot2::labs(col = admLevel) + geom_boxplot() + facet_grid(country ~ .)
         
         g <- g + ggplot2::geom_boxplot()# +facet_grid(.~variable)
       }
@@ -1181,7 +1185,7 @@ shiny::shinyServer(function(input, output, session){
         
         g <- ggplot2::ggplot(data=ctryData, aes(x=value))
         
-        g <- g + ggplot2::geom_histogram(aes(y=..density..), bins = 30, colour="black", fill="white") + ggplot2::geom_density(alpha=.2, fill="#FF6666") + ggplot2::facet_wrap(~ variable+country, ncol = length(countries)) # Overlay with transparent density plot
+        g <- g + ggplot2::geom_histogram(aes(y=..density..), bins = 30, colour="black", fill="white") + ggplot2::geom_density(alpha=.2, fill="#FF6666") + ggplot2::facet_grid(ctryData[[admLevel]] ~ lubridate::year(variable)) # Overlay with transparent density plot
 
       }
       else
@@ -1193,13 +1197,13 @@ shiny::shinyServer(function(input, output, session){
       if ("scale_x_log" %in% scale)
         g <- g + ggplot2::scale_x_log10()
       
-      if ("norm_area" %in% scale)
+      if (normArea)
         g <- g + ggplot2::labs(title="Nightlight Radiances", x = "Month", y = "Avg Rad (W.Sr^-1.cm^-2/Km2)") #y=expression(paste("Avg Rad W" %.% "Sr" ^{-1} %.% "cm" ^{-2}, "per Km" ^{2})))
       else
         g <- g + ggplot2::labs(title="Nightlight Radiances", x = "Month", y = "Total Rad (W.Sr^-1.cm^-2)") #y=expression(~Total~Rad~W %.% Sr^{-1}%.%cm^{-2}))
       
-      plotly::ggplotly(g)
-      
+      #plotly::ggplotly(g)
+      g
       })
     })
     
@@ -1333,7 +1337,7 @@ shiny::shinyServer(function(input, output, session){
 #         }
 #       }
 
-      if ("norm_area" %in% scale)
+      if (normArea)
         ctryData$value <- (ctryData$value)/ctryData$area_sq_km
 
       #print(paste0("ctrydata nrow:", nrow(ctryData)))
@@ -1429,7 +1433,7 @@ shiny::shinyServer(function(input, output, session){
           
 
           mapLabels <- sprintf(
-            paste0("<strong>%s:%s</strong>", "<br/>Area: %s km<superscript>2</superscript>","<br/>Date: %s", ifelse("norm_area" %in% scale, "<br/>Rad: %s /sq.km", "<br/>Rad: %s"), "<br/>Rank: %s/%s"),
+            paste0("<strong>%s:%s</strong>", "<br/>Area: %s km<superscript>2</superscript>","<br/>Date: %s", ifelse(normArea, "<br/>Rad: %s /sq.km", "<br/>Rad: %s"), "<br/>Rank: %s/%s"),
             ctryAdmLevels[iterAdmLevel], lvlCtryData[[ctryAdmLevels[iterAdmLevel]]], format(lvlCtryData[["area_sq_km"]],scientific = T,digits = 2), lvlCtryData[["variable"]], format(lvlCtryData[["value"]],scientific = T,digits = 2),  lvlCtryData[[paste0("rank",iterAdmLevel)]], nrow(lvlCtryData)
           ) %>% lapply(htmltools::HTML)
 
@@ -1512,7 +1516,7 @@ shiny::shinyServer(function(input, output, session){
                                  values = format(ctryData$value, scientific = T),
                                  labels = stats::quantile(ctryData$value, seq(0,1,0.1), na.rm=T),
                                  #title = "Nightlight percentiles",
-                                 title = ifelse("norm_area" %in% scale, "Rad/sq. Km.", "Total Rad"),
+                                 title = ifelse(norm_area, "Rad/sq. Km.", "Total Rad"),
                                  opacity = 1 )
 #       #Zoom in disabled
 #       if (exists("mapExtent"))

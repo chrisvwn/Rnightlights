@@ -92,7 +92,7 @@ alignCenter <- function(el) {
     shinydashboard::dashboardSidebar(
       shinydashboard::sidebarMenu(
       
-        #shinydashboard::menuItem("inputs", selected = TRUE,
+        shinydashboard::menuItem("Inputs", selected = TRUE, startExpanded = TRUE, tabName = "inputs",
                  
                  shiny::selectizeInput(inputId = "countries",
                                 label = "Select Country(ies)",
@@ -102,17 +102,23 @@ alignCenter <- function(el) {
 
                  shiny::actionButton("btnGo", "LOAD"),                 
 
-                 shiny::uiOutput("nlType"),
-                 
-                 shiny::uiOutput("ctryStats"),
-                 
                  shiny::uiOutput(outputId = "intraCountry"),
                  
-                 shiny::uiOutput("intraCountry1"),
+                 shiny::uiOutput("intraCountry1")
+                 ),
 
-#                 actionButton("btnIntraCtry", "Done"),
-                 
-                 shinydashboard::menuItem(text = "options", tabName = "plots",
+        shinydashboard::menuItem("Stats", selected = TRUE, startExpanded = TRUE, tabName = "stats",
+                                 shiny::uiOutput("nlType"),
+                                 
+                                 shiny::uiOutput("ctryStats"),
+                                 
+                                 shiny::checkboxInput(inputId = "norm_area",
+                                                           label = "norm_area",
+                                                           value = FALSE
+                                 )
+        ),
+
+                 shinydashboard::menuItem(text = "Options", tabName = "options",
 
                           shiny::radioButtons(inputId = "graphType",
                                        label = "Graph type",
@@ -123,7 +129,7 @@ alignCenter <- function(el) {
                           
                           shiny::checkboxGroupInput(inputId = "scale",
                                         label = "Scale",
-                                        choices = c("norm_area", "scale_x_log", "scale_y_log")
+                                        choices = c("scale_x_log", "scale_y_log")
                           )
                 )
         )#,
@@ -144,7 +150,7 @@ alignCenter <- function(el) {
       shinydashboard::dashboardBody(
         shinydashboard::tabBox(width = 12,
           shiny::tabPanel(title = "plots",
-                   plotly::plotlyOutput(outputId = "plotNightLights"),
+                   shiny::plotOutput(outputId = "plotNightLights"),
                    
                    shiny::uiOutput("sliderNlYearMonthRange")
                    ),
