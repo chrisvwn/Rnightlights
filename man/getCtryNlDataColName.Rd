@@ -11,7 +11,7 @@ getCtryNlDataColName(nlPeriod, stat, nlType)
 
 \item{stat}{character vector The stat to be stored in the column}
 
-\item{nlType}{character vector The type of nightlight i.e. "OLS" or VIIRS. Default=VIIRS}
+\item{nlType}{character vector The type of nightlight}
 }
 \value{
 character string
@@ -22,7 +22,6 @@ Construct the name of a nightlight data column given the nightlight type and nlP
 }
 \examples{
 
-Rnightlights:::getCtryNlDataColName("201612", "sum", nlType="VIIRS")
-  #returns the character string "NL_VIIRS_201612_SUM"
+Rnightlights:::getCtryNlDataColName("201612", "sum", nlType="VIIRS.M")
   
 }

@@ -1,13 +1,16 @@
 library(testthat)
 library(Rnightlights)
 
-nlTilesUrlOLS <- pkgOptions("ntLtsIndexUrlOLS")
+nlTilesUrlOLS <- pkgOptions("ntLtsIndexUrlOLS.Y")
 
-nlTilesUrlVIIRS <- pkgOptions("ntLtsIndexUrlVIIRS")
+nlTilesUrlVIIRS <- pkgOptions("ntLtsIndexUrlVIIRS.D")
 
 nlTilesOrig <- read.csv("nltiles.csv", header = T, stringsAsFactors = F)
+nlTilesOrigVIIRS <- nlTilesOrig[grep("VIIRS", nlTilesOrig$type),]
+nlTilesOrigOLS <- nlTilesOrig[grep("OLS", nlTilesOrig$type),]
 
-nlTiles <- Rnightlights:::getNlTiles()
+nlTilesVIIRS <- Rnightlights:::getNlTiles("VIIRS.M")
+nlTilesOLS <- Rnightlights:::getNlTiles("OLS.Y")
 
 noaaDownloadSiteIsAvailable <- function(dnldSite="www.ngdc.noaa.gov")
 {

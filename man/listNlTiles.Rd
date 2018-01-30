@@ -30,9 +30,9 @@ listNlTiles(nlTypes = "VIIRS")
 
 #list all VIIRS tiles available in the years 2014-2015. Note VIIRS data
 #starts in 201401
-listNlTiles(nlTypes = "VIIRS", nlPeriods = nlRange("201401", "201512"))
+listNlTiles(nlTypes = "VIIRS.M", nlPeriods = nlRange("201401", "201512"))
 
 #filter data
-listNlTiles(nlTypes = "OLS", nlPeriods = c("2012", "2013"))
+listNlTiles(nlTypes = "OLS.Y", nlPeriods = c("2012", "2013"))
 
 }

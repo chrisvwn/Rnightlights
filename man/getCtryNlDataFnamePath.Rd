@@ -4,7 +4,7 @@
 \alias{getCtryNlDataFnamePath}
 \title{Construct the full path to save the file containing the country data}
 \usage{
-getCtryNlDataFnamePath(ctryCode)
+getCtryNlDataFnamePath(ctryCode, admLevel)
 }
 \arguments{
 \item{ctryCode}{character string The ctryCode of interest}

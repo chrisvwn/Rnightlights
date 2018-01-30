@@ -70,7 +70,7 @@ masqVIIRS <- function(ctryPoly, ctryRast, idx)
 #'
 #' @examples
 #' \dontrun{
-#' ctryPoly <- readOGR(getPolyFnamePath("KEN"), getCtryShpLyrName("KEN", 1))
+#' ctryPoly <- readOGR(getPolyFnamePath("KEN"), getCtryShpLyrNames("KEN", 1))
 #' ctryRaster <- raster(getCtryRasterOutputFname("KEN", "OLS", "1999"))
 #' temp <- NULL
 #' KenAdm1Sum <- NULL

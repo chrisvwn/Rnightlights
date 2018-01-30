@@ -15,7 +15,7 @@ insertNlDataCol(ctryNlDataDF, dataCol, statType, nlPeriod, nlType)
 
 \item{nlPeriod}{the nlPeriod that the dataCol belongs to}
 
-\item{nlType}{the type of nightlight data i.e. "OLS" or "VIIRS"}
+\item{nlType}{the type of nightlight data}
 }
 \value{
 the updated dataframe
@@ -28,12 +28,12 @@ Insert an aggregate nightlight data column in a country nightlights dataframe. T
 
 \dontrun{
 ctryNlDataDF <- Rnightlights:::insertNlDataCol(ctryNlDataDF, 
-    dataCol, "sum", "201409", "VIIRS")
+    dataCol, "sum", "201409", "VIIRS.D")
     }
 
 \dontrun{
 ctryNlDataDF <- Rnightlights:::insertNlDataCol(ctryNlDataDF, 
-    dataCol, "mean", "2012", "OLS")
+    dataCol, "mean", "2012", "OLS.Y")
     }
 
 }

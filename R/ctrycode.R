@@ -2,9 +2,9 @@
 
 #' Convert a country name to its ISO3 code
 #'
-#' Convert a country name to its ISO3 code. Exposes the rworldmap function
-#'     rwmGetISO3(ctryName). See the examples. With no parameters returns a 
-#'     list of ctryNames and their corresponding codes as given by rworldMap
+#' Convert a country name to its ISO3 code. Searches the rworldmap map data.
+#'     With no parameters returns a list of ctryNames and their corresponding
+#'     codes as given by rworldMap
 #'
 #' @param ctryName Chracter string common name of a country
 #'
@@ -18,23 +18,57 @@
 #' ctryNameToCode("jamaica") #returns JAM
 #'
 #' @export
-ctryNameToCode <- function(ctryName)
+ctryNameToCode <- function(ctryNames)
 {
-  NAME <- NULL #to avoid global variable note in CRAN
-  
-  if(missing(ctryName))
+  ADMIN <- NULL #to avoid global variable note in CRAN
+
+  if(missing(ctryNames))
   {
-    ctryList <- rworldmap::getMap()@data[,c("NAME", "ISO3")]
+    ctryList <- rworldmap::getMap()@data[,c("ADMIN", "ISO3")]
     
-    ctryList <- dplyr::arrange(ctryList, NAME)
+    ctryList <- dplyr::arrange(ctryList, ADMIN)
     
     return(ctryList)
   }
   
-  if (class(ctryName) != "character" || is.null(ctryName) || is.na(ctryName) || ctryName =="" || length(grep("[^[:alpha:]| ]", ctryName) > 0))
-    stop("Invalid ctryName: ", ctryName)
+  if (class(ctryNames) != "character" || is.null(ctryNames) || is.na(ctryNames) || ctryNames =="")
+    stop("Invalid ctryName: ", ctryNames)
+
+  hasNonAlpha <- sapply(ctryNames, function(ctryName) stringr::str_detect(ctryName, "[^[:alpha:]| ]"))
   
-  return (suppressWarnings(rworldmap::rwmGetISO3(ctryName)))
+  if(any(hasNonAlpha))
+    stop("Invalid ctryNames detected: ", paste0(ctryNames[hasNonAlpha], sep=","))
+  
+  ctryList <- rworldmap::getMap()@data[,c("ISO3", "ADMIN")]
+  
+  idx <- unlist(sapply(ctryNames, function(ctryName)
+    {
+      idxRes <- which(tolower(ctryList$ADMIN) == tolower(ctryName))
+      
+      #mark not found names with -1
+      if(identical(idxRes, integer(0)))
+        idxRes <- -1
+      
+      return(idxRes)
+    })
+  )
+
+  foundIdx <- which(idx != -1)
+  notFoundIdx <- which(idx == -1)
+
+  #init result to the idx  
+  result <- idx
+  
+  #for the idxs we found retrieve the name
+  if(length(foundIdx)>0)
+    result[foundIdx] <- as.character(ctryList[idx[foundIdx], "ISO3"])
+  
+  #for the idxs not found try using rwmGetISO3 which does a more 
+  #in-depth search for country names
+  if(length(notFoundIdx) > 0)
+    result[notFoundIdx] <- unlist(sapply(ctryNames[notFoundIdx], function(cName)rworldmap::rwmGetISO3(cName)))
+  
+  return(result)
 }
 
 ######################## ctryCodeToName ###################################
@@ -68,7 +102,7 @@ ctryCodeToName <- function(ctryCode)
   
   if(missing(ctryCode))
   {
-    ctryList <- rworldmap::getMap()@data[,c("ISO3", "NAME")]
+    ctryList <- rworldmap::getMap()@data[,c("ISO3", "ADMIN")]
     
     ctryList <- dplyr::arrange(ctryList, ISO3)
     
@@ -79,13 +113,19 @@ ctryCodeToName <- function(ctryCode)
     stop("Invalid ctryCode: ", ctryCode)
   
   #rworldmap::isoToName can resolve 2-letter ctryCodes but we only want 3-letter ISO3 codes
-  if(nchar(ctryCode) != 3)
-  {
-    warning("Only 3-letter ISO3 codes allowed")
-    return(NA)
-  }
+  # if(nchar(ctryCode) != 3)
+  # {
+  #   warning("Only 3-letter ISO3 codes allowed")
+  # }
   
-  return( suppressWarnings(rworldmap::isoToName(ctryCode)))
+  ctryList <- rworldmap::getMap()@data[,c("ISO3", "ADMIN")]
+  
+  idx <- which(toupper(ctryList$ISO3) == toupper(ctryCode))
+               
+  if(length(idx) == 1)
+    return(as.character(ctryList[idx, "ADMIN"]))
+  else
+    return(NA)
 }
 
 ######################## validCtryCode ###################################
@@ -100,24 +140,27 @@ ctryCodeToName <- function(ctryCode)
 #' @return TRUE/FALSE
 #'
 #' @examples
-#' validCtryCode("KEN") #returns TRUE
+#' validCtryCodes("KEN") #returns TRUE
 #'
-#' validCtryCode("UAE") #returns FALSE. "United Arab Emirates" ISO3 code = "ARE"
+#' validCtryCodes("UAE") #returns FALSE. "United Arab Emirates" ISO3 code = "ARE"
 #'
 #'@export
-validCtryCode <- function(ctryCode)
+validCtryCodes <- function(ctryCodes)
 {
-  if(missing(ctryCode))
+  if(missing(ctryCodes))
     stop("Missing required parameter ctryCode")
   
   #if the format is invalid return FALSE no need to return an error
-  if (class(ctryCode) != "character" || is.null(ctryCode) || is.na(ctryCode) || ctryCode =="" || length(grep("[^[:alpha:]]", ctryCode) > 0))
+  if (class(ctryCodes) != "character" || is.null(ctryCodes) || is.na(ctryCodes) || ctryCodes =="")
     return(FALSE)
   
-  if(is.na(suppressWarnings(ctryCodeToName(ctryCode))))
-    return(FALSE)
-  else
-    return(TRUE)
+  return(toupper(ctryCodes) %in% toupper(getAllNlCtryCodes()))
+}
+
+#'@export
+allValidCtryCodes <- function(ctryCodes)
+{
+  return(all(validCtryCodes(ctryCodes)))
 }
 
 ######################## getAllNlCtryCodes ###################################
@@ -133,6 +176,7 @@ validCtryCode <- function(ctryCode)
 #'
 #' @return character vector of country codes
 #'
+#'@export
 getAllNlCtryCodes <- function(omit="none")
 {
   #omit is a vector and can contain "long", "missing" or "error"
@@ -163,10 +207,7 @@ getAllNlCtryCodes <- function(omit="none")
   #rworldmap has more country codes in countryRegions$ISO3 than in the map itself
   #select ctryCodes from the map data itself
   map <- rworldmap::getMap()
-  
-  #some polygons have problems. use cleangeo package to rectify
-  map <- cleangeo::clgeo_Clean(map)
-  
+
   #get the list of country codes from the rworldmap
   ctryCodes <- as.character(map@data$ISO3)
   

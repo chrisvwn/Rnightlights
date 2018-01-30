@@ -16,7 +16,7 @@ Run a web application to perform some exploratory data analysis. The
     processed and cached locally.
 }
 \examples{
-\donttest{
+\dontrun{
 exploreData()
 }
 

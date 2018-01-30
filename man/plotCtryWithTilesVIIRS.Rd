@@ -4,7 +4,7 @@
 \alias{plotCtryWithTilesVIIRS}
 \title{Plot a country polygon against a background of the VIIRS tiles and world map}
 \usage{
-plotCtryWithTilesVIIRS(idx)
+plotCtryWithTilesVIIRS(ctry)
 }
 \arguments{
 \item{idx}{character string or integer either the index of the country polygon in 
@@ -28,8 +28,5 @@ Plot a country polygon as defined in the \pkg{rworldmap} package along with the 
 
 #by index in rworldmap
 \dontrun{plotCtryWithTilesVIIRS(115)}
-
-#by index passed as char string
-\dontrun{plotCtryWithTilesVIIRS("24")}
 
 }

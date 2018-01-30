@@ -4,14 +4,12 @@
 \alias{getCtryNlData}
 \title{Returns nightlight statistics for the given ctryCode and nlType in the given nPeriods}
 \usage{
-getCtryNlData(ctryCode, nlType, nlPeriods, nlStats = pkgOptions("nlStats"),
-  ignoreMissing = NULL, source = "local")
+getCtryNlData(ctryCode, admLevel, nlTypes, nlPeriods,
+  nlStats = pkgOptions("nlStats"), ignoreMissing = NULL, source = "local")
 }
 \arguments{
 \item{ctryCode}{the ISO3 code of the country. Only 1 country can be 
 processed at a time}
-
-\item{nlType}{the nightlight type i.e. "OLS" or "VIIRS" (default)}
 
 \item{nlPeriods}{a vector of nlPeriods. Must be appropriate nlPeriods
 for the nlType.}
@@ -34,6 +32,8 @@ found in the data file
 \item{source}{"local" or "remote" Whether to download and process the
 data locally or to download the pre-processed data from a remote 
 source/repo}
+
+\item{nlType}{the nightlight type}
 }
 \value{
 dataframe of data for one country in one nlType in one or multiple

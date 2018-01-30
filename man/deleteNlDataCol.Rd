@@ -9,7 +9,7 @@ deleteNlDataCol(ctryCode, nlType, nlPeriod, statType)
 \arguments{
 \item{ctryCode}{country with the  data column to remove}
 
-\item{nlType}{the type of nightlight data i.e. "OLS" or "VIIRS"}
+\item{nlType}{the type of nightlight data}
 
 \item{nlPeriod}{the nlPeriod that the dataCol belongs to}
 
@@ -23,12 +23,12 @@ Delete an aggregate nightlight data column in a country nightlights dataframe. T
 
 \dontrun{
 ctryNlDataDF <- Rnightlights:::deleteNlDataCol(ctryNlDataDF, 
-     "VIIRS", "201409", "sum")
+     "VIIRS.M", "201409", "sum")
      }
 
 \dontrun{
 Rnightlights:::deleteNlDataCol(ctryNlDataDF, 
-    "OLS", "2012", "mean")
+    "OLS.Y", "2012", "mean")
     }
 
 }

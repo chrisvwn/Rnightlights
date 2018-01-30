@@ -4,12 +4,14 @@
 \alias{getNlTileTifLclNamePathVIIRS}
 \title{Constructs the full path used to save/access the decompressed VIIRS .tif file}
 \usage{
-getNlTileTifLclNamePathVIIRS(nlYearMonth, tileNum)
+getNlTileTifLclNamePathVIIRS(nlPeriod, tileNum, nlType)
 }
 \arguments{
-\item{nlYearMonth}{the yearMonth in which the tile was created}
+\item{nlPeriod}{the yearMonth in which the tile was created}
 
 \item{tileNum}{the index of the tile as given in nlTileIndex}
+
+\item{nlType}{The particular VIIRS type e.g. VIIRS_D for daily VIIRS}
 }
 \value{
 a character vector filename of the .tif VIIRS tile

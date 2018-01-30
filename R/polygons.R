@@ -22,7 +22,7 @@ getCtryPolyUrl <- function(ctryCode)
   if(missing(ctryCode))
     stop("Missing required parameter ctryCode")
   
-  if(!validCtryCode(ctryCode))
+  if(!validCtryCodes(ctryCode))
     stop("Invalid ctryCode: ", ctryCode)
   
   #Sample url: http://biogeo.ucdavis.edu/data/gadm2.8/shp/AFG_adm_shp.zip
@@ -70,7 +70,7 @@ existsPolyFnameZip <- function(ctryCode)
   if(missing(ctryCode))
     stop("Missing required parameter ctryCode")
   
-  if(!validCtryCode(ctryCode))
+  if(!validCtryCodes(ctryCode))
     stop("Invalid ctryCode: ", ctryCode)
   
   return(file.exists(getPolyFnameZip(ctryCode)))
@@ -90,23 +90,34 @@ existsPolyFnameZip <- function(ctryCode)
 #' @return Character layer name
 #'
 #' @examples
-#' lyrName <- getCtryShpLyrName("KEN","0") #top layer name
+#' lyrName <- getCtryShpLyrNames("KEN","0") #top layer name
 #'   #returns "KEN_adm0"
 #'
 #' #@export only due to exploreData() shiny app
 #' @export
-getCtryShpLyrName <- function(ctryCode, lyrNum)
+getCtryShpLyrNames <- function(ctryCodes, lyrNums)
 {
-  if(missing(ctryCode))
+  if(missing(ctryCodes))
     stop("Missing required parameter ctryCode")
   
-  if(!validCtryCode(ctryCode))
-    stop("Invalid ctryCode: ", ctryCode)
+  if(!allValidCtryCodes(ctryCodes))
+    stop("Invalid ctryCode detected")
   
-  return(paste0(ctryCode, "_adm", lyrNum))
+  admLyrNames <- stats::setNames(lapply(ctryCodes, function(ctryCode)
+  {
+    layers <- rgdal::ogrListLayers(path.expand(getPolyFnamePath(ctryCode)))
+    
+    admLayers <- layers[grep("adm", layers)]
+    
+    admLayerNums <- sapply(lyrNums, function(lyrNum) grep(lyrNum, admLayers))
+    
+    admLyrName <- admLayers[as.numeric(admLayerNums)]
+  }), ctryCodes)
+  
+  admLyrNames
 }
 
-######################## getCtryShpLowestLyrName ###################################
+######################## getCtryShpLowestLyrNames ###################################
 
 #' Get the name of the lowest ctry admin level
 #'
@@ -116,23 +127,27 @@ getCtryShpLyrName <- function(ctryCode, lyrNum)
 #'
 #' @return character string The name of the lowest admin level
 #'
-getCtryShpLowestLyrName <- function(ctryCode)
+getCtryShpLowestLyrNames <- function(ctryCodes)
 {
-  if(missing(ctryCode))
+  if(missing(ctryCodes))
     stop("Missing required parameter ctryCode")
   
-  if(!validCtryCode(ctryCode))
-    stop("Invalid ctryCode: ", ctryCode)
+  if(!allValidCtryCodes(ctryCodes))
+    stop("Invalid ctryCode(s) detected ")
   
-  layers <- rgdal::ogrListLayers(path.expand(getPolyFnamePath(ctryCode)))
+  lowestAdmLyrNames <- setNames(sapply(ctryCodes, function(ctryCode)
+  {
+
+    layers <- rgdal::ogrListLayers(path.expand(getPolyFnamePath(ctryCode)))
+    
+    admLayers <- layers[grep("adm", layers)]
+    
+    admLayerNums <- gsub("[^[:digit:]]", "", admLayers)
+    
+    lowestAdmLyrName <- admLayers[order(as.numeric(admLayerNums),decreasing = T)][1]
+  }), ctryCodes)
   
-  admLayers <- layers[grep("adm", layers)]
-  
-  admLayerNums <- gsub("[^[:digit:]]", "", admLayers)
-  
-  lowestAdmLyrName <- admLayers[order(as.numeric(admLayerNums),decreasing = T)][1]
-  
-  return(lowestAdmLyrName)
+  return(lowestAdmLyrNames)
 }
 
 ######################## getCtryPolyAdmLevelNames ###################################
@@ -152,15 +167,15 @@ getCtryShpLowestLyrName <- function(ctryCode)
 #' #if KEN shapefile exists otherwise errors
 #' }
 #'
-getCtryPolyAdmLevelNames <- function(ctryCode)
+getCtryPolyAdmLevelNames <- function(ctryCode, lowestAdmLevel=getCtryShpLowestLyrNames(ctryCode))
 {
   if(missing(ctryCode))
     stop("Missing required parameter ctryCode")
   
-  if(!validCtryCode(ctryCode))
+  if(!validCtryCodes(ctryCode))
     stop("Invalid ISO3 ctryCode: ", ctryCode)
   
-  lowestLayer <- getCtryShpLowestLyrName(ctryCode)
+  lowestLayer <- lowestAdmLevel
   
   numLayers <- ctryShpLyrName2Num(lowestLayer)
   
@@ -169,7 +184,7 @@ getCtryPolyAdmLevelNames <- function(ctryCode)
   if (numLayers > 0)
     for (lyrNum in 1:numLayers)
     {
-      lyrPoly <- rgdal::readOGR(path.expand(getPolyFnamePath(ctryCode)), getCtryShpLyrName(ctryCode, lyrNum))
+      lyrPoly <- rgdal::readOGR(path.expand(getPolyFnamePath(ctryCode)), as.character(getCtryShpLyrNames(ctryCode, lyrNum)))
       
       lvlTypeName <- paste0("TYPE_",lyrNum)
       
@@ -195,6 +210,47 @@ getCtryPolyAdmLevelNames <- function(ctryCode)
   return (admLevels)
 }
 
+validCtryAdmLvls <- function(ctryCode, admLevels)
+{
+  if(missing(ctryCode))
+    stop("Missing required parameter ctryCode")
+  
+  if(length(ctryCode) > 1)
+    stop("Only one ctryCode can be processed at a time")
+  
+  if(!validCtryCodes(ctryCode))
+    stop("Invalid ISO3 ctryCode: ", ctryCode)
+  
+  ctryAdmLvls <- getCtryShpAllAdmLvls(ctryCode)
+  
+  validAdmLvls <- sapply(toupper(admLevels), `%in%`, sapply(ctryAdmLvls, toupper))
+  
+  if(!all(validAdmLvls))
+    message("Invalid admLevels: ", ctryCode, ":", admLevels[!validAdmLvls])
+  
+  return(validAdmLvls)
+}
+
+allValidCtryAdmLvls <- function(ctryCode, admLevels)
+{
+  return(all(validCtryAdmLvls(ctryCode, admLevels)))
+}
+
+getCtryShpAllAdmLvls <- function(ctryCodes)
+{
+  setNames(lapply(ctryCodes, 
+         function(ctryCode)
+         {
+           lvl <- gsub("[^[:digit:]]","", getCtryShpLowestLyrNames(ctryCode)); 
+           adms <- apply(cbind(0:lvl,ctryCode), 1,
+                         function(lv) 
+                         {
+                           adm <- getCtryShpLyrNames(unlist(lv)[2], unlist(lv)[1])
+                         })
+           as.character(unlist(adms))
+         }),ctryCodes)
+}
+
 ######################## getPolyFname ###################################
 
 #' Returns the directory name of the unzipped shapefile downloaded from
@@ -216,7 +272,7 @@ getPolyFname <- function(ctryCode)
   if(missing(ctryCode))
     stop("Missing required parameter ctryCode")
   
-  if(!validCtryCode(ctryCode))
+  if(!validCtryCodes(ctryCode))
     stop("Invalid ctryCode: ", ctryCode)
   
   #format of shapefiles is CTR_adm_shp e.g. KEN_adm_shp
@@ -250,7 +306,7 @@ getPolyFnamePath <- function(ctryCode)
   if(missing(ctryCode))
     stop("Missing required parameter ctryCode")
   
-  if(!validCtryCode(ctryCode))
+  if(!validCtryCodes(ctryCode))
     stop("Invalid ctryCode: ", ctryCode)
   
   #check for the shapefile directory created with
@@ -279,7 +335,7 @@ getPolyFnameZip <- function(ctryCode)
   if(missing(ctryCode))
     stop("Missing required parameter ctryCode")
   
-  if(!validCtryCode(ctryCode))
+  if(!validCtryCodes(ctryCode))
     stop("Invalid ctryCode: ", ctryCode)
   
   #format of shapefiles is <ctryCode>_adm_shp e.g. KEN_adm_shp

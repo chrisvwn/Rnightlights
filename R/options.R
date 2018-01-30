@@ -41,7 +41,11 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   #url if it is changed while the package is being updated
   ntLtsIndexUrlOLS = "https://www.ngdc.noaa.gov/eog/data/web_data/v4composites/",
   
-  ntLtsIndexUrlVIIRS = "https://www.ngdc.noaa.gov/eog/viirs/download_dnb_composites_iframe.html",
+  ntLtsIndexUrlVIIRS.D = "https://ngdc.noaa.gov/eog/viirs/download_ut_mos_tile_iframe.html",
+  
+  ntLtsIndexUrlVIIRS.M = "https://www.ngdc.noaa.gov/eog/viirs/download_dnb_composites_iframe.html",
+  
+  ntLtsIndexUrlVIIRS.Y = "https://www.ngdc.noaa.gov/eog/viirs/download_dnb_composites_iframe.html",
 
   numCores = 2,
   

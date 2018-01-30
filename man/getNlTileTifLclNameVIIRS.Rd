@@ -4,12 +4,14 @@
 \alias{getNlTileTifLclNameVIIRS}
 \title{Constructs the filename of the decompressed VIIRS .tif file}
 \usage{
-getNlTileTifLclNameVIIRS(nlYearMonth, tileNum)
+getNlTileTifLclNameVIIRS(nlPeriod, tileNum, nlType)
 }
 \arguments{
-\item{nlYearMonth}{the nlYearMonth in which the tile was created}
+\item{nlPeriod}{the nlPeriod in which the tile was created}
 
 \item{tileNum}{the index of the tile as given in nlTileIndex}
+
+\item{nlType}{character string the nlType}
 }
 \value{
 a character vector filename of the .tif VIIRS tile
@@ -20,7 +22,7 @@ Constructs the filename of the decompressed VIIRS .tif file
 \examples{
 #using default dirNlTiles
 \dontrun{
-Rnightlights:::getNlTileTifLclNameVIIRS("201401", 1)
+Rnightlights:::getNlTileTifLclNameVIIRS("201401", 1, "VIIRS.M")
  #returns "VIIRS_201401_75N180W.tif"
  }
 

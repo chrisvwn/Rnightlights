@@ -75,45 +75,56 @@ getNlUrlOLS <- function(nlYear)
 #'
 #' Function to return the url of the VIIRS tile to download given the year, month, and nlTile index
 #'
-#' @param nlYearMonth character string yearmonth in "YYYYMM' format e.g. "201401"
+#' @param nlPeriod character string the nlPeriod
 #'
 #' @param tileNum The integer index of the tile to download as given by getNlTiles("VIIRS")
+#' 
+#' @param nlType character the nlType
 #'
 #' @return Character string Url of the VIIRS tile file
 #'
 #' @examples
 #' \dontrun{
-#' tileUrl <- Rnightlights:::getNlUrlVIIRS("201401", "1")
+#' tileUrl <- Rnightlights:::getNlUrlVIIRS("20171231", "1", "VIIRS.D")
+#' 
+#' tileUrl <- Rnightlights:::getNlUrlVIIRS("201401", "1", "VIIRS.M")
+#' 
+#' tileUrl <- Rnightlights:::getNlUrlVIIRS("2015", "1", "VIIRS.Y")
 #' }
 #'
-getNlUrlVIIRS <- function(nlYearMonth, tileNum)
+getNlUrlVIIRS <- function(nlPeriod, tileNum, nlType)
 {
-  if(missing(nlYearMonth))
-    stop("Missing required parameter nlYearMonth")
+  if(missing(nlPeriod))
+    stop("Missing required parameter nlPeriod")
   
   if(missing(tileNum))
     stop("Missing required parameter tileNum")
   
-  if(!validNlPeriodVIIRS(nlYearMonth))
-    stop("Invalid nlYearMonth")
+  if(missing(nlType))
+    stop("Missing required parameter nlType")
+  
+  if(!allValidNlPeriods(nlPeriod, nlType))
+    stop("Invalid nlPeriod")
   
   #in case nlTiles exists globally from elsewhere
   if (!exists("nlTiles") || nrow(nlTiles) != 6)
-    nlTiles <- getNlTiles("VIIRS")
+    nlTiles <- getNlTiles(nlType)
   
-  inYear <- as.character(substr(nlYearMonth, 1, 4))
+  inYear <- as.character(substr(nlPeriod, 1, 4))
   
-  inMonth <- as.character(substr(nlYearMonth, 5, 6))
+  inMonth <- as.character(substr(nlPeriod, 5, 6))
+  
+  inDay <- as.character(substr(nlPeriod, 7, 8))
   
   #nlTile is a global list
   
   #the page that lists all available nightlight files NOTE: URL CHANGE from "https://www.ngdc.noaa.gov/eog/viirs/download_mon_mos_iframe.html"
   #ntLtsPageHtml <- "https://www.ngdc.noaa.gov/eog/viirs/download_dnb_composites_iframe.html"
   
-  ntLtsIndexUrlVIIRS <- pkgOptions("ntLtsIndexUrlVIIRS")
-  
+  ntLtsIndexUrlVIIRS <- pkgOptions(paste0("ntLtsIndexUrl", nlType))
+
   #the local name of the file once downloaded
-  ntLtsPageLocalName <- file.path(getNlDir("dirNlTemp"),"ntltspageviirs.html")
+  ntLtsPageLocalName <- file.path(getNlDir("dirNlTemp"),paste0("ntltspage", nlType, ".html"))
   
   #if the file does not exist or is older than a week download it afresh
   if (!file.exists(ntLtsPageLocalName) || (lubridate::date(lubridate::now()) - lubridate::date(file.mtime(ntLtsPageLocalName)) > lubridate::as.difftime(lubridate::period("1 day"))) || file.size(ntLtsPageLocalName) == 0)
@@ -129,10 +140,17 @@ getNlUrlVIIRS <- function(nlYearMonth, tileNum)
   #search for a line containing the patterns that make the files unique i.e.
   #1. SVDNB_npp_20141001 - year+month+01
   #2. vcmcfg - for file with intensity as opposed to cloud-free counts (vcmslcfg)
-  #sample url: https://data.ngdc.noaa.gov/instruments/remote-sensing/passive/spectrometers-radiometers/imaging/viirs/dnb_composites/v10//201210/vcmcfg/SVDNB_npp_20121001-20121031_75N180W_vcmcfg_v10_c201602051401.tgz
+  #sample url VIIRS Daily: https://data.ngdc.noaa.gov/instruments/remote-sensing/passive/spectrometers-radiometers/imaging/viirs/mosaics//20180114/SVDNB_npp_d20180114.d.00N060E.rade9.tif
+  #sample url VIIRS Monthly: https://data.ngdc.noaa.gov/instruments/remote-sensing/passive/spectrometers-radiometers/imaging/viirs/dnb_composites/v10//201210/vcmcfg/SVDNB_npp_20121001-20121031_75N180W_vcmcfg_v10_c201602051401.tgz
   
   #create the pattern
-  ntLtsPageRgxp <- paste0("SVDNB_npp_", inYear, inMonth, "01.*", nlTiles[tileNum,"name"], ".*vcmcfg")
+  if(stringr::str_detect(nlType, "D"))
+    ntLtsPageRgxp <- paste0("SVDNB_npp_d", nlPeriod, "\\.d\\.", nlTiles[tileNum,"name"], "\\.(rade9\\.tif)")
+  else if(stringr::str_detect(nlType, "M"))
+    ntLtsPageRgxp <- paste0("SVDNB_npp_", nlPeriod, "01.*", nlTiles[tileNum,"name"], ".*vcmcfg")
+  else if(stringr::str_detect(nlType, "Y"))
+    ntLtsPageRgxp <- paste0("SVDNB_npp_", nlPeriod, "0101-", nlPeriod, "1231_", nlTiles[tileNum,"name"], ".*tgz")
+  
   
   #search for the pattern in the page
   ntLtsPageHtml <- ntLtsPage[grep(pattern = ntLtsPageRgxp, x=ntLtsPage)]
@@ -140,13 +158,6 @@ getNlUrlVIIRS <- function(nlYearMonth, tileNum)
   #split the output on quotes since this url is of the form ...<a href="URL"download> ...
   #the url is in the second position
   ntLtsPageUrl <- unlist(strsplit(ntLtsPageHtml, '"'))[2]
-  
-  #****NOTE: temp for testing using local download****
-  #
-  #fname <- stringr::str_extract(ntLtsPageUrl, "SVDNB.*.tgz")
-  #ntLtsPageUrl <- paste0("http://localhost/", fname)
-  #
-  #****DELETE WHEN DONE****
-  
+
   return (ntLtsPageUrl)
 }

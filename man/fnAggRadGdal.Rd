@@ -4,7 +4,7 @@
 \alias{fnAggRadGdal}
 \title{Calculate zonal statistics using GDAL. Faster than fnAggRadRast for large polygons.}
 \usage{
-fnAggRadGdal(ctryCode, ctryPoly, nlType, nlPeriod,
+fnAggRadGdal(ctryCode, admLevel, ctryPoly, nlType, nlPeriod,
   nlStats = pkgOptions("nlStats"))
 }
 \arguments{
@@ -29,7 +29,7 @@ Calculate zonal statistics. Alternative to fnAggRadRast using GDAL. Faster for l
 #read the Kenya polygon downloaded from GADM and load the lowest admin level (ward)
 \dontrun{
 ctryPoly <- rgdal::readOGR(Rnightlights:::getPolyFnamePath(ctryCode="KEN"), 
-    Rnightlights:::getCtryShpLowestLyrName(ctryCode="KEN"))
+    Rnightlights:::getCtryShpLowestLyrNames(ctryCode="KEN"))
     
 #calculate the sum of radiances for the wards in Kenya
 sumAvgRadRast <- Rnightlights:::fnAggRadGdal(ctryCode="KEN", ctryPoly=ctryPoly,

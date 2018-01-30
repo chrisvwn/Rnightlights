@@ -4,7 +4,7 @@
 \alias{getAllNlPeriods}
 \title{Generate a list of all possible nlPeriods for a given nlType}
 \usage{
-getAllNlPeriods(nlType)
+getAllNlPeriods(nlTypes)
 }
 \arguments{
 \item{nlType}{type of nightlight either "VIIRS" or "OLS"}
@@ -16,10 +16,10 @@ character vector list of nlPeriods
 Generate a list of all possible nlPeriods for a given nlType
 }
 \examples{
-getAllNlPeriods("OLS")
+getAllNlPeriods("OLS.Y")
  #returns a vector of all years from 1994 to 2013
 
-getAllNlPeriods("VIIRS")
+getAllNlPeriods("VIIRS.M")
  #returns a vector of all yearMonths from 201401 to present
 
 }

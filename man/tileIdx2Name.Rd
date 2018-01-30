@@ -18,6 +18,6 @@ Character name of the tile
 Get the name of a VIIRS tile as given by getNlTiles() given its index
 }
 \examples{
-Rnightlights:::tileName2Idx("00N060W", "VIIRS")
+Rnightlights:::tileName2Idx("00N060W", "VIIRS.M") #returns 6
 
 }

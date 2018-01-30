@@ -4,7 +4,7 @@
 \alias{saveCtryNlData}
 \title{Save a data frame of a country's data to the appropriate location}
 \usage{
-saveCtryNlData(ctryNlDataDF, ctryCode)
+saveCtryNlData(ctryNlDataDF, ctryCode, admLevel)
 }
 \arguments{
 \item{ctryNlDataDF}{dataframe with the country data to save}

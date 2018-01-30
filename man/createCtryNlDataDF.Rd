@@ -4,7 +4,7 @@
 \alias{createCtryNlDataDF}
 \title{Initiates the country nightlight dataframe with the country data read from the polygon}
 \usage{
-createCtryNlDataDF(ctryCode)
+createCtryNlDataDF(ctryCode, admLevel = getCtryShpLowestLyrNames(ctryCode))
 }
 \arguments{
 \item{ctryCode}{the ISO3 code of the country}

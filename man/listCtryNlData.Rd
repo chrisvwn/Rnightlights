@@ -35,6 +35,6 @@ listCtryNlData(ctryCodes = "KEN")
 listCtryNlData(ctryCodes = "ECU", nlTypes = "VIIRS")
 
 #list available OLS data for KEN and RWA in 2012 & 2013
-listCtryNlData(ctryCodes = c("KEN","RWA"), nlPeriods = c("2012", "2013"), nlTypes = "OLS")
+listCtryNlData(ctryCodes = c("KEN","RWA"), nlPeriods = c("2012", "2013"), nlTypes = "OLS.Y")
 
 }

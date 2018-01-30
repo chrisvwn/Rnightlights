@@ -4,12 +4,14 @@
 \alias{getNlTileZipLclNameVIIRS}
 \title{Constructs the filename used to save/access the downloaded VIIRS tile .tgz file}
 \usage{
-getNlTileZipLclNameVIIRS(nlYearMonth, tileNum)
+getNlTileZipLclNameVIIRS(nlPeriod, tileNum, nlType)
 }
 \arguments{
-\item{nlYearMonth}{The nlYearMonth in which the tile was created}
+\item{nlPeriod}{The nlYearMonth in which the tile was created}
 
 \item{tileNum}{The index of the tile as given in nlTileIndex}
+
+\item{nlType}{character the nlType}
 }
 \value{
 A character string filename of the compressed .tgz VIIRS tile

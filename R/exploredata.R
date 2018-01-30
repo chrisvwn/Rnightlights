@@ -10,7 +10,7 @@
 #' @return None
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' exploreData()
 #' }
 #'

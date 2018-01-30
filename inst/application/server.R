@@ -314,15 +314,18 @@ shiny::shinyServer(function(input, output, session){
       
       ctryData <- data.table::data.table(reshape2::melt(ctryData, measure.vars=meltMeasureVars))
 
-      if(input$nlType == "OLS")
+      if(stringr::str_detect(input$nlType, "OLS"))
       {
         ctryData$variable <- paste0(gsub("[^[:digit:]]","", ctryData$variable))
         
         ctryData$variable <- as.numeric(ctryData$variable)
       }
-      else if(input$nlType == "VIIRS")
+      else if(stringr::str_detect(nlType, "VIIRS"))
       {
-        ctryData$variable <- paste0(gsub("[^[:digit:]]","", ctryData$variable),"01")
+        if(stringr::str_detect(nlType, "M"))
+          ctryData$variable <- paste0(gsub("[^[:digit:]]","", ctryData$variable),"01")
+        else if(stringr::str_detect(nlType, "Y"))
+          ctryData$variable <- paste0(gsub("[^[:digit:]]","", ctryData$variable),"0101")
       
         ctryData$variable <- as.Date(ctryData$variable, format="%Y%m%d")
       }
@@ -709,7 +712,7 @@ shiny::shinyServer(function(input, output, session){
         minDate <- min(ctryData$variable)
         maxDate <- max(ctryData$variable)
        
-        if(input$nlType == "OLS")  
+        if(stringr::str_detect(input$nlType, "OLS"))  
           shiny::sliderInput(inputId = "nlYearMonth",
                     label = "Time",
                     min = minDate,
@@ -720,16 +723,25 @@ shiny::shinyServer(function(input, output, session){
                     value = minDate,
                     animate = animationOptions(interval = 10000, loop = FALSE, playButton = "Play", pauseButton = NULL)
         )
-        else if(input$nlType == "VIIRS")  
+        else if(stringr::str_detect(input$nlType, "VIIRS"))
+        {
+          if(stringr::str_detect(nlType, "D"))
+            tmFmt <- "%Y-%m-%d"
+          else if(stringr::str_detect(nlType, "M"))
+            tmFmt <- "%Y-%m"
+          else if(stringr::str_detect(nlType, "Y"))
+            tmFmt <- "%Y"
+          
           shiny::sliderInput(inputId = "nlYearMonth",
                              label = "Time",
                              min = minDate,
                              max = maxDate,
-                             timeFormat = "%Y-%m",
+                             timeFormat = tmFmt,
                              step = 31,
                              value = minDate,
                              animate = animationOptions(interval = 10000, loop = FALSE, playButton = "Play", pauseButton = NULL)
           )
+        }
       }
     })
     
@@ -890,7 +902,7 @@ shiny::shinyServer(function(input, output, session){
         if (normArea)
           meltCtryData$value <- (meltCtryData$value)/meltCtryData$area_sq_km
         
-        ctryPoly0 <- rgdal::readOGR(Rnightlights::getPolyFnamePath(countries), Rnightlights::getCtryShpLyrName(countries,0))
+        ctryPoly0 <- rgdal::readOGR(Rnightlights::getPolyFnamePath(countries), Rnightlights::getCtryShpLyrNames(countries,0))
         
         map <- leaflet::leaflet(data=ctryPoly0) %>%
           #addTiles("http://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png") %>%
@@ -908,7 +920,7 @@ shiny::shinyServer(function(input, output, session){
         pal <- cbPalette
         
         #turn off previous layer? No point keeping it if it is hidden. Also we want to turn the current layer to transparent so that one can see through to the raster layer on hover
-        ctryPoly <- rgdal::readOGR(Rnightlights::getPolyFnamePath(countries), Rnightlights::getCtryShpLyrName(countries, 1)) 
+        ctryPoly <- rgdal::readOGR(Rnightlights::getPolyFnamePath(countries), Rnightlights::getCtryShpLyrNames(countries, 1)) 
         
         ctryPoly <- sp::spTransform(ctryPoly, wgs84)
         
@@ -1230,7 +1242,7 @@ shiny::shinyServer(function(input, output, session){
           ctryData <- stats::setNames(ctryData[,mean(value, na.rm = TRUE),by = list(ctryData[[admLevel]], variable)], c(admLevel, "variable", "value"))
           g <- ggplot2::ggplot(data=ctryData, aes(x=variable, y=value, col=ctryData[[admLevel]]))
           
-          if(nlType == "VIIRS")
+          if(stringr::str_detect(nlType, "VIIRS"))
             g <- g + ggplot2::scale_x_date(date_breaks = "1 month", date_labels = "%Y-%m")
         }
         else
@@ -1240,7 +1252,7 @@ shiny::shinyServer(function(input, output, session){
           ctryData <- stats::setNames(ctryData[,mean(value, na.rm = TRUE),by = list(country, variable)], c("country", "variable", "value"))
           g <- ggplot2::ggplot(data=ctryData, aes(x=variable, y=value, col=country))
           
-          if(nlType == "VIIRS")
+          if(stringr::str_detect(nlType, "VIIRS"))
             g <- g + ggplot2::scale_x_date(date_breaks = "1 month", date_labels = "%Y-%m")
         }
 
@@ -1311,8 +1323,8 @@ shiny::shinyServer(function(input, output, session){
 #       
 #       lyrNum <- which(lyrs == admLevel) - 1
 #       
-#       ctryPoly <- readOGR(Rnightlights::getPolyFnamePath(countries), ifelse(is.null(admLevel),  yes = Rnightlights::getCtryShpLyrName(countries,0), no = Rnightlights::getCtryShpLyrName(countries,lyrNum)))
-#       
+#       ctryPoly <- readOGR(Rnightlights::getPolyFnamePath(countries), ifelse(is.null(admLevel),  yes = Rnightlights::getCtryShpLyrNames(countries,0), no = Rnightlights::getCtryShpLyrName(countries,lyrNum)))
+#       s
 #       proxy <- leafletProxy("map", data=ctryPoly)
 #       
 #       print("drawing leaflet proxy")
@@ -1373,9 +1385,9 @@ shiny::shinyServer(function(input, output, session){
       #line weight increases. max=4 min=1
       deltaLineWt <- (4 - 1) / as.numeric(lyrNum)
 
-      if(nlType == "OLS")
+      if(stringr::str_detect(nlType, "OLS"))
         nlYm <- nlYearMonth[1]
-      else if (nlType=="VIIRS")
+      else if (stringr::str_detect(nlType, "VIIRS"))
         nlYm <- as.Date(nlYearMonth[1], "%Y%m%d")
 
       ctryData <- ctryNlDataMelted()
@@ -1385,9 +1397,9 @@ shiny::shinyServer(function(input, output, session){
       
       #get our data ready to match with polygons
       #subset data based on level selections
-      if(nlType == "OLS") 
+      if(stringr::str_detect(nlType, "OLS"))
         ctryData <- subset(ctryData, variable == nlYm)
-      else if(nlType == "VIIRS")
+      else if(stringr::str_detect(nlType, "VIIRS"))
         ctryData <- subset(ctryData, lubridate::year(variable) == lubridate::year(nlYm) & lubridate::month(variable) == lubridate::month(nlYm))
       #only used when we want to show only the selected features
       #for now we want all features shown and then highlight the selected features
@@ -1415,11 +1427,11 @@ shiny::shinyServer(function(input, output, session){
       
       #message(ctryYearMonth)
       
-      ctryPoly0 <- rgdal::readOGR(Rnightlights::getPolyFnamePath(countries), Rnightlights::getCtryShpLyrName(countries,0))
+      ctryPoly0 <- rgdal::readOGR(Rnightlights::getPolyFnamePath(countries), Rnightlights::getCtryShpLyrNames(countries,0))
 
-      if(nlType == "OLS")
+      if(stringr::str_detect(nlType, "OLS"))
         nlPeriod <- substr(gsub("-","",nlYm),1,4)
-      else if(nlType=="VIIRS")
+      else if(stringr::str_detect(nlType, "VIIRS"))
         nlPeriod <- substr(gsub("-","",nlYm),1,6)
       
       ctryRastFilename <- Rnightlights::getCtryRasterOutputFname(countries, nlType, nlPeriod)
@@ -1488,7 +1500,7 @@ shiny::shinyServer(function(input, output, session){
           pal <- leaflet::colorBin(brewerPal, domain = lvlCtryData$value, na.color = "grey", bins=bins)
           
           #turn off previous layer? No point keeping it if it is hidden. Also we want to turn the current layer to transparent so that one can see through to the raster layer on hover
-          ctryPoly <- rgdal::readOGR(Rnightlights::getPolyFnamePath(countries), Rnightlights::getCtryShpLyrName(countries, iterAdmLevel-1)) 
+          ctryPoly <- rgdal::readOGR(Rnightlights::getPolyFnamePath(countries), Rnightlights::getCtryShpLyrNames(countries, iterAdmLevel-1)) 
           
           ctryPoly <- sp::spTransform(ctryPoly, wgs84)
           

@@ -4,7 +4,7 @@
 \alias{ctryNameToCode}
 \title{Convert a country name to its ISO3 code}
 \usage{
-ctryNameToCode(ctryName)
+ctryNameToCode(ctryNames)
 }
 \arguments{
 \item{ctryName}{Chracter string common name of a country}
@@ -13,9 +13,9 @@ ctryNameToCode(ctryName)
 Character ISO3 ctryCode if found else NA
 }
 \description{
-Convert a country name to its ISO3 code. Exposes the rworldmap function
-    rwmGetISO3(ctryName). See the examples. With no parameters returns a 
-    list of ctryNames and their corresponding codes as given by rworldMap
+Convert a country name to its ISO3 code. Searches the rworldmap map data.
+    With no parameters returns a list of ctryNames and their corresponding
+    codes as given by rworldMap
 }
 \examples{
 ctryNameToCode("kenya") #returns "KEN"

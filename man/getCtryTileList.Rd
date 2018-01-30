@@ -26,15 +26,15 @@ Given a list of countries, this function will provide alist of VIIRS
     nightlight tiles that intersect with them. This helps in processing
     multiple countries by determining which nightlight tiles are required
     for processing by allowing the download of all required tiles before
-    processing.
+    processing. Note all VIIRS_* nlTypes have the same nlTiles.
 }
 \examples{
 Rnightlights:::getCtryTileList(ctryCodes=c("BDI", "KEN", "RWA", "TZA", "UGA"), 
-    nlType="VIIRS", omitCountries="none")
+    nlType="VIIRS.M", omitCountries="none")
 
 #only 1 tile for OLS
 Rnightlights:::getCtryTileList(ctryCodes=c("BDI", "KEN", "RWA", "TZA", "UGA"), 
-    nlType="OLS", omitCountries="none")
+    nlType="OLS.Y", omitCountries="none")
     #returns "DUMMY"
 
 }

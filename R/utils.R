@@ -19,21 +19,21 @@
 #' @examples
 #' 
 #' \donttest{
-#' Rnightlights:::allValid(c("KEZ", "UGA", "RWA", "TZA"), Rnightlights:::validCtryCode)
+#' Rnightlights:::allValid(c("KEZ", "UGA", "RWA", "TZA"), Rnightlights:::validCtryCodes)
 #' }
 #'  
 #' \donttest{
-#' Rnightlights:::allValid(c("2012", "2015"), validNlPeriod, "OLS")
+#' Rnightlights:::allValid(c("2012", "2015"), validNlPeriods, "OLS.Y")
 #' }
 #'
 allValid <- function(testData, testFun, ...)
 {
-  valid <- sapply(testData, function(x) eval(parse(text="testFun(x, ...)")))
+  valid <- unlist(sapply(testData, function(x) eval(parse(text="testFun(x, ...)"))))
   
   invalidData <- testData[!valid]
   
   if(length(invalidData) > 0)
-    warning("Invalid data: ", paste0(invalidData, collapse = ", "))
+    message("Invalid data: ", paste0(invalidData, collapse = ", "))
   
   return(all(valid))
 }
@@ -49,7 +49,7 @@ allValid <- function(testData, testFun, ...)
 #' @return TRUE/FALSE Success/Failure of the download
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' Rnightlights:::dnldCtryPoly("KEN")
 #' }
 #'
@@ -58,7 +58,7 @@ dnldCtryPoly <- function(ctryCode)
   if(missing(ctryCode))
     stop("Missing required parameter ctryCode")
   
-  if(!validCtryCode(ctryCode))
+  if(!validCtryCodes(ctryCode))
     stop("Invalid ctryCode: ", ctryCode)
   
   fullPolyUrl <- getCtryPolyUrl(ctryCode)

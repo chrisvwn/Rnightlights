@@ -4,7 +4,7 @@
 \alias{existsCtryNlDataFile}
 \title{Check if a country's data file exists}
 \usage{
-existsCtryNlDataFile(ctryCode)
+existsCtryNlDataFile(ctryCode, admLevel)
 }
 \arguments{
 \item{ctryCode}{the ISO3 country code}

@@ -4,12 +4,14 @@
 \alias{getNlUrlVIIRS}
 \title{Function to return the url of the VIIRS tile to download}
 \usage{
-getNlUrlVIIRS(nlYearMonth, tileNum)
+getNlUrlVIIRS(nlPeriod, tileNum, nlType)
 }
 \arguments{
-\item{nlYearMonth}{character string yearmonth in "YYYYMM' format e.g. "201401"}
+\item{nlPeriod}{character string the nlPeriod}
 
 \item{tileNum}{The integer index of the tile to download as given by getNlTiles("VIIRS")}
+
+\item{nlType}{character the nlType}
 }
 \value{
 Character string Url of the VIIRS tile file
@@ -19,7 +21,11 @@ Function to return the url of the VIIRS tile to download given the year, month, 
 }
 \examples{
 \dontrun{
-tileUrl <- Rnightlights:::getNlUrlVIIRS("201401", "1")
+tileUrl <- Rnightlights:::getNlUrlVIIRS("20171231", "1", "VIIRS.D")
+
+tileUrl <- Rnightlights:::getNlUrlVIIRS("201401", "1", "VIIRS.M")
+
+tileUrl <- Rnightlights:::getNlUrlVIIRS("2015", "1", "VIIRS.Y")
 }
 
 }

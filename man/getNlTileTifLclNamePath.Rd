@@ -21,7 +21,7 @@ Constructs the full path used to save/access the downloaded tile .tgz file
 }
 \examples{
 \dontrun{
-Rnightlights:::getNlTileZipLclNamePath("OLS", "2012", 1)
+Rnightlights:::getNlTileZipLclNamePath("OLS.Y", "2012", 1)
  #returns "/dataPath/ols_2012_00N180W.tgz"
  }
 
@@ -29,5 +29,5 @@ Rnightlights:::getNlTileZipLclNamePath("OLS", "2012", 1)
 Rnightlights:::getNlTileZipLclNamePath("VIIRS", "201412", 1)
  #returns "/dataPath/viirs_201412_75N180W.tgz"
  }
- 
+
 }

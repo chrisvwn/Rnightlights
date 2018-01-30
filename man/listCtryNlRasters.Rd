@@ -35,6 +35,6 @@ listCtryNlRasters(ctryCodes = "KEN")
 listCtryNlRasters(ctryCodes = "ECU", nlTypes = "VIIRS")
 
 #list available OLS rasters for KEN and RWA in 2012 & 2013
-listCtryNlRasters(ctryCodes = c("KEN","RWA"), nlPeriods = c("2012", "2013"), nlTypes = "OLS")
+listCtryNlRasters(ctryCodes = c("KEN","RWA"), nlPeriods = c("2012", "2013"), nlTypes = "OLS.Y")
 
 }

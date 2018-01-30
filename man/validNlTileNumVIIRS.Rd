@@ -4,10 +4,12 @@
 \alias{validNlTileNumVIIRS}
 \title{Check if a tile index number is valid for a given nightlight type}
 \usage{
-validNlTileNumVIIRS(nlTileNum)
+validNlTileNumVIIRS(nlTileNum, nlType)
 }
 \arguments{
 \item{nlTileNum}{the index of the tile}
+
+\item{nlType}{A character string of nlType}
 }
 \value{
 TRUE/FALSE
@@ -17,10 +19,10 @@ Check if a tile number is valid for a given nightlight type. Note tile num is on
 "VIIRS" nightlight type
 }
 \examples{
-Rnightlights:::validNlTileNumVIIRS("1")
+Rnightlights:::validNlTileNumVIIRS("1", "VIIRS.M")
  #returns TRUE
 
-Rnightlights:::validNlTileNumVIIRS("9")
+Rnightlights:::validNlTileNumVIIRS("9", "VIIRS.M")
  #returns FALSE
 
 }

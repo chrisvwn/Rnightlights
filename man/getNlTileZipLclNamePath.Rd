@@ -22,12 +22,12 @@ Constructs the full path used to save/access the compressed downloaded tile
 }
 \examples{
 \dontrun{
-Rnightlights:::getNlTileZipLclNamePath("VIIRS", "201401", 1)
+Rnightlights:::getNlTileZipLclNamePath("VIIRS.M", "201401", 1)
  #returns "/dataPath/VIIRS_2014_01_75N180W.tgz"
  }
  
 \dontrun{
-Rnightlights:::getNlTileZipLclNamePath("OLS", "2004", 1)
+Rnightlights:::getNlTileZipLclNamePath("OLS.Y", "2004", 1)
  #returns "/dataPath/OLS_2004_00N180W.tar"
  }
 

@@ -4,7 +4,7 @@
 \alias{processNLCountry}
 \title{Processes nightlights for an individual country in a particular nlPeriod}
 \usage{
-processNLCountry(ctryCode, nlType, nlPeriod,
+processNLCountry(ctryCode, admLevel, nlType, nlPeriod,
   cropMaskMethod = pkgOptions("cropMaskMethod"),
   extractMethod = pkgOptions("extractMethod"),
   nlStats = pkgOptions("nlStats"))

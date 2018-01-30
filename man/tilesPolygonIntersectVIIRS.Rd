@@ -22,7 +22,7 @@ ctryShapefile <- Rnightlights:::dnldCtryPoly("KEN")
 
 #read in shapefile top layer
 ctryPoly <- rgdal::readOGR(Rnightlights:::getPolyFnamePath("KEN"), 
-    Rnightlights:::getCtryShpLyrName("KEN",0))
+    Rnightlights:::getCtryShpLyrNames("KEN",0))
 
 #get list of intersecting tiles
 tileList <- Rnightlights:::tilesPolygonIntersectVIIRS(ctryPoly)

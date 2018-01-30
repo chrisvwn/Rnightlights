@@ -32,7 +32,7 @@ Calculate stats on the radiance of the pixels in a nightlight raster
 #read the Kenya polygon downloaded from GADM and load the lowest admin level (ward)
 \dontrun{
 ctryPoly <- rgdal::readOGR(Rnightlights:::getPolyFnamePath(ctryCode="KEN"), 
-    Rnightlights:::getCtryShpLowestLyrName(ctryCode="KEN"))
+    Rnightlights:::getCtryShpLowestLyrNames(ctryCode="KEN"))
     
 # the VIIRS nightlight raster cropped earlier to the country outline
 ctryRastCropped <- raster::raster(Rnightlights:::getCtryRasterOutputFname(ctryCode="KEN",
