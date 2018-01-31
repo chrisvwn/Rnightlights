@@ -17,10 +17,9 @@ nlRange(startNlPeriod, endNlPeriod, nlType)
 character vector of nlPeriods
 }
 \description{
-Create a range of nlPeriods. Autodetects the type of nlPeriod and creates a 
-    character vector of nlPeriods filling in the intermediate nlPeriods.
-    NOTE: Both start and end range must be valid and of the same type i.e.
-    "OLS" years or "VIIRS" yearMonths
+Create a range of nlPeriods. Returns a list of character vectors of
+    nlPeriods filling in the intermediate nlPeriods.
+    NOTE: Both start and end range must be valid and of the same type.
 }
 \examples{
 #get OLS years between 2004 and 2010

@@ -16,7 +16,7 @@ Default is \code{"none"}}
 }
 \value{
 ctryCodeTiles A data frame of countries and the tiles they 
-    intersect with as give by getNlTiles("VIIRS")
+    intersect with as give by \code{getNlTiles}
 }
 \description{
 Create a dataframe mapping each country in the rworldmap to the VIIRS

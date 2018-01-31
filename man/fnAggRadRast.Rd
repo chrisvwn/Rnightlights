@@ -36,10 +36,10 @@ ctryPoly <- rgdal::readOGR(Rnightlights:::getPolyFnamePath(ctryCode="KEN"),
     
 # the VIIRS nightlight raster cropped earlier to the country outline
 ctryRastCropped <- raster::raster(Rnightlights:::getCtryRasterOutputFname(ctryCode="KEN",
-    nlType="VIIRS", nlPeriod="201401"))
+    nlType="VIIRS.M", nlPeriod="201401"))
 
 #calculate the sum of radiances for the wards in Kenya
 sumAvgRadRast <- Rnightlights:::fnAggRadRast(ctryPoly=ctryPoly,
-    ctryRastCropped=ctryRastCropped, nlType="VIIRS", nlStats=c("sum","mean"))
+    ctryRastCropped=ctryRastCropped, nlType="VIIRS.M", nlStats=c("sum","mean"))
 }
 }

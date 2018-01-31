@@ -26,15 +26,15 @@ Download the listed tiles for a given nlType in a given nlPeriod
 #download VIIRS tiles for "KEN" which are tiles 2 and 5 for the specified
     #time periods
 \dontrun{
-Rnightlights:::downloadNlTiles("VIIRS", "201401", c(2, 5))
+Rnightlights:::downloadNlTiles("VIIRS.M", "201401", c(2, 5))
 }
 
 #same as above but getting the tileList automatically
 \dontrun{
-Rnightlights:::downloadNlTiles(nlType="VIIRS", 
+Rnightlights:::downloadNlTiles(nlType="VIIRS.M", 
     nlPeriod="201401", 
     tileList=Rnightlights:::getCtryTileList(ctryCodes="KEN", 
-        nlType="VIIRS")
+        nlType="VIIRS.M")
 )
 }
 

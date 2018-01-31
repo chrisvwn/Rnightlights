@@ -10,7 +10,7 @@ downloadNlTilesVIIRS(nlYearMonth, tileNum,
 \arguments{
 \item{nlYearMonth}{the year in "YYYYMM" format e.g. "201401"}
 
-\item{tileNum}{the index of the tile as given by getNlTiles("VIIRS")}
+\item{tileNum}{the index of the tile as given by \code{getNlTiles}}
 
 \item{downloadMethod}{The method to use for download.}
 

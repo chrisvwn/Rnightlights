@@ -22,7 +22,7 @@ Get the full path to the file where the cropped VIIRS country raster is stored. 
 }
 \examples{
 \dontrun{
-getCtryRasterOutputFname("KEN","VIIRS", "201412")
+getCtryRasterOutputFname("KEN","VIIRS.M", "201412")
 }
 
 #export for exploreData() shiny app

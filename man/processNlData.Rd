@@ -86,7 +86,7 @@ This is the main entry-point to the package and the main user-facing function. H
 
     library(Rnightlights)
 
-    nlPeriods <- getAllNlYears("VIIRS")
+    nlPeriods <- getAllNlPeriods("VIIRS.M")
 
     nlPeriods_2014 <- nlPeriods[grep("^2014", nlPeriods)]
 

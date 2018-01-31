@@ -3,6 +3,6 @@ library(Rnightlights)
 
 context("ctrypoly")
 
-test_that("nlTiles are available on NOAA", {
+test_that("polygons are available on GADM", {
 
 })

@@ -37,7 +37,7 @@ ctryPoly <- rgdal::readOGR(Rnightlights:::getPolyFnamePath(ctryCode="KEN"),
     
 #calculate the sum of radiances for the wards in Kenya
 sumAvgRadRast <- Rnightlights:::fnAggRadGdal(ctryCode="KEN", ctryPoly=ctryPoly,
-    nlType="VIIRS", nlPeriod="201401", nlStats=c("sum","mean"))
+    nlType="VIIRS.M", nlPeriod="201401", nlStats=c("sum","mean"))
 }
 
 }

@@ -10,7 +10,7 @@ tilesPolygonIntersectVIIRS(shpPolygon)
 \item{shpPolygon}{a SpatialPolygon or SpatialPolygons}
 }
 \value{
-Character vector of the intersecting tiles as given by getNlTiles("VIIRS")
+Character vector of the intersecting tiles as given by \code{getNlTiles}
 }
 \description{
 Get the list a VIIRS tiles that a polygon intersects with

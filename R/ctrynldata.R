@@ -357,9 +357,6 @@ getCtryNlDataFname <- function(ctryCode, admLevel)
 #' @examples
 #' #get the full path to the file containing data for KEN counties
 #' getCtryNlDataFnamePath("KEN", "KEN_adm0")
-#' 
-#' getCtryNlDataFnamePath("KEN", "KEN_adm0)
-#'  #returns full path of the nightlight data file for the country
 #'
 #' #@export only due to exploreData() shiny app
 #' @export

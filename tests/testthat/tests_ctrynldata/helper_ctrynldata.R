@@ -6,7 +6,7 @@ getCtryNlDataSTP <- function()
 {
   testCtryCode <- "STP"
   testAdmLevel <- "STP_adm0"
-  testDataFile <-Rnightlights:::getCtryNlDataFname(ctryCode = testCtryCode, admLevel = testAdmLevel)
+  testDataFile <- Rnightlights:::getCtryNlDataFname(ctryCode = testCtryCode, admLevel = testAdmLevel)
   
   print(testDataFile)
   

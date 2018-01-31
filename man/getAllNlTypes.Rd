@@ -12,10 +12,10 @@ getAllNlTypes()
 \description{
 Lists supported nightlight types. The names are in the form
     "nlType.avgPeriod" where avgPeriod is the period over which the
-    raw data is averaged i.e. daily (D), monthly (M) and yearly (Y).
-    Currently the nlTypes are "OLS" and "VIIRS". OLS only has yearly
+    raw data is averaged i.e. Daily (D), Monthly (M) and Yearly (Y).
+    Currently the main nlTypes are "OLS" and "VIIRS". OLS only has yearly
     averaged data while VIIRS has daily, monthly and yearly
-    e.g. VIIRS daily = "VIIRS.D"
+    e.g. VIIRS daily = "VIIRS.D", OLS yearly = "OLS.Y"
 }
 \examples{
 getAllNlTypes()

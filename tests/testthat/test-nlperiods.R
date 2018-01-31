@@ -3,24 +3,38 @@ library(Rnightlights)
 context("nlPeriods")
 
 test_that("nlPeriod dates are correct", {
-  expect_false(validNlPeriods(nlPeriod = "1991", nlType = "OLS.Y"))
-  expect_true(validNlPeriods(nlPeriod = "1992", nlType = "OLS.Y"))
-  expect_true(validNlPeriods(nlPeriod = "2013", nlType = "OLS.Y"))
-  expect_false(validNlPeriods(nlPeriod = "2014", nlType = "OLS.Y"))
-  expect_false(validNlPeriods(nlPeriod = "201401", nlType = "OLS.Y"))
+  #OLS.Y
+  expect_false(unlist(validNlPeriods(nlPeriods = "1991", nlTypes = "OLS.Y")))
+  expect_true(unlist(validNlPeriods(nlPeriods = "1992", nlTypes = "OLS.Y")))
+  expect_true(unlist(validNlPeriods(nlPeriods = "2013", nlTypes = "OLS.Y")))
+  expect_false(unlist(validNlPeriods(nlPeriods = "2014", nlTypes = "OLS.Y")))
+  expect_false(unlist(validNlPeriods(nlPeriods = "201401", nlTypes = "OLS.Y")))
   
-  expect_false(validNlPeriods(nlPeriod = "201201", nlType = "VIIRS.M"))
-  expect_true(validNlPeriods(nlPeriod = "201204", nlType = "VIIRS.M"))
-  expect_false(validNlPeriods(nlPeriod = "201413", nlType = "VIIRS.M"))
-  expect_false(validNlPeriods(nlPeriod = "2014", nlType = "VIIRS.M"))
+  #VIIRS.D
+  expect_false(unlist(validNlPeriods(nlPeriods = "20171119", nlTypes = "VIIRS.D")))
+  expect_true(unlist(validNlPeriods(nlPeriods = "20171120", nlTypes = "VIIRS.D")))
+  expect_false(unlist(validNlPeriods(nlPeriods = "20171301", nlTypes = "VIIRS.D")))
+  expect_false(unlist(validNlPeriods(nlPeriods = "2017", nlTypes = "VIIRS.D")))
+  
+  #VIIRS.M
+  expect_false(unlist(validNlPeriods(nlPeriods = "201201", nlTypes = "VIIRS.M")))
+  expect_true(unlist(validNlPeriods(nlPeriods = "201204", nlTypes = "VIIRS.M")))
+  expect_false(unlist(validNlPeriods(nlPeriods = "201413", nlTypes = "VIIRS.M")))
+  expect_false(unlist(validNlPeriods(nlPeriods = "2014", nlTypes = "VIIRS.M")))
+  
+  #VIIRS.Y
+  expect_false(unlist(validNlPeriods(nlPeriods = "2011", nlTypes = "VIIRS.Y")))
+  expect_true(unlist(validNlPeriods(nlPeriods = "2015", nlTypes = "VIIRS.Y")))
+  expect_false(unlist(validNlPeriods(nlPeriods = "201413", nlTypes = "VIIRS.Y")))
+  expect_false(unlist(validNlPeriods(nlPeriods = "20171201", nlTypes = "VIIRS.Y")))
 })
 
 test_that("nlPeriod nlTypes are correct", {
-  expect_error(validNlPeriods(nlPeriod = "1992", nlType = "OOO"), "Invalid nlType", fixed=TRUE)
-  expect_error(validNlPeriods(nlPeriod = "201401", nlType = "VIIIS"), "Invalid nlType", fixed=TRUE)
+  expect_error(unlist(validNlPeriods(nlPeriods = "1992", nlType = "OOO"), "Invalid nlType", fixed=TRUE))
+  expect_error(unlist(validNlPeriods(nlPeriods = "201401", nlType = "VIIIS"), "Invalid nlType", fixed=TRUE))
   
-  expect_that(getAllNlPeriods("OLS.Y"), is_a("integer"))
-  expect_equal(getAllNlPeriods("OLS.Y"), 1992:2013)
-  expect_that(getAllNlPeriods("VIIRS.M"), is_a("character"))
-  expect_equal(getAllNlPeriods("VIIRS.M"), gsub("-","",format.Date(as.character(seq.Date(from = as.Date("2012-04-01"), to = as.Date(date(), "%a %b %d %H:%M:%S %Y"), by = "month")), "%Y-%m")))
+  expect_that(unlist(getAllNlPeriods(nlTypes = "OLS.Y")), is_a("integer"))
+  expect_equal(unlist(getAllNlPeriods(nlTypes = "OLS.Y")), 1992:2013)
+  expect_that(unlist(getAllNlPeriods(nlTypes = "VIIRS.M")), is_a("character"))
+  expect_equal(unlist(getAllNlPeriods(nlTypes = "VIIRS.M")), gsub("-","",format.Date(as.character(seq.Date(from = as.Date("2012-04-01"), to = as.Date(date(), "%a %b %d %H:%M:%S %Y"), by = "month")), "%Y-%m")))
 })

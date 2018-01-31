@@ -9,7 +9,7 @@ getNlUrlVIIRS(nlPeriod, tileNum, nlType)
 \arguments{
 \item{nlPeriod}{character string the nlPeriod}
 
-\item{tileNum}{The integer index of the tile to download as given by getNlTiles("VIIRS")}
+\item{tileNum}{The integer index of the tile to download as given by \code{getNlTiles}}
 
 \item{nlType}{character the nlType}
 }

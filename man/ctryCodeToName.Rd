@@ -4,10 +4,10 @@
 \alias{ctryCodeToName}
 \title{Convert a country ISO3 code to the full name}
 \usage{
-ctryCodeToName(ctryCode)
+ctryCodeToName(ctryCodes)
 }
 \arguments{
-\item{ctryCode}{The country Code to search for}
+\item{ctryCodes}{The country Codes to search for}
 }
 \value{
 Character The full country name if the ctryCode is found. If

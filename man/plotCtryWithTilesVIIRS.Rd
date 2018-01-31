@@ -21,7 +21,7 @@ Plot a country boundary as defined in the \pkg{rworldmap} package along
     data. Output corresponds to that of \code{getCtryNlTiles()}
     
     It utilizes \code{rworldmap::rwmgetISO3()} to resolve country 
-    codes as well as names
+    codes as well as names.
 }
 \examples{
 #by ctryCode

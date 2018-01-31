@@ -25,6 +25,9 @@ ctryNameToCode <- function(ctryNames)
   if(missing(ctryNames))
   {
     ctryList <- rworldmap::getMap()@data[,c("ADMIN", "ISO3")]
+
+    ctryList$ISO3 <- as.character(ctryList$ISO3)
+    ctryList$ADMIN <- as.character(ctryList$ADMIN)
     
     ctryList <- dplyr::arrange(ctryList, ADMIN)
     
@@ -80,7 +83,7 @@ ctryNameToCode <- function(ctryNames)
 #'     but we only want 3-letter ISO3 codes.  With no parameters returns a list
 #'     of ctryCodes and their corresponding names as given by rworldMap::getMap@data
 #'
-#' @param ctryCode The country Code to search for
+#' @param ctryCodes The country Codes to search for
 #'
 #' @return Character The full country name if the ctryCode is found. If
 #'     \code{ctryCode} is not supplied then return a list of all country
@@ -96,36 +99,47 @@ ctryNameToCode <- function(ctryNames)
 #' ctryCodeToName("JAM") #returns Jamaica
 #'
 #' @export
-ctryCodeToName <- function(ctryCode)
+ctryCodeToName <- function(ctryCodes)
 {
   ISO3 <- NULL #to avoid global variable note in CRAN
   
-  if(missing(ctryCode))
+  if(missing(ctryCodes))
   {
     ctryList <- rworldmap::getMap()@data[,c("ISO3", "ADMIN")]
+
+    ctryList$ISO3 <- as.character(ctryList$ISO3)
+    ctryList$ADMIN <- as.character(ctryList$ADMIN)
     
     ctryList <- dplyr::arrange(ctryList, ISO3)
     
     return(ctryList)
   }
   
-  if (class(ctryCode) != "character" || is.null(ctryCode) || is.na(ctryCode) || ctryCode =="" || length(grep("[^[:alpha:]]", ctryCode) > 0))
-    stop("Invalid ctryCode: ", ctryCode)
-  
-  #rworldmap::isoToName can resolve 2-letter ctryCodes but we only want 3-letter ISO3 codes
-  # if(nchar(ctryCode) != 3)
-  # {
-  #   warning("Only 3-letter ISO3 codes allowed")
-  # }
+  if (class(ctryCodes) != "character" || is.null(ctryCodes) || is.na(ctryCodes) || ctryCodes =="")
+    stop("Invalid ctryCode: ", ctryCodes)
   
   ctryList <- rworldmap::getMap()@data[,c("ISO3", "ADMIN")]
-  
-  idx <- which(toupper(ctryList$ISO3) == toupper(ctryCode))
+
+  idx <- sapply(ctryCodes, function(ctryCode)
+  {
+      idxRes <- which(toupper(ctryList$ISO3) == toupper(ctryCode))
                
-  if(length(idx) == 1)
-    return(as.character(ctryList[idx, "ADMIN"]))
-  else
-    return(NA)
+      if(identical(idxRes, integer(0)))
+        idxRes <- -1
+      
+      idxRes
+  })
+    
+  foundIdx <- which(idx != -1)
+  notFoundIdx <- which(idx == -1)
+  
+  result <- idx
+  
+  result[foundIdx] <- as.character(ctryList[idx[foundIdx], "ADMIN"])
+  
+  result[notFoundIdx] <- NA
+  
+  return(result)
 }
 
 ######################## validCtryCodes ###################################
@@ -240,5 +254,5 @@ getAllNlCtryCodes <- function(omit="none")
   #sort the country codes in ascending alphabetical order
   ctryCodes <- ctryCodes[order(ctryCodes)]
   
-  return (ctryCodes)
+  return (as.character(ctryCodes))
 }
