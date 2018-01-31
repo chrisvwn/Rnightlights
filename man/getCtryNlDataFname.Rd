@@ -8,6 +8,8 @@ getCtryNlDataFname(ctryCode, admLevel)
 }
 \arguments{
 \item{ctryCode}{The ctryCode of interest}
+
+\item{admLevel}{The country admin level of interest}
 }
 \value{
 Character filename of the country data file
@@ -20,7 +22,8 @@ Construct the name of the data file. This function can be altered to name the fi
 }
 \examples{
 ctryCode <- "KEN"
-Rnightlights:::getCtryNlDataFname(ctryCode)
+admLevel <- "KEN_adm0"
+Rnightlights:::getCtryNlDataFname(ctryCode, admLevel)
 #returns string of name of the ctry data file
 
 }

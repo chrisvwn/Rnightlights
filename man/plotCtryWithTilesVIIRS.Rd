@@ -2,31 +2,29 @@
 % Please edit documentation in R/tiles.R
 \name{plotCtryWithTilesVIIRS}
 \alias{plotCtryWithTilesVIIRS}
-\title{Plot a country polygon against a background of the VIIRS tiles and world map}
+\title{Plot a country boundary with the VIIRS tiles and world map}
 \usage{
 plotCtryWithTilesVIIRS(ctry)
 }
 \arguments{
-\item{idx}{character string or integer either the index of the country polygon in 
-\code{rworldmap::getMap()} or the 3-letter ISO3 country code e.g. "KEN" or a common 
-name of the country e.g. "Kenya" as found valid by \code{rworldmap::rwmgetISO3()}}
+\item{ctry}{\code{character} the 3-letter ISO3 country code e.g. "KEN"
+or a common name of the country e.g. "Kenya" as found valid by 
+\code{rworldmap::rwmgetISO3()}}
 }
 \value{
 None
 }
 \description{
-Plot a country polygon as defined in the \pkg{rworldmap} package along with the VIIRS 
-    nightlight tiles for a visual inspection of the tiles required for download in order 
-    to process a country's nightlight data. Output corresponds to that of
-    \code{getCtryNlTiles()}
+Plot a country boundary as defined in the \pkg{rworldmap} package along
+    with the VIIRS nightlight tiles for a visual inspection of the tiles 
+    required for download in order to process a country's nightlight 
+    data. Output corresponds to that of \code{getCtryNlTiles()}
     
-    It utilizes \code{rworldmap::rwmgetISO3()} to resolve country codes as well as names
+    It utilizes \code{rworldmap::rwmgetISO3()} to resolve country 
+    codes as well as names
 }
 \examples{
 #by ctryCode
 \dontrun{plotCtryWithTilesVIIRS("KEN")}
-
-#by index in rworldmap
-\dontrun{plotCtryWithTilesVIIRS(115)}
 
 }

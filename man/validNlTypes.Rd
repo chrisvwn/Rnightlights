@@ -7,10 +7,10 @@
 validNlTypes(nlTypes)
 }
 \arguments{
-\item{nlType}{character string The nlType}
+\item{nlTypes}{\code{character vector} The nlTypes}
 }
 \value{
-\code{logical} whether the string is a valid nlType
+\code{logical} whether the strings are valid nlTypes
 }
 \description{
 Checks if a given character string is a valid nlType

@@ -10,6 +10,8 @@ ZonalPipe(ctryCode, admLevel, ctryPoly, path.in.shp, path.in.r, path.out.r,
 \arguments{
 \item{ctryCode}{the ctryCode of interest}
 
+\item{admLevel}{The country admin level of interest}
+
 \item{ctryPoly}{the SpatialPolygonsDataFrame country polygon to process}
 
 \item{path.in.shp}{The path to the country shapefile}

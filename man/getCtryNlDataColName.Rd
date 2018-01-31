@@ -4,12 +4,12 @@
 \alias{getCtryNlDataColName}
 \title{Construct the name of a nightlight data column given the nightlight type and nlPeriod}
 \usage{
-getCtryNlDataColName(nlPeriod, stat, nlType)
+getCtryNlDataColName(nlPeriod, nlStat, nlType)
 }
 \arguments{
 \item{nlPeriod}{character vector The nlPeriod to process}
 
-\item{stat}{character vector The stat to be stored in the column}
+\item{nlStat}{character vector The stat to be stored in the column}
 
 \item{nlType}{character vector The type of nightlight}
 }

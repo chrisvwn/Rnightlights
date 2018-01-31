@@ -2,25 +2,33 @@
 % Please edit documentation in R/polygons.R
 \name{getCtryShpLyrNames}
 \alias{getCtryShpLyrNames}
-\title{Get the standard name of a polygon layer for a country}
+\title{Get the standard names of polygon layers in a country}
 \usage{
 getCtryShpLyrNames(ctryCodes, lyrNums)
 }
 \arguments{
-\item{ctryCode}{the ISO3 code for the country}
+\item{ctryCodes}{the ISO3 codes for the countries}
 
-\item{lyrNum}{the order of the layer starting from 0 = country level, 1 = first admin level}
+\item{lyrNums}{the layer numbers starting from 0 = country level, 
+1 = first admin level}
 }
 \value{
 Character layer name
 }
 \description{
-Get the standard name of a polygon layer for a country. Used to refer to a polygon layer by name.
-    i.e. for CTRYCODE & lyrNum="0": lyrName="CTRYCODE_adm0", lyrNum="1": lyrName="KEN_adm1". Note this #'     is different from the country official administration level name.
+Get the standard name of a polygon layer for a country. Used to refer 
+    to a polygon layer by name i.e. for 
+    CTRYCODE & lyrNum="0": lyrName="CTRYCODE_adm0", 
+    lyrNum="1": lyrName="KEN_adm1".
+    Note this is different from the official country administration
+    level name.
 }
 \examples{
-lyrName <- getCtryShpLyrNames("KEN","0") #top layer name
-  #returns "KEN_adm0"
+\dontrun{
+#requires KEN polygon shapefile to exist in the polygons folder
+getCtryShpLyrNames("KEN","1")
+  #returns "KEN_adm1"
+}
 
-#@export only due to exploreData() shiny app
+#export only due to exploreData() shiny app
 }

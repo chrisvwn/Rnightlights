@@ -7,10 +7,10 @@
 getAllNlPeriods(nlTypes)
 }
 \arguments{
-\item{nlType}{type of nightlight either "VIIRS" or "OLS"}
+\item{nlTypes}{types of nightlights to process}
 }
 \value{
-character vector list of nlPeriods
+a named list of character vector nlPeriods
 }
 \description{
 Generate a list of all possible nlPeriods for a given nlType
@@ -22,4 +22,6 @@ getAllNlPeriods("OLS.Y")
 getAllNlPeriods("VIIRS.M")
  #returns a vector of all yearMonths from 201401 to present
 
+getAllNlPeriods(c("OLS.Y", "VIIRS.Y"))
+ #returns a list with 2 named vectors, one for each annual nlType
 }

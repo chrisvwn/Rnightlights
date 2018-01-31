@@ -6,7 +6,7 @@
 #'
 #' @param nlYearMonth the year in "YYYYMM" format e.g. "201401"
 #'
-#' @param tileNum the index of the tile as given by getNlTiles("VIIRS")
+#' @param tileNum the index of the tile as given by \code{getNlTiles}
 #' 
 #' @param downloadMethod The method to use for download.
 #' 

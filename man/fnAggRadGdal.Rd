@@ -2,13 +2,16 @@
 % Please edit documentation in R/stats.R
 \name{fnAggRadGdal}
 \alias{fnAggRadGdal}
-\title{Calculate zonal statistics using GDAL. Faster than fnAggRadRast for large polygons.}
+\title{Calculate zonal statistics using GDAL}
 \usage{
 fnAggRadGdal(ctryCode, admLevel, ctryPoly, nlType, nlPeriod,
   nlStats = pkgOptions("nlStats"))
 }
 \arguments{
 \item{ctryCode}{character string the ISO3 country code to be processed}
+
+\item{admLevel}{character string The admin level to process. Should match
+the \code{ctryPoly} given but no checks are made currently.}
 
 \item{ctryPoly}{Polygon the loaded country polygon layer}
 
@@ -22,8 +25,9 @@ fnAggRadGdal(ctryCode, admLevel, ctryPoly, nlType, nlPeriod,
 data.frame of polygon attributes and the calculated stats, one column per stat
 }
 \description{
-Calculate zonal statistics. Alternative to fnAggRadRast using GDAL. Faster for large polygons. 
-    Modified from \url{http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/}
+Calculate zonal statistics using GDAL. Alternative to fnAggRadRast and 
+    faster. Modified from 
+    \url{http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/}
 }
 \examples{
 #read the Kenya polygon downloaded from GADM and load the lowest admin level (ward)

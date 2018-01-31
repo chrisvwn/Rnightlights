@@ -4,10 +4,10 @@
 #'
 #' Lists supported nightlight types. The names are in the form
 #'     "nlType.avgPeriod" where avgPeriod is the period over which the
-#'     raw data is averaged i.e. daily (D), monthly (M) and yearly (Y).
-#'     Currently the nlTypes are "OLS" and "VIIRS". OLS only has yearly
+#'     raw data is averaged i.e. Daily (D), Monthly (M) and Yearly (Y).
+#'     Currently the main nlTypes are "OLS" and "VIIRS". OLS only has yearly
 #'     averaged data while VIIRS has daily, monthly and yearly
-#'     e.g. VIIRS daily = "VIIRS.D"
+#'     e.g. VIIRS daily = "VIIRS.D", OLS yearly = "OLS.Y"
 #'
 #' @return \code{character} vector of supported nlTypes
 #'
@@ -28,9 +28,9 @@ getAllNlTypes <- function()
 #'
 #' Checks if a given character string is a valid nlType
 #' 
-#' @param nlType character string The nlType
+#' @param nlTypes \code{character vector} The nlTypes
 #' 
-#' @return \code{logical} whether the string is a valid nlType
+#' @return \code{logical} whether the strings are valid nlTypes
 #'
 #' @examples
 #' validNlTypes("VIIRS.D") #returns TRUE
@@ -46,7 +46,21 @@ validNlTypes <- function(nlTypes)
   return(toupper(nlTypes) %in% getAllNlTypes())
 }
 
-#'@export
+######################## allValidNlTypes ###################################
+
+#' Checks if all given character strings are valid nlTypes
+#'
+#' Checks if all given character strings are valid nlTypes
+#' 
+#' @param nlTypes \code{character vector} string The nlTypes
+#' 
+#' @return \code{logical vector} whether the strings are valid nlTypes
+#'
+#' @examples
+#' Rnightlights:::allValidNlTypes("VIIRS.D") #returns TRUE
+#' 
+#' Rnightlights:::allValidNlTypes("VIIRS") #returns FALSE
+#'
 allValidNlTypes <- function(nlTypes)
 {
   return(all(validNlTypes(nlTypes)))

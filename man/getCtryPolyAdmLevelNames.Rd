@@ -8,13 +8,18 @@ getCtryPolyAdmLevelNames(ctryCode,
   lowestAdmLevel = getCtryShpLowestLyrNames(ctryCode))
 }
 \arguments{
-\item{ctryCode}{the ctryCode of the country of interest}
+\item{ctryCode}{\code{character} The ctryCode of the country of interest}
+
+\item{lowestAdmLevel}{\code{integer} The lowest admin level number to return}
 }
 \value{
 character vector of admin level names
 }
 \description{
-Get the list of admin level names in a polygon shapefile
+Get the list of admin level names in a polygon shapefile. It returns
+    all official names starting from 1 to the specified 
+    \code{lowestAdmLevel}. If not \code{lowestAdmLevel} is not
+    specified, all admin level names are returned
 }
 \examples{
 \dontrun{

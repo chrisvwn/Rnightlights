@@ -114,7 +114,7 @@ getNlTileZipLclNameVIIRS <- function(nlPeriod, tileNum, nlType)
 #'  }
 #'
 #' \dontrun{
-#' Rnightlights:::getNlTileZipLclNamePath("VIIRS", "201412", 1)
+#' Rnightlights:::getNlTileZipLclNamePath("VIIRS.M", "201412", 1)
 #'  #returns "/dataPath/viirs_201412_75N180W.tgz"
 #'  }
 #'

@@ -2,17 +2,27 @@
 
 #' Check if an nlPeriod is valid for a given nightlight type
 #'
-#' Check if an nlPeriod is valid for a given nightlight type
+#' Check if an nlPeriod is valid for a given nightlight type. Vectorized
+#'     to allow checking multiple nlPeriods of corresponding nlTypes. If
+#'     a single nlType is given all nlPeriods are checked in that nlType.
+#'     If multiple nlTypes are given, then a corresponding number of
+#'     nlPeriods is expected e.g. if nlPeriods is a vector each entry
+#'     must correspond to the nlType. If multiple nlPeriods are to be 
+#'     tested per nlType then a list of vectors is expected, one for
+#'     each nlType.
 #'
-#' @param nlPeriod the nlPeriod of interest
+#' @param nlPeriods the nlPeriods of interest
 #'
-#' @param nlType type of nightlight
+#' @param nlTypes type of nightlight
 #'
-#' @return TRUE/FALSE
+#' @return named logical list of TRUE/FALSE
 #'
 #' @examples
-#' validNlPeriods("201401","VIIRS.M")
-#'  #returns TRUE
+#' validNlPeriods(c("201401", "201402"),"VIIRS.M")
+#'  #returns
+#'  #$VIIRS.M
+#'  #201401 201402 
+#'  #  TRUE   TRUE
 #'
 #' validNlPeriods("201203","VIIRS.M")
 #'  #returns FALSE
@@ -36,13 +46,14 @@ validNlPeriods <- function(nlPeriods, nlTypes)
   #nlTypes <- as.character(nlTypes)
 
   if(length(nlTypes) == 1)
-    return(setNames(list(stats::setNames(nlPeriods %in% unlist(getAllNlPeriods(nlTypes)), nlPeriods)),nlTypes))
+    return(stats::setNames(list(stats::setNames(nlPeriods %in% unlist(getAllNlPeriods(nlTypes)), nlPeriods)),nlTypes))
   
-  validPeriods <- setNames(lapply(1:length(nlTypes), function(i){
+  validPeriods <- stats::setNames(lapply(1:length(nlTypes), function(i){
     nlT <- nlTypes[i]
     nlPs <- unlist(nlPeriods[i])
     allNlPeriods <- unlist(getAllNlPeriods(nlT))
-    valid <- setNames(nlPs %in% allNlPeriods, nlPs)
+    
+    valid <- stats::setNames(nlPs %in% allNlPeriods, nlPs)
     if(!all(valid))
       message("Invalid nlPeriods::", nlT,":",paste0(nlPs[!valid], sep=","))
     return(valid)
@@ -51,7 +62,28 @@ validNlPeriods <- function(nlPeriods, nlTypes)
   return(validPeriods)
 }
 
-#' @export
+######################## validNlPeriod ###################################
+
+#' Check if all nlPeriods are valid for given nlTypes
+#'
+#' Check if all nlPeriods are valid for given nlTypes
+#' 
+#' @param nlPeriods \code{vector or list of character vectors} The nlPeriods of interest
+#'
+#' @param nlTypes \code{vector or list of character vectors} type of nightlight
+#'
+#' @return \code{logical} TRUE/FALSE
+#'
+#' @examples
+#' Rnightlights:::allValidNlPeriods(c("201401", "201402"),"VIIRS.M")
+#'  #returns TRUE
+#'
+#' Rnightlights:::allValidNlPeriods("201203","VIIRS.M")
+#'  #returns FALSE
+#'
+#' Rnightlights:::allValidNlPeriods("2012","OLS.Y")
+#'  #returns TRUE
+#'
 allValidNlPeriods <- function(nlPeriods, nlTypes)
 {
   return(all(unlist(validNlPeriods(nlTypes = nlTypes, nlPeriods = nlPeriods))))
@@ -61,10 +93,9 @@ allValidNlPeriods <- function(nlPeriods, nlTypes)
 
 #' Create a range of nlPeriods
 #'
-#' Create a range of nlPeriods. Autodetects the type of nlPeriod and creates a 
-#'     character vector of nlPeriods filling in the intermediate nlPeriods.
-#'     NOTE: Both start and end range must be valid and of the same type i.e.
-#'     "OLS" years or "VIIRS" yearMonths
+#' Create a range of nlPeriods. Returns a list of character vectors of
+#'     nlPeriods filling in the intermediate nlPeriods.
+#'     NOTE: Both start and end range must be valid and of the same type.
 #' 
 #' @param startNlPeriod the nlPeriod start
 #'
@@ -129,9 +160,9 @@ nlRange <- function(startNlPeriod, endNlPeriod, nlType)
 #'
 #' Generate a list of all possible nlPeriods for a given nlType
 #'
-#' @param nlType type of nightlight either "VIIRS" or "OLS"
+#' @param nlTypes types of nightlights to process
 #'
-#' @return character vector list of nlPeriods
+#' @return a named list of character vector nlPeriods
 #'
 #' @examples
 #' getAllNlPeriods("OLS.Y")
@@ -140,6 +171,8 @@ nlRange <- function(startNlPeriod, endNlPeriod, nlType)
 #' getAllNlPeriods("VIIRS.M")
 #'  #returns a vector of all yearMonths from 201401 to present
 #'
+#' getAllNlPeriods(c("OLS.Y", "VIIRS.Y"))
+#'  #returns a list with 2 named vectors, one for each annual nlType
 #' @export
 getAllNlPeriods <- function(nlTypes)
 {
@@ -156,7 +189,7 @@ getAllNlPeriods <- function(nlTypes)
   }
   else if(stringr::str_detect(nlType, "VIIRS"))
   {
-    if (stringr::str_detect(nlType, "D"))
+    if (stringr::str_detect(nlType, "D")) #D=daily
     {
       startDate <- "2017-11-20"
       
@@ -164,7 +197,7 @@ getAllNlPeriods <- function(nlTypes)
       
       return (nlYrMthDys)
     }
-    else if (stringr::str_detect(nlType, "M"))
+    else if (stringr::str_detect(nlType, "M")) #M=monthly
     {
       startDate <- "2012-04-01"
       
@@ -172,7 +205,7 @@ getAllNlPeriods <- function(nlTypes)
   
       return (nlYrMths)
     }
-    else if (stringr::str_detect(nlType, "Y"))
+    else if (stringr::str_detect(nlType, "Y")) #Y=yearly
     {
       startDate <- "2012-04-01"
       

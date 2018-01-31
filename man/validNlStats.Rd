@@ -2,25 +2,27 @@
 % Please edit documentation in R/stats.R
 \name{validNlStats}
 \alias{validNlStats}
-\title{Check if a statistic given is valid}
+\title{Check if given statistics are valid}
 \usage{
 validNlStats(nlStats)
 }
 \arguments{
-\item{nlStat}{the statistic to check}
+\item{nlStats}{the statistics to check}
 }
 \value{
-TRUE/FALSE
+named logical TRUE/FALSE
 }
 \description{
-Check if a statistic given is valid
+Check if given statistics are valid. A valid statistic is one which
+   is a function available in the current environment and returns
+   a valid value to match.fun
 }
 \examples{
 
-Rnightlights:::validStats("sum")
- #returns TRUE
+Rnightlights:::validNlStats(c("sum", "mean"))
+ #returns TRUE TRUE
  
-Rnightlights:::validStats("unknownFunction")
+Rnightlights:::validNlStats("unknownFunction")
  #returns FALSE
 
 }

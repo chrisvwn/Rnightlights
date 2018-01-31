@@ -77,7 +77,7 @@ getNlUrlOLS <- function(nlYear)
 #'
 #' @param nlPeriod character string the nlPeriod
 #'
-#' @param tileNum The integer index of the tile to download as given by getNlTiles("VIIRS")
+#' @param tileNum The integer index of the tile to download as given by \code{getNlTiles}
 #' 
 #' @param nlType character the nlType
 #'

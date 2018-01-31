@@ -78,22 +78,30 @@ existsPolyFnameZip <- function(ctryCode)
 
 ######################## getCtryShpLyrName ###################################
 
-#' Get the standard name of a polygon layer for a country
+#' Get the standard names of polygon layers in a country
 #'
-#' Get the standard name of a polygon layer for a country. Used to refer to a polygon layer by name.
-#'     i.e. for CTRYCODE & lyrNum="0": lyrName="CTRYCODE_adm0", lyrNum="1": lyrName="KEN_adm1". Note this #'     is different from the country official administration level name.
+#' Get the standard name of a polygon layer for a country. Used to refer 
+#'     to a polygon layer by name i.e. for 
+#'     CTRYCODE & lyrNum="0": lyrName="CTRYCODE_adm0", 
+#'     lyrNum="1": lyrName="KEN_adm1".
+#'     Note this is different from the official country administration
+#'     level name.
 #'
-#' @param ctryCode the ISO3 code for the country
+#' @param ctryCodes the ISO3 codes for the countries
 #'
-#' @param lyrNum the order of the layer starting from 0 = country level, 1 = first admin level
+#' @param lyrNums the layer numbers starting from 0 = country level, 
+#'     1 = first admin level
 #'
 #' @return Character layer name
 #'
 #' @examples
-#' lyrName <- getCtryShpLyrNames("KEN","0") #top layer name
-#'   #returns "KEN_adm0"
-#'
-#' #@export only due to exploreData() shiny app
+#' \dontrun{
+#' #requires KEN polygon shapefile to exist in the polygons folder
+#' getCtryShpLyrNames("KEN","1")
+#'   #returns "KEN_adm1"
+#' }
+#' 
+#' #export only due to exploreData() shiny app
 #' @export
 getCtryShpLyrNames <- function(ctryCodes, lyrNums)
 {
@@ -103,9 +111,12 @@ getCtryShpLyrNames <- function(ctryCodes, lyrNums)
   if(!allValidCtryCodes(ctryCodes))
     stop("Invalid ctryCode detected")
   
+
+  #TODO: check if the polygon exists
+  
   admLyrNames <- stats::setNames(lapply(ctryCodes, function(ctryCode)
   {
-    layers <- rgdal::ogrListLayers(path.expand(getPolyFnamePath(ctryCode)))
+    layers <- rgdal::ogrListLayers(path.expand(getPolyFnamePath(ctryCodes)))
     
     admLayers <- layers[grep("adm", layers)]
     
@@ -123,7 +134,7 @@ getCtryShpLyrNames <- function(ctryCodes, lyrNums)
 #'
 #' Get the name of the lowest ctry admin level
 #' 
-#' @param ctryCode the ctryCode of interest
+#' @param ctryCodes \code{character} ctryCodes the ctryCodes of interest
 #'
 #' @return character string The name of the lowest admin level
 #'
@@ -135,7 +146,7 @@ getCtryShpLowestLyrNames <- function(ctryCodes)
   if(!allValidCtryCodes(ctryCodes))
     stop("Invalid ctryCode(s) detected ")
   
-  lowestAdmLyrNames <- setNames(sapply(ctryCodes, function(ctryCode)
+  lowestAdmLyrNames <- stats::setNames(sapply(ctryCodes, function(ctryCode)
   {
 
     layers <- rgdal::ogrListLayers(path.expand(getPolyFnamePath(ctryCode)))
@@ -154,9 +165,14 @@ getCtryShpLowestLyrNames <- function(ctryCodes)
 
 #' Get the list of admin level names in a polygon shapefile
 #'
-#' Get the list of admin level names in a polygon shapefile
+#' Get the list of admin level names in a polygon shapefile. It returns
+#'     all official names starting from 1 to the specified 
+#'     \code{lowestAdmLevel}. If not \code{lowestAdmLevel} is not
+#'     specified, all admin level names are returned
 #'
-#' @param ctryCode the ctryCode of the country of interest
+#' @param ctryCode \code{character} The ctryCode of the country of interest
+#' 
+#' @param lowestAdmLevel \code{integer} The lowest admin level number to return
 #'
 #' @return character vector of admin level names
 #'
@@ -238,7 +254,7 @@ allValidCtryAdmLvls <- function(ctryCode, admLevels)
 
 getCtryShpAllAdmLvls <- function(ctryCodes)
 {
-  setNames(lapply(ctryCodes, 
+  stats::setNames(lapply(ctryCodes, 
          function(ctryCode)
          {
            lvl <- gsub("[^[:digit:]]","", getCtryShpLowestLyrNames(ctryCode)); 

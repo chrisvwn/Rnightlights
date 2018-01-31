@@ -54,53 +54,64 @@
 
 #' Processes nightlights for an individual country in a particular nlPeriod 
 #'
-#' Given a \code{countryCode}, \code{yearMonth} and preferred processing methods 
-#'     \code{cropMaskMethod} and \code{extractMethod}, this function will first check if the 
-#'     data already exists in the cache. First it will check if the data file exists and if it 
-#'     does not it will create a dataframe of the country data containing only the administrative
-#'     properties and move to processing. If the data file exists it will check to see if the 
-#'     particular year month already exists. If it exists, it will exit with a message. If it does
-#'     not exist, it will load the country data file and move on to processing.
+#' Given a \code{countryCode}, \code{yearMonth} and preferred processing 
+#'     methods \code{cropMaskMethod} and \code{extractMethod}, this function 
+#'     will first check if the data already exists in the cache. First it 
+#'     will check if the data file exists and if it does not it will create 
+#'     a dataframe of the country data containing only the administrative
+#'     properties and move to processing. If the data file exists it will 
+#'     check to see if the particular year month already exists. If it 
+#'     exists, it will exit with a message. If it does not exist, it will 
+#'     load the country data file and move on to processing.
 #' 
 #'     Processing consists of:
 #'     \enumerate{ 
 #'        \item Reading in the country polygon in ESRI Shapefile format
-#'        \item Reading in the tiles that the particular country intersects with and then clipping 
+#'        \item Reading in the tiles that the particular country intersects 
+#'            with and then clipping 
 #'        the tile(s) to the country boundary
-#'        \item Extract the data from the clipped raster and compute various statistics at the lowest admin level in the country.
-#'        \item Finally, these stats are appended to the data frame and written to the data file.
+#'        \item Extract the data from the clipped raster and compute various 
+#'            statistics at the lowest admin level in the country.
+#'        \item Finally, these stats are appended to the data frame and 
+#'            written to the data file.
 #'     }
 #' 
-#'     NOTE: \code{processNLCountry()} assumes that all inputs are available and will not 
-#'     attempt to download them. It should ideally be called from the function \code{processNlData()}
-#'     which does all the preparation for processing. \code{processNlData()} which can process 
-#'     multiple countries and time periods will download all the required tiles and polygons prior to
-#'     calling \code{processnlcountry}. \code{getCtryNlData} can also be used with the option
-#'     \code{ignoreMissing=FALSE} which will call \code{processNlData} in the background.
+#'     NOTE: \code{processNLCountry()} assumes that all inputs are available 
+#'     and will not attempt to download them. It should ideally be called 
+#'     from the function \code{processNlData()} which does all the 
+#'     preparation for processing. \code{processNlData()} which can process 
+#'     multiple countries and time periods will download all the required 
+#'     tiles and polygons prior to calling \code{processnlcountry}. 
+#'     \code{getCtryNlData} can also be used with the option 
+#'     \code{ignoreMissing=FALSE} which will call \code{processNlData} 
+#'     in the background.
 #'
-#' @param ctryCode character string The ctryCode of interest
-#'
-#' @param nlType character string The nlType of interest
-#'
-#' @param nlPeriod character string The nlPeriod of interest
+#' @param ctryCode \code{character} The ctryCode of interest
 #' 
-#' @param cropMaskMethod ("rast" or "gdal") Whether to use rasterize or gdal-based functions to 
-#'     crop and mask the country rasters
+#' @param admLevel \code{character} The country admin level in the given 
+#'     ctryCode at which to calculate stats
+#'
+#' @param nlType \code{character} The nlType of interest
+#'
+#' @param nlPeriod \code{character} The nlPeriod of interest
+#' 
+#' @param cropMaskMethod \code{character} Whether to use rasterize or 
+#'     gdal-based functions to crop and mask the country rasters
 #'     
-#' @param extractMethod ("rast" or "gdal") Whether to use rasterize or gdal-based functions 
-#'     to crop and mask the country rasters
+#' @param extractMethod ("rast" or "gdal") Whether to use rasterize or 
+#'     gdal-based functions to crop and mask the country rasters
 #' 
-#' @param nlStats the statistics to calculate. If not provided will calculate the stats specified 
-#'     in \code{pkgOptions("nlStats")}
+#' @param nlStats the statistics to calculate. If not provided will calculate 
+#'     the stats specified in \code{pkgOptions("nlStats")}
 #'
 #' @return None
 #'
 #' @examples
 #' 
-#' #calculate only the sum of VIIRS radiances for Dec 2014 using gdal
+#' #calculate only the sum of monthly VIIRS radiances for Dec 2014 using gdal
 #' #for both cropMask and extraction for KEN
 #' \dontrun{
-#' Rnightlights:::processNLCountry("KEN", "VIIRS", "201412", "gdal", "gdal", "sum")
+#' Rnightlights:::processNLCountry("KEN", "KEN_adm2", "VIIRS.M", "201412", "gdal", "gdal", "sum")
 #' }
 #'
 processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, cropMaskMethod=pkgOptions("cropMaskMethod"), extractMethod=pkgOptions("extractMethod"), nlStats=pkgOptions("nlStats"))
@@ -343,7 +354,7 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, cropMaskMetho
 #'
 #' @examples
 #' \dontrun{
-#' getCtryRasterOutputFname("KEN","VIIRS", "201412")
+#' getCtryRasterOutputFname("KEN","VIIRS.M", "201412")
 #' }
 #'
 #'#export for exploreData() shiny app
@@ -394,13 +405,16 @@ getCtryRasterOutputFname <- function(ctryCode, nlType, nlPeriod)
 #'     spot-priced machine where the server may be decommissioned at any time. See more in the examples.
 #' 
 #' @param ctryCodes the list of countries to be processed
+#' 
+#' @param admLevels the list of admin levels in the given countries at
+#'     which to calculate stats
 #'
-#' @param nlType the type of nightlights to process i.e. "OLS" or "VIIRS". Default "VIIRS"
+#' @param nlTypes the types of nightlights to process
 #' 
 #' @param nlPeriods the nlPeriods of interest
 #' 
-#' @param nlStats the statistics to calculate. If not provided will calculate the stats specified 
-#'     in \code{pkgOptions("nlStats")}
+#' @param nlStats the statistics to calculate. If not provided will calculate
+#'     the stats specified in \code{pkgOptions("nlStats")}
 #'
 #' @return None
 #'
@@ -408,43 +422,46 @@ getCtryRasterOutputFname <- function(ctryCode, nlType, nlPeriod)
 #' 
 #' #long running examples which may require large downloads
 #' \dontrun{
-#' #Example 1: process VIIRS nightlights for all countries and all periods available e.g. to create 
-#'     #a local cache or repo
+#' #Example 1: process monthly VIIRS nightlights for all countries at the
+#'     lowest admin level and for all nlPeriods available e.g. to create a 
+#'     local cache or repo
 #'     
 #'     processNlData() #process VIIRS nightlights for all countries and all periods
 #'
-#' #Example 2: process nightlights for all countries in 2012 only
+#' #Example 2: process monthly VIIRS nightlights for all countries in 2014 only
 #'
-#'     nlPeriods <- getAllNlPeriods("VIIRS") #get a list of all nightlight periods to present-day
+#'     nlPeriods <- getAllNlPeriods("VIIRS.M") #get a list of all nightlight periods to present-day
 #'
 #'     nlPeriods <- nlPeriods[grep("^2014", nlPeriods)] #filter only periods in 2014
 #'
-#'     processNlData(nlPeriods=nlPeriods)
+#'     processNlData(nlTypes="VIIRS.M", nlPeriods=nlPeriods)
 #'
-#' #Example 3: process VIIRS nightlights for countries KEN & RWA in 2014 Jan to 2014 May only
+#' #Example 3: process OLS nightlights for countries KEN & RWA from 1992
+#' #     to 2000
 #'
 #'     cCodes <- c("KEN", "RWA")
 #'
-#'     nlPeriods <- getAllNlPeriods("VIIRS")
+#'     nlPeriods <- getAllNlPeriods("VIIRS.M")
 #'
-#'     nlPeriods <- nlPeriods[grep("^20140[1-5]", nlPeriods)]
+#'     nlPeriods <- nlRange("1992", "2000", "OLS.Y")
 #'
 #'     processNlData(ctryCodes=cCodes, nlPeriods=nlPeriods)
 #' 
 #' #Example 4: process VIIRS nightlights for countries KEN & RWA in 2014 Oct to 2014 Dec only
 #'
-#'     processNlData(ctryCodes=c("KEN", "RWA"), nlPeriods=c("201410", "201411", "201412"))
+#'     processNlData(ctryCodes=c("KEN", "RWA"), nlTypes="VIIRS.M", 
+#'         nlPeriods=c("201410", "201411", "201412"))
 #'     
 #' #Example 5: process all nightlights, all countries, all stats in one thread
 #' 
 #'    processNlData() 
 #'    
-#' #Example 6: process all nightlights, all countries, all stats with each
+#' #Example 6: process all VIIRS monthly nightlights, all countries, all stats with each
 #' #   year in a separate thread. Create a separate R script for each year as follows:
 #' 
 #'     library(Rnightlights)
 #' 
-#'     nlPeriods <- getAllNlYears("VIIRS")
+#'     nlPeriods <- getAllNlPeriods("VIIRS.M")
 #' 
 #'     nlPeriods_2014 <- nlPeriods[grep("^2014", nlPeriods)]
 #' 
@@ -455,12 +472,12 @@ getCtryRasterOutputFname <- function(ctryCode, nlType, nlPeriod)
 #'     #R CMD BATCH script_name_2014.R
 #'     }
 #' @export
-processNlData <- function (ctryCodes, admLevels, nlTypes=getAllNlTypes(), nlPeriods, nlStats=pkgOptions("nlStats"))
+processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkgOptions("nlStats"))
 {
   if(missing(ctryCodes))
-    ctryCodes <- getAllNlCtryCodes("error")
+    ctryCodes <- getAllNlCtryCodes(omit = "error")
   
-  ctryCodes <- toupper(ctryCodes)
+  ctryCodes <- toupper(x = ctryCodes)
   
   if(missing(nlTypes))
     nlTypes <- getAllNlTypes()
@@ -468,7 +485,7 @@ processNlData <- function (ctryCodes, admLevels, nlTypes=getAllNlTypes(), nlPeri
   #if the period is not given process all available periods
   if(missing("nlPeriods") || is.null(nlPeriods) || length(nlPeriods) == 0 || nlPeriods == "")
   {
-    nlPeriods <- getAllNlPeriods(nlTypes)
+    nlPeriods <- getAllNlPeriods(nlTypes = nlTypes)
   }
   
   if(!allValid(ctryCodes, validCtryCodes))

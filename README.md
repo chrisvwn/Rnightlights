@@ -47,9 +47,10 @@ ctry <- "KEN" #replace to do for any other country
 #(Optional performance enhancement if you have aria2c and gdal installed)
 #pkgOptions(downloadMethod = "aria", cropMaskMethod = "gdal", extractMethod = "gdal", deleteTiles = TRUE) 
 
-#download and process stats
+#download and process monthly VIIRS stats at the lowest admin level
 lowestAdmLevelStats <- getCtryNlData(ctryCode = ctry, 
-                                     nlType = "VIIRS", 
+                                     admLevel = "lowest", 
+                                     nlType = "VIIRS.M", 
                                      nlPeriods = nlRange("201401", "201412"), 
                                      nlStats = "sum",
                                      ignoreMissing=FALSE)

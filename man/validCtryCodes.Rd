@@ -2,22 +2,21 @@
 % Please edit documentation in R/ctrycode.R
 \name{validCtryCodes}
 \alias{validCtryCodes}
-\title{Check if a month number is valid for a given nightlight type}
+\title{Check if country codes are valid}
 \usage{
 validCtryCodes(ctryCodes)
 }
 \arguments{
-\item{ctryCode}{the ISO3 country code to validate}
+\item{ctryCodes}{the ISO3 country codes to validate}
 }
 \value{
-TRUE/FALSE
+named logical vector TRUE/FALSE
 }
 \description{
-Check if a month number is valid for a given nightlight type. Note month num is only valid for
-"VIIRS" nightlight type
+Check if country codes are valid
 }
 \examples{
-validCtryCodes("KEN") #returns TRUE
+validCtryCodes(c("KEN", "UGA")) #returns TRUE TRUE
 
 validCtryCodes("UAE") #returns FALSE. "United Arab Emirates" ISO3 code = "ARE"
 

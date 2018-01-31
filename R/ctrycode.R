@@ -1,12 +1,12 @@
 ######################## ctryNameToCode ###################################
 
-#' Convert a country name to its ISO3 code
+#' Convert country names to ISO3 codes
 #'
-#' Convert a country name to its ISO3 code. Searches the rworldmap map data.
+#' Convert country names to ISO3 codes. Searches the rworldmap map data.
 #'     With no parameters returns a list of ctryNames and their corresponding
 #'     codes as given by rworldMap
 #'
-#' @param ctryName Chracter string common name of a country
+#' @param ctryNames Character vector common names of countries to convert
 #'
 #' @return Character ISO3 ctryCode if found else NA
 #'
@@ -128,19 +128,18 @@ ctryCodeToName <- function(ctryCode)
     return(NA)
 }
 
-######################## validCtryCode ###################################
+######################## validCtryCodes ###################################
 
-#' Check if a month number is valid for a given nightlight type
+#' Check if country codes are valid
 #'
-#' Check if a month number is valid for a given nightlight type. Note month num is only valid for
-#' "VIIRS" nightlight type
+#' Check if country codes are valid
 #'
-#' @param ctryCode the ISO3 country code to validate
+#' @param ctryCodes the ISO3 country codes to validate
 #'
-#' @return TRUE/FALSE
+#' @return named logical vector TRUE/FALSE
 #'
 #' @examples
-#' validCtryCodes("KEN") #returns TRUE
+#' validCtryCodes(c("KEN", "UGA")) #returns TRUE TRUE
 #'
 #' validCtryCodes("UAE") #returns FALSE. "United Arab Emirates" ISO3 code = "ARE"
 #'
@@ -151,13 +150,28 @@ validCtryCodes <- function(ctryCodes)
     stop("Missing required parameter ctryCode")
   
   #if the format is invalid return FALSE no need to return an error
-  if (class(ctryCodes) != "character" || is.null(ctryCodes) || is.na(ctryCodes) || ctryCodes =="")
+  if (!is.character(ctryCodes) || is.null(ctryCodes) || is.na(ctryCodes) || ctryCodes =="")
     return(FALSE)
   
   return(toupper(ctryCodes) %in% toupper(getAllNlCtryCodes()))
 }
 
-#'@export
+######################## allValidCtryCodes ###################################
+
+#' Check if all ctryCodes are valid
+#'
+#' Check if all ctryCodes are valid
+#'
+#' @param ctryCodes the ISO3 country codes to validate
+#'
+#' @return TRUE/FALSE
+#'
+#' @examples
+#' Rnightlights:::allValidCtryCodes(c("BDI", "ETH", "KEN", "RWA", "TZA", "UGA")) #returns TRUE
+#'
+#' #returns FALSE. "United Arab Emirates" ISO3 code = "ARE"
+#' Rnightlights:::allValidCtryCodes(c("UGA", "UAE"))
+#'
 allValidCtryCodes <- function(ctryCodes)
 {
   return(all(validCtryCodes(ctryCodes)))
@@ -165,14 +179,23 @@ allValidCtryCodes <- function(ctryCodes)
 
 ######################## getAllNlCtryCodes ###################################
 
-#' Check if a month number is valid for a given nightlight type
+#' Get all known valid ISO3 country codes
 #'
-#' Check if a month number is valid for a given nightlight type. Note month num is only valid for
-#' "VIIRS" nightlight type
+#' Get a list of all known valid ISO3 country codes.
 #'
-#' @param omit The ctryCodes to exclude from processing. Else keywords missing=ctryCodes
-#'     that are in rworldmap but not on gadm long=ctryCodes that take very long to process
-#'     
+#' @param omit The ctryCodes to exclude from processing based on observed
+#'     behaviour. The option can take the following values:
+#'     \itemize{
+#'         \item{\code{missing}} ctryCodes that are in \code{rworldmap} but not on \code{GADM}
+#'         \item{\code{long}} ctryCodes that take very long to process using 'rast'
+#'             options. May improve using more processors or using 'gdal' 
+#'             options.
+#'         \item{\code{error}} ctryCodes whose polygons have caused processing to crash
+#'             in tests. Not extensively tested and may work fine on other 
+#'             systems.
+#'         \item{\code{all}} Omit a combination of all the above options
+#'         \item{\code{none}} Do not omit any ctryCodes
+#'     }
 #'
 #' @return character vector of country codes
 #'

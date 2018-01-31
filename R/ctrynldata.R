@@ -1,11 +1,15 @@
 ######################## createCtryNlDataDF ###################################
 
-#' Initiates the country nightlight dataframe with the country data read from the polygon
+#' Initiates the country nightlight dataframe with the country admin level 
+#'     data read from the polygon
 #'
-#' Initiates the country nightlight dataframe with the country data read from the polygon. 
-#'     This includes admin levels, level names and area
+#' Initiates the country admin level nightlight dataframe with the country 
+#'     admin level data read from the polygon. This includes admin levels, 
+#'     level names and area
 #'
 #' @param ctryCode the ISO3 code of the country
+#' 
+#' @param admLevel The country admin level of interest
 #'
 #' @return dataframe with the country admin level data
 #'
@@ -142,7 +146,7 @@ insertNlDataCol <- function (ctryNlDataDF, dataCol, statType, nlPeriod, nlType)
   ctryNlDataDF <- cbind(ctryNlDataDF, dataCol)
   
   #name the new column which is currently last with the yearmonth of the data
-  names(ctryNlDataDF)[ncol(ctryNlDataDF)] <- getCtryNlDataColName(nlPeriod = nlPeriod, stat = statType, nlType = nlType)
+  names(ctryNlDataDF)[ncol(ctryNlDataDF)] <- getCtryNlDataColName(nlPeriod = nlPeriod, nlStat = statType, nlType = nlType)
   
   #re-arrange the columns
   #read in all column names in the dataframe afresh
@@ -243,6 +247,8 @@ deleteNlDataCol <- function (ctryCode,nlType, nlPeriod, statType)
 #' @param ctryNlDataDF dataframe with the country data to save
 #' 
 #' @param ctryCode the ctryCode to which the data belongs
+#' 
+#' @param admLevel the country admin level to process
 #'
 #' @return None
 #'
@@ -309,12 +315,15 @@ validCtryNlDataDF <- function(ctryNlDataDF)
 #'     file. Can be altered to separate VIIRS and OLS data files for example.
 #'
 #' @param ctryCode The ctryCode of interest
+#' 
+#' @param admLevel The country admin level of interest
 #'
 #' @return Character filename of the country data file
 #'
 #' @examples
 #' ctryCode <- "KEN"
-#' Rnightlights:::getCtryNlDataFname(ctryCode)
+#' admLevel <- "KEN_adm0"
+#' Rnightlights:::getCtryNlDataFname(ctryCode, admLevel)
 #' #returns string of name of the ctry data file
 #'
 getCtryNlDataFname <- function(ctryCode, admLevel)
@@ -338,15 +347,18 @@ getCtryNlDataFname <- function(ctryCode, admLevel)
 #' Construct the full path to save the file containing the country data. Note
 #'     it does not indicate if the file exists
 #' 
-#' @param ctryCode character string The ctryCode of interest
+#' @param ctryCode \code{character string} The ctryCode of interest
+#' 
+#' @param admLevel \code{character string} The admin level of interest
 #'
 #' @return Character string the full path to the data file of a country
+#'             admin level
 #'
 #' @examples
-#' #get the full path to the file containing data for KEN
-#' getCtryNlDataFnamePath("KEN")
+#' #get the full path to the file containing data for KEN counties
+#' getCtryNlDataFnamePath("KEN", "KEN_adm0")
 #' 
-#' Rnightlights:::getCtryNlDataFnamePath("KEN")
+#' getCtryNlDataFnamePath("KEN", "KEN_adm0)
 #'  #returns full path of the nightlight data file for the country
 #'
 #' #@export only due to exploreData() shiny app
@@ -390,18 +402,21 @@ getCtryNlDataFnamePath <- function(ctryCode, admLevel)
 #'    ignoreMissing is TRUE or NULL then the existing data is returned.
 #'
 #' @param ctryCode the ISO3 code of the country. Only 1 country can be 
-#'     processed at a time
+#'     processed at a time.
+#'     
+#' @param admLevel The country admin level of interest. Only 1 admLevel
+#'     can be processed at a time.
+#' 
+#' @param nlTypes a vector of nlTypes. The nightlight types to process.
 #'
 #' @param nlPeriods a vector of nlPeriods. Must be appropriate nlPeriods
 #'     for the nlType.
 #' 
-#' @param nlStats a vector of stats. if not supplied defaults to all stats
-#'     as listed in pkgOptions("nlStats")
-#' 
-#' @param nlType the nightlight type
+#' @param nlStats a vector of nlStats. If not supplied defaults to all nlStats
+#'     as listed in pkgOptions("nlStats").
 #' 
 #' @param ignoreMissing controls how the function behaves if any data is not
-#'     found in the data file
+#'     found in the data file.
 #'     
 #'     \itemize{
 #'         \item NULL (default) only return data if found for ALL nlPeriods
@@ -420,43 +435,43 @@ getCtryNlDataFnamePath <- function(ctryCode, admLevel)
 #'     nlPeriods
 #'
 #' @examples
-#' #missing stats implies all stats as given by pkgOptions("nlStats")
+#' #NOTE: missing stats implies all stats as given by pkgOptions("nlStats")
 #' 
 #' #long running examples which also require large downloads
 #' \dontrun{
-#' getCtryNlData("KEN", nlType="VIIRS", ignoreMissing=NULL)
+#' getCtryNlData("KEN", "KEN_adm0", "VIIRS.M", ignoreMissing=NULL)
 #'     #returns either all requested data if it exists i.e. all nlPeriods
 #'     #and all nlStats for KEN otherwise NULL
 #' }
 #'
 #' \dontrun{
-#' getCtryNlData("KEN", nlType="VIIRS", ignoreMissing=TRUE)
+#' getCtryNlData("KEN", "KEN_adm0", "OLS.Y", ignoreMissing=TRUE)
 #'     #Returns all requested data if it exists i.e. all nlPeriods and all
 #'     #nlStats for KEN but omits any missing data
 #'     }
 #'  
 #' \dontrun{
-#' getCtryNlData(ctryCode="KEN", nlType="VIIRS", ignoreMissing=FALSE)
+#' getCtryNlData(ctryCode="KEN", "KEN_adm0", "VIIRS.Y", ignoreMissing=FALSE)
 #'     #Returns all requested data i.e. all nlPeriods and all
 #'     #nlStats for KEN. All missing data will be downloaded and processed
 #'     }
 #'  
 #' \dontrun{
-#' getCtryNlData("KEN", nlPeriod=c("existingNlPeriod", "missingNlPeriod"),
+#' getCtryNlData("KEN", "KEN_adm0", "VIIRS.M", nlPeriods=c("existingNlPeriod", "missingNlPeriod"),
 #'     nlStats=c("sum", "unknownStat"), ignoreMissing=NULL)
 #'     #Returns NULL due to missingNlPeriod and unknownStat not already existing
 #'     #(ignoreMissing=NULL returns all data if exists or if any is missing returns NULL)
 #'     }
 #'
 #' \dontrun{
-#' getCtryNlData("KEN", nlPeriods=c("existingNlPeriod", "missingNlPeriod"),
+#' getCtryNlData("KEN", "KEN_adm0", "VIIRS.D", nlPeriods=c("existingNlPeriod", "missingNlPeriod"),
 #'     nlStats=c("existingStat", "missingStat"), ignoreMissing=TRUE)
 #'    #Returns existingStat for existingNlPeriods omits missingNlPeriod and missingStat
 #'    #(ignoreMissing=TRUE returns only existing data)
 #'    }
 #'  
 #' \dontrun{
-#' getCtryNlData("KEN", nlYearPeriods=c("existingNlPeriod", "missingNlPeriod"),
+#' getCtryNlData("KEN", "KEN_adm0", "VIIRS.M", nlPeriods=c("existingNlPeriod", "missingNlPeriod"),
 #'     nlStats=c("sum", "unknownStat"), ignoreMissing=FALSE)
 #'     #Runs processNlData for missingStat in "missingNlPeriod" and returns
 #'     #"existingStat" and "missingStat" for both "existingNlPeriod" and
@@ -489,7 +504,7 @@ getCtryNlData <- function(ctryCode, admLevel, nlTypes, nlPeriods, nlStats=pkgOpt
   #process all nlPeriods
   if(missing(nlPeriods) && !missing(ignoreMissing))
     if (!ignoreMissing)
-      nlPeriods <- getAllNlPeriods(nlType)
+      nlPeriods <- getAllNlPeriods(nlTypes)
   
   #if(!allValid(nlPeriods, validNlPeriods, nlType))
   if(!allValidNlPeriods(nlTypes = nlTypes, nlPeriods = nlPeriods))
@@ -524,7 +539,10 @@ getCtryNlData <- function(ctryCode, admLevel, nlTypes, nlPeriods, nlStats=pkgOpt
     #check if the stats exist in the given year months will test nlYm1+stat1, nlYm2+stat1, ..., nlYm1+stat2, nlYm2+stat2
     a <- lapply(1:length(nlTypes), function(i) cbind(nlTypes[i], nlPeriods[[i]]))
     a <- data.frame(do.call("rbind", a), stringsAsFactors = F)
-    nlPeriodStats <- data.frame(apply(a, 2,function(x) rep(x, length(nlStats))), as.vector(sapply(nlStats, rep, nrow(a))), stringsAsFactors = F)
+    if(length(nlStats) == 1)
+      nlPeriodStats <- data.frame(a, X3=nlStats, stringsAsFactors = F)
+    else
+      nlPeriodStats <- data.frame(apply(a, 2,function(x) rep(x, length(nlStats))), X3=as.vector(sapply(nlStats, rep, nrow(a))), stringsAsFactors = F)
     #nlPeriodStats <- nlPeriodStats[order(nlPeriodStats$X1, nlPeriodStats$X2),]
     existnlPeriodStats <- apply(nlPeriodStats, 1, function(x) existsCtryNlData(ctryCode = ctryCode, admLevel = admLevel, nlTypes =  x[1], nlPeriods = x[2], nlStats = as.character(x[3])))
     
@@ -583,7 +601,7 @@ getCtryNlData <- function(ctryCode, admLevel, nlTypes, nlPeriods, nlStats=pkgOpt
   if(is.null(ignoreMissing) || ignoreMissing) #shortcircuit if ignoreMissing is NULL to avoid crash
   {
     if(any(existnlPeriodStats))
-      existingCols <- apply(nlPeriodStats[existnlPeriodStats,], 1, function(x) getCtryNlDataColName(nlType = x[1], nlPeriod = x[2], stat = x[3]))
+      existingCols <- apply(nlPeriodStats[existnlPeriodStats,], 1, function(x) getCtryNlDataColName(nlType = x[1], nlPeriod = x[2], nlStat = x[3]))
     else
       existingCols <- NULL
   }
@@ -594,13 +612,13 @@ getCtryNlData <- function(ctryCode, admLevel, nlTypes, nlPeriods, nlStats=pkgOpt
     #check that each stat exists for given periods
     if (stringr::str_detect(nlTypes, "VIIRS"))
       existnlPeriodStats <- apply(nlPeriodStats, 1, function(x) existsCtryNlData(ctryCode = ctryCode, admLevel = admLevel, nlTypes = x[1], nlPeriods = x[2], x[3]))
-    else if (stringr::str_detect(nlType, "OLS"))
-      existnlPeriodStats <- apply(nlPeriodStats, 1, function(x) existsCtryNlData(ctryCode = ctryCode, admLevel = admLevel, x[1], x[2], nlType))
+    else if (stringr::str_detect(nlTypes, "OLS"))
+      existnlPeriodStats <- apply(nlPeriodStats, 1, function(x) existsCtryNlData(ctryCode = ctryCode, admLevel = admLevel, x[1], x[2], x[3]))
     
     #if they all exist get the list of column names
     if(all(existnlPeriodStats))
     {
-      existingCols <- apply(nlPeriodStats[existnlPeriodStats,], 1, function(x) getCtryNlDataColName(nlPeriod = x[2], nlType = x[1], stat = x[3]))
+      existingCols <- apply(nlPeriodStats[existnlPeriodStats,], 1, function(x) getCtryNlDataColName(nlPeriod = x[2], nlType = x[1], nlStat = x[3]))
       
       message("All stats exist")
     }
@@ -648,7 +666,7 @@ getCtryNlData <- function(ctryCode, admLevel, nlTypes, nlPeriods, nlStats=pkgOpt
 #'
 #' @param nlPeriod character vector The nlPeriod to process
 #'
-#' @param stat character vector The stat to be stored in the column
+#' @param nlStat character vector The stat to be stored in the column
 #' 
 #' @param nlType character vector The type of nightlight
 #'
@@ -658,12 +676,12 @@ getCtryNlData <- function(ctryCode, admLevel, nlTypes, nlPeriods, nlStats=pkgOpt
 #' 
 #' Rnightlights:::getCtryNlDataColName("201612", "sum", nlType="VIIRS.M")
 #'   
-getCtryNlDataColName <- function(nlPeriod, stat, nlType)
+getCtryNlDataColName <- function(nlPeriod, nlStat, nlType)
 {
   if(missing(nlPeriod))
     stop("Missing required parameter nlPeriod")
   
-  if(missing(stat))
+  if(missing(nlStat))
     stop("Missing required parameter stat")
   
   if(missing(nlType))
@@ -672,12 +690,12 @@ getCtryNlDataColName <- function(nlPeriod, stat, nlType)
   if(!allValidNlPeriods(nlPeriods = nlPeriod, nlTypes = nlType))
     stop("Invalid nlPeriod: ", nlPeriod, " for nlType: ", nlType)
   
-  if (!allValid(stat, validNlStats))
-    stop("Invalid/unsupported stat detected")
+  if (!allValid(nlStat, validNlStats))
+    stop("Invalid/unsupported nlStat detected")
   
   colName <- paste0("NL_", nlType, "_")
   
-  colName <- paste0(colName, sapply(nlPeriod, function(x) paste0(x, "_", toupper(stat))))
+  colName <- paste0(colName, sapply(nlPeriod, function(x) paste0(x, "_", toupper(nlStat))))
   
   colName <- sort(colName)
   
@@ -686,18 +704,23 @@ getCtryNlDataColName <- function(nlPeriod, stat, nlType)
 
 ######################## existsCtryNlDataFile ###################################
 
-#' Check if a country's data file exists
+#' Check if a country admin level data file exists
 #'
-#' Check if a country's data file exists
+#' Check if a country admin level data file exists. Stats are calculated
+#'     and stored at the admin level of a country, hence, a country could
+#'     have as many files as admin levels.
 #'
 #' @param ctryCode the ISO3 country code
+#' 
+#' @param admLevel The country admin level of interest.
 #'
 #' @return TRUE/FALSE
 #'
 #' @examples
 #' ctryCode <- "KEN"
+#' admLevel <- "KEN_adm0"
 #' message("Data file for ", ctryCode, 
-#'     ifelse(Rnightlights:::existsCtryNlDataFile(ctryCode), 
+#'     ifelse(Rnightlights:::existsCtryNlDataFile(ctryCode, admLevel), 
 #'         " FOUND", " NOT FOUND"))
 #'
 existsCtryNlDataFile <- function(ctryCode, admLevel)
@@ -723,59 +746,21 @@ existsCtryNlDataFile <- function(ctryCode, admLevel)
 #'     nightlight data file. First checks if the country nightlight data
 #'     file exists.
 #'
-#' @param ctryCode character the ISO3 code of the country
+#' @param ctryCode character The ISO3 code of the country
+#' 
+#' @param admLevel character string The country admin level of interest
 #'
-#' @param nlPeriod character the nlPeriod
+#' @param nlPeriods character The nlPeriods
 #' 
-#' @param stat character the stat to check for
+#' @param nlStats character The nlStats to check for
 #' 
-#' @param nlType character the nlType
+#' @param nlTypes character The nlTypes
 #'
 #' @return TRUE/FALSE
 #'
 #' @examples
-#' Rnightlights:::existsCtryNlData("KEN", "201401", "sum", "VIIRS.M")
+#' Rnightlights:::existsCtryNlData("KEN", "KEN_adm0", "VIIRS.M","201401", "sum")
 #'
-existsCtryNlData1 <- function(ctryCode, admLevel, nlPeriod, stat, nlType)
-{
-  if(missing(ctryCode))
-    stop("Missing required parameter ctryCode")
-  
-  if(missing(admLevel))
-    stop("Missing required parameter admLevel")
-  
-  if(missing(nlPeriod))
-    stop("Missing required parameter nlPeriod")
-  
-  if(missing(stat))
-    stop("Missing required parameter stat")
-  
-  if(missing(nlType))
-    stop("Missing required parameter nlType")
-  
-  if(!validCtryCodes(ctryCode))
-    stop("Invalid ctryCode: ", ctryCode)
-  
-  if(!allValidNlPeriods(nlPeriods = nlPeriod, nlTypes = nlType))
-    stop("Invalid nlPeriod: ", nlPeriod, " for nlType: ", nlType)
-  
-  if(!all(validNlStats(stat)))
-    stop("Invalid stat: ", stat)
-  
-  if (!existsCtryNlDataFile(ctryCode, admLevel))
-    return (FALSE)
-  
-  dta <- utils::read.csv(getCtryNlDataFnamePath(ctryCode, admLevel), nrow=1, header=TRUE)
-  
-  hdrs <- names(dta)
-  
-  if (length(grep(getCtryNlDataColName(nlPeriod = nlPeriod, stat = stat, nlType = nlType), hdrs, ignore.case = TRUE)) > 0)
-    return(TRUE)
-  else
-    return(FALSE)
-}
-
-#' @export
 existsCtryNlData <- function(ctryCode, admLevel, nlTypes, nlPeriods, nlStats)
 {
   if(missing(ctryCode))
@@ -847,10 +832,10 @@ allExistsCtryNlData <- function(ctryCodes, admLevels, nlTypes, nlPeriods, nlStat
 #' #list all data available for KEN
 #' listCtryNlData(ctryCodes = "KEN")
 #' 
-#' #list all VIIRS data available for ECU
+#' #list all VIIRS.* data available for ECU
 #' listCtryNlData(ctryCodes = "ECU", nlTypes = "VIIRS")
 #' 
-#' #list available OLS data for KEN and RWA in 2012 & 2013
+#' #list available OLS.Y data for KEN and RWA in 2012 & 2013
 #' listCtryNlData(ctryCodes = c("KEN","RWA"), nlPeriods = c("2012", "2013"), nlTypes = "OLS.Y")
 #'
 #' @export

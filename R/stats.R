@@ -1,19 +1,21 @@
-######################## validStat ###################################
+######################## validNlStats ###################################
 
-#' Check if a statistic given is valid
+#' Check if given statistics are valid
 #'
-#' Check if a statistic given is valid
+#' Check if given statistics are valid. A valid statistic is one which
+#'    is a function available in the current environment and returns
+#'    a valid value to match.fun
 #'
-#' @param nlStat the statistic to check
+#' @param nlStats the statistics to check
 #'
-#' @return TRUE/FALSE
+#' @return named logical TRUE/FALSE
 #'
 #' @examples
 #'
-#' Rnightlights:::validStats("sum")
-#'  #returns TRUE
+#' Rnightlights:::validNlStats(c("sum", "mean"))
+#'  #returns TRUE TRUE
 #'  
-#' Rnightlights:::validStats("unknownFunction")
+#' Rnightlights:::validNlStats("unknownFunction")
 #'  #returns FALSE
 #'
 validNlStats <- function(nlStats)
@@ -183,6 +185,8 @@ myZonal <- function (x, z, nlStats, digits = 0, na.rm = TRUE, ...)
 #'     \url{http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/}
 #'
 #' @param ctryCode the ctryCode of interest
+#' 
+#' @param admLevel The country admin level of interest
 #'
 #' @param ctryPoly the SpatialPolygonsDataFrame country polygon to process
 #'
@@ -323,12 +327,16 @@ ZonalPipe <- function (ctryCode, admLevel, ctryPoly, path.in.shp, path.in.r, pat
 
 ######################## fnAggRadGdal ###################################
 
-#' Calculate zonal statistics using GDAL. Faster than fnAggRadRast for large polygons.
+#' Calculate zonal statistics using GDAL
 #'
-#' Calculate zonal statistics. Alternative to fnAggRadRast using GDAL. Faster for large polygons. 
-#'     Modified from \url{http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/}
+#' Calculate zonal statistics using GDAL. Alternative to fnAggRadRast and 
+#'     faster. Modified from 
+#'     \url{http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/}
 #'
 #' @param ctryCode character string the ISO3 country code to be processed
+#' 
+#' @param admLevel character string The admin level to process. Should match
+#'     the \code{ctryPoly} given but no checks are made currently.
 #'
 #' @param ctryPoly Polygon the loaded country polygon layer
 #' 
@@ -348,7 +356,7 @@ ZonalPipe <- function (ctryCode, admLevel, ctryPoly, path.in.shp, path.in.r, pat
 #'     
 #' #calculate the sum of radiances for the wards in Kenya
 #' sumAvgRadRast <- Rnightlights:::fnAggRadGdal(ctryCode="KEN", ctryPoly=ctryPoly,
-#'     nlType="VIIRS", nlPeriod="201401", nlStats=c("sum","mean"))
+#'     nlType="VIIRS.M", nlPeriod="201401", nlStats=c("sum","mean"))
 #' }
 #'
 fnAggRadGdal <- function(ctryCode, admLevel, ctryPoly, nlType, nlPeriod, nlStats=pkgOptions("nlStats"))
@@ -443,11 +451,11 @@ fnAggRadGdal <- function(ctryCode, admLevel, ctryPoly, nlType, nlPeriod, nlStats
 #'     
 #' # the VIIRS nightlight raster cropped earlier to the country outline
 #' ctryRastCropped <- raster::raster(Rnightlights:::getCtryRasterOutputFname(ctryCode="KEN",
-#'     nlType="VIIRS", nlPeriod="201401"))
+#'     nlType="VIIRS.M", nlPeriod="201401"))
 #' 
 #' #calculate the sum of radiances for the wards in Kenya
 #' sumAvgRadRast <- Rnightlights:::fnAggRadRast(ctryPoly=ctryPoly,
-#'     ctryRastCropped=ctryRastCropped, nlType="VIIRS", nlStats=c("sum","mean"))
+#'     ctryRastCropped=ctryRastCropped, nlType="VIIRS.M", nlStats=c("sum","mean"))
 #' }
 #' @importFrom foreach %dopar%
 fnAggRadRast <- function(ctryPoly, ctryRastCropped, nlType, nlStats)

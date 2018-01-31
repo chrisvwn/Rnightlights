@@ -7,19 +7,29 @@
 validNlPeriods(nlPeriods, nlTypes)
 }
 \arguments{
-\item{nlPeriod}{the nlPeriod of interest}
+\item{nlPeriods}{the nlPeriods of interest}
 
-\item{nlType}{type of nightlight}
+\item{nlTypes}{type of nightlight}
 }
 \value{
-TRUE/FALSE
+named logical list of TRUE/FALSE
 }
 \description{
-Check if an nlPeriod is valid for a given nightlight type
+Check if an nlPeriod is valid for a given nightlight type. Vectorized
+    to allow checking multiple nlPeriods of corresponding nlTypes. If
+    a single nlType is given all nlPeriods are checked in that nlType.
+    If multiple nlTypes are given, then a corresponding number of
+    nlPeriods is expected e.g. if nlPeriods is a vector each entry
+    must correspond to the nlType. If multiple nlPeriods are to be 
+    tested per nlType then a list of vectors is expected, one for
+    each nlType.
 }
 \examples{
-validNlPeriods("201401","VIIRS.M")
- #returns TRUE
+validNlPeriods(c("201401", "201402"),"VIIRS.M")
+ #returns
+ #$VIIRS.M
+ #201401 201402 
+ #  TRUE   TRUE
 
 validNlPeriods("201203","VIIRS.M")
  #returns FALSE

@@ -9,16 +9,21 @@ getCtryNlData(ctryCode, admLevel, nlTypes, nlPeriods,
 }
 \arguments{
 \item{ctryCode}{the ISO3 code of the country. Only 1 country can be 
-processed at a time}
+processed at a time.}
+
+\item{admLevel}{The country admin level of interest. Only 1 admLevel
+can be processed at a time.}
+
+\item{nlTypes}{a vector of nlTypes. The nightlight types to process.}
 
 \item{nlPeriods}{a vector of nlPeriods. Must be appropriate nlPeriods
 for the nlType.}
 
-\item{nlStats}{a vector of stats. if not supplied defaults to all stats
-as listed in pkgOptions("nlStats")}
+\item{nlStats}{a vector of nlStats. If not supplied defaults to all nlStats
+as listed in pkgOptions("nlStats").}
 
 \item{ignoreMissing}{controls how the function behaves if any data is not
-found in the data file
+found in the data file.
 
 \itemize{
     \item NULL (default) only return data if found for ALL nlPeriods
@@ -32,8 +37,6 @@ found in the data file
 \item{source}{"local" or "remote" Whether to download and process the
 data locally or to download the pre-processed data from a remote 
 source/repo}
-
-\item{nlType}{the nightlight type}
 }
 \value{
 dataframe of data for one country in one nlType in one or multiple
@@ -61,43 +64,43 @@ Returns nightlight data for the given ctryCode and nlStats in the given
    ignoreMissing is TRUE or NULL then the existing data is returned.
 }
 \examples{
-#missing stats implies all stats as given by pkgOptions("nlStats")
+#NOTE: missing stats implies all stats as given by pkgOptions("nlStats")
 
 #long running examples which also require large downloads
 \dontrun{
-getCtryNlData("KEN", nlType="VIIRS", ignoreMissing=NULL)
+getCtryNlData("KEN", "KEN_adm0", "VIIRS.M", ignoreMissing=NULL)
     #returns either all requested data if it exists i.e. all nlPeriods
     #and all nlStats for KEN otherwise NULL
 }
 
 \dontrun{
-getCtryNlData("KEN", nlType="VIIRS", ignoreMissing=TRUE)
+getCtryNlData("KEN", "KEN_adm0", "OLS.Y", ignoreMissing=TRUE)
     #Returns all requested data if it exists i.e. all nlPeriods and all
     #nlStats for KEN but omits any missing data
     }
  
 \dontrun{
-getCtryNlData(ctryCode="KEN", nlType="VIIRS", ignoreMissing=FALSE)
+getCtryNlData(ctryCode="KEN", "KEN_adm0", "VIIRS.Y", ignoreMissing=FALSE)
     #Returns all requested data i.e. all nlPeriods and all
     #nlStats for KEN. All missing data will be downloaded and processed
     }
  
 \dontrun{
-getCtryNlData("KEN", nlPeriod=c("existingNlPeriod", "missingNlPeriod"),
+getCtryNlData("KEN", "KEN_adm0", "VIIRS.M", nlPeriods=c("existingNlPeriod", "missingNlPeriod"),
     nlStats=c("sum", "unknownStat"), ignoreMissing=NULL)
     #Returns NULL due to missingNlPeriod and unknownStat not already existing
     #(ignoreMissing=NULL returns all data if exists or if any is missing returns NULL)
     }
 
 \dontrun{
-getCtryNlData("KEN", nlPeriods=c("existingNlPeriod", "missingNlPeriod"),
+getCtryNlData("KEN", "KEN_adm0", "VIIRS.D", nlPeriods=c("existingNlPeriod", "missingNlPeriod"),
     nlStats=c("existingStat", "missingStat"), ignoreMissing=TRUE)
    #Returns existingStat for existingNlPeriods omits missingNlPeriod and missingStat
    #(ignoreMissing=TRUE returns only existing data)
    }
  
 \dontrun{
-getCtryNlData("KEN", nlYearPeriods=c("existingNlPeriod", "missingNlPeriod"),
+getCtryNlData("KEN", "KEN_adm0", "VIIRS.M", nlPeriods=c("existingNlPeriod", "missingNlPeriod"),
     nlStats=c("sum", "unknownStat"), ignoreMissing=FALSE)
     #Runs processNlData for missingStat in "missingNlPeriod" and returns
     #"existingStat" and "missingStat" for both "existingNlPeriod" and

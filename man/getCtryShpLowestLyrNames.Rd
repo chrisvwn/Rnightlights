@@ -7,7 +7,7 @@
 getCtryShpLowestLyrNames(ctryCodes)
 }
 \arguments{
-\item{ctryCode}{the ctryCode of interest}
+\item{ctryCodes}{\code{character} ctryCodes the ctryCodes of interest}
 }
 \value{
 character string The name of the lowest admin level

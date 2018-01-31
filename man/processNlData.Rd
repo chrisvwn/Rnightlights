@@ -4,18 +4,21 @@
 \alias{processNlData}
 \title{Downloads nightlight tiles and country polygons and calls the function to process them}
 \usage{
-processNlData(ctryCodes, admLevels, nlTypes = getAllNlTypes(), nlPeriods,
+processNlData(ctryCodes, admLevels, nlTypes, nlPeriods,
   nlStats = pkgOptions("nlStats"))
 }
 \arguments{
 \item{ctryCodes}{the list of countries to be processed}
 
+\item{admLevels}{the list of admin levels in the given countries at
+which to calculate stats}
+
+\item{nlTypes}{the types of nightlights to process}
+
 \item{nlPeriods}{the nlPeriods of interest}
 
-\item{nlStats}{the statistics to calculate. If not provided will calculate the stats specified 
-in \code{pkgOptions("nlStats")}}
-
-\item{nlType}{the type of nightlights to process i.e. "OLS" or "VIIRS". Default "VIIRS"}
+\item{nlStats}{the statistics to calculate. If not provided will calculate
+the stats specified in \code{pkgOptions("nlStats")}}
 }
 \value{
 None
@@ -44,38 +47,41 @@ This is the main entry-point to the package and the main user-facing function. H
 
 #long running examples which may require large downloads
 \dontrun{
-#Example 1: process VIIRS nightlights for all countries and all periods available e.g. to create 
-    #a local cache or repo
+#Example 1: process monthly VIIRS nightlights for all countries at the
+    lowest admin level and for all nlPeriods available e.g. to create a 
+    local cache or repo
     
     processNlData() #process VIIRS nightlights for all countries and all periods
 
-#Example 2: process nightlights for all countries in 2012 only
+#Example 2: process monthly VIIRS nightlights for all countries in 2014 only
 
-    nlPeriods <- getAllNlPeriods("VIIRS") #get a list of all nightlight periods to present-day
+    nlPeriods <- getAllNlPeriods("VIIRS.M") #get a list of all nightlight periods to present-day
 
     nlPeriods <- nlPeriods[grep("^2014", nlPeriods)] #filter only periods in 2014
 
-    processNlData(nlPeriods=nlPeriods)
+    processNlData(nlTypes="VIIRS.M", nlPeriods=nlPeriods)
 
-#Example 3: process VIIRS nightlights for countries KEN & RWA in 2014 Jan to 2014 May only
+#Example 3: process OLS nightlights for countries KEN & RWA from 1992
+#     to 2000
 
     cCodes <- c("KEN", "RWA")
 
-    nlPeriods <- getAllNlPeriods("VIIRS")
+    nlPeriods <- getAllNlPeriods("VIIRS.M")
 
-    nlPeriods <- nlPeriods[grep("^20140[1-5]", nlPeriods)]
+    nlPeriods <- nlRange("1992", "2000", "OLS.Y")
 
     processNlData(ctryCodes=cCodes, nlPeriods=nlPeriods)
 
 #Example 4: process VIIRS nightlights for countries KEN & RWA in 2014 Oct to 2014 Dec only
 
-    processNlData(ctryCodes=c("KEN", "RWA"), nlPeriods=c("201410", "201411", "201412"))
+    processNlData(ctryCodes=c("KEN", "RWA"), nlTypes="VIIRS.M", 
+        nlPeriods=c("201410", "201411", "201412"))
     
 #Example 5: process all nightlights, all countries, all stats in one thread
 
    processNlData() 
    
-#Example 6: process all nightlights, all countries, all stats with each
+#Example 6: process all VIIRS monthly nightlights, all countries, all stats with each
 #   year in a separate thread. Create a separate R script for each year as follows:
 
     library(Rnightlights)

@@ -2,19 +2,23 @@
 % Please edit documentation in R/ctrynldata.R
 \name{createCtryNlDataDF}
 \alias{createCtryNlDataDF}
-\title{Initiates the country nightlight dataframe with the country data read from the polygon}
+\title{Initiates the country nightlight dataframe with the country admin level 
+    data read from the polygon}
 \usage{
 createCtryNlDataDF(ctryCode, admLevel = getCtryShpLowestLyrNames(ctryCode))
 }
 \arguments{
 \item{ctryCode}{the ISO3 code of the country}
+
+\item{admLevel}{The country admin level of interest}
 }
 \value{
 dataframe with the country admin level data
 }
 \description{
-Initiates the country nightlight dataframe with the country data read from the polygon. 
-    This includes admin levels, level names and area
+Initiates the country admin level nightlight dataframe with the country 
+    admin level data read from the polygon. This includes admin levels, 
+    level names and area
 }
 \examples{
 \dontrun{

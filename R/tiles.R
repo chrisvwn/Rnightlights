@@ -19,15 +19,15 @@
 #' #download VIIRS tiles for "KEN" which are tiles 2 and 5 for the specified
 #'     #time periods
 #' \dontrun{
-#' Rnightlights:::downloadNlTiles("VIIRS", "201401", c(2, 5))
+#' Rnightlights:::downloadNlTiles("VIIRS.M", "201401", c(2, 5))
 #' }
 #'
 #' #same as above but getting the tileList automatically
 #' \dontrun{
-#' Rnightlights:::downloadNlTiles(nlType="VIIRS", 
+#' Rnightlights:::downloadNlTiles(nlType="VIIRS.M", 
 #'     nlPeriod="201401", 
 #'     tileList=Rnightlights:::getCtryTileList(ctryCodes="KEN", 
-#'         nlType="VIIRS")
+#'         nlType="VIIRS.M")
 #' )
 #' }
 #' 
@@ -237,27 +237,25 @@ createNlTilesSpPolysDF <- function()
 
 ######################## plotCtryWithTilesVIIRS ###################################
 
-#' Plot a country polygon against a background of the VIIRS tiles and world map
+#' Plot a country boundary with the VIIRS tiles and world map
 #'
-#' Plot a country polygon as defined in the \pkg{rworldmap} package along with the VIIRS 
-#'     nightlight tiles for a visual inspection of the tiles required for download in order 
-#'     to process a country's nightlight data. Output corresponds to that of
-#'     \code{getCtryNlTiles()}
+#' Plot a country boundary as defined in the \pkg{rworldmap} package along
+#'     with the VIIRS nightlight tiles for a visual inspection of the tiles 
+#'     required for download in order to process a country's nightlight 
+#'     data. Output corresponds to that of \code{getCtryNlTiles()}
 #'     
-#'     It utilizes \code{rworldmap::rwmgetISO3()} to resolve country codes as well as names
+#'     It utilizes \code{rworldmap::rwmgetISO3()} to resolve country 
+#'     codes as well as names.
 #'
-#' @param idx character string or integer either the index of the country polygon in 
-#'     \code{rworldmap::getMap()} or the 3-letter ISO3 country code e.g. "KEN" or a common 
-#'     name of the country e.g. "Kenya" as found valid by \code{rworldmap::rwmgetISO3()}
+#' @param ctry \code{character} the 3-letter ISO3 country code e.g. "KEN"
+#'     or a common name of the country e.g. "Kenya" as found valid by 
+#'     \code{rworldmap::rwmgetISO3()}
 #'
 #' @return None
 #'
 #' @examples
 #' #by ctryCode
 #' \dontrun{plotCtryWithTilesVIIRS("KEN")}
-#'
-#' #by index in rworldmap
-#' \dontrun{plotCtryWithTilesVIIRS(115)}
 #'
 #' @export
 plotCtryWithTilesVIIRS <- function(ctry)
@@ -417,7 +415,7 @@ mapAllCtryPolyToTilesVIIRS <- function(omitCountries=pkgOptions("omitCountries")
 #'     Default is \code{"none"}
 #'
 #' @return ctryCodeTiles A data frame of countries and the tiles they 
-#'     intersect with as give by getNlTiles("VIIRS")
+#'     intersect with as give by \code{getNlTiles}
 #'
 #' @examples
 #' #map all countries
@@ -563,10 +561,9 @@ getTilesCtryIntersectVIIRS <- function(ctryCode)
 
 ######################## validNlTileNameVIIRS ###################################
 
-#' Check if a tile index name is valid for a given nightlight type
+#' Check valid VIIRS nightlight tile name
 #'
-#' Check if a tile number is valid for a given nightlight type. Note tile num is only valid for
-#' "VIIRS" nightlight type
+#' Check if a tile name is valid for a given VIIRS nightlight type.
 #'
 #' @param tileName the name of the tile
 #' 
@@ -674,7 +671,7 @@ tileIdx2Name <- function(tileNum, nlType)
 #'
 #' @param shpPolygon a SpatialPolygon or SpatialPolygons
 #'
-#' @return Character vector of the intersecting tiles as given by getNlTiles("VIIRS")
+#' @return Character vector of the intersecting tiles as given by \code{getNlTiles}
 #'
 #' @examples
 #' \dontrun{
@@ -727,10 +724,9 @@ tilesPolygonIntersectVIIRS <- function(shpPolygon)
 
 ######################## validNlTileNumVIIRS ###################################
 
-#' Check if a tile index number is valid for a given nightlight type
+#' Check valid tile number for a given VIIRS nightlight type
 #'
-#' Check if a tile number is valid for a given nightlight type. Note tile num is only valid for
-#' "VIIRS" nightlight type
+#' Check if a tile number is valid for a given VIIRS nightlight type.
 #'
 #' @param nlTileNum the index of the tile
 #' 
@@ -742,7 +738,7 @@ tilesPolygonIntersectVIIRS <- function(shpPolygon)
 #' Rnightlights:::validNlTileNumVIIRS("1", "VIIRS.M")
 #'  #returns TRUE
 #'
-#' Rnightlights:::validNlTileNumVIIRS("9", "VIIRS.M")
+#' Rnightlights:::validNlTileNumVIIRS("9", "VIIRS.D")
 #'  #returns FALSE
 #'
 validNlTileNumVIIRS <- function(nlTileNum, nlType)

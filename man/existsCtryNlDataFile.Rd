@@ -2,23 +2,28 @@
 % Please edit documentation in R/ctrynldata.R
 \name{existsCtryNlDataFile}
 \alias{existsCtryNlDataFile}
-\title{Check if a country's data file exists}
+\title{Check if a country admin level data file exists}
 \usage{
 existsCtryNlDataFile(ctryCode, admLevel)
 }
 \arguments{
 \item{ctryCode}{the ISO3 country code}
+
+\item{admLevel}{The country admin level of interest.}
 }
 \value{
 TRUE/FALSE
 }
 \description{
-Check if a country's data file exists
+Check if a country admin level data file exists. Stats are calculated
+    and stored at the admin level of a country, hence, a country could
+    have as many files as admin levels.
 }
 \examples{
 ctryCode <- "KEN"
+admLevel <- "KEN_adm0"
 message("Data file for ", ctryCode, 
-    ifelse(Rnightlights:::existsCtryNlDataFile(ctryCode), 
+    ifelse(Rnightlights:::existsCtryNlDataFile(ctryCode, admLevel), 
         " FOUND", " NOT FOUND"))
 
 }

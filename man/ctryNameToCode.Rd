@@ -2,18 +2,18 @@
 % Please edit documentation in R/ctrycode.R
 \name{ctryNameToCode}
 \alias{ctryNameToCode}
-\title{Convert a country name to its ISO3 code}
+\title{Convert country names to ISO3 codes}
 \usage{
 ctryNameToCode(ctryNames)
 }
 \arguments{
-\item{ctryName}{Chracter string common name of a country}
+\item{ctryNames}{Character vector common names of countries to convert}
 }
 \value{
 Character ISO3 ctryCode if found else NA
 }
 \description{
-Convert a country name to its ISO3 code. Searches the rworldmap map data.
+Convert country names to ISO3 codes. Searches the rworldmap map data.
     With no parameters returns a list of ctryNames and their corresponding
     codes as given by rworldMap
 }
