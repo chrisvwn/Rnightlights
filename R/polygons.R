@@ -148,7 +148,6 @@ getCtryShpLowestLyrNames <- function(ctryCodes)
   
   lowestAdmLyrNames <- stats::setNames(sapply(ctryCodes, function(ctryCode)
   {
-
     layers <- rgdal::ogrListLayers(path.expand(getPolyFnamePath(ctryCode)))
     
     admLayers <- layers[grep("adm", layers)]
@@ -200,7 +199,7 @@ getCtryPolyAdmLevelNames <- function(ctryCode, lowestAdmLevel=getCtryShpLowestLy
   if (numLayers > 0)
     for (lyrNum in 1:numLayers)
     {
-      lyrPoly <- rgdal::readOGR(path.expand(getPolyFnamePath(ctryCode)), as.character(getCtryShpLyrNames(ctryCode, lyrNum)))
+      lyrPoly <- readCtryPolyAdmLayer(ctryCode, as.character(getCtryShpLyrNames(ctryCode, lyrNum)))
       
       lvlTypeName <- paste0("TYPE_",lyrNum)
       
@@ -226,6 +225,74 @@ getCtryPolyAdmLevelNames <- function(ctryCode, lowestAdmLevel=getCtryShpLowestLy
   return (admLevels)
 }
 
+######################## searchAdmLevel ###################################
+
+#' Search for the admLevel by official name
+#'
+#' Search for the admLevel by official name. Expects the shapefile
+#'     to already exist.
+#' 
+#' @param ctryCode \code{character} The ctryCode of the country of interest
+#' 
+#' @param admLevelName \code{character} The name to search for
+#' 
+#' @param dnldPoly \code{logical} If the country polygon doesn't exist 
+#'     should we download it?
+#'
+#' @return character vector of admin level names
+#'
+#' @examples
+#' \dontrun{
+#' searchAdmLevel("KEN", "county")
+#' #returns "KEN_adm1"
+#' }
+#'
+#' @export
+searchAdmLevel <- function(ctryCode, admLevelName, dnldPoly)
+{
+  if(missing(ctryCode))
+    stop("Missing required parameter ctryCode")
+  
+  if(!validCtryCodes(ctryCode))
+    stop("Invalid ISO3 ctryCode: ", ctryCode)
+  
+  if(missing(admLevelName))
+    stop("Missing required parameter admLevelName")
+
+  if(!existsCtryPoly(ctryCode))
+    if(!dnldPoly)
+      message("ctryPoly doesn't exist. Set dnldPoly=TRUE to download it")
+    else
+      dnldCtryPoly(ctryCode)
+  
+  allAdmLevels <- getCtryPolyAdmLevelNames(ctryCode)
+
+  idxFound <- grep(pattern = admLevelName, x = allAdmLevels, ignore.case = TRUE)
+  
+  if(length(idxFound) == 0)
+    return(NA)
+
+  return (getCtryShpLyrNames(ctryCode, idxFound))
+}
+
+######################## validCtryAdmLvls ###################################
+
+#' Checks if ctry admLevels are valid
+#'
+#' Checks if ctry admLevels are valid
+#' 
+#' @param ctryCode \code{character} The ctryCode of the country of interest
+#' 
+#' @param admLevels \code{character} The admLevel(s) to search for
+#'
+#' @return \code{logical} whether inputted admLevels are valid
+#'
+#' @examples
+#' \dontrun{
+#' validCtryAdmLvls("KEN", "adm0")
+#' #returns "KEN_adm1"
+#' }
+#'
 validCtryAdmLvls <- function(ctryCode, admLevels)
 {
   if(missing(ctryCode))
@@ -247,11 +314,56 @@ validCtryAdmLvls <- function(ctryCode, admLevels)
   return(validAdmLvls)
 }
 
+######################## allValidCtryAdmLvls ###################################
+
+#' Checks if all ctry admLevels are valid
+#'
+#' Checks if all ctry admLevels are valid
+#' 
+#' @param ctryCode \code{character} The ctryCode of the country of interest
+#' 
+#' @param admLevels \code{character} The admLevel(s) to search for
+#' 
+#' @return \code{logical} whether inputted admLevels are valid
+#'
+#' @examples
+#' \dontrun{
+#' validCtryAdmLvls("KEN", "adm0")
+#' #returns "KEN_adm1"
+#' }
+#'
 allValidCtryAdmLvls <- function(ctryCode, admLevels)
 {
   return(all(validCtryAdmLvls(ctryCode, admLevels)))
 }
 
+existsCtryPoly <- function(ctryCode)
+{
+  if(missing(ctryCode))
+    stop("Missing required parameter ctryCode")
+  
+  if(!validCtryCodes(ctryCode))
+    stop("Invalid ISO3 ctryCode: ", ctryCode)
+  
+  return(dir.exists(getPolyFnamePath(ctryCode)))
+}
+
+######################## getCtryShpAllAdmLvls ###################################
+
+#' Get all the admLevels in a country
+#'
+#' Get all the admLevels in a country
+#' 
+#' @param ctryCode \code{character} The ctryCode of the country of interest
+#'
+#' @return \code{logical} whether inputted admLevels are valid
+#'
+#' @examples
+#' \dontrun{
+#' getCtryShpAllAdmLvls("KEN")
+#' #returns "KEN_adm1"
+#' }
+#'
 getCtryShpAllAdmLvls <- function(ctryCodes)
 {
   stats::setNames(lapply(ctryCodes, 
@@ -385,4 +497,100 @@ ctryShpLyrName2Num <- function(layerName)
     stop("Invalid layerName: ", layerName)
   
   return(as.numeric(gsub("[^[:digit:]]", "", layerName)))
+}
+
+
+######################## readCtryPolyAdmLayer ###################################
+
+#' Read a country admLevel polygon
+#'
+#' Read a country admLevel polygon. Reads the saved RDS format of the shapefile
+#'     which is saved as part of \code{dnldCtryPoly} by default. Otherwise,
+#'     it will try to read the shapefile. If it fails it returns null.
+#' 
+#' @param ctryCode \code{character} The ctryCode of the country of interest
+#' 
+#' @param admLevelName \code{character} The name to search for
+#' 
+#' @param polyType \code{character} Whether to read the shapefile or the RDS
+#'     format.
+#' @param dnldPoly \code{logical} If the country polygon doesn't exist 
+#'     should we download it?
+#'
+#' @return \code{SpatialPolygonsDataFrame} The admLevel polygon layer or NULL 
+#'     if not found
+#'
+#' @examples
+#' \dontrun{
+#' readCtryPolyAdmLayer("KEN", "KEN_adm1")
+#' #returns "KEN_adm1"
+#' }
+#'
+#' @export
+readCtryPolyAdmLayer <- function(ctryCode, admLevel, polyType="rds", dnldPoly=TRUE)
+{
+  if(missing(ctryCode))
+    stop("Missing required parameter ctryCode")
+  
+  if(!validCtryCodes(ctryCode))
+    stop("Invalid ISO3 ctryCode: ", ctryCode)
+  
+  if(missing(admLevel))
+    stop("Missing required parameter admLevelName")
+  
+  if(!existsCtryPoly(ctryCode))
+  {
+    if(!dnldPoly)
+      message("ctryPoly doesn't exist. Set dnldPoly=TRUE to download it")
+    else
+      dnldCtryPoly(ctryCode)
+  }
+
+  rdsPath <- paste0(getPolyFnamePath(ctryCode), ".RDS")
+  
+  if(polyType=="rds")
+  {
+    if(!file.exists(rdsPath))
+    {
+      if(dnldPoly)
+        dnldCtryPoly(ctryCode)
+      else
+        stop("RDS doesn't exist. Set dnldPoly=TRUE to download/create it")
+    }
+    
+    if(file.exists(rdsPath))
+    {
+      ctryPolys <- readRDS(rdsPath)
+      
+      ctryPoly <- ctryPolys[[ctryShpLyrName2Num(admLevel)+1]]
+    }
+    else
+    {
+      stop("Unable to retrieve RDS. Retry with dnldPoly=TRUE to download/create it")
+    }
+    
+  }
+  else if(polyType == "shp")
+  {
+    shpPath <- getPolyFnamePath(ctryCode)
+    
+    if(!dir.exists(rdsPath))
+    {
+      if(dnldPoly)
+        dnldCtryPoly(ctryCode)
+      else
+        stop("Shapefile doesn't exist. Set dnldPoly=TRUE to download it")
+    }
+    
+    if(dir.exists(shpPath))
+    {
+      ctryPoly <- rgdal::readOGR(shpPath, admLevel)
+    }
+    else
+    {
+      stop("Shapefile not found. set dnldPoly=TRUE to download shapefile and save as RDS")
+    }
+  }
+  
+  return (ctryPoly)
 }

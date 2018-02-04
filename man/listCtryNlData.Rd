@@ -4,11 +4,13 @@
 \alias{listCtryNlData}
 \title{List available data}
 \usage{
-listCtryNlData(ctryCodes = NULL, nlPeriods = NULL, nlTypes = NULL,
-  source = "local")
+listCtryNlData(ctryCodes = NULL, admLevels = NULL, nlPeriods = NULL,
+  nlTypes = NULL, source = "local")
 }
 \arguments{
 \item{ctryCodes}{A character vector of ctryCodes to filter by}
+
+\item{admLevels}{A character vector of admLevels to filter by}
 
 \item{nlPeriods}{A character vector of nlPeriods to filter by}
 

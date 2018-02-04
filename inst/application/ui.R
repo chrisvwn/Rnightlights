@@ -106,6 +106,8 @@ alignCenter <- function(el) {
                  
                  shiny::actionButton("btnGo", "LOAD"),                 
 
+                 shiny::checkboxInput(inputId = "strict", label = "Strict", value = F),
+                 
                  shiny::uiOutput(outputId = "intraCountry"),
                  
                  shiny::uiOutput("intraCountry1")

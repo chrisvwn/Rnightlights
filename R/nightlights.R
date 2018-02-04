@@ -14,13 +14,14 @@
 #+ logging
 #+ debug mode
 #+ do not export internal functions?: DONE
-#+ remove dependency on rworldmap?: NA
+#+ remove dependency on rworldmap?: Shelved
 #+ aggregating by date e.g. quarterly, semi-annually, annually :V2
 #+ verify treatment of ATA i.e. single adm level countries: DONE
 #+ logic of getCtryPolyAdmLevelNames esp lvlEngName assignment needs scrutiny: DONE
 #+ OLS : DONE
 #+ store data in RDS format instead of CSV(?): V2
 #+ Name all parameters in function calls to future proof code
+#+ Save shapefiles as RDS for quicker access?:
 
 #Notes: gdalwarp is not used for cropping because the crop_to_cutline option causes a shift in the cell locations which then affects the stats extracted. A gdal-based crop to extent would be highly desirable for performance reasons though so seeking other gdal-based workarounds
 
@@ -165,7 +166,7 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, cropMaskMetho
     ctryNlDataDF <- utils::read.csv(getCtryNlDataFnamePath(ctryCode, admLevel))
     
     message("Load country polygon admin level")
-    ctryPolyAdm0 <- rgdal::readOGR(path.expand(getPolyFnamePath(ctryCode)), unlist(getCtryShpLyrNames(ctryCode, 0)))
+    ctryPolyAdm0 <- readCtryPolyAdmLayer(ctryCode, unlist(getCtryShpLyrNames(ctryCode, 0)))
     
     ctryExtent <- raster::extent(ctryPolyAdm0)
     
@@ -181,10 +182,10 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, cropMaskMetho
     
     message("Load country polygon lowest admin level for crop")
     
-    ctryPolyAdm0 <- rgdal::readOGR(path.expand(getPolyFnamePath(ctryCode)), unlist(getCtryShpLyrNames(ctryCode, 0)))
+    ctryPolyAdm0 <- readCtryPolyAdmLayer(ctryCode, unlist(getCtryShpLyrNames(ctryCode, 0)))
   }
   
-  if(!file.exists(getCtryRasterOutputFname(ctryCode = ctryCode, nlPeriod = nlPeriod, nlType = nlType)))
+  if(!file.exists(getCtryRasterOutputFnamePath(ctryCode = ctryCode, nlPeriod = nlPeriod, nlType = nlType)))
   {
     message("Begin processing ", nlPeriod, " ", base::date())
     
@@ -243,7 +244,7 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, cropMaskMetho
       
       message("Writing the merged raster to disk ", base::date())
       
-      raster::writeRaster(x = ctryRastCropped, filename = getCtryRasterOutputFname(ctryCode, nlType, nlPeriod), overwrite=TRUE, progress="text")
+      raster::writeRaster(x = ctryRastCropped, filename = getCtryRasterOutputFnamePath(ctryCode, nlType, nlPeriod), overwrite=TRUE, progress="text")
       
       message("Crop and mask using rasterize ... Done", base::date())
     }
@@ -272,21 +273,21 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, cropMaskMetho
       gdalUtils::gdalwarp(srcfile=rstTmp, dstfile=output_file_vrt, s_srs=wgs84, t_srs=wgs84, cutline=getPolyFnamePath(ctryCode), cl= getCtryShpLyrNames(ctryCode,0), multi=TRUE, wm=pkgOptions("gdalCacheMax"), wo=paste0("NUM_THREADS=", pkgOptions("numCores")), q = FALSE)
 
       message("gdal_translate converting VRT to TIFF ", base::date())
-      gdalUtils::gdal_translate(co = "compress=LZW", src_dataset = output_file_vrt, dst_dataset = getCtryRasterOutputFname(ctryCode, nlType, nlPeriod))
+      gdalUtils::gdal_translate(co = "compress=LZW", src_dataset = output_file_vrt, dst_dataset = getCtryRasterOutputFnamePath(ctryCode, nlType, nlPeriod))
       
       message("Deleting the component rasters ", base::date())
       
       file.remove(rstTmp)
       file.remove(output_file_vrt)
       
-      ctryRastCropped <- raster::raster(getCtryRasterOutputFname(ctryCode, nlType, nlPeriod))
+      ctryRastCropped <- raster::raster(getCtryRasterOutputFnamePath(ctryCode, nlType, nlPeriod))
       #GDALWARP
       message("Crop and mask using gdalwarp ... DONE", base::date())
     }
   }
   else
   {
-    rastFilename <- getCtryRasterOutputFname(ctryCode, nlType, nlPeriod)
+    rastFilename <- getCtryRasterOutputFnamePath(ctryCode, nlType, nlPeriod)
     
     ctryRastCropped <- raster::raster(rastFilename)
     
@@ -313,7 +314,7 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, cropMaskMetho
   
   message("Begin extracting the data from the merged raster ", base::date())
   
-  ctryPoly <- rgdal::readOGR(path.expand(getPolyFnamePath(ctryCode)), admLevel)
+  ctryPoly <- readCtryPolyAdmLayer(ctryCode, admLevel)
   
   if (extractMethod == "rast")
     sumAvgRad <- fnAggRadRast(ctryPoly=ctryPoly, ctryRastCropped=ctryRastCropped, nlType=nlType, nlStats=nlStats)
@@ -339,10 +340,9 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, cropMaskMetho
 
 ######################## getCtryRasterOutputFname ###################################
 
-#' Get the full path to the file where the cropped VIIRS country raster is stored.
+#' Constructs the name of the output raster
 #'
-#' Get the full path to the file where the cropped VIIRS country raster is stored. This file is created
-#'     when processing the country before extracting the data. It can be used to re-process a country much faster
+#' Constructs the name of the output raster
 #'
 #' @param ctryCode the ctryCode of interest
 #' 
@@ -350,15 +350,13 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, cropMaskMetho
 #'
 #' @param nlPeriod the nlPeriod of interest
 #'
-#' @return Character full path to the cropped VIIRS country raster for a country and a given year and month
+#' @return Character the name of country raster for a country and a given 
+#'     nlType and nlPeriod
 #'
 #' @examples
-#' \dontrun{
+#' 
 #' getCtryRasterOutputFname("KEN","VIIRS.M", "201412")
-#' }
 #'
-#'#export for exploreData() shiny app
-#'@export
 getCtryRasterOutputFname <- function(ctryCode, nlType, nlPeriod)
 {
   if(missing(ctryCode))
@@ -379,7 +377,53 @@ getCtryRasterOutputFname <- function(ctryCode, nlType, nlPeriod)
   if(!allValidNlPeriods(nlPeriods = nlPeriod, nlTypes = nlType))
     stop("Invalid nlPeriod: ", nlPeriod, " for nlType: ", nlType)
   
-  return (file.path(getNlDir("dirRasterOutput"), paste0(ctryCode, "_", nlType, "_", nlPeriod,".tif")))
+  return (file.path(getNlDir("dirRasterOutput")))
+}
+
+######################## getCtryRasterOutputFnamePath ###################################
+
+#' Get the full path to the file where the cropped VIIRS country raster is stored.
+#'
+#' Get the full path to the file where the cropped VIIRS country raster is stored. This file is created
+#'     when processing the country before extracting the data. It can be used to re-process a country much faster
+#'
+#' @param ctryCode the ctryCode of interest
+#' 
+#' @param nlType the nlType of interest
+#'
+#' @param nlPeriod the nlPeriod of interest
+#'
+#' @return Character full path to the cropped VIIRS country raster for a country and a given year and month
+#'
+#' @examples
+#' \dontrun{
+#' getCtryRasterOutputFnamePath("KEN","VIIRS.M", "201412")
+#' }
+#'
+#'#export for exploreData() shiny app
+#'@export
+getCtryRasterOutputFnamePath <- function(ctryCode, nlType, nlPeriod)
+{
+  if(missing(ctryCode))
+    stop("Missing required parameter ctryCode")
+  
+  if(missing(nlType))
+    stop("Missing required parameter nlType")
+  
+  if(missing(nlPeriod))
+    stop("Missing required parameter nlPeriod")
+  
+  if(!validCtryCodes(ctryCode))
+    stop("Invalid ctryCode: ", ctryCode)
+  
+  if(!validNlTypes(nlType))
+    stop("Invalid nlType: ", nlType)
+  
+  if(!allValidNlPeriods(nlPeriods = nlPeriod, nlTypes = nlType))
+    stop("Invalid nlPeriod: ", nlPeriod, " for nlType: ", nlType)
+  
+  return (file.path(getCtryRasterOutputFname(ctryCode, nlType, nlPeriod), 
+                    paste0("NL_", ctryCode, "_", nlType, "_", nlPeriod,".tif")))
 }
 
 ######################## processNlData ###################################
@@ -511,6 +555,7 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
   if(missing(admLevels))
     admLevels <- "lowest"
   
+  #allow keywords/aliases instead of admLevels
   if(length(admLevels) == 1)
   {
     if(admLevels=="lowest")
@@ -519,8 +564,15 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
       admLevels <- getCtryShpLyrNames(ctryCodes, 0)
     else if(admLevels=="all")
       admLevels <- getCtryShpAllAdmLvls(ctryCodes)
+    else
+    {
+      tmpadmLevel <- searchAdmLevel(ctryCode, admLevels)
+      
+      admLevels <- ifelse(is.na(tmpadmLevel), admLevels, tmpadmLevel)
+    }
   }
   
+  #if the admLevels are input as "adm0" convert to proper admLevel e.g. "KEN_adm0"
   for(i in 1:length(ctryCodes))
   if(!length(grep(paste0(ctryCodes[i],"_adm\\d+"), admLevels[i], ignore.case = T)) == length(admLevels[i]))
   {
@@ -530,6 +582,7 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
       admLevels[i] <- paste(ctryCode, paste0("adm", admLevels[i]), sep="_")
   }
   
+  #traverse and check all admLevel component lists/vectors
   if(!all(sapply(1:length(ctryCodes), 
                 function(i)
                 {
@@ -629,7 +682,7 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
       else
       {
         #tile not found. if the cropped raster is not found try to download
-        if (!file.exists(getCtryRasterOutputFname(ctryCode, nlType, nlPeriod)))
+        if (!file.exists(getCtryRasterOutputFnamePath(ctryCode, nlType, nlPeriod)))
         {
           if(!downloadNlTiles(nlType, nlPeriod, tileList))
           {

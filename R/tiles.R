@@ -679,7 +679,7 @@ tileIdx2Name <- function(tileNum, nlType)
 #' ctryShapefile <- Rnightlights:::dnldCtryPoly("KEN")
 #' 
 #' #read in shapefile top layer
-#' ctryPoly <- rgdal::readOGR(Rnightlights:::getPolyFnamePath("KEN"), 
+#' ctryPoly <- readCtryPolyAdmLayer("KEN", 
 #'     Rnightlights:::getCtryShpLyrNames("KEN",0))
 #' 
 #' #get list of intersecting tiles

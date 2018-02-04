@@ -21,8 +21,8 @@ Extract raster pixel values within the boundaries of a polygon
 }
 \examples{
 \dontrun{
-ctryPoly <- readOGR(getPolyFnamePath("KEN"), getCtryShpLyrNames("KEN", 1))
-ctryRaster <- raster(getCtryRasterOutputFname("KEN", "OLS", "1999"))
+ctryPoly <- rgdal::readOGR(getPolyFnamePath("KEN"), getCtryShpLyrNames("KEN", 1))
+ctryRaster <- raster::raster(getCtryRasterOutputFnamePath("KEN", "OLS", "1999"))
 temp <- NULL
 KenAdm1Sum <- NULL
 for (i in 1:length(ctryPoly@polygons))

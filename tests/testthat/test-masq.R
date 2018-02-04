@@ -3,7 +3,7 @@ library(testthat)
 context("testmasq")
 
 test_that("masq data extraction from rasters works", {
-  expect_equal(sum(admSum), 0)
+  expect_equal(sum(admSum, na.rm = T), 0)
   
 })
 

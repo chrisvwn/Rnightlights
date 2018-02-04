@@ -1,10 +1,4 @@
-
-# This is the server logic for a Shiny web application.
-# You can find out more about building applications with Shiny here:
 #
-# http://shiny.rstudio.com
-#
-# 
 # if (!require("pacman")) install.packages('pacman', repos='http://cran.r-project.org')
 # 
 # pacman::p_load(shiny, ggplot2, plotly, reshape2, rgdal, RColorBrewer, ggdendro, dendextend)
@@ -104,11 +98,20 @@ shiny::shinyServer(function(input, output, session){
       if (length(input$countries) != 1)
         return()
 
-      temp <- data.table::fread(Rnightlights::getCtryNlDataFnamePath(input$countries), nrows = 1, header = T)
+      if(input$strict)
+      {
+        cols <- Rnightlights:::getCtryPolyAdmLevelNames(input$countries)[Rnightlights:::ctryShpLyrName2Num(listCtryNlData(ctryCodes = input$countries)$admLevel)]
+      }
+      else
+      {
+        temp <- data.table::fread(Rnightlights::getCtryNlDataFnamePath(input$countries), nrows = 1, header = T)
+        
+        cols <- names(temp)
+        
+        cols <- cols[-grep("area_sq_km|NL_", cols)]
+      }
       
-      cols <- names(temp)
-      
-      cols <- cols[-grep("area_sq_km|NL_", cols)]
+      cols
     })
     
   ######################## reactive ctryAdmLevelNames ###################################
@@ -902,7 +905,7 @@ shiny::shinyServer(function(input, output, session){
         if (normArea)
           meltCtryData$value <- (meltCtryData$value)/meltCtryData$area_sq_km
         
-        ctryPoly0 <- rgdal::readOGR(Rnightlights::getPolyFnamePath(countries), Rnightlights::getCtryShpLyrNames(countries,0))
+        ctryPoly0 <- Rnightlights::readCtryPolyAdmLayer(countries, Rnightlights::getCtryShpLyrNames(countries,0))
         
         map <- leaflet::leaflet(data=ctryPoly0) %>%
           #addTiles("http://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png") %>%
@@ -920,7 +923,7 @@ shiny::shinyServer(function(input, output, session){
         pal <- cbPalette
         
         #turn off previous layer? No point keeping it if it is hidden. Also we want to turn the current layer to transparent so that one can see through to the raster layer on hover
-        ctryPoly <- rgdal::readOGR(Rnightlights::getPolyFnamePath(countries), Rnightlights::getCtryShpLyrNames(countries, 1)) 
+        ctryPoly <- readCtryPolyAdmLayer(countries, Rnightlights::getCtryShpLyrNames(countries, 1)) 
         
         ctryPoly <- sp::spTransform(ctryPoly, wgs84)
         
@@ -1323,7 +1326,7 @@ shiny::shinyServer(function(input, output, session){
 #       
 #       lyrNum <- which(lyrs == admLevel) - 1
 #       
-#       ctryPoly <- readOGR(Rnightlights::getPolyFnamePath(countries), ifelse(is.null(admLevel),  yes = Rnightlights::getCtryShpLyrNames(countries,0), no = Rnightlights::getCtryShpLyrName(countries,lyrNum)))
+#       ctryPoly <- readCtryPolyAdmLayer(countries, ifelse(is.null(admLevel),  yes = Rnightlights::getCtryShpLyrNames(countries,0), no = Rnightlights::getCtryShpLyrName(countries,lyrNum)))
 #       s
 #       proxy <- leafletProxy("map", data=ctryPoly)
 #       
@@ -1427,14 +1430,14 @@ shiny::shinyServer(function(input, output, session){
       
       #message(ctryYearMonth)
       
-      ctryPoly0 <- rgdal::readOGR(Rnightlights::getPolyFnamePath(countries), Rnightlights::getCtryShpLyrNames(countries,0))
+      ctryPoly0 <- readCtryPolyAdmLayer(countries, Rnightlights::getCtryShpLyrNames(countries,0))
 
       if(stringr::str_detect(nlType, "OLS"))
         nlPeriod <- substr(gsub("-","",nlYm),1,4)
       else if(stringr::str_detect(nlType, "VIIRS"))
         nlPeriod <- substr(gsub("-","",nlYm),1,6)
       
-      ctryRastFilename <- Rnightlights::getCtryRasterOutputFname(countries, nlType, nlPeriod)
+      ctryRastFilename <- Rnightlights::getCtryRasterOutputFnamePath(countries, nlType, nlPeriod)
       
       if(file.exists(ctryRastFilename))
       {
@@ -1500,7 +1503,7 @@ shiny::shinyServer(function(input, output, session){
           pal <- leaflet::colorBin(brewerPal, domain = lvlCtryData$value, na.color = "grey", bins=bins)
           
           #turn off previous layer? No point keeping it if it is hidden. Also we want to turn the current layer to transparent so that one can see through to the raster layer on hover
-          ctryPoly <- rgdal::readOGR(Rnightlights::getPolyFnamePath(countries), Rnightlights::getCtryShpLyrNames(countries, iterAdmLevel-1)) 
+          ctryPoly <- readCtryPolyAdmLayer(countries, Rnightlights::getCtryShpLyrNames(countries, iterAdmLevel-1)) 
           
           ctryPoly <- sp::spTransform(ctryPoly, wgs84)
           

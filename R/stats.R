@@ -318,11 +318,11 @@ ZonalPipe <- function (ctryCode, admLevel, ctryPoly, path.in.shp, path.in.r, pat
   return(Zstat)
   
   # 3/ Merge data in the shapefile and write it #Not required at this point
-  #shp<-readOGR(path.in.shp, layer= sub("^([^.]*).*", "\\1", basename(path.in.shp)))
+  #shp<-rgdal::readOGR(path.in.shp, sub("^([^.]*).*", "\\1", basename(path.in.shp)))
   
   #shp@data <- data.frame(shp@data, Zstat[match(shp@data[,zone.attribute], Zstat[, "z"]),])
   
-  #writeOGR(shp, path.out.shp, layer= sub("^([^.]*).*", "\\1", basename(path.in.shp)), driver="ESRI Shapefile")
+  #rgdal::writeOGR(shp, path.out.shp, layer= sub("^([^.]*).*", "\\1", basename(path.in.shp)), driver="ESRI Shapefile")
 }
 
 ######################## fnAggRadGdal ###################################
@@ -351,7 +351,7 @@ ZonalPipe <- function (ctryCode, admLevel, ctryPoly, path.in.shp, path.in.r, pat
 #' @examples
 #' #read the Kenya polygon downloaded from GADM and load the lowest admin level (ward)
 #' \dontrun{
-#' ctryPoly <- rgdal::readOGR(Rnightlights:::getPolyFnamePath(ctryCode="KEN"), 
+#' ctryPoly <- readCtryPolyAdmLayer(ctryCode="KEN", 
 #'     Rnightlights:::getCtryShpLowestLyrNames(ctryCode="KEN"))
 #'     
 #' #calculate the sum of radiances for the wards in Kenya
@@ -380,7 +380,7 @@ fnAggRadGdal <- function(ctryCode, admLevel, ctryPoly, nlType, nlPeriod, nlStats
   
   path.in.shp<- getPolyFnamePath(ctryCode)
   
-  path.in.r<- getCtryRasterOutputFname(ctryCode, nlType, nlPeriod) #or path.in.r<-list.files("/home/, pattern=".tif$")
+  path.in.r<- getCtryRasterOutputFnamePath(ctryCode, nlType, nlPeriod) #or path.in.r<-list.files("/home/, pattern=".tif$")
   
   if(stringr::str_detect(nlType, "VIIRS"))
     nlTp <- "VIIRS"
@@ -446,11 +446,11 @@ fnAggRadGdal <- function(ctryCode, admLevel, ctryPoly, nlType, nlPeriod, nlStats
 #' @examples
 #' #read the Kenya polygon downloaded from GADM and load the lowest admin level (ward)
 #' \dontrun{
-#' ctryPoly <- rgdal::readOGR(Rnightlights:::getPolyFnamePath(ctryCode="KEN"), 
+#' ctryPoly <- readCtryPolyAdmLayer(ctryCode="KEN", 
 #'     Rnightlights:::getCtryShpLowestLyrNames(ctryCode="KEN"))
 #'     
 #' # the VIIRS nightlight raster cropped earlier to the country outline
-#' ctryRastCropped <- raster::raster(Rnightlights:::getCtryRasterOutputFname(ctryCode="KEN",
+#' ctryRastCropped <- raster::raster(Rnightlights:::getCtryRasterOutputFnamePath(ctryCode="KEN",
 #'     nlType="VIIRS.M", nlPeriod="201401"))
 #' 
 #' #calculate the sum of radiances for the wards in Kenya

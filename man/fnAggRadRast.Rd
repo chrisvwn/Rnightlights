@@ -31,11 +31,11 @@ Calculate stats on the radiance of the pixels in a nightlight raster
 \examples{
 #read the Kenya polygon downloaded from GADM and load the lowest admin level (ward)
 \dontrun{
-ctryPoly <- rgdal::readOGR(Rnightlights:::getPolyFnamePath(ctryCode="KEN"), 
+ctryPoly <- readCtryPolyAdmLayer(Rnightlights:::getPolyFnamePath(ctryCode="KEN"), 
     Rnightlights:::getCtryShpLowestLyrNames(ctryCode="KEN"))
     
 # the VIIRS nightlight raster cropped earlier to the country outline
-ctryRastCropped <- raster::raster(Rnightlights:::getCtryRasterOutputFname(ctryCode="KEN",
+ctryRastCropped <- raster::raster(Rnightlights:::getCtryRasterOutputFnamePath(ctryCode="KEN",
     nlType="VIIRS.M", nlPeriod="201401"))
 
 #calculate the sum of radiances for the wards in Kenya

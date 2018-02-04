@@ -31,7 +31,7 @@ createCtryNlDataDF <- function(ctryCode, admLevel=getCtryShpLowestLyrNames(ctryC
   wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
   
   if(dir.exists(getPolyFnamePath(ctryCode)) && length(dir(getPolyFnamePath(ctryCode)))> 0)
-    ctryPoly <- rgdal::readOGR(path.expand(getPolyFnamePath(ctryCode)), admLevel)
+    ctryPoly <- readCtryPolyAdmLayer(ctryCode, admLevel)
   
   ctryExtent <- raster::extent(ctryPoly)
   
@@ -337,7 +337,7 @@ getCtryNlDataFname <- function(ctryCode, admLevel)
   if(!validCtryCodes(ctryCode))
     stop("Invalid ctryCode: ", ctryCode)
   
-  return (paste0(paste("NL", "DATA", ctryCode, toupper(admLevel), sep="_"), ".csv"))
+  return (paste0(paste("NL", "DATA", toupper(admLevel), sep="_"), ".csv"))
 }
 
 ######################## getCtryNlDataFnamePath ###################################
@@ -813,6 +813,8 @@ allExistsCtryNlData <- function(ctryCodes, admLevels, nlTypes, nlPeriods, nlStat
 #' 
 #' @param ctryCodes  A character vector of ctryCodes to filter by
 #' 
+#' @param admLevels A character vector of admLevels to filter by
+#' 
 #' @param nlPeriods A character vector of nlPeriods to filter by
 #' 
 #' @param nlTypes A character vector of nlTypes to filter by
@@ -836,7 +838,7 @@ allExistsCtryNlData <- function(ctryCodes, admLevels, nlTypes, nlPeriods, nlStat
 #' listCtryNlData(ctryCodes = c("KEN","RWA"), nlPeriods = c("2012", "2013"), nlTypes = "OLS.Y")
 #'
 #' @export
-listCtryNlData <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, source="local")
+listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlPeriods=NULL, nlTypes=NULL, source="local")
 {
   dataList <- NULL
   dataType <- NULL #appease CRAN note for global variables
@@ -844,13 +846,15 @@ listCtryNlData <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, source=
   nlPeriod <- NULL #appease CRAN note for global variables
   
   #get a list of country data files present
-  countries <- list.files(getNlDir("dirNlData"), pattern = ".csv$")
+  countries <- list.files(getNlDir("dirNlData"), pattern = "^NL_DATA_.*\\.csv$")
   
   #for each country filename
   for (ctry in countries)
   {
     #get first 3 chars which gives the ctryCode
-    ctryCode <- substr(ctry, 1, 3)
+    ctryCode <- substr(ctry, 9, 11)
+    
+    admLevel <- substr(ctry, nchar(ctry)-7, nchar(ctry)-4)
     
     #read in the header row
     ctryHdr <- data.table::fread(file.path(getNlDir("dirNlData"), ctry), header = F, nrows = 1)
@@ -862,12 +866,12 @@ listCtryNlData <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, source=
     #= "NL"+nlType+nlPeriod+stat
     nlCtryHdr <- reshape2::colsplit(nlCtryHdr, "_", c("V1", "V2","V3","V4"))
     
-    #aggregate the colnames into a single row with stats for each unique 
+    #aggregate (paste) the colnames into a single row with stats for each unique 
     #nlType+nlPeriod converted to a single field
     nlCtryHdr <- stats::aggregate(V4 ~ V1 + V2 + V3, data=nlCtryHdr, FUN=paste, collapse=",")
     
     #add a ctryCode column
-    nlCtryHdr <- cbind(rep(ctryCode, nrow(nlCtryHdr)), nlCtryHdr)
+    nlCtryHdr <- cbind(rep(ctryCode, nrow(nlCtryHdr)), rep(admLevel, nrow(nlCtryHdr)), nlCtryHdr)
     
     #combine into one table
     dataList <- rbind(dataList, nlCtryHdr)
@@ -880,15 +884,19 @@ listCtryNlData <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, source=
   dataList <- as.data.frame(dataList, row.names = 1:nrow(dataList))
   
   #label the columns
-  names(dataList) <- c("ctryCode", "dataType", "nlType", "nlPeriod", "nlStats")
+  names(dataList) <- c("ctryCode", "admLevel", "dataType", "nlType", "nlPeriod", "nlStats")
 
   dataList$ctryCode <- as.character(dataList$ctryCode)
+  dataList$admLevel <- as.character(dataList$admLevel)
   dataList$nlPeriod <- as.character(dataList$nlPeriod)
     
   #filters
   #filter by ctryCode if supplied
   if(!is.null(ctryCodes))
     dataList <- dataList[which(dataList[,"ctryCode"] %in% ctryCodes),]
+  
+  if(!is.null(admLevels))
+    dataList <- dataList[which(dataList[,"admLevel"] %in% admLevels),]
   
   #filter by nlType if supplied
   if(!is.null(nlTypes))
@@ -899,7 +907,7 @@ listCtryNlData <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, source=
     dataList <- dataList[which(dataList[,"nlPeriod"] %in% nlPeriods),]
   
   #Reorder the columns
-  dataList <- dplyr::select(dataList, dataType, ctryCode, nlType, nlPeriod, dplyr::contains("stat"))
+  dataList <- dplyr::select(dataList, dataType, ctryCode, admLevel, nlType, nlPeriod, dplyr::contains("stat"))
   
   #only return dataList if we have records esp. after filtering else return NULL
   if(nrow(dataList) > 0)

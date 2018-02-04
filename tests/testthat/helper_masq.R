@@ -3,11 +3,8 @@ library(Rnightlights)
 library(rgdal)
 library(raster)
 
-file.copy("STP_adm_shp_test.zip", "STP_adm_shp.zip")
 
-utils::unzip("STP_adm_shp.zip", exdir = ".", )
-
-ctryPoly <- rgdal::readOGR("STP_adm_shp", "STP_adm2")
+ctryPoly <- readCtryPolyAdmLayer("STP", "STP_adm2", polyType = "rds")
 
 ctryRaster <- raster::raster("STP_OLS_1992.tif")
 

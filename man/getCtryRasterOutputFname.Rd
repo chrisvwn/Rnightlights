@@ -2,7 +2,7 @@
 % Please edit documentation in R/nightlights.R
 \name{getCtryRasterOutputFname}
 \alias{getCtryRasterOutputFname}
-\title{Get the full path to the file where the cropped VIIRS country raster is stored.}
+\title{Constructs the name of the output raster}
 \usage{
 getCtryRasterOutputFname(ctryCode, nlType, nlPeriod)
 }
@@ -14,16 +14,14 @@ getCtryRasterOutputFname(ctryCode, nlType, nlPeriod)
 \item{nlPeriod}{the nlPeriod of interest}
 }
 \value{
-Character full path to the cropped VIIRS country raster for a country and a given year and month
+Character the name of country raster for a country and a given 
+    nlType and nlPeriod
 }
 \description{
-Get the full path to the file where the cropped VIIRS country raster is stored. This file is created
-    when processing the country before extracting the data. It can be used to re-process a country much faster
+Constructs the name of the output raster
 }
 \examples{
-\dontrun{
-getCtryRasterOutputFname("KEN","VIIRS.M", "201412")
-}
 
-#export for exploreData() shiny app
+getCtryRasterOutputFname("KEN","VIIRS.M", "201412")
+
 }

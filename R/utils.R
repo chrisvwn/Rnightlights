@@ -68,11 +68,13 @@ dnldCtryPoly <- function(ctryCode)
   #if the path doesn't exist
   if (!existsPolyFnamePath(ctryCode))
   {
+    #if the dir and zip dont exist download and unzip
     if (!existsPolyFnameZip(ctryCode))
     {
+      #download
       if(utils::download.file(url = getCtryPolyUrl(ctryCode), destfile = getPolyFnameZip(ctryCode), method = "auto", mode = "wb", extra = "-c") == 0)
       {
-        #unzip does not like double slashes!
+        #unzip does not like double slashes! Replace with singles if found
         
         polyFnameZip <- getPolyFnameZip(ctryCode)
         polyFnameZip <- gsub("//", "/", polyFnameZip, perl=TRUE)
@@ -82,12 +84,14 @@ dnldCtryPoly <- function(ctryCode)
         polyFnamePath <- gsub("//", "/", polyFnamePath, perl=TRUE)
         polyFnamePath <- gsub("\\\\\\\\", "\\\\", polyFnamePath, perl=TRUE)
         
+        #unzip
         result <- utils::unzip(polyFnameZip, exdir = polyFnamePath)
         file.remove(getPolyFnameZip(ctryCode))
       }
     }else
     {
-      #unzip does not like double slashes!
+      #if the dir doesn't exist but the zip does unzip the zip
+      #unzip does not like double slashes! Replace with singles if found
       
       #Convert double forward slashes to single
       polyFnameZip <- getPolyFnameZip(ctryCode)
@@ -98,13 +102,37 @@ dnldCtryPoly <- function(ctryCode)
       polyFnamePath <- gsub("//", "/", polyFnamePath, perl=TRUE)
       polyFnamePath <- gsub("\\\\\\\\", "\\\\", polyFnamePath, perl=TRUE)
       
+      #unzip
       result <- utils::unzip(polyFnameZip, exdir = polyFnamePath)
       file.remove(getPolyFnameZip(ctryCode))
     }
+    
+    #saving RDS
+    message("Creating shapefile as RDS")
+    message("Getting admLevels in ", ctryCode)
+    allCtryLevels <- getCtryShpAllAdmLvls(ctryCode)
+    
+    message("Reading in all adLevels")
+    listCtryPolys <- unlist(lapply(allCtryLevels, function(lvl) rgdal::readOGR(getPolyFnamePath(ctryCode), lvl)))
+    
+    message("Saving admLevel polygons as RDS")
+    saveRDS(listCtryPolys, paste0(getPolyFnamePath(ctryCode), ".RDS"))
   }
   else
   {
-    message("Polygon ", ctryCode, " already exists")
+    if(!file.exists(paste0(getPolyFnamePath(ctryCode), ".RDS")))
+    {
+      message("Polygon ", ctryCode, " already exists")
+      
+      message("Getting admLevels in ", ctryCode)
+      allCtryLevels <- unlist(getCtryShpAllAdmLvls(ctryCode))
+      
+      message("Reading in all adLevels")
+      listCtryPolys <- lapply(allCtryLevels, function(lvl) rgdal::readOGR(getPolyFnamePath(ctryCode), lvl))
+      
+      message("Saving admLevel polygons as RDS")
+      saveRDS(listCtryPolys, paste0(getPolyFnamePath(ctryCode), ".RDS"))
+    }
   }
   
   return (!is.null(result))
