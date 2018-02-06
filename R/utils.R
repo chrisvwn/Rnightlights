@@ -179,6 +179,9 @@ nlCleanup <- function()
   
   #the destructor
   
+  #del temp files used in this session in the nlTempDir
+  unlink(list.files(getNlDir("dirNlTemp")), recursive = T, force = T)
+  
   #del temp dataPath directory if it was created
   #if(getNlDataPath() == tempdir())
   #  unlink(file.path(tempdir(), ".Rnightlights"), recursive = TRUE, force = TRUE)

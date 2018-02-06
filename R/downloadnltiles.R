@@ -76,7 +76,7 @@ downloadNlTilesVIIRS <- function(nlYearMonth, tileNum, downloadMethod=pkgOptions
   {
     message("Extracting ", ntLtsZipLocalNamePathVIIRS, " ", base::date())
     
-    if(exists("ntLtsFileUrl"))
+    if(nlType == "VIIRS.D" && exists("ntLtsFileUrl"))
     {
       lenZipLclName <- nchar(ntLtsFileUrl)
       extZipLclName <- substr(ntLtsFileUrl, lenZipLclName - 2, lenZipLclName)
@@ -118,6 +118,11 @@ downloadNlTilesVIIRS <- function(nlYearMonth, tileNum, downloadMethod=pkgOptions
     {
       message("TIF file found")
     }
+  }
+  else
+  {
+    message("An error occurred downloading")
+    return(-1)
   }
   
   return (rsltDnld == 0)

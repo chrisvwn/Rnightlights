@@ -66,7 +66,7 @@
 #'     load the country data file and move on to processing.
 #' 
 #'     Processing consists of:
-#'     \enumerate{ 
+#'     \itemize{ 
 #'        \item Reading in the country polygon in ESRI Shapefile format
 #'        \item Reading in the tiles that the particular country intersects 
 #'            with and then clipping 
