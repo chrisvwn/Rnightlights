@@ -7,7 +7,7 @@
 getCtryShpAllAdmLvls(ctryCodes)
 }
 \arguments{
-\item{ctryCode}{\code{character} The ctryCode of the country of interest}
+\item{ctryCodes}{\code{character} The ctryCode of the country of interest}
 }
 \value{
 \code{logical} whether inputted admLevels are valid

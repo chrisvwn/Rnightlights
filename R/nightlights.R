@@ -355,7 +355,7 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, cropMaskMetho
 #'
 #' @examples
 #' 
-#' getCtryRasterOutputFname("KEN","VIIRS.M", "201412")
+#' Rnightlights:::getCtryRasterOutputFname("KEN","VIIRS.M", "201412")
 #'
 getCtryRasterOutputFname <- function(ctryCode, nlType, nlPeriod)
 {
@@ -377,7 +377,7 @@ getCtryRasterOutputFname <- function(ctryCode, nlType, nlPeriod)
   if(!allValidNlPeriods(nlPeriods = nlPeriod, nlTypes = nlType))
     stop("Invalid nlPeriod: ", nlPeriod, " for nlType: ", nlType)
   
-  return (file.path(getNlDir("dirRasterOutput")))
+  return (paste0("NL_", ctryCode, "_", nlType, "_", nlPeriod,".tif"))
 }
 
 ######################## getCtryRasterOutputFnamePath ###################################
@@ -422,8 +422,7 @@ getCtryRasterOutputFnamePath <- function(ctryCode, nlType, nlPeriod)
   if(!allValidNlPeriods(nlPeriods = nlPeriod, nlTypes = nlType))
     stop("Invalid nlPeriod: ", nlPeriod, " for nlType: ", nlType)
   
-  return (file.path(getCtryRasterOutputFname(ctryCode, nlType, nlPeriod), 
-                    paste0("NL_", ctryCode, "_", nlType, "_", nlPeriod,".tif")))
+  return (file.path(getNlDir("dirRasterOutput"), getCtryRasterOutputFname(ctryCode, nlType, nlPeriod)))
 }
 
 ######################## processNlData ###################################

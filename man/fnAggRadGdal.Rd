@@ -32,7 +32,7 @@ Calculate zonal statistics using GDAL. Alternative to fnAggRadRast and
 \examples{
 #read the Kenya polygon downloaded from GADM and load the lowest admin level (ward)
 \dontrun{
-ctryPoly <- readCtryPolyAdmLayer(Rnightlights:::getPolyFnamePath(ctryCode="KEN"), 
+ctryPoly <- readCtryPolyAdmLayer(ctryCode="KEN", 
     Rnightlights:::getCtryShpLowestLyrNames(ctryCode="KEN"))
     
 #calculate the sum of radiances for the wards in Kenya

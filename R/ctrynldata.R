@@ -968,7 +968,7 @@ listCtryNlRasters <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, sour
   nlPeriod <- NULL #appease CRAN note for global variables
   
   #get a list of country data files present
-  rasterList <- list.files(getNlDir("dirRasterOutput"), pattern = ".tif$")
+  rasterList <- list.files(getNlDir("dirRasterOutput"), pattern = "NL_.*\\.tif$")
 
   if(length(rasterList) == 0)
     return(NULL)

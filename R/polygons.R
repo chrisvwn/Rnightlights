@@ -354,7 +354,7 @@ existsCtryPoly <- function(ctryCode)
 #'
 #' Get all the admLevels in a country
 #' 
-#' @param ctryCode \code{character} The ctryCode of the country of interest
+#' @param ctryCodes \code{character} The ctryCode of the country of interest
 #'
 #' @return \code{logical} whether inputted admLevels are valid
 #'
@@ -510,7 +510,7 @@ ctryShpLyrName2Num <- function(layerName)
 #' 
 #' @param ctryCode \code{character} The ctryCode of the country of interest
 #' 
-#' @param admLevelName \code{character} The name to search for
+#' @param admLevel \code{character} The name to search for
 #' 
 #' @param polyType \code{character} Whether to read the shapefile or the RDS
 #'     format.

@@ -4,18 +4,18 @@
 \alias{readCtryPolyAdmLayer}
 \title{Read a country admLevel polygon}
 \usage{
-readCtryPolyAdmLayer(ctryCode, admLevel, polyType = "rds", dnldPoly = FALSE)
+readCtryPolyAdmLayer(ctryCode, admLevel, polyType = "rds", dnldPoly = TRUE)
 }
 \arguments{
 \item{ctryCode}{\code{character} The ctryCode of the country of interest}
+
+\item{admLevel}{\code{character} The name to search for}
 
 \item{polyType}{\code{character} Whether to read the shapefile or the RDS
 format.}
 
 \item{dnldPoly}{\code{logical} If the country polygon doesn't exist 
 should we download it?}
-
-\item{admLevelName}{\code{character} The name to search for}
 }
 \value{
 \code{SpatialPolygonsDataFrame} The admLevel polygon layer or NULL 

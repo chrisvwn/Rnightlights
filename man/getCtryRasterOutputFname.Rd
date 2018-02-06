@@ -22,6 +22,6 @@ Constructs the name of the output raster
 }
 \examples{
 
-getCtryRasterOutputFname("KEN","VIIRS.M", "201412")
+Rnightlights:::getCtryRasterOutputFname("KEN","VIIRS.M", "201412")
 
 }
