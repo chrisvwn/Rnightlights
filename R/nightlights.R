@@ -566,9 +566,9 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
       admLevels <- getCtryShpAllAdmLvls(ctryCodes)
     else
     {
-      tmpadmLevel <- searchAdmLevel(ctryCode, admLevels)
+      tmpAdmLevel <- searchAdmLevel(ctryCode, admLevels)
       
-      admLevels <- ifelse(is.na(tmpadmLevel), admLevels, tmpadmLevel)
+      admLevels <- ifelse(is.na(tmpAdmLevel), admLevels, tmpAdmLevel)
     }
   }
   
@@ -608,7 +608,7 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
   ##First step: Determine which tiles are required for processing. This is determined by the
   #list of ctryCodes. Since theoretically we need the polygons of all countries to determine which
   #tiles to download we take the opportunity to download all required shapefiles
-  #Practically, we can stop as soon as all 6 tiles are flagged for download.
+  #Practically, we can stop as soon as all nlTiles for an nlPeriod are flagged for download.
   
   ##If any tiles cannot be found/downloaded then abort and try for next country
   #we probably need to flag failed downloads so we don't try to process them and report back to user

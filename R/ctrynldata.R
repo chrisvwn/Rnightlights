@@ -516,11 +516,24 @@ getCtryNlData <- function(ctryCode, admLevel, nlTypes, nlPeriods, nlStats=pkgOpt
   if(!validCtryCodes(ctryCode))
     stop("Invalid ctryCode", ctryCode)
     
+  if(admLevel=="lowest")
+    admLevel <- getCtryShpLowestLyrNames(ctryCode)
+  else if(admLevel=="top")
+    admLevels <- getCtryShpLyrNames(ctryCode, 0)
+  else if(admLevel=="all")
+    admLevel <- getCtryShpAllAdmLvls(ctryCode)
+  else
+  {
+    tmpAdmLevel <- searchAdmLevel(ctryCode, admLevel)
+    
+    admLevel <- ifelse(is.na(tmpAdmLevel), admLevel, tmpAdmLevel)
+  }
+    
   if(!length(grep(paste0(ctryCode,"_adm\\d+"), admLevel, ignore.case = T)) == length(admLevel))
   {
-    if(grep("^adm\\d+$", admLevel, ignore.case = T))
+    if(length(grep("^adm\\d+$", admLevel, ignore.case = T)) > 0)
       admLevel <- paste(ctryCode, admLevel, sep="_")
-    else if(grep("^\\d+$", admLevel, ignore.case = T))
+    else if(length(grep("^\\d+$", admLevel, ignore.case = T)) > 0)
       admLevel <- paste(ctryCode, paste0("adm", admLevel), sep="_")
   }
     
