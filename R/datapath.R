@@ -575,5 +575,10 @@ getNlDir <- function(dirName)
     dataPath <- getNlDataPath()
   }
   
-  file.path(dataPath, pkgOptions("dirNlDataPath"), pkgOptions(dirName))
+  if(dirName == "dirNlDataPath")
+    nlDir <- file.path(dataPath, pkgOptions("dirNlRoot"))
+  else
+    nlDir <- file.path(dataPath, pkgOptions("dirNlRoot"), pkgOptions(dirName))
+  
+  return(nlDir)
 }

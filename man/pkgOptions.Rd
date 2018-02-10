@@ -26,7 +26,7 @@ The following options are supported
      after processing may be useful where diskspace is a concern }
  \item{\code{dirNlData}}{(\code{character}) The directory to store 
      the extracted data files in }
- \item{\code{dirNlDataPath}}{\code{character}) The root directory 
+ \item{\code{dirNlRoot}}{\code{character}) The root directory 
      storing the package data}
  \item{\code{dirNlTiles}}{(\code{character}) The directory in which 
      to store the downloaded VIIRS raster tiles }

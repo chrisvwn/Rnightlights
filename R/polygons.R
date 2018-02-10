@@ -1,3 +1,148 @@
+######################## dnldCtryPoly ###################################
+
+#' Download a country's polygon shapefile from \url{http://gadm.org}
+#'
+#' Download a country's polygon shapefile from \url{http://gadm.org}
+#' 
+#' @param ctryCode The ISO3 ctryCode of the country polygon to download
+#'
+#' @return TRUE/FALSE Success/Failure of the download
+#'
+#' @examples
+#' \dontrun{
+#' Rnightlights:::dnldCtryPoly("KEN")
+#' }
+#'
+dnldCtryPoly <- function(ctryCode)
+{
+  if(missing(ctryCode))
+    stop("Missing required parameter ctryCode")
+  
+  if(!validCtryCodes(ctryCode))
+    stop("Invalid ctryCode: ", ctryCode)
+  
+  fullPolyUrl <- getCtryPolyUrl(ctryCode)
+  
+  result <- NULL
+  
+  #if the path doesn't exist
+  if (!existsPolyFnamePath(ctryCode))
+  {
+    #if the dir and zip dont exist download and unzip
+    if (!existsPolyFnameZip(ctryCode))
+    {
+      #download
+      if(utils::download.file(url = getCtryPolyUrl(ctryCode), destfile = getPolyFnameZip(ctryCode), method = "auto", mode = "wb", extra = "-c") == 0)
+      {
+        #unzip does not like double slashes! Replace with singles if found
+        
+        polyFnameZip <- getPolyFnameZip(ctryCode)
+        polyFnameZip <- gsub("//", "/", polyFnameZip, perl=TRUE)
+        polyFnameZip <- gsub("\\\\\\\\", "\\\\", polyFnameZip, perl=TRUE)
+        
+        polyFnamePath <- getPolyFnamePath(ctryCode)
+        polyFnamePath <- gsub("//", "/", polyFnamePath, perl=TRUE)
+        polyFnamePath <- gsub("\\\\\\\\", "\\\\", polyFnamePath, perl=TRUE)
+        
+        #unzip
+        result <- utils::unzip(polyFnameZip, exdir = polyFnamePath)
+        file.remove(getPolyFnameZip(ctryCode))
+      }
+    }else
+    {
+      #if the dir doesn't exist but the zip does unzip the zip
+      #unzip does not like double slashes! Replace with singles if found
+      
+      #Convert double forward slashes to single
+      polyFnameZip <- getPolyFnameZip(ctryCode)
+      polyFnameZip <- gsub("//", "/", polyFnameZip, perl=TRUE) #forward
+      polyFnameZip <- gsub("\\\\\\\\", "\\\\", polyFnameZip, perl=TRUE) #back
+      
+      polyFnamePath <- getPolyFnamePath(ctryCode)
+      polyFnamePath <- gsub("//", "/", polyFnamePath, perl=TRUE)
+      polyFnamePath <- gsub("\\\\\\\\", "\\\\", polyFnamePath, perl=TRUE)
+      
+      #unzip
+      result <- utils::unzip(polyFnameZip, exdir = polyFnamePath)
+      file.remove(getPolyFnameZip(ctryCode))
+    }
+    
+    #saving RDS
+    message("Creating shapefile as RDS")
+    message("Getting admLevels in ", ctryCode)
+    allCtryLevels <- getCtryShpAllAdmLvls(ctryCode)
+    
+    message("Reading in all adLevels")
+    listCtryPolys <- unlist(lapply(allCtryLevels, function(lvl) rgdal::readOGR(getPolyFnamePath(ctryCode), lvl)))
+    
+    message("Saving admLevel polygons as RDS")
+    saveRDS(listCtryPolys, paste0(getPolyFnamePath(ctryCode), ".RDS"))
+  }
+  else
+  {
+    if(!file.exists(paste0(getPolyFnamePath(ctryCode), ".RDS")))
+    {
+      message("Polygon ", ctryCode, " already exists")
+      
+      message("Getting admLevels in ", ctryCode)
+      allCtryLevels <- unlist(getCtryShpAllAdmLvls(ctryCode))
+      
+      message("Reading in all adLevels")
+      listCtryPolys <- lapply(allCtryLevels, function(lvl) rgdal::readOGR(getPolyFnamePath(ctryCode), lvl))
+      
+      message("Saving admLevel polygons as RDS")
+      saveRDS(listCtryPolys, paste0(getPolyFnamePath(ctryCode), ".RDS"))
+    }
+  }
+  
+  #save ctry structure as CSV in data dir
+  if(!exists(getCtryStructFnamePath(ctryCode)))
+  {
+    message("Saving country admLevel structure")
+  
+    createCtryStruct(ctryCode)
+  }
+
+  return (!is.null(result))
+}
+
+getCtryStructFname <- function(ctryCode)
+{
+  return(paste0("NL_STRUCT_", ctryCode, ".csv"))
+}
+
+getCtryStructFnamePath <- function(ctryCode)
+{
+  return(file.path(getNlDir("dirNlData"), getCtryStructFname(ctryCode)))
+}
+
+createCtryStruct <- function(ctryCode)
+{
+  ctryStructFnamePath <- getCtryStructFnamePath(ctryCode)
+  
+  if(!exists(ctryStructFnamePath))
+  {
+    ctryNlDataDF <- createCtryNlDataDF(ctryCode, getCtryShpLowestLyrNames(ctryCode))
+    
+    utils::write.table(ctryNlDataDF, ctryStructFnamePath, row.names = F, sep = ",")
+  }
+}
+
+readCtryStruct <- function(ctryCode)
+{
+  nlCtryData <- NULL
+  
+  ctryStructFnamePath <- getCtryStructFnamePath(ctryCode)
+  
+  if(file.exists(ctryStructFnamePath))
+  {
+    nlCtryData <- data.table::fread(ctryStructFnamePath)
+  }
+  
+  return(nlCtryData)
+}
+
+
 ######################## getCtryPolyUrl ###################################
 
 #' Get the GADM url from which to download country polygons

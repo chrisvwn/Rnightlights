@@ -30,8 +30,7 @@ createCtryNlDataDF <- function(ctryCode, admLevel=getCtryShpLowestLyrNames(ctryC
   
   wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
   
-  if(dir.exists(getPolyFnamePath(ctryCode)) && length(dir(getPolyFnamePath(ctryCode)))> 0)
-    ctryPoly <- readCtryPolyAdmLayer(ctryCode, admLevel)
+  ctryPoly <- readCtryPolyAdmLayer(ctryCode, admLevel)
   
   ctryExtent <- raster::extent(ctryPoly)
   
@@ -42,26 +41,13 @@ createCtryNlDataDF <- function(ctryCode, admLevel=getCtryShpLowestLyrNames(ctryC
   
   #conver to lower case for consistency
   ctryPolyAdmLevels <- tolower(ctryPolyAdmLevels)
-  
-  #add the area as reported by the polygon shapefile as a convenience
-  #converted to sq. km.
-  areas <- raster::area(ctryPoly)/1e6
-  
+
   if (length(ctryPolyAdmLevels) > 0)
   {
     #When a country does not have lower administrative levels
     
     #the number of admin levels
     nLyrs <- ctryShpLyrName2Num(admLevel) #length(ctryPolyAdmLevels)
-    
-    #the repeat pattern required to create columns in the format 1,1,2,2,3,3 ...
-    #for col names: admlevel1_id, admlevel1_name, ..., admleveN_id, admlevelN_name
-    #and polygon data col names: ID_1, NAME_1, ..., ID_N, NAME_N
-    #nums <- c(paste(1:nLyrs,1:nLyrs))
-    
-    #nums <- unlist(strsplit(paste(nums, collapse = " "), " "))
-    
-    #ctryPolyAdmCols <- paste(c("ID_", "NAME_"), nums, sep="")
     
     ctryPolyAdmCols <- paste(c("NAME_"), 1:nLyrs, sep="")
     

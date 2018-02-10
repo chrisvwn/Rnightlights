@@ -38,106 +38,6 @@ allValid <- function(testData, testFun, ...)
   return(all(valid))
 }
 
-######################## dnldCtryPoly ###################################
-
-#' Download a country's polygon shapefile from \url{http://gadm.org}
-#'
-#' Download a country's polygon shapefile from \url{http://gadm.org}
-#' 
-#' @param ctryCode The ISO3 ctryCode of the country polygon to download
-#'
-#' @return TRUE/FALSE Success/Failure of the download
-#'
-#' @examples
-#' \dontrun{
-#' Rnightlights:::dnldCtryPoly("KEN")
-#' }
-#'
-dnldCtryPoly <- function(ctryCode)
-{
-  if(missing(ctryCode))
-    stop("Missing required parameter ctryCode")
-  
-  if(!validCtryCodes(ctryCode))
-    stop("Invalid ctryCode: ", ctryCode)
-  
-  fullPolyUrl <- getCtryPolyUrl(ctryCode)
-  
-  result <- NULL
-  
-  #if the path doesn't exist
-  if (!existsPolyFnamePath(ctryCode))
-  {
-    #if the dir and zip dont exist download and unzip
-    if (!existsPolyFnameZip(ctryCode))
-    {
-      #download
-      if(utils::download.file(url = getCtryPolyUrl(ctryCode), destfile = getPolyFnameZip(ctryCode), method = "auto", mode = "wb", extra = "-c") == 0)
-      {
-        #unzip does not like double slashes! Replace with singles if found
-        
-        polyFnameZip <- getPolyFnameZip(ctryCode)
-        polyFnameZip <- gsub("//", "/", polyFnameZip, perl=TRUE)
-        polyFnameZip <- gsub("\\\\\\\\", "\\\\", polyFnameZip, perl=TRUE)
-        
-        polyFnamePath <- getPolyFnamePath(ctryCode)
-        polyFnamePath <- gsub("//", "/", polyFnamePath, perl=TRUE)
-        polyFnamePath <- gsub("\\\\\\\\", "\\\\", polyFnamePath, perl=TRUE)
-        
-        #unzip
-        result <- utils::unzip(polyFnameZip, exdir = polyFnamePath)
-        file.remove(getPolyFnameZip(ctryCode))
-      }
-    }else
-    {
-      #if the dir doesn't exist but the zip does unzip the zip
-      #unzip does not like double slashes! Replace with singles if found
-      
-      #Convert double forward slashes to single
-      polyFnameZip <- getPolyFnameZip(ctryCode)
-      polyFnameZip <- gsub("//", "/", polyFnameZip, perl=TRUE) #forward
-      polyFnameZip <- gsub("\\\\\\\\", "\\\\", polyFnameZip, perl=TRUE) #back
-      
-      polyFnamePath <- getPolyFnamePath(ctryCode)
-      polyFnamePath <- gsub("//", "/", polyFnamePath, perl=TRUE)
-      polyFnamePath <- gsub("\\\\\\\\", "\\\\", polyFnamePath, perl=TRUE)
-      
-      #unzip
-      result <- utils::unzip(polyFnameZip, exdir = polyFnamePath)
-      file.remove(getPolyFnameZip(ctryCode))
-    }
-    
-    #saving RDS
-    message("Creating shapefile as RDS")
-    message("Getting admLevels in ", ctryCode)
-    allCtryLevels <- getCtryShpAllAdmLvls(ctryCode)
-    
-    message("Reading in all adLevels")
-    listCtryPolys <- unlist(lapply(allCtryLevels, function(lvl) rgdal::readOGR(getPolyFnamePath(ctryCode), lvl)))
-    
-    message("Saving admLevel polygons as RDS")
-    saveRDS(listCtryPolys, paste0(getPolyFnamePath(ctryCode), ".RDS"))
-  }
-  else
-  {
-    if(!file.exists(paste0(getPolyFnamePath(ctryCode), ".RDS")))
-    {
-      message("Polygon ", ctryCode, " already exists")
-      
-      message("Getting admLevels in ", ctryCode)
-      allCtryLevels <- unlist(getCtryShpAllAdmLvls(ctryCode))
-      
-      message("Reading in all adLevels")
-      listCtryPolys <- lapply(allCtryLevels, function(lvl) rgdal::readOGR(getPolyFnamePath(ctryCode), lvl))
-      
-      message("Saving admLevel polygons as RDS")
-      saveRDS(listCtryPolys, paste0(getPolyFnamePath(ctryCode), ".RDS"))
-    }
-  }
-  
-  return (!is.null(result))
-}
-
 ######################## nlInit ###################################
 
 #' Initialize some important variables and create directory structure
@@ -187,30 +87,9 @@ nlCleanup <- function()
   #  unlink(file.path(tempdir(), ".Rnightlights"), recursive = TRUE, force = TRUE)
 }
 
-######################## getRastPercentiles ###################################
-
-getRastPercentiles <- function(rastFilename)
+myquantile <- function(rast)
 {
-  rastInfo <- gdalUtils::gdalinfo(rastFilename, hist=T)
-  rastMinMax <- unlist(strsplit(gsub("[^[:digit:].-]", " ", rastInfo[30]), " "))
-  rastMinMax <- as.numeric(rastMinMax[which(rastMinMax!="")])
   
-  rastSeq <- seq(rastMinMax[2],rastMinMax[3],length.out = rastMinMax[1])
-  
-  rastHist <- as.numeric(unlist(strsplit(rastInfo[31]," ")))
-  rastHist <- rastHist[!is.na(rastHist)]
-  
-  rastCumSum <- cumsum(rastHist)
-  rastCumProbs <- rastCumSum/data.table::last(rastCumSum)
-  
-  q2 <- data.table::last(rastSeq[rastCumProbs<0.2])
-  q3 <- data.table::first(rastSeq[rastCumProbs>0.2])
-  hist1 <- rastHist[]
-  
-  q98 <- data.table::last(rastSeq[rastCumProbs<0.98])
-  q99 <- data.table::first(rastSeq[rastCumProbs>0.98])
-  
-  return (c(q2,q98))
 }
 
 ######################## writeNightlightsMap ###################################
@@ -448,31 +327,4 @@ writeNightlightsMap <- function()
   tplMap <- paste0(tplMap, "\n", tplLayers, "\nEND #END MAP")
   
   readr::write_file(tplMap, "test.map")
-}
-
-######################## myquantile ###################################
-
-myquantile <- function (x)
-{
-  #http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/
-  vals <- NULL
-  
-  zones <- NULL
-  
-  blocks <- raster::blockSize(x)
-  
-  result <- NULL
-  
-  for (i in 1:blocks$n)
-  {
-    vals <- raster::getValues(x, blocks$row[i], blocks$nrows[i])
-    
-    result <- rbind(result, stats::quantile(vals, c(0.02,0.98),na.rm=T))
-  }
-  
-  result <- colMeans(result, na.rm = T)
-  
-  gc()
-  
-  return(result)
 }

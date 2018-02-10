@@ -98,19 +98,17 @@ shiny::shinyServer(function(input, output, session){
       if (length(input$countries) != 1)
         return()
 
-      if(input$strict)
-      {
-        cols <- Rnightlights:::getCtryPolyAdmLevelNames(input$countries)[Rnightlights:::ctryShpLyrName2Num(listCtryNlData(ctryCodes = input$countries)$admLevel)]
-      }
-      else
-      {
-        temp <- data.table::fread(Rnightlights::getCtryNlDataFnamePath(input$countries), nrows = 1, header = T)
-        
-        cols <- names(temp)
-        
-        cols <- cols[-grep("area_sq_km|NL_", cols)]
-      }
+      ctryStructPath <- Rnightlights:::getCtryStructFnamePath(input$countries)
       
+      if(!file.exists(ctryStructPath))
+        return()
+      
+      temp <- data.table::fread(ctryStructPath, nrows = 1, header = T)
+      
+      cols <- names(temp)
+      
+      cols <- cols[-grep("area_sq_km|NL_", cols)]
+        
       cols
     })
     
@@ -124,14 +122,19 @@ shiny::shinyServer(function(input, output, session){
       if (length(countries) != 1)
         return()
 
-      hdr <- data.table::fread(Rnightlights::getCtryNlDataFnamePath(countries), nrows = 1, header = T)
+      ctryStructFile <- Rnightlights:::getCtryStructFnamePath(countries)
       
+      if(!file.exists(ctryStructFile))
+        return()
+      
+      hdr <- data.table::fread(ctryStructFile, nrows = 1, header = T)
+       
       colClasses <- names(hdr)
       
       colClasses[-grep("area_sq_km|NL_", colClasses)] <- "character"
       colClasses[grep("area_sq_km|NL_", colClasses)] <- "NULL"
       
-      data <- data.table::fread(Rnightlights::getCtryNlDataFnamePath(countries), colClasses = colClasses, header = T)
+      data <- data.table::fread(Rnightlights:::getCtryStructFnamePath(countries), colClasses = colClasses, header = T)
     })
   
   ######################## reactive ctryNlTypes ###################################
@@ -152,7 +155,18 @@ shiny::shinyServer(function(input, output, session){
     
     if (length(countries) == 1)
     {
-      hdrs <- data.table::fread(Rnightlights::getCtryNlDataFnamePath(countries), nrows = 1, header = T)
+      admLevel <- selectedAdmLevel()
+      
+      if(length(admLevel) == 0)
+        return()
+      
+      #admLevel <- paste0(countries,"_adm", admLevel)
+      ctryNlDataFile <- Rnightlights::getCtryNlDataFnamePath(countries, admLevel)
+      
+      if(file.exists(ctryNlDataFile))
+        hdrs <- data.table::fread(ctryNlDataFile, nrows = 1, header = T)
+      else
+        hdrs <- NULL
       
       cols <- grep(pattern = "NL_", x = names(hdrs), value = T)
       
@@ -162,7 +176,14 @@ shiny::shinyServer(function(input, output, session){
     {
       for (ctryCode in countries)
       {
-        hdrs <- data.table::fread(Rnightlights::getCtryNlDataFnamePath(ctryCode), nrows = 1, header = T)
+        admLevel <- paste0(ctryCode, "_adm0")
+
+        ctryNlDataFile <- Rnightlights::getCtryNlDataFnamePath(ctryCode, admLevel)
+        
+        if(file.exists(ctryNlDataFile))
+          hdrs <- data.table::fread(ctryNlDataFile, nrows = 1, header = T)
+        else
+          hdrs <- NULL
         
         cols <- grep(pattern = "NL_", x = names(hdrs), value = T)
         
@@ -203,7 +224,14 @@ shiny::shinyServer(function(input, output, session){
     
     if (length(countries) == 1)
     {
-      hdrs <- data.table::fread(Rnightlights::getCtryNlDataFnamePath(countries), nrows = 1, header = T)
+      admLevel <- selectedAdmLevel()
+      
+      ctryNlDataFile <- Rnightlights::getCtryNlDataFnamePath(countries, admLevel)
+      
+      if(file.exists(ctryNlDataFile))
+        hdrs <- data.table::fread(ctryNlDataFile, nrows = 1, header = T)
+      else
+        hdrs <- NULL
       
       cols <- grep(pattern = paste0("NL_", nlType), x = names(hdrs), value = T)
       
@@ -213,7 +241,14 @@ shiny::shinyServer(function(input, output, session){
     {
       for (ctryCode in countries)
       {
-        hdrs <- data.table::fread(Rnightlights::getCtryNlDataFnamePath(ctryCode), nrows = 1, header = T)
+        admLevel <- paste0(ctryCode, "_adm0")
+        
+        ctryNlDataFile <- Rnightlights::getCtryNlDataFnamePath(ctryCode, admLevel)
+        
+        if(file.exists(ctryNlDataFile))
+          hdrs <- data.table::fread(ctryNlDataFile, nrows = 1, header = T)
+        else
+          hdrs <- NULL
         
         cols <- grep(pattern = paste0("NL_", nlType), x = names(hdrs), value = T)
         
@@ -247,18 +282,35 @@ shiny::shinyServer(function(input, output, session){
       if (length(countries) < 1)
         return(NULL)
       
+      if(is.null(nlType))
+        return(NULL)
+      
       ctryData <- NULL
       
       if (length(countries) == 1)
       {
-        ctryData <- data.table::fread(Rnightlights::getCtryNlDataFnamePath(countries))
+        admLevel <- selectedAdmLevel()
+        
+        ctryNlDataFile <- Rnightlights::getCtryNlDataFnamePath(countries, admLevel)
+        
+        if(file.exists(ctryNlDataFile))
+          ctryData <- data.table::fread(ctryNlDataFile)
+        else
+          ctryData <- NULL
       }
       else if(length(countries) > 1) #remove subcountry admin levels
       {
         for (ctryCode in countries)
         {
+          admLevel <- paste0(ctryCode, "_adm0")
           #print(ctryCode)
-          temp <- data.table::fread(Rnightlights::getCtryNlDataFnamePath(ctryCode))
+          
+          ctryNlDataFile <- Rnightlights::getCtryNlDataFnamePath(ctryCode, admLevel)
+          
+          if(file.exists(ctryNlDataFile))
+            temp <- data.table::fread(ctryNlDataFile)
+          else
+            temp <- NULL
           
           ctryCols <- grep(paste0("country|area|NL_", nlType), names(temp))
           
@@ -292,11 +344,14 @@ shiny::shinyServer(function(input, output, session){
     ctryNlDataMelted <- shiny::reactive({
       #print(paste0("here: ctryNlDataMelted"))
       
-      if(is.null(ctryNlData()))
-        return()
-      
       ctryData <- ctryNlData()
     
+      if(is.null(ctryData))
+        return()
+      
+      if(is.null(input$ctryStat))
+        return()
+      
       #the nightlight cols
       nlCols <- names(ctryData)[grep("NL_", names(ctryData))]
       
@@ -323,11 +378,11 @@ shiny::shinyServer(function(input, output, session){
         
         ctryData$variable <- as.numeric(ctryData$variable)
       }
-      else if(stringr::str_detect(nlType, "VIIRS"))
+      else if(stringr::str_detect(input$nlType, "VIIRS"))
       {
-        if(stringr::str_detect(nlType, "M"))
+        if(stringr::str_detect(input$nlType, "M"))
           ctryData$variable <- paste0(gsub("[^[:digit:]]","", ctryData$variable),"01")
-        else if(stringr::str_detect(nlType, "Y"))
+        else if(stringr::str_detect(input$nlType, "Y"))
           ctryData$variable <- paste0(gsub("[^[:digit:]]","", ctryData$variable),"0101")
       
         ctryData$variable <- as.Date(ctryData$variable, format="%Y%m%d")
@@ -347,8 +402,8 @@ shiny::shinyServer(function(input, output, session){
       if(is.null(ctryDtStats))
         return(NULL)
       
-      if(!is.null(input$ctryStats))
-        chosenStat <- input$ctryStats
+      if(!is.null(input$ctryStat))
+        chosenStat <- input$ctryStat
       else
         chosenStat <- NULL
       
@@ -401,9 +456,14 @@ shiny::shinyServer(function(input, output, session){
       if(length(input$countries) != 1)
         return()
       
+      admLevels <- ctryAdmLevels()
+      
+      if(is.null(admLevels))
+        return()
+      
       shiny::radioButtons(inputId = "admLevel", 
                      label = "Admin Level", 
-                     choices = ctryAdmLevels()
+                     choices = admLevels
                    )
     })
 
@@ -419,12 +479,17 @@ shiny::shinyServer(function(input, output, session){
       
       ctryAdmLevels <- ctryAdmLevels()
       
+      if(is.null(ctryAdmLevels))
+        return()
+      
       ctryAdmLevelNames <- ctryAdmLevelNames()
       
       if (length(ctryAdmLevelNames)>1)
         elems <- lapply(2:length(ctryAdmLevels), function(lvlIdx){
           
           lvl <- ctryAdmLevels[lvlIdx]
+          
+          lvlEnabled <- file.exists(getCtryNlDataFnamePath(countries, Rnightlights:::getCtryShpLyrNames(countries, lvlIdx-1)))
           
           #lvlSelect <- unique(ctryAdmLevelNames[[ctryAdmLevels[lvlIdx]]])
           
@@ -443,6 +508,9 @@ shiny::shinyServer(function(input, output, session){
                               multiple = TRUE
           )
           
+          if(!lvlEnabled)
+            shinyjs::disable(paste0("selectAdm", lvlIdx))
+          
           #shiny::updateSelectizeInput(session = session,
           #                     inputId = paste0("selectAdm", lvlIdx),
           #                     choices = lvlSelect,
@@ -452,6 +520,44 @@ shiny::shinyServer(function(input, output, session){
           b
           #list(a,b)
         })
+    })
+    
+    ######################## selectedAdmLevel ###################################
+    
+    selectedAdmLevel <- shiny::reactive({
+      
+      if(length(input$countries) > 1)
+        return()
+      
+      admLvlCtrlNames <- names(input)
+    
+      x <- admLvlCtrlNames[grep("selectAdm", admLvlCtrlNames)]
+    
+      if(length(x) == 0)
+        return()
+      
+      admLvlNums <- NULL
+     
+      for (i in x)
+        if(length(input[[i]])>0)
+          admLvlNums <- c(admLvlNums, i)
+        
+        #print(paste0("x", x))
+        #print(paste0("admlvlnums:", admLvlNums))
+        
+        #if (admLvlNum=="" && length(countries)>0)
+        #  return()
+        
+        admLvlNums <- as.numeric(gsub("[^[:digit:]]","",admLvlNums))
+        
+        if (length(admLvlNums)==0)
+          admLvlNums <- 1
+        
+        admLvlNums <- admLvlNums - 1
+        
+        admLevel <- admLevel <- paste0(input$countries, "_adm",data.table::last(admLvlNums))
+        
+        admLevel
     })
     
     ######################## observe selectAdms (intraCountry) ###################################
@@ -506,6 +612,8 @@ shiny::shinyServer(function(input, output, session){
       {
         lvlSelect <- ""
         top10 <- ""
+        
+        lvlEnabled <- file.exists(getCtryNlDataFnamePath(countries, Rnightlights:::getCtryShpLyrNames(countries, lvlIdx-1)))
         
         if (length(input[[paste0("selectAdm", lvlIdx)]]) > 1)
           multipleSelected <- TRUE
@@ -649,6 +757,9 @@ shiny::shinyServer(function(input, output, session){
             shiny::updateSelectizeInput(session, paste0("selectAdm", lvlIdx), choices = lvlSelect)
           }
         }
+        
+        if(!lvlEnabled)
+          shinyjs::disable(paste0("selectAdm", lvlIdx))
       }
       #})
     })
@@ -728,11 +839,11 @@ shiny::shinyServer(function(input, output, session){
         )
         else if(stringr::str_detect(input$nlType, "VIIRS"))
         {
-          if(stringr::str_detect(nlType, "D"))
+          if(stringr::str_detect(input$nlType, "D"))
             tmFmt <- "%Y-%m-%d"
-          else if(stringr::str_detect(nlType, "M"))
+          else if(stringr::str_detect(input$nlType, "M"))
             tmFmt <- "%Y-%m"
-          else if(stringr::str_detect(nlType, "Y"))
+          else if(stringr::str_detect(input$nlType, "Y"))
             tmFmt <- "%Y"
           
           shiny::sliderInput(inputId = "nlYearMonth",
@@ -760,6 +871,7 @@ shiny::shinyServer(function(input, output, session){
         return()
       
       scale <- input$scale
+      normArea <- input$norm_area
       
       shiny::isolate({
       nlYearMonthRange <- input$nlYearMonthRange
@@ -781,7 +893,7 @@ shiny::shinyServer(function(input, output, session){
       #aggMeltCtryData <- stats::aggregate(mean(value), by=list(eval(admLevel)+variable), data=meltCtryData, mean)
       aggMeltCtryData <- stats::setNames(meltCtryData[,list(mean(value, na.rm = TRUE)), by = list(meltCtryData[[admLevel]], variable)], c(admLevel, "variable", "value"))
       
-      dcastFormula <- paste(paste(admLevel, collapse = " + "), "~", paste("variable", collapse = " + "))
+      dcastFormula <- paste(paste0("`", admLevel, "`", collapse = " + "), "~", paste("variable", collapse = " + "))
       
       unmeltCtryData <- data.table::dcast(aggMeltCtryData, dcastFormula, value.var='value', aggregate='mean')
       
@@ -838,10 +950,11 @@ shiny::shinyServer(function(input, output, session){
 
       if(is.null(clusts))
         return()
+      
+      normArea <- input$norm_area
             
       admLevel <- ctryAdmLevels()[2]
 
-      
       #return if the country doesn't have adm levels below country
       if (admLevel == "")
         return()
@@ -881,6 +994,7 @@ shiny::shinyServer(function(input, output, session){
       countries <- shiny::isolate(input$countries)
       scale <- input$scale
       numClusters <- input$kClusters
+      normArea <- input$norm_area
       
       shiny::isolate({      
         if (is.null(countries))
@@ -905,7 +1019,7 @@ shiny::shinyServer(function(input, output, session){
         if (normArea)
           meltCtryData$value <- (meltCtryData$value)/meltCtryData$area_sq_km
         
-        ctryPoly0 <- Rnightlights::readCtryPolyAdmLayer(countries, Rnightlights::getCtryShpLyrNames(countries,0))
+        ctryPoly0 <- Rnightlights::readCtryPolyAdmLayer(countries, unlist(Rnightlights::getCtryShpLyrNames(countries,0)))
         
         map <- leaflet::leaflet(data=ctryPoly0) %>%
           #addTiles("http://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png") %>%
@@ -923,7 +1037,7 @@ shiny::shinyServer(function(input, output, session){
         pal <- cbPalette
         
         #turn off previous layer? No point keeping it if it is hidden. Also we want to turn the current layer to transparent so that one can see through to the raster layer on hover
-        ctryPoly <- readCtryPolyAdmLayer(countries, Rnightlights::getCtryShpLyrNames(countries, 1)) 
+        ctryPoly <- readCtryPolyAdmLayer(countries, unlist(Rnightlights::getCtryShpLyrNames(countries, 1)))
         
         ctryPoly <- sp::spTransform(ctryPoly, wgs84)
         
@@ -984,6 +1098,8 @@ shiny::shinyServer(function(input, output, session){
       if(length(countries) < 1)
         return()
       
+      normArea <- input$norm_area
+      
       admLevel <- ctryAdmLevels()[1]
       
       
@@ -1030,6 +1146,7 @@ shiny::shinyServer(function(input, output, session){
       scale <- input$scale
       nlYearMonthRange <- input$nlYearMonthRange
       graphType <- input$graphType
+      normArea <- input$norm_area
 
       shiny::isolate({      
         ctryData <- ctryNlDataMelted()
@@ -1293,7 +1410,7 @@ shiny::shinyServer(function(input, output, session){
     
     output$dataset <- DT::renderDataTable({
       if(is.null(ctryNlData()))
-        return("NO DATA")
+        return()
       
       ctryNlData()
     },
@@ -1352,6 +1469,7 @@ shiny::shinyServer(function(input, output, session){
       admLevel <- shiny::isolate(input$admLevel)
       scale <- input$scale
       nlType <- input$nlType
+      normArea <- input$norm_area
       
       shiny::isolate({      
       if (is.null(countries) || is.null(nlYearMonth) || is.null(admLevel))
@@ -1430,7 +1548,7 @@ shiny::shinyServer(function(input, output, session){
       
       #message(ctryYearMonth)
       
-      ctryPoly0 <- readCtryPolyAdmLayer(countries, Rnightlights::getCtryShpLyrNames(countries,0))
+      ctryPoly0 <- readCtryPolyAdmLayer(countries, unlist(Rnightlights::getCtryShpLyrNames(countries,0)))
 
       if(stringr::str_detect(nlType, "OLS"))
         nlPeriod <- substr(gsub("-","",nlYm),1,4)
@@ -1503,7 +1621,7 @@ shiny::shinyServer(function(input, output, session){
           pal <- leaflet::colorBin(brewerPal, domain = lvlCtryData$value, na.color = "grey", bins=bins)
           
           #turn off previous layer? No point keeping it if it is hidden. Also we want to turn the current layer to transparent so that one can see through to the raster layer on hover
-          ctryPoly <- readCtryPolyAdmLayer(countries, Rnightlights::getCtryShpLyrNames(countries, iterAdmLevel-1)) 
+          ctryPoly <- readCtryPolyAdmLayer(countries, unlist(Rnightlights::getCtryShpLyrNames(countries, iterAdmLevel-1)))
           
           ctryPoly <- sp::spTransform(ctryPoly, wgs84)
           
@@ -1598,7 +1716,7 @@ shiny::shinyServer(function(input, output, session){
                                  values = format(ctryData$value, scientific = T),
                                  labels = stats::quantile(ctryData$value, seq(0,1,0.1), na.rm=T),
                                  #title = "Nightlight percentiles",
-                                 title = ifelse(norm_area, "Rad/sq. Km.", "Total Rad"),
+                                 title = ifelse(normArea, "Rad/sq. Km.", "Total Rad"),
                                  opacity = 1 )
 #       #Zoom in disabled
 #       if (exists("mapExtent"))
