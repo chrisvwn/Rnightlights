@@ -613,7 +613,7 @@ shiny::shinyServer(function(input, output, session){
         lvlSelect <- ""
         top10 <- ""
         
-        lvlEnabled <- file.exists(getCtryNlDataFnamePath(countries, Rnightlights:::getCtryShpLyrNames(countries, lvlIdx-1)))
+        lvlEnabled <- file.exists(getCtryNlDataFnamePath(input$countries, Rnightlights:::getCtryShpLyrNames(input$countries, lvlIdx-1)))
         
         if (length(input[[paste0("selectAdm", lvlIdx)]]) > 1)
           multipleSelected <- TRUE
@@ -766,21 +766,21 @@ shiny::shinyServer(function(input, output, session){
   #})
 
 
-    ######################## sliderNlYearMonthRange ###################################
+    ######################## sliderNlPeriodRange ###################################
     
-    output$sliderNlYearMonthRange <- shiny::renderUI({
-      #print(paste0("here: sliderNlYearMonthRange"))
+    output$sliderNlPeriodRange <- shiny::renderUI({
+      #print(paste0("here: sliderNlPeriodRange"))
       ctryData <- ctryNlDataMelted()
       
       if (is.null(ctryData))
       {
-        shiny::sliderInput(inputId = "nlYearMonthRange",
+        shiny::sliderInput(inputId = "nlPeriodRange",
                     label = "Time",
-                    min = as.Date("2014-01-01", "%Y-%m-%d"),
+                    min = as.Date("2012-04-01", "%Y-%m-%d"),
                     max = as.Date("2017-10-31", "%Y-%m-%d"),
                     timeFormat = "%Y-%m",
                     step = 31,
-                    value = c(as.Date("2014-01-01","%Y-%m-%d"),as.Date("2017-10-31","%Y-%m-%d"))
+                    value = c(as.Date("2012-04-01","%Y-%m-%d"),as.Date("2017-10-31","%Y-%m-%d"))
         )
       }
       else
@@ -788,9 +788,7 @@ shiny::shinyServer(function(input, output, session){
         minDate <- min(ctryData$variable)
         maxDate <- max(ctryData$variable)
                            
-        
-        
-        shiny::sliderInput(inputId = "nlYearMonthRange",
+        shiny::sliderInput(inputId = "nlPeriodRange",
                     label = "Time",
                     min = minDate,
                     max = maxDate,
@@ -803,22 +801,22 @@ shiny::shinyServer(function(input, output, session){
       
     })
     
-    ######################## sliderNlYearMonth ###################################
+    ######################## sliderNlPeriod ###################################
     
-    output$sliderNlYearMonth <- shiny::renderUI({
-      #print(paste0("here: sliderNlYearMonth"))
+    output$sliderNlPeriod <- shiny::renderUI({
+      #print(paste0("here: sliderNlPeriod"))
       
       ctryData <- ctryNlDataMelted()
       
       if (is.null(ctryData))
       {
-        shiny::sliderInput(inputId = "nlYearMonth",
+        shiny::sliderInput(inputId = "nlPeriod",
                     label = "Time",
-                    min = as.Date("2014-01-01", "%Y-%m-%d"),
+                    min = as.Date("2012-04-01", "%Y-%m-%d"),
                     max = as.Date("2017-10-31", "%Y-%m-%d"),
                     timeFormat = "%Y-%m",
                     step = 31,
-                    value = as.Date("2014-01-01", "%Y-%m-%d")
+                    value = as.Date("2012-04-01", "%Y-%m-%d")
         )
       }
       else
@@ -827,7 +825,7 @@ shiny::shinyServer(function(input, output, session){
         maxDate <- max(ctryData$variable)
        
         if(stringr::str_detect(input$nlType, "OLS"))  
-          shiny::sliderInput(inputId = "nlYearMonth",
+          shiny::sliderInput(inputId = "nlPeriod",
                     label = "Time",
                     min = minDate,
                     max = maxDate,
@@ -846,7 +844,7 @@ shiny::shinyServer(function(input, output, session){
           else if(stringr::str_detect(input$nlType, "Y"))
             tmFmt <- "%Y"
           
-          shiny::sliderInput(inputId = "nlYearMonth",
+          shiny::sliderInput(inputId = "nlPeriod",
                              label = "Time",
                              min = minDate,
                              max = maxDate,
@@ -874,7 +872,7 @@ shiny::shinyServer(function(input, output, session){
       normArea <- input$norm_area
       
       shiny::isolate({
-      nlYearMonthRange <- input$nlYearMonthRange
+      nlPeriodRange <- input$nlPeriodRange
       graphType <- input$graphType
       admLevel <- ctryAdmLevels()[2]
 
@@ -1112,6 +1110,9 @@ shiny::shinyServer(function(input, output, session){
       shiny::isolate({
         meltCtryData <- ctryNlDataMelted()
         
+        if(nrow(meltCtryData) < 2)
+          return()
+        
         if (normArea)
           meltCtryData$value <- (meltCtryData$value)/meltCtryData$area_sq_km
 
@@ -1144,7 +1145,7 @@ shiny::shinyServer(function(input, output, session){
         return()
       
       scale <- input$scale
-      nlYearMonthRange <- input$nlYearMonthRange
+      nlPeriodRange <- input$nlPeriodRange
       graphType <- input$graphType
       normArea <- input$norm_area
 
@@ -1183,7 +1184,7 @@ shiny::shinyServer(function(input, output, session){
           if (!exists("admLevel") || is.null(admLevel) || length(admLevel)==0)
             admLevel <- "country"
           
-          ctryData <- subset(ctryData, variable >= nlYearMonthRange[1] & variable <= nlYearMonthRange[2])
+          ctryData <- subset(ctryData, variable >= nlPeriodRange[1] & variable <= nlPeriodRange[2])
           
           for (lvl in admLvlNums)
           {
@@ -1278,7 +1279,7 @@ shiny::shinyServer(function(input, output, session){
         return()
       
       scale <- input$scale
-      nlYearMonthRange <- input$nlYearMonthRange
+      nlPeriodRange <- input$nlPeriodRange
       graphType <- input$graphType
       nlType <- shiny::isolate(input$nlType)
       normArea <- input$norm_area
@@ -1318,7 +1319,7 @@ shiny::shinyServer(function(input, output, session){
         if (!exists("admLevel") || is.null(admLevel) || length(admLevel)==0)
           admLevel <- "country"
           
-      ctryData <- subset(ctryData, variable >= nlYearMonthRange[1] & variable <= nlYearMonthRange[2])
+      ctryData <- subset(ctryData, variable >= nlPeriodRange[1] & variable <= nlPeriodRange[2])
       
       for (lvl in admLvlNums)
       {
@@ -1420,15 +1421,15 @@ shiny::shinyServer(function(input, output, session){
     
     ######################## observe map ###################################
 #     observe({
-#       if(!exists("nlYearMonth"))
+#       if(!exists("nlPeriod"))
 #         return()
 #       
-#       nlYm <- substr(gsub("-", "", nlYearMonth[1]), 1, 6)
-#       ctryYearMonth <- paste0(countries, "_", nlYm)
+#       nlYm <- substr(gsub("-", "", nlPeriod[1]), 1, 6)
+#       ctryPeriod <- paste0(countries, "_", nlYm)
 #       
 #       leafletProxy("map") %>%
 #         clearTiles("nlRaster") %>%
-#         addWMSTiles(baseUrl = "http://localhost/cgi-bin/mapserv?map=test.map", layers = ctryYearMonth, options = WMSTileOptions(format = "image/png", transparent = TRUE, opacity=0.5), layerId="nlRaster")
+#         addWMSTiles(baseUrl = "http://localhost/cgi-bin/mapserv?map=test.map", layers = ctryPeriod, options = WMSTileOptions(format = "image/png", transparent = TRUE, opacity=0.5), layerId="nlRaster")
 #     })
     
 #     observeEvent(input$admLevel, {
@@ -1465,14 +1466,14 @@ shiny::shinyServer(function(input, output, session){
 
 
       countries <- shiny::isolate(input$countries)
-      nlYearMonth <- input$nlYearMonth
+      nlPeriod <- input$nlPeriod
       admLevel <- shiny::isolate(input$admLevel)
       scale <- input$scale
       nlType <- input$nlType
       normArea <- input$norm_area
       
       shiny::isolate({      
-      if (is.null(countries) || is.null(nlYearMonth) || is.null(admLevel))
+      if (is.null(countries) || is.null(nlPeriod) || is.null(admLevel))
         return()
       
       if (length(countries) != 1)
@@ -1507,9 +1508,9 @@ shiny::shinyServer(function(input, output, session){
       deltaLineWt <- (4 - 1) / as.numeric(lyrNum)
 
       if(stringr::str_detect(nlType, "OLS"))
-        nlYm <- nlYearMonth[1]
+        nlYm <- nlPeriod[1]
       else if (stringr::str_detect(nlType, "VIIRS"))
-        nlYm <- as.Date(nlYearMonth[1], "%Y%m%d")
+        nlYm <- as.Date(nlPeriod[1], "%Y%m%d")
 
       ctryData <- ctryNlDataMelted()
       
@@ -1544,9 +1545,9 @@ shiny::shinyServer(function(input, output, session){
       
       #print("drawing leaflet")
       
-      ctryYearMonth <- paste0(countries, "_", nlYm)
+      ctryPeriod <- paste0(countries, "_", nlYm)
       
-      #message(ctryYearMonth)
+      #message(ctryPeriod)
       
       ctryPoly0 <- readCtryPolyAdmLayer(countries, unlist(Rnightlights::getCtryShpLyrNames(countries,0)))
 

@@ -616,9 +616,30 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
   for(idxNlType in 1:length(nlTypes))
   {
     nlType <- nlTypes[idxNlType]
-    
-    nlTypePeriods <- nlPeriods[[idxNlType]]
-    
+
+    if(length(nlTypes) == 1)
+    {
+      if(is.list(nlPeriods))
+      {
+        nlTypePeriods <- unlist(nlPeriods)
+      }
+      else
+      {
+        nlTypePeriods <- nlPeriods
+      }
+    }
+    else
+    {
+      if(is.list(nlPeriods))
+      {
+        nlTypePeriods <- unlist(nlPeriods[idxNlType])
+      }
+      else
+      {
+        nlTypePeriods <- nlPeriods[[idxNlType]]
+      }
+    }
+
     #if the tile mapping does not exist create it
     if (!exists("nlTiles") || is.null(nlTiles))
       nlTiles <- getNlTiles(nlType)

@@ -73,6 +73,9 @@ createCtryNlDataDF <- function(ctryCode, admLevel=getCtryShpLowestLyrNames(ctryC
     names(ctryNlDataDF) <- ctryPolyColNames
   } else
   {
+    #add the area as reported by the polygon shapefile as a convenience
+    areas <- raster::area(ctryPoly)/1e6
+    
     ctryNlDataDF <- data.frame("country"=ctryCode, "area_sq_km"=areas)
   }
   
@@ -1037,7 +1040,7 @@ listNlTiles <- function(nlTypes=NULL, nlPeriods=NULL, source="local")
   }
   
   #get a list of country data files present
-  rasterList <- list.files(getNlDir("dirNlTiles"), pattern = ".tif$")
+  rasterList <- list.files(getNlDir("dirNlTiles"), pattern = "\\..*\\.tif$")
   
   if(length(rasterList) == 0)
     return(NULL)

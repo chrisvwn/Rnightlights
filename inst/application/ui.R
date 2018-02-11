@@ -106,8 +106,6 @@ alignCenter <- function(el) {
                  
                  shiny::actionButton("btnGo", "LOAD"),                 
 
-                 shiny::checkboxInput(inputId = "strict", label = "Strict", value = F),
-                 
                  shiny::uiOutput(outputId = "intraCountry"),
                  
                  shiny::uiOutput("intraCountry1")
@@ -126,6 +124,7 @@ alignCenter <- function(el) {
 
                  shinydashboard::menuItem(text = "Options", tabName = "options",
 
+                          shiny::checkboxInput(inputId = "strict", label = "Strict", value = F),                                          
                           shiny::radioButtons(inputId = "graphType",
                                        label = "Graph type",
                                        choices = c("line", "boxplot", "histogram", "point"),
@@ -158,14 +157,14 @@ alignCenter <- function(el) {
           shiny::tabPanel(title = "plots",
                    shiny::plotOutput(outputId = "plotNightLights"),
                    
-                   shiny::uiOutput("sliderNlYearMonthRange")
+                   shiny::uiOutput("sliderNlPeriodRange")
                    ),
 
           shiny::tabPanel(title = "maps",
                   tags$style(type = "text/css", "#map {height: calc(100vh - 80px) !important;}"),
                   leaflet::leafletOutput("map"),
                   
-                  shiny::uiOutput("sliderNlYearMonth")
+                  shiny::uiOutput("sliderNlPeriod")
                   
 #                   actionButton(inputId="drawMap",
 #                                label = "Draw Map")

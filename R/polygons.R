@@ -96,7 +96,7 @@ dnldCtryPoly <- function(ctryCode)
   }
   
   #save ctry structure as CSV in data dir
-  if(!exists(getCtryStructFnamePath(ctryCode)))
+  if(!file.exists(getCtryStructFnamePath(ctryCode)))
   {
     message("Saving country admLevel structure")
   
