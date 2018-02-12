@@ -546,6 +546,7 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
   #download all country polygons if they don't already exist
   for (ctryCode in ctryCodes)
   {
+    message("Downloading polygon: ", ctryCode)
     dnldCtryPoly(ctryCode)
   }
   
@@ -612,7 +613,7 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
   ##If any tiles cannot be found/downloaded then abort and try for next country
   #we probably need to flag failed downloads so we don't try to process them and report back to user
   
-  #for all nlPeriods check if the tiles exist else download
+  #extract nlPeriods ensuring they match with nlPeriods
   for(idxNlType in 1:length(nlTypes))
   {
     nlType <- nlTypes[idxNlType]
@@ -643,9 +644,11 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
     #if the tile mapping does not exist create it
     if (!exists("nlTiles") || is.null(nlTiles))
       nlTiles <- getNlTiles(nlType)
-    
+
+    #for all nlPeriods check if the tiles exist else download
     for (nlPeriod in nlTypePeriods)
     {
+      message("**** PROCESSING nlType:", nlType, " nlPeriod:", nlPeriod, "****")
       message("Checking tiles required for ", paste(nlType, nlPeriod))
       
       #init the list of tiles to be downloaded
@@ -671,7 +674,7 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
         #Check if all stats exist for the ctryCode
         if (all(existAdmLvlStats))
         {
-           message (ctryCode, ": All stats exist for")
+           message (ctryCode, ": All stats exist")
          
            next
         }
@@ -692,6 +695,8 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
           break
         }
       }
+      
+      message(length(tileList)," Required tiles: ", paste(tileList, collapse=","))
       
       if (length(tileList) == 0)
       {
@@ -735,6 +740,7 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
       
       #post-processing. Delete the downloaded tiles to release disk space
       if(pkgOptions("deleteTiles"))
+      {
         for (tile in tileList)
         {
           #del the tif file
@@ -745,6 +751,9 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
           if (file.exists(file.path(getNlTileZipLclNamePath(nlType, nlPeriod, tileName2Idx(tile, nlType)))))
             unlink(file.path(getNlTileZipLclNamePath(nlType, nlPeriod, tileName2Idx(tile, nlType))), force = TRUE)
         }
+      }
+      
+      message("**** COMPLETED PROCESSING nlType:", nlType, " nlPeriod:", nlPeriod, "****")
     }
   }
 }

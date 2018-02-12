@@ -63,7 +63,7 @@ downloadNlTiles <- function(nlType, nlPeriod, tileList)
     {
       nlTile <- tileName2Idx(tile, nlType)
       
-      message(paste0(nlPeriod, nlTile))
+      message("Downloading tile: ", paste0(nlPeriod, nlTile))
       
       #download tile
       success <- success && downloadNlTilesVIIRS(nlPeriod, nlTile, nlType = nlType)

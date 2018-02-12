@@ -173,7 +173,7 @@ alignCenter <- function(el) {
           shiny::tabPanel(title = "stats",
                    shiny::fluidRow(
                      shinydashboard::box(title = "Annual Trends", 
-                         plotly::plotlyOutput("plotYearly")),
+                         shiny::plotOutput("plotYearly")),
                      
                      shinydashboard::tabBox(
                        shiny::tabPanel(title = "plotPointsCluster",

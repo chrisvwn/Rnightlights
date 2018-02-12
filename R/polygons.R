@@ -21,6 +21,8 @@ dnldCtryPoly <- function(ctryCode)
   if(!validCtryCodes(ctryCode))
     stop("Invalid ctryCode: ", ctryCode)
   
+  message("Downloading ctry poly: ", ctryCode)
+  
   fullPolyUrl <- getCtryPolyUrl(ctryCode)
   
   result <- NULL
@@ -32,7 +34,15 @@ dnldCtryPoly <- function(ctryCode)
     if (!existsPolyFnameZip(ctryCode))
     {
       #download
-      if(utils::download.file(url = getCtryPolyUrl(ctryCode), destfile = getPolyFnameZip(ctryCode), method = "auto", mode = "wb", extra = "-c") == 0)
+      
+      downloadMethod <- pkgOptions("downloadMethod")
+
+      if (downloadMethod %in% c("auto", "curl", "libcurl", "wget"))
+        rsltDnld <- utils::download.file(url = getCtryPolyUrl(ctryCode), destfile = getPolyFnameZip(ctryCode), method = "auto", mode = "wb", extra = "-c")
+      else if (downloadMethod == "aria")
+        rsltDnld <- system(paste0("aria2c -c -x2 ", getCtryPolyUrl(ctryCode), " -d ", getNlDir("dirPolygon"), " -o ", basename(getPolyFnameZip(ctryCode)))) #downloads to path relative to -d if specified else local dir
+
+      if(rsltDnld == 0)
       {
         #unzip does not like double slashes! Replace with singles if found
         
@@ -47,6 +57,9 @@ dnldCtryPoly <- function(ctryCode)
         #unzip
         result <- utils::unzip(polyFnameZip, exdir = polyFnamePath)
         file.remove(getPolyFnameZip(ctryCode))
+      }else
+      {
+        stop("Something went wrong. Polygon download failed!")
       }
     }else
     {
@@ -68,11 +81,11 @@ dnldCtryPoly <- function(ctryCode)
     }
     
     #saving RDS
-    message("Creating shapefile as RDS")
+    message("Saving shapefile as RDS for faster access")
     message("Getting admLevels in ", ctryCode)
-    allCtryLevels <- getCtryShpAllAdmLvls(ctryCode)
+    allCtryLevels <- unlist(getCtryShpAllAdmLvls(ctryCode))
     
-    message("Reading in all adLevels")
+    message("Reading in all admLevels")
     listCtryPolys <- unlist(lapply(allCtryLevels, function(lvl) rgdal::readOGR(getPolyFnamePath(ctryCode), lvl)))
     
     message("Saving admLevel polygons as RDS")
@@ -84,10 +97,11 @@ dnldCtryPoly <- function(ctryCode)
     {
       message("Polygon ", ctryCode, " already exists")
       
+      message("Saving shapefile as RDS for faster access")
       message("Getting admLevels in ", ctryCode)
       allCtryLevels <- unlist(getCtryShpAllAdmLvls(ctryCode))
       
-      message("Reading in all adLevels")
+      message("Reading in all admLevels")
       listCtryPolys <- lapply(allCtryLevels, function(lvl) rgdal::readOGR(getPolyFnamePath(ctryCode), lvl))
       
       message("Saving admLevel polygons as RDS")
@@ -98,7 +112,7 @@ dnldCtryPoly <- function(ctryCode)
   #save ctry structure as CSV in data dir
   if(!file.exists(getCtryStructFnamePath(ctryCode)))
   {
-    message("Saving country admLevel structure")
+    message("Saving country admLevel structure to CSV")
   
     createCtryStruct(ctryCode)
   }

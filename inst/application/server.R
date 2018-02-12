@@ -419,7 +419,7 @@ shiny::shinyServer(function(input, output, session){
   ######################## renderUI nlType ###################################
   
   output$nlType <- shiny::renderUI({
-    if(length(input$countries) != 1)
+    if(length(input$countries) == 0)
       return()
     
     nlTypes <- ctryNlTypes()
@@ -489,7 +489,7 @@ shiny::shinyServer(function(input, output, session){
           
           lvl <- ctryAdmLevels[lvlIdx]
           
-          lvlEnabled <- file.exists(getCtryNlDataFnamePath(countries, Rnightlights:::getCtryShpLyrNames(countries, lvlIdx-1)))
+          lvlEnabled <- file.exists(Rnightlights::getCtryNlDataFnamePath(countries, Rnightlights:::getCtryShpLyrNames(countries, lvlIdx-1)))
           
           #lvlSelect <- unique(ctryAdmLevelNames[[ctryAdmLevels[lvlIdx]]])
           
@@ -613,7 +613,7 @@ shiny::shinyServer(function(input, output, session){
         lvlSelect <- ""
         top10 <- ""
         
-        lvlEnabled <- file.exists(getCtryNlDataFnamePath(input$countries, Rnightlights:::getCtryShpLyrNames(input$countries, lvlIdx-1)))
+        lvlEnabled <- file.exists(Rnightlights::getCtryNlDataFnamePath(input$countries, Rnightlights:::getCtryShpLyrNames(input$countries, lvlIdx-1)))
         
         if (length(input[[paste0("selectAdm", lvlIdx)]]) > 1)
           multipleSelected <- TRUE
@@ -787,13 +787,29 @@ shiny::shinyServer(function(input, output, session){
       {
         minDate <- min(ctryData$variable)
         maxDate <- max(ctryData$variable)
-                           
+        
+        if(stringr::str_detect(input$nlType, "D"))
+        {
+          tmFmt <- "%Y-%m-%d"
+          step <- 1
+        }
+        else if(stringr::str_detect(input$nlType, "M"))
+        {
+          tmFmt <- "%Y-%m"
+          step <- 31
+        }
+        else if(stringr::str_detect(input$nlType, "Y"))
+        {
+          tmFmt <- "%Y"
+          step <- 1
+        }
+        
         shiny::sliderInput(inputId = "nlPeriodRange",
                     label = "Time",
                     min = minDate,
                     max = maxDate,
-                    timeFormat = "%Y-%m",
-                    step = 31,
+                    timeFormat = tmFmt,
+                    step = step,
                     value = c(minDate, maxDate),
                     animate = animationOptions(interval = 2000, loop = FALSE, playButton = NULL, pauseButton = NULL)
         )
@@ -824,36 +840,31 @@ shiny::shinyServer(function(input, output, session){
         minDate <- min(ctryData$variable)
         maxDate <- max(ctryData$variable)
        
-        if(stringr::str_detect(input$nlType, "OLS"))  
-          shiny::sliderInput(inputId = "nlPeriod",
-                    label = "Time",
-                    min = minDate,
-                    max = maxDate,
-                    #timeFormat = "%Y",
-                    sep = "",
-                    step = 1,
-                    value = minDate,
-                    animate = animationOptions(interval = 10000, loop = FALSE, playButton = "Play", pauseButton = NULL)
-        )
-        else if(stringr::str_detect(input$nlType, "VIIRS"))
+        if(stringr::str_detect(input$nlType, "D"))
         {
-          if(stringr::str_detect(input$nlType, "D"))
-            tmFmt <- "%Y-%m-%d"
-          else if(stringr::str_detect(input$nlType, "M"))
-            tmFmt <- "%Y-%m"
-          else if(stringr::str_detect(input$nlType, "Y"))
-            tmFmt <- "%Y"
-          
-          shiny::sliderInput(inputId = "nlPeriod",
-                             label = "Time",
-                             min = minDate,
-                             max = maxDate,
-                             timeFormat = tmFmt,
-                             step = 31,
-                             value = minDate,
-                             animate = animationOptions(interval = 10000, loop = FALSE, playButton = "Play", pauseButton = NULL)
-          )
+          tmFmt <- "%Y-%m-%d"
+          step <- 1
         }
+        else if(stringr::str_detect(input$nlType, "M"))
+        {
+          tmFmt <- "%Y-%m"
+          step <- 31
+        }
+        else if(stringr::str_detect(input$nlType, "Y"))
+        {
+          tmFmt <- "%Y"
+          step <- 1
+        }
+          
+        shiny::sliderInput(inputId = "nlPeriod",
+                           label = "Time",
+                           min = minDate,
+                           max = maxDate,
+                           timeFormat = tmFmt,
+                           step = step,
+                           value = minDate,
+                           animate = animationOptions(interval = 10000, loop = FALSE, playButton = "Play", pauseButton = NULL)
+        )
       }
     })
     
@@ -916,7 +927,7 @@ shiny::shinyServer(function(input, output, session){
       if (is.null(clusts))
         return("Country has no adm levels")
       
-      shiny::isolate({
+      #shiny::isolate({
       dendro <- stats::as.dendrogram(clusts)
       
       cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
@@ -927,7 +938,7 @@ shiny::shinyServer(function(input, output, session){
       
       dendro %>% dendextend::rect.dendrogram(k=numClusters,horiz=FALSE,border = cbPalette)
       
-      })
+      #})
       
     })
     
@@ -1035,7 +1046,7 @@ shiny::shinyServer(function(input, output, session){
         pal <- cbPalette
         
         #turn off previous layer? No point keeping it if it is hidden. Also we want to turn the current layer to transparent so that one can see through to the raster layer on hover
-        ctryPoly <- readCtryPolyAdmLayer(countries, unlist(Rnightlights::getCtryShpLyrNames(countries, 1)))
+        ctryPoly <- Rnightlights::readCtryPolyAdmLayer(countries, unlist(Rnightlights::getCtryShpLyrNames(countries, 1)))
         
         ctryPoly <- sp::spTransform(ctryPoly, wgs84)
         
@@ -1100,7 +1111,8 @@ shiny::shinyServer(function(input, output, session){
       
       admLevel <- ctryAdmLevels()[1]
       
-      
+      nlType <- input$nlType
+
       #return if the country doesn't have adm levels below country
       if (admLevel == "")
         return()
@@ -1119,12 +1131,38 @@ shiny::shinyServer(function(input, output, session){
         #ctryAvg <- aggregate(value ~ admLevel, data=meltCtryData, mean)
         ctryAvg <- stats::setNames(meltCtryData[,mean(value, na.rm = TRUE), by = list(meltCtryData[[admLevel]], variable)], c(admLevel, "variable", "value"))
         
-        startYear <- lubridate::year(min(ctryAvg$variable))
-        startMonth <- lubridate::month(min(ctryAvg$variable))
-        endYear <- lubridate::year(max(ctryAvg$variable))
-        endMonth <- lubridate::month(max(ctryAvg$variable))
+        if(stringr::str_detect(nlType, "\\.D"))
+          fmt <- "%Y-%M-%d"
+        else if(stringr::str_detect(nlType, "\\.M"))
+          fmt <- "%Y-%M-%d"
+        else if(stringr::str_detect(nlType, "\\.Y"))
+          fmt <- "%Y"
+
+        startYear <- lubridate::year(as.Date(as.character(min(ctryAvg$variable)), fmt))
+        endYear <- lubridate::year(as.Date(as.character(max(ctryAvg$variable)), fmt))
+
+        tsStart <- c(startYear)
+        tsEnd <- c(endYear)
         
-        ctryDataTS <- stats::ts(ctryAvg$value, start = c(startYear,startMonth), end = c(endYear,endMonth), frequency = 12)
+        if(stringr::str_detect(nlType, "\\.D|\\.M"))
+        {
+          startMonth <- lubridate::month(as.Date(as.character(min(ctryAvg$variable)), fmt))
+          endMonth <- lubridate::month(as.Date(as.character(max(ctryAvg$variable)), fmt))
+          
+          tsStart <- c(tsStart, startMonth)
+          tsEnd <- c(tsEnd, endMonth)
+        }
+        
+        if(stringr::str_detect(nlType, "\\.D"))
+        {
+          startDay <- lubridate::month(as.Date(as.character(max(ctryAvg$variable)), fmt))
+          endDay <- lubridate::month(as.Date(as.character(max(ctryAvg$variable)), fmt))
+          
+          tsStart <- c(tsStart, startDay)
+          tsEnd <- c(tsEnd, endDay)
+        }
+        
+        ctryDataTS <- stats::ts(ctryAvg$value, start = tsStart, end = tsEnd, frequency = 12)
 
         ctryDataTScomponents <- stats::decompose(ctryDataTS)
         #g <- ggplot2::autoplot(ctryDataTScomponents)
@@ -1135,7 +1173,7 @@ shiny::shinyServer(function(input, output, session){
     
     ######################## plotYearly ###################################
     
-    output$plotYearly <- plotly::renderPlotly({
+    output$plotYearly <- shiny::renderPlot({
       #print(paste0("here: renderPlotYearly"))
       input$btnGo
       
@@ -1148,8 +1186,9 @@ shiny::shinyServer(function(input, output, session){
       nlPeriodRange <- input$nlPeriodRange
       graphType <- input$graphType
       normArea <- input$norm_area
+      nlType <- input$nlType
 
-      shiny::isolate({      
+      shiny::isolate({    
         ctryData <- ctryNlDataMelted()
         
         if (is.null(countries) || is.null(ctryData))
@@ -1199,9 +1238,28 @@ shiny::shinyServer(function(input, output, session){
             }
           }
           
-          ctryData$year <- lubridate::year(ctryData$variable)
+          ctryData$year <- lubridate::year(as.Date(as.character(ctryData$variable), "%Y"))
           
-          ctryData$month <- lubridate::month(ctryData$variable)
+          lstAggBy <- paste0("list(ctryData[[admLevel]], variable")
+               
+          lstAggBy <- paste0(lstAggBy, ", as.factor(year)")
+          aggNames <- "year"
+          
+          if(stringr::str_detect(nlType, "\\.M"))
+          {
+            ctryData$month <- lubridate::month(as.Date(as.character(ctryData$variable)))
+            lstAggBy <- paste0(lstAggBy, ", as.factor(month)")
+            aggNames <- c(aggNames, "month")
+          }
+          
+          lstAggBy <- paste0(lstAggBy, ")")
+          
+          if(stringr::str_detect(nlType, "\\.D"))
+          {
+            ctryData$day <- lubridate::day(as.Date(as.character(ctryData$variable)))
+            lstAggBy <- paste0(lstAggBy, ", as.factor(day)")
+            aggNames <- c(aggNames, "day")
+          }
           
           #print(paste0("ctrydata nrow:", nrow(ctryData)))
           
@@ -1227,8 +1285,11 @@ shiny::shinyServer(function(input, output, session){
             {
               #switched to data.table aggregation
               #ctryData <- stats::setNames(aggregate(ctryData$value, by=list(ctryData[,admLevel], ctryData[,"variable"]), mean, na.rm=T), c(admLevel, "variable", "value"))
-              ctryData <- stats::setNames(ctryData[,list(mean(value, na.rm = TRUE)), by = list(ctryData[[admLevel]], variable, as.factor(year), as.factor(month))], c(admLevel, "variable", "year", "month", "value"))
-              g <- ggplot2::ggplot(ctryData, aes(x=month, y=value, col=year, group=year))
+              ctryData <- stats::setNames(
+                ctryData[,list(mean(value, na.rm = TRUE)),
+                         by = eval(parse(text=lstAggBy))],
+                c(admLevel, "variable", aggNames, "value"))
+              g <- ggplot2::ggplot(ctryData, aes(x=eval(parse(text=aggNames[length(aggNames)])), y=value, col=year, group=year))
             }
             else
             {
@@ -1261,8 +1322,8 @@ shiny::shinyServer(function(input, output, session){
           else
             g <- g + ggplot2::labs(title="Nightlight Radiances", x = "Month", y = "Total Rad (W.Sr^-1.cm^-2)") #y=expression(~Total~Rad~W %.% Sr^{-1}%.%cm^{-2}))
           
-          plotly::ggplotly(g)
-          
+          #plotly::ggplotly(g)
+          g
       })
     })
     
@@ -1444,7 +1505,7 @@ shiny::shinyServer(function(input, output, session){
 #       
 #       lyrNum <- which(lyrs == admLevel) - 1
 #       
-#       ctryPoly <- readCtryPolyAdmLayer(countries, ifelse(is.null(admLevel),  yes = Rnightlights::getCtryShpLyrNames(countries,0), no = Rnightlights::getCtryShpLyrName(countries,lyrNum)))
+#       ctryPoly <- Rnightlights::readCtryPolyAdmLayer(countries, ifelse(is.null(admLevel),  yes = Rnightlights::getCtryShpLyrNames(countries,0), no = Rnightlights::getCtryShpLyrName(countries,lyrNum)))
 #       s
 #       proxy <- leafletProxy("map", data=ctryPoly)
 #       
@@ -1549,7 +1610,7 @@ shiny::shinyServer(function(input, output, session){
       
       #message(ctryPeriod)
       
-      ctryPoly0 <- readCtryPolyAdmLayer(countries, unlist(Rnightlights::getCtryShpLyrNames(countries,0)))
+      ctryPoly0 <- Rnightlights::readCtryPolyAdmLayer(countries, unlist(Rnightlights::getCtryShpLyrNames(countries,0)))
 
       if(stringr::str_detect(nlType, "OLS"))
         nlPeriod <- substr(gsub("-","",nlYm),1,4)
@@ -1622,7 +1683,7 @@ shiny::shinyServer(function(input, output, session){
           pal <- leaflet::colorBin(brewerPal, domain = lvlCtryData$value, na.color = "grey", bins=bins)
           
           #turn off previous layer? No point keeping it if it is hidden. Also we want to turn the current layer to transparent so that one can see through to the raster layer on hover
-          ctryPoly <- readCtryPolyAdmLayer(countries, unlist(Rnightlights::getCtryShpLyrNames(countries, iterAdmLevel-1)))
+          ctryPoly <- Rnightlights::readCtryPolyAdmLayer(countries, unlist(Rnightlights::getCtryShpLyrNames(countries, iterAdmLevel-1)))
           
           ctryPoly <- sp::spTransform(ctryPoly, wgs84)
           
