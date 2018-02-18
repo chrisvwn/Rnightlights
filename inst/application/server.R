@@ -269,6 +269,74 @@ shiny::shinyServer(function(input, output, session){
     return(nlStats)
   })
   
+  ######################## reactive ctryNlDataLvl2 ###################################
+  
+  ctryNlDataLvl2 <- shiny::reactive({
+    #print(paste0("here: ctryNlDataLvl2"))
+    input$btnGo
+    
+    countries <- shiny::isolate(input$countries)
+    nlType <- shiny::isolate(input$nlType)
+    
+    if (length(countries) < 1)
+      return(NULL)
+    
+    if(is.null(nlType))
+      return(NULL)
+    
+    ctryData <- NULL
+    
+    if (length(countries) == 1)
+    {
+      admLevel <- unlist(Rnightlights:::getCtryShpAllAdmLvls(countries))[2]
+      
+      ctryNlDataFile <- Rnightlights::getCtryNlDataFnamePath(countries, admLevel)
+      
+      if(file.exists(ctryNlDataFile))
+        ctryData <- data.table::fread(ctryNlDataFile)
+      else
+        ctryData <- NULL
+    }
+    else if(length(countries) > 1) #remove subcountry admin levels
+    {
+      for (ctryCode in countries)
+      {
+        admLevel <- paste0(ctryCode, "_adm0")
+        #print(ctryCode)
+        
+        ctryNlDataFile <- Rnightlights::getCtryNlDataFnamePath(ctryCode, admLevel)
+        
+        if(file.exists(ctryNlDataFile))
+          temp <- data.table::fread(ctryNlDataFile)
+        else
+          temp <- NULL
+        
+        ctryCols <- grep(paste0("country|area|NL_", nlType), names(temp))
+        
+        temp <- temp[, ctryCols, with=F]
+        
+        if (is.null(ctryData))
+        {
+          ctryData <- temp
+        }else
+        {
+          ctryData <- merge(ctryData, temp, all=TRUE)
+        }
+      }
+    }
+    
+    #get the nlType columns
+    ctryCols <- names(ctryData)
+    
+    ctryNonNLCols <- grep("NL_", ctryCols, invert = T, value = T)
+    ctryNLCols <- grep("NL_", ctryCols, value = T)
+    
+    ctryNLColsNlType <- grep(nlType, ctryNLCols, value = T)
+    
+    ctryData <- ctryData[, c(ctryNonNLCols, ctryNLColsNlType), with=F]
+    
+    return(ctryData)
+  })  
   
   ######################## reactive ctryNlData ###################################
   
@@ -391,6 +459,57 @@ shiny::shinyServer(function(input, output, session){
       return(ctryData)
     })
 
+  ######################## reactive ctryNlDataMelted ###################################
+  
+  ctryNlDataMeltedLvl2 <- shiny::reactive({
+    #print(paste0("here: ctryNlDataMelted"))
+    
+    ctryData <- ctryNlDataLvl2()
+    
+    if(is.null(ctryData))
+      return()
+    
+    if(is.null(input$ctryStat))
+      return()
+    
+    #the nightlight cols
+    nlCols <- names(ctryData)[grep("NL_", names(ctryData))]
+    
+    #the cols with the stats we want
+    statCols <- names(ctryData)[grep(paste0("NL_.*.", input$ctryStat), names(ctryData))]
+    
+    #the non nightlight cols
+    ctryDataCols <- setdiff(names(ctryData), nlCols)
+    
+    #the cols to melt by
+    meltMeasureVars <- statCols
+    
+    #combine the non-nightlight cols and the cols with the stats we want
+    ctryData <- subset(ctryData, select=c(ctryDataCols, meltMeasureVars))
+    
+    #remove non-digits to get only stat cols
+    meltVarNames <- gsub("[^[:digit:]]", "", meltMeasureVars)
+    
+    ctryData <- data.table::data.table(reshape2::melt(ctryData, measure.vars=meltMeasureVars))
+    
+    if(stringr::str_detect(input$nlType, "OLS"))
+    {
+      ctryData$variable <- paste0(gsub("[^[:digit:]]","", ctryData$variable))
+      
+      ctryData$variable <- as.numeric(ctryData$variable)
+    }
+    else if(stringr::str_detect(input$nlType, "VIIRS"))
+    {
+      if(stringr::str_detect(input$nlType, "M"))
+        ctryData$variable <- paste0(gsub("[^[:digit:]]","", ctryData$variable),"01")
+      else if(stringr::str_detect(input$nlType, "Y"))
+        ctryData$variable <- paste0(gsub("[^[:digit:]]","", ctryData$variable),"0101")
+      
+      ctryData$variable <- as.Date(ctryData$variable, format="%Y%m%d")
+    }
+    
+    return(ctryData)
+  })
   ######################## renderUI ctryStats ###################################
     
     output$ctryStats <- shiny::renderUI({
@@ -882,7 +1001,7 @@ shiny::shinyServer(function(input, output, session){
       scale <- input$scale
       normArea <- input$norm_area
       
-      shiny::isolate({
+      #shiny::isolate({
       nlPeriodRange <- input$nlPeriodRange
       graphType <- input$graphType
       admLevel <- ctryAdmLevels()[2]
@@ -891,7 +1010,9 @@ shiny::shinyServer(function(input, output, session){
       if (is.null(admLevel) || is.na(admLevel))
         return()
       
-      meltCtryData <- ctryNlDataMelted()
+      #meltCtryData <- ctryNlDataMelted()
+      
+      meltCtryData <- ctryNlDataMeltedLvl2()
       
       if (is.null(countries) || is.null(meltCtryData))
         return()
@@ -913,7 +1034,7 @@ shiny::shinyServer(function(input, output, session){
       h$labels <- unmeltCtryData[[admLevel]]
       
       h
-      })
+      #})
     })
     
     ######################## plotHCluster ###################################
@@ -927,7 +1048,7 @@ shiny::shinyServer(function(input, output, session){
       if (is.null(clusts))
         return("Country has no adm levels")
       
-      #shiny::isolate({
+      shiny::isolate({
       dendro <- stats::as.dendrogram(clusts)
       
       cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
@@ -938,11 +1059,10 @@ shiny::shinyServer(function(input, output, session){
       
       dendro %>% dendextend::rect.dendrogram(k=numClusters,horiz=FALSE,border = cbPalette)
       
-      #})
+      })
       
     })
-    
-    
+
     ######################## plotPointsCluster ###################################
     
     output$plotPointsCluster <- plotly::renderPlotly({
@@ -972,7 +1092,7 @@ shiny::shinyServer(function(input, output, session){
       scale <- input$scale
       
       isolate({
-        meltCtryData <- ctryNlDataMelted()
+        meltCtryData <- ctryNlDataMeltedLvl2()
         
         if (normArea)
           meltCtryData$value <- (meltCtryData$value)/meltCtryData$area_sq_km
@@ -1023,7 +1143,7 @@ shiny::shinyServer(function(input, output, session){
         
         admLevel <- ctryAdmLevels()[2]
         
-        meltCtryData <- ctryNlDataMelted()
+        meltCtryData <- ctryNlDataMeltedLvl2()
         
         if (normArea)
           meltCtryData$value <- (meltCtryData$value)/meltCtryData$area_sq_km
@@ -1109,10 +1229,8 @@ shiny::shinyServer(function(input, output, session){
       
       normArea <- input$norm_area
       
-      admLevel <- ctryAdmLevels()[1]
+      admLevel <- ctryAdmLevels()[2]
       
-      nlType <- input$nlType
-
       #return if the country doesn't have adm levels below country
       if (admLevel == "")
         return()
@@ -1120,13 +1238,15 @@ shiny::shinyServer(function(input, output, session){
       scale <- input$scale
       
       shiny::isolate({
-        meltCtryData <- ctryNlDataMelted()
+        nlType <- input$nlType
+        
+        meltCtryData <- ctryNlDataMeltedLvl2()
         
         if(nrow(meltCtryData) < 2)
           return()
         
         if (normArea)
-          meltCtryData$value <- (meltCtryData$value)/meltCtryData$area_sq_km
+          meltCtryData$value <- meltCtryData$value/meltCtryData$area_sq_km
 
         #ctryAvg <- aggregate(value ~ admLevel, data=meltCtryData, mean)
         ctryAvg <- stats::setNames(meltCtryData[,mean(value, na.rm = TRUE), by = list(meltCtryData[[admLevel]], variable)], c(admLevel, "variable", "value"))
@@ -1141,6 +1261,9 @@ shiny::shinyServer(function(input, output, session){
         startYear <- lubridate::year(as.Date(as.character(min(ctryAvg$variable)), fmt))
         endYear <- lubridate::year(as.Date(as.character(max(ctryAvg$variable)), fmt))
 
+        if(startYear == endYear)
+          stop("Only 1 data point (year) in the dataset")
+        
         tsStart <- c(startYear)
         tsEnd <- c(endYear)
         
@@ -1186,61 +1309,25 @@ shiny::shinyServer(function(input, output, session){
       nlPeriodRange <- input$nlPeriodRange
       graphType <- input$graphType
       normArea <- input$norm_area
-      nlType <- input$nlType
 
       shiny::isolate({    
-        ctryData <- ctryNlDataMelted()
+        nlType <- input$nlType
+        
+        ctryData <- ctryNlDataMeltedLvl2()
         
         if (is.null(countries) || is.null(ctryData))
           return()
-        
-        admLvlCtrlNames <- names(input)
-        
-        x <- admLvlCtrlNames[grep("selectAdm", admLvlCtrlNames)]
 
-        admLvlNums <- NULL
-        for (i in x)
-          if(length(input[[i]])>0)
-            admLvlNums <- c(admLvlNums, i)
-          
-          
-          #print(paste0("x", x))
-          #print(paste0("admlvlnums:", admLvlNums))
-          
-          #if (admLvlNum=="" && length(countries)>0)
-          #  return()
-          
-          admLvlNums <- as.numeric(gsub("[^[:digit:]]","",admLvlNums))
-          
-          if (length(admLvlNums)==0)
-            admLvlNums <- 1
-          
-          ctryAdmLevels <- ctryAdmLevels()
-          admLevel <- ctryAdmLevels[as.numeric(data.table::last(admLvlNums))]
+          admLevel <- ctryAdmLevels()[1]
           
           #print(paste0("admLevel:", admLevel))
           
           if (!exists("admLevel") || is.null(admLevel) || length(admLevel)==0)
             admLevel <- "country"
-          
-          ctryData <- subset(ctryData, variable >= nlPeriodRange[1] & variable <= nlPeriodRange[2])
-          
-          for (lvl in admLvlNums)
-          {
-            if (lvl == 1)
-              next()
-            
-            #print(paste0("lvl:",lvl))
-            
-            if (length(input[[x[lvl-1]]])>0)
-            {
-              ctryData <- subset(ctryData, ctryData[[ctryAdmLevels[lvl]]] %in% input[[x[lvl-1]]])
-            }
-          }
-          
+
           ctryData$year <- lubridate::year(as.Date(as.character(ctryData$variable), "%Y"))
           
-          lstAggBy <- paste0("list(ctryData[[admLevel]], variable")
+          lstAggBy <- paste0("list(", admLevel, ", variable")
                
           lstAggBy <- paste0(lstAggBy, ", as.factor(year)")
           aggNames <- "year"
@@ -1266,61 +1353,36 @@ shiny::shinyServer(function(input, output, session){
           if (normArea)
             ctryData$value <- (ctryData$value)/ctryData$area_sq_km
           
-          if (graphType == "boxplot")
+          if (length(countries)==1)
           {
-            if (length(countries)==1)
-            {
-              g <- ggplot2::ggplot(data=ctryData, aes(x=factor(variable), y=value, col=ctryData[[admLevel]])) + ggplot2::theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) + ggplot2::labs(col=admLevel)
-            }
-            else
-            {
-              g <- ggplot2::ggplot(data=ctryData, aes(x=factor(variable), y=value, col=country)) + ggplot2::theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) + ggplot2::labs(col=admLevel)
-            }
-            browser()
-            g <- g + ggplot2::geom_boxplot() +facet_grid(.~variable)
+            #switched to data.table aggregation
+            #ctryData <- stats::setNames(aggregate(ctryData$value, by=list(ctryData[,admLevel], ctryData[,"variable"]), mean, na.rm=T), c(admLevel, "variable", "value"))
+            ctryData <- stats::setNames(
+              ctryData[,list(mean(value, na.rm = TRUE)),
+                       by = eval(parse(text=lstAggBy))],
+              c(admLevel, "variable", aggNames, "value"))
+            g <- ggplot2::ggplot(ctryData, aes(x=eval(parse(text=aggNames[length(aggNames)])), y=value, col=year, group=admLevel))
           }
-          else if (graphType == "line")
-          {
-            if (length(countries)==1)
-            {
-              #switched to data.table aggregation
-              #ctryData <- stats::setNames(aggregate(ctryData$value, by=list(ctryData[,admLevel], ctryData[,"variable"]), mean, na.rm=T), c(admLevel, "variable", "value"))
-              ctryData <- stats::setNames(
-                ctryData[,list(mean(value, na.rm = TRUE)),
-                         by = eval(parse(text=lstAggBy))],
-                c(admLevel, "variable", aggNames, "value"))
-              g <- ggplot2::ggplot(ctryData, aes(x=eval(parse(text=aggNames[length(aggNames)])), y=value, col=year, group=year))
-            }
-            else
-            {
-              #ctryData <- aggregate(value ~ country+variable, data=ctryData, mean)
-              #switched to data.table aggregation
-              ctryData <- stats::setNames(ctryData[,mean(value, na.rm = TRUE),by = list(country, variable)], c("country", "variable", "value"))
-              g <- ggplot2::ggplot(data=ctryData, aes(x=variable, y=value, col=country))
-            }
-            
-            g <- g + ggplot2::geom_line() + ggplot2::geom_point() + ggplot2::geom_smooth(aes(group=1),method = "loess", weight=3) #+ theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) #+ labs(col=year)
-          }
-          else if (graphType == "histogram")
+          else
           {
             #ctryData <- aggregate(value ~ country+variable, data=ctryData, mean)
-            
-            g <- ggplot(data=ctryData, aes(x=value))
-            
-            g <- g + ggplot2::geom_histogram(aes(y=..density..), bins = 30, colour="black", fill="white") + ggplot2::geom_density(alpha=.2, fill="#FF6666") + ggplot2::facet_wrap(~ variable+country, ncol = length(countries)) # Overlay with transparent density plot
-            
+            #switched to data.table aggregation
+            ctryData <- stats::setNames(ctryData[,mean(value, na.rm = TRUE),by = list(country, variable)], c("country", "variable", "value"))
+            g <- ggplot2::ggplot(data=ctryData, aes(x=variable, y=value, col=country))
           }
           
-          if ("scale_y_log" %in% scale)
-            g <- g + ggplot2::scale_y_log10()
-          
-          if ("scale_x_log" %in% scale)
-            g <- g + ggplot2::scale_x_log10()
-          
-          if (normArea)
-            g <- g + ggplot2::labs(title="Nightlight Radiances", x = "Month", y = "Avg Rad (W.Sr^-1.cm^-2/Km2)") #y=expression(paste("Avg Rad W" %.% "Sr" ^{-1} %.% "cm" ^{-2}, "per Km" ^{2})))
-          else
-            g <- g + ggplot2::labs(title="Nightlight Radiances", x = "Month", y = "Total Rad (W.Sr^-1.cm^-2)") #y=expression(~Total~Rad~W %.% Sr^{-1}%.%cm^{-2}))
+          g <- g + ggplot2::geom_line() + ggplot2::geom_point() + ggplot2::geom_smooth(aes(group=1),method = "loess", weight=3) #+ theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) #+ labs(col=year)
+
+        if ("scale_y_log" %in% scale)
+          g <- g + ggplot2::scale_y_log10()
+        
+        if ("scale_x_log" %in% scale)
+          g <- g + ggplot2::scale_x_log10()
+        
+        if (normArea)
+          g <- g + ggplot2::labs(title="Nightlight Radiances", x = "Month", y = "Avg Rad (W.Sr^-1.cm^-2/Km2)") #y=expression(paste("Avg Rad W" %.% "Sr" ^{-1} %.% "cm" ^{-2}, "per Km" ^{2})))
+        else
+          g <- g + ggplot2::labs(title="Nightlight Radiances", x = "Month", y = "Total Rad (W.Sr^-1.cm^-2)") #y=expression(~Total~Rad~W %.% Sr^{-1}%.%cm^{-2}))
           
           #plotly::ggplotly(g)
           g
