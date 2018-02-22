@@ -69,7 +69,7 @@ if(!is.null(missingPkgs))
 
 #ctryCodesWithData <- substr(filenames, 1, 3)
 
-ctryCodesWithData <- Rnightlights::listCtryNlData()$ctryCode
+ctryCodesWithData <- unique(Rnightlights::listCtryNlData()$ctryCode)
 
 ctryCodeNames <- lapply(ctryCodesWithData, function(x) Rnightlights::ctryCodeToName(x))
 
@@ -124,7 +124,7 @@ alignCenter <- function(el) {
 
                  shinydashboard::menuItem(text = "Options", tabName = "options",
 
-                          shiny::checkboxInput(inputId = "strict", label = "Strict", value = F),                                          
+                          shiny::checkboxInput(inputId = "strict", label = "Strict", value = T),                                          
                           shiny::radioButtons(inputId = "graphType",
                                        label = "Graph type",
                                        choices = c("line", "boxplot", "histogram", "point"),
