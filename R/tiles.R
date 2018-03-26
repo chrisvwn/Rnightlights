@@ -751,7 +751,7 @@ validNlTileNumVIIRS <- function(nlTileNum, nlType)
   if (missing(nlType))
     stop("Missing parameter nlType")
   
-  if (class(nlTileNum) != "character" || nlTileNum =="" || length(grep("[^[:digit:]]", nlTileNum) > 0))
+  if (class(nlTileNum) != "character" || nlTileNum =="" || length(nlTileNum)==0 || length(grep("[^[:digit:]]", nlTileNum) > 0))
     return(FALSE)
   
   if(!exists("nlTiles"))

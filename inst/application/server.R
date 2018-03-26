@@ -1910,7 +1910,7 @@ shiny::shinyServer(function(input, output, session){
       else
         ctryRast <- NULL
       
-      map <- map %>% leaflet::leaflet(data=ctryPoly0)
+      map <- map %>% leaflet::leaflet()
         #leaflet::addTiles("http://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png")
         
       if(country == countries[1])
@@ -1918,20 +1918,20 @@ shiny::shinyServer(function(input, output, session){
         
       if(inherits(ctryRast, "RasterLayer"))
       {
-        map <- map %>% leaflet::addRasterImage(x = ctryRast,layerId = "ctryRasterLocal", group = "ctryRaster", project = T)
+        map <- map %>% leaflet::addRasterImage(x = ctryRast,layerId = c("ctryRasterLocal_", country), group = "ctryRaster", project = T)
 
         leaflet::projectRasterForLeaflet(ctryRast)
       }
               
-      map <-  map %>% leaflet::addWMSTiles(layerId="nlRaster",
-                             baseUrl = "http://localhost/cgi-bin/mapserv?map=nightlights_wms.map", 
-                             layers = "ctryRasterWMS",
-                             group = "ctryRaster",
-                             options = leaflet::WMSTileOptions(format = "image/png",
-                                                      transparent = TRUE, opacity=1)
-                             ) %>%
+      #map <-  map %>% leaflet::addWMSTiles(layerId="nlRaster",
+      #                       baseUrl = "http://localhost/cgi-bin/mapserv?map=nightlights_wms.map", 
+      #                       layers = "ctryRasterWMS",
+      #                       group = "ctryRaster",
+      #                       options = leaflet::WMSTileOptions(format = "image/png",
+      #                                                transparent = TRUE, opacity=1)
+      #                       ) %>%
         
-        leaflet::addPolygons(layerId = country,
+      map <- map %>%  leaflet::addPolygons(layerId = country,
                              fill = FALSE,
                              fillColor = "#fefe40",
                              stroke = TRUE,
@@ -1940,7 +1940,8 @@ shiny::shinyServer(function(input, output, session){
                              opacity = 1,
                              color="white",
                              dashArray = "5",
-                             group = "country"
+                             group = "country",
+                             data=ctryPoly0
                              )
 
         selected <- NULL

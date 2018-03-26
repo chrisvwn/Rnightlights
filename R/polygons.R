@@ -120,16 +120,57 @@ dnldCtryPoly <- function(ctryCode)
   return (!is.null(result))
 }
 
+######################## getCtryStructFname ###################################
+
+#' Construct the name for the country struct file
+#'
+#' Construct the name for the country struct file
+#' 
+#' @param ctryCode The ISO3 ctryCode of the country
+#'
+#' @return character string The filename
+#'
+#' @examples
+#' Rnightlights:::getCtryStructFname("KEN")
+#'
 getCtryStructFname <- function(ctryCode)
 {
   return(paste0("NL_STRUCT_", ctryCode, ".csv"))
 }
 
+######################## getCtryStructFnamePath ###################################
+
+#' Construct the full path to the country struct file
+#'
+#' Construct the full path to the country struct file
+#' 
+#' @param ctryCode The ISO3 ctryCode of the country
+#'
+#' @return character string The file path
+#'
+#' @examples
+#' Rnightlights:::getCtryStructFnamePath("KEN")
+#'
 getCtryStructFnamePath <- function(ctryCode)
 {
   return(file.path(getNlDir("dirNlData"), getCtryStructFname(ctryCode)))
 }
 
+######################## createCtryStruct ###################################
+
+#' Save ctry admin structure to text file for faster access
+#'
+#' Save ctry admin structure to text file for faster access
+#' 
+#' @param ctryCode The ISO3 ctryCode of the country
+#'
+#' @return None
+#'
+#' @examples
+#' \dontrun{
+#'   Rnightlights:::createCtryStruct("KEN")
+#' }
+#'
 createCtryStruct <- function(ctryCode)
 {
   ctryStructFnamePath <- getCtryStructFnamePath(ctryCode)
@@ -142,6 +183,19 @@ createCtryStruct <- function(ctryCode)
   }
 }
 
+######################## readCtryStruct ###################################
+
+#' Reads the ctry admin structure from struct text file
+#'
+#' Reads the ctry admin structure from struct text file
+#' 
+#' @param ctryCode The ISO3 ctryCode of the country structure to read
+#'
+#' @return None
+#'
+#' @examples
+#' Rnightlights:::createCtryStruct("KEN")
+#'
 readCtryStruct <- function(ctryCode)
 {
   nlCtryData <- NULL
