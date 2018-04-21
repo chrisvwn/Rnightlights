@@ -28,7 +28,7 @@ Rnightlights:::getNlTileZipLclNamePath("VIIRS.M", "201401", 1)
  
 \dontrun{
 Rnightlights:::getNlTileZipLclNamePath("OLS.Y", "2004", 1)
- #returns "/dataPath/OLS_2004_00N180W.tar"
+ #returns "/dataPath/OLS.Y_2004_00N180W.tar"
  }
 
 }

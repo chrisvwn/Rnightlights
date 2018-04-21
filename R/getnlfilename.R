@@ -21,7 +21,7 @@
 #'  
 #' \dontrun{
 #' Rnightlights:::getNlTileZipLclNamePath("OLS.Y", "2004", 1)
-#'  #returns "/dataPath/OLS_2004_00N180W.tar"
+#'  #returns "/dataPath/OLS.Y_2004_00N180W.tar"
 #'  }
 #'
 getNlTileZipLclNamePath <- function(nlType, nlPeriod, tileNum)
@@ -56,7 +56,7 @@ getNlTileZipLclNamePath <- function(nlType, nlPeriod, tileNum)
 #'
 #' Constructs the filename used to save/access the downloaded VIIRS tile .tgz file
 #'
-#' @param nlPeriod The nlYearMonth in which the tile was created
+#' @param nlPeriod The nlPeriod in which the tile was created
 #'
 #' @param tileNum The index of the tile as given in nlTileIndex
 #' 
@@ -110,12 +110,12 @@ getNlTileZipLclNameVIIRS <- function(nlPeriod, tileNum, nlType)
 #' @examples
 #' \dontrun{
 #' Rnightlights:::getNlTileZipLclNamePath("OLS.Y", "2012", 1)
-#'  #returns "/dataPath/ols_2012_00N180W.tgz"
+#'  #returns "/dataPath/OLS.Y_2012_00N180W.tgz"
 #'  }
 #'
 #' \dontrun{
 #' Rnightlights:::getNlTileZipLclNamePath("VIIRS.M", "201412", 1)
-#'  #returns "/dataPath/viirs_201412_75N180W.tgz"
+#'  #returns "/dataPath/VIIRS.M_201412_75N180W.tgz"
 #'  }
 #'
 getNlTileTifLclNamePath <- function(nlType, nlPeriod, tileNum)
@@ -168,7 +168,7 @@ getNlTileTifLclNamePath <- function(nlType, nlPeriod, tileNum)
 getNlTileTifLclNameVIIRS <- function(nlPeriod, tileNum, nlType)
 {
   if(missing(nlPeriod))
-    stop("Missing required parameter nlYearMonth")
+    stop("Missing required parameter nlPeriod")
   
   if(missing(tileNum))
     stop("Missing required parameter tileNum")
@@ -180,7 +180,7 @@ getNlTileTifLclNameVIIRS <- function(nlPeriod, tileNum, nlType)
     stop("Invalid nlType: ", nlType)
     
   if(!allValidNlPeriods(nlPeriod, nlType))
-    stop("Invalid nlYearMonth: ", nlPeriod)
+    stop("Invalid nlPeriod: ", nlPeriod)
   
   if(!validNlTileNumVIIRS(tileNum, nlType))
     stop("Invalid tileNum: ", tileNum)
@@ -194,7 +194,7 @@ getNlTileTifLclNameVIIRS <- function(nlPeriod, tileNum, nlType)
 #'
 #' Constructs the filename of the decompressed OLS .tif file
 #'
-#' @param nlYear the nlYear in which the tile was created
+#' @param nlPeriod the nlPeriod in which the tile was created
 #'
 #' @return a character vector filename of the .tif OLS tile
 #'
@@ -205,15 +205,15 @@ getNlTileTifLclNameVIIRS <- function(nlPeriod, tileNum, nlType)
 #'  #returns "OLS_2004_00N180W.tif"
 #'  }
 #'
-getNlTileTifLclNameOLS <- function(nlYear)
+getNlTileTifLclNameOLS <- function(nlPeriod)
 {
-  if(missing(nlYear))
-    stop("Missing required parameter nlYear")
+  if(missing(nlPeriod))
+    stop("Missing required parameter nlPeriod")
   
-  if(!allValidNlPeriods(nlYear, "OLS.Y"))
-    stop("Invalid nlYear: ", nlYear)
+  if(!allValidNlPeriods(nlPeriod, "OLS.Y"))
+    stop("Invalid nlPeriod: ", nlPeriod)
   
-  return (paste0("OLS_", nlYear, "_00N180W.tif"))
+  return (paste0("OLS.Y_", nlPeriod, "_00N180W.tif"))
 }
 
 ######################## getNlTileTifLclNamePathVIIRS ###################################
@@ -263,7 +263,7 @@ getNlTileTifLclNamePathVIIRS <- function(nlPeriod, tileNum, nlType)
 #'
 #' Constructs the full path used to save/access the decompressed OLS .tif file
 #'
-#' @param nlYear the year in which the tile was created
+#' @param nlPeriod the year in which the tile was created
 #' 
 #' @param tileNum ignored
 #'
@@ -276,17 +276,17 @@ getNlTileTifLclNamePathVIIRS <- function(nlPeriod, tileNum, nlType)
 #'  #returns "/dataPath/tiles/OLS_2012.tif"
 #'  }
 #'
-getNlTileTifLclNamePathOLS <- function(nlYear, tileNum)
+getNlTileTifLclNamePathOLS <- function(nlPeriod, tileNum)
 {
   nlType <- "OLS"
   
-  if(missing(nlYear))
-    stop("Missing required parameter nlYear")
+  if(missing(nlPeriod))
+    stop("Missing required parameter nlPeriod")
   
-  if(!allValidNlPeriods(nlYear, "OLS.Y"))
-    stop("Invalid nlYear: ", nlYear)
+  if(!allValidNlPeriods(nlPeriod, "OLS.Y"))
+    stop("Invalid nlPeriod: ", nlPeriod)
   
-  return (file.path(getNlDir("dirNlTiles"), getNlTileTifLclNameOLS(nlYear)))
+  return (file.path(getNlDir("dirNlTiles"), getNlTileTifLclNameOLS(nlPeriod)))
 }
 
 ######################## getNlTileZipLclNameOLS ###################################
@@ -295,25 +295,25 @@ getNlTileTifLclNamePathOLS <- function(nlYear, tileNum)
 #'
 #' The name with which to save the OLS tile locally
 #'
-#' @param nlYear The year of the OLS tile
+#' @param nlPeriod The year of the OLS tile
 #'
 #' @return character string filename
 #'
 #' @examples
 #' \dontrun{
 #' Rnightlights:::getNlTileZipLclNameOLS("2012")
-#' #returns "OLS_2012_00N180W.tar"
+#' #returns "OLS.Y_2012_00N180W.tar"
 #' }
 #'
-getNlTileZipLclNameOLS <- function(nlYear)
+getNlTileZipLclNameOLS <- function(nlPeriod)
 {
-  if(missing(nlYear))
-    stop("Missing required parameter nlYear")
+  if(missing(nlPeriod))
+    stop("Missing required parameter nlPeriod")
   
-  if(!allValidNlPeriods(nlYear, "OLS.Y"))
-    stop("Invalid nlYear")
+  if(!allValidNlPeriods(nlPeriod, "OLS.Y"))
+    stop("Invalid nlPeriod")
   
-  return (paste0("OLS_", nlYear, "_00N180W.tar"))
+  return (paste0("OLS.Y_", nlPeriod, "_00N180W.tar"))
 }
 
 ######################## getNlTifLclNameOLS ###################################
@@ -322,7 +322,7 @@ getNlTileZipLclNameOLS <- function(nlYear)
 #'
 #' Constructs the filename used to save/access the decompressed OLS .tif file
 #'
-#' @param nlYear the year in which the tile was created
+#' @param nlPeriod the nlPeriod in which the tile was created
 #'
 #' @return a character vector filename of the .tif VIIRS tile
 #'
@@ -333,13 +333,13 @@ getNlTileZipLclNameOLS <- function(nlYear)
 #'  #returns "OLS_2004.tif"
 #'  }
 #'
-getNlTifLclNameOLS <- function(nlYear)
+getNlTifLclNameOLS <- function(nlPeriod)
 {
-  if(missing(nlYear))
-    stop("Missing required parameter nlYear")
+  if(missing(nlPeriod))
+    stop("Missing required parameter nlPeriod")
   
-  if(!allValidNlPeriods(nlYear, "OLS.Y"))
-    stop("Invalid nlYear")
+  if(!allValidNlPeriods(nlPeriod, "OLS.Y"))
+    stop("Invalid nlPeriod")
   
-  return (paste0("OLS_", nlYear, ".tif"))
+  return (paste0("OLS_", nlPeriod, ".tif"))
 }

@@ -16,6 +16,8 @@ None
 Reads the ctry admin structure from struct text file
 }
 \examples{
+\dontrun{
 Rnightlights:::createCtryStruct("KEN")
+}
 
 }

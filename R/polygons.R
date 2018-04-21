@@ -194,7 +194,9 @@ createCtryStruct <- function(ctryCode)
 #' @return None
 #'
 #' @examples
+#' \dontrun{
 #' Rnightlights:::createCtryStruct("KEN")
+#' }
 #'
 readCtryStruct <- function(ctryCode)
 {
@@ -358,6 +360,12 @@ getCtryShpLowestLyrNames <- function(ctryCodes)
   
   if(!allValidCtryCodes(ctryCodes))
     stop("Invalid ctryCode(s) detected ")
+  
+  if(!dir.exists(path.expand(getPolyFnamePath(ctryCodes))))
+    dnldCtryPoly(ctryCodes)
+  
+  if(!dir.exists(path.expand(getPolyFnamePath(ctryCodes))))
+    stop("Unable to find/download ctry polygon")
   
   lowestAdmLyrNames <- stats::setNames(sapply(ctryCodes, function(ctryCode)
   {

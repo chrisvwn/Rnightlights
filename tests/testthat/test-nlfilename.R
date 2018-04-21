@@ -11,7 +11,7 @@ test_that("nlfilenames are correct", {
     
   expect_equal(Rnightlights:::getNlTileTifLclNameVIIRS("201412", 1, "VIIRS.M"), "VIIRS.M_201412_75N180W.tif")
   
-  expect_equal(Rnightlights:::getNlTileTifLclNameOLS("1992"), "OLS_1992_00N180W.tif")
+  expect_equal(Rnightlights:::getNlTileTifLclNameOLS("1992"), "OLS.Y_1992_00N180W.tif")
   
   expect_equal(Rnightlights:::getCtryNlDataFname("KEN","KEN_adm0"), "NL_DATA_KEN_ADM0.csv")
   

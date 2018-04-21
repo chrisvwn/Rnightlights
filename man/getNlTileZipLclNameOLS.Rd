@@ -4,10 +4,10 @@
 \alias{getNlTileZipLclNameOLS}
 \title{The name with which to save the OLS tile locally}
 \usage{
-getNlTileZipLclNameOLS(nlYear)
+getNlTileZipLclNameOLS(nlPeriod)
 }
 \arguments{
-\item{nlYear}{The year of the OLS tile}
+\item{nlPeriod}{The year of the OLS tile}
 }
 \value{
 character string filename
@@ -18,7 +18,7 @@ The name with which to save the OLS tile locally
 \examples{
 \dontrun{
 Rnightlights:::getNlTileZipLclNameOLS("2012")
-#returns "OLS_2012_00N180W.tar"
+#returns "OLS.Y_2012_00N180W.tar"
 }
 
 }

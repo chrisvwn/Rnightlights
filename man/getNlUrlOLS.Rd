@@ -4,10 +4,10 @@
 \alias{getNlUrlOLS}
 \title{Function to return the url of the OLS tile to download}
 \usage{
-getNlUrlOLS(nlYear)
+getNlUrlOLS(nlPeriod)
 }
 \arguments{
-\item{nlYear}{The year of the tile for which to return the tile download URL}
+\item{nlPeriod}{The nlPeriod of the tile for which to return the tile download URL}
 }
 \value{
 character string Url of the OLS tile file

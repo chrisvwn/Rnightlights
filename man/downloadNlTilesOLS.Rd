@@ -4,10 +4,10 @@
 \alias{downloadNlTilesOLS}
 \title{Download OLS nightlight tile}
 \usage{
-downloadNlTilesOLS(nlYear, downloadMethod = pkgOptions("downloadMethod"))
+downloadNlTilesOLS(nlPeriod, downloadMethod = pkgOptions("downloadMethod"))
 }
 \arguments{
-\item{nlYear}{the year in "YYYY" format e.g. "2012"}
+\item{nlPeriod}{the nlPeriod of the tile}
 
 \item{downloadMethod}{The method to use for download.}
 }

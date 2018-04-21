@@ -34,9 +34,17 @@ Researchers often spend an inordinate amount of time gathering and pre-processin
 
 5. Load the CSVs in R and perform the analysis
 
-
 This can be reduced to a few lines of code in R using the Rnightlights package. For this example one can run:
 
+a) In Rnightlights version 0.2.0 and later calculate directly at the county level with one line:
+
+```
+library(Rnightlights)
+
+kenyaCounties <- getCtryNlData(ctryCode = "KEN", admLevel = "county", nlType = "VIIRS.M", nlPeriods = nlRange("201401", "201412"), stats = "sum")
+```
+
+b) In Rnightlights versions pre-0.2.0, calculate at the lowest admin level and aggregate to the county level:
 
 ```
 library(Rnightlights)
@@ -44,7 +52,7 @@ library(reshape2)
 library(lubridate)
 
 #get satellite data at the lowest admin level in the country i.e. ward
-kenyaWards <- getCtryNlData(ctryCode = "KEN", admLevel = "lowest", nlType = "VIIRS.M", nlPeriods = nlRange("201401", "201412"), stats = "sum")
+kenyaWards <- getCtryNlData(ctryCode = "KEN", nlType = "VIIRS.M", nlPeriods = nlRange("201401", "201412"), stats = "sum")
 
 #melt the ward radiances in preparation for aggregation
 kenyaWardsMelted <-  melt(kenyaWards, 

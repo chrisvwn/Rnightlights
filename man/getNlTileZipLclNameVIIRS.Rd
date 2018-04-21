@@ -7,7 +7,7 @@
 getNlTileZipLclNameVIIRS(nlPeriod, tileNum, nlType)
 }
 \arguments{
-\item{nlPeriod}{The nlYearMonth in which the tile was created}
+\item{nlPeriod}{The nlPeriod in which the tile was created}
 
 \item{tileNum}{The index of the tile as given in nlTileIndex}
 

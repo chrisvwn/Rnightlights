@@ -7,10 +7,10 @@
 newNlType(oldNlType)
 }
 \arguments{
-\item{oldNlType}{The old nlType i.e. "OLS" or "VIIRS"}
+\item{oldNlType}{\code{character} The old nlType i.e. "OLS" or "VIIRS"}
 }
 \value{
-TRUE/FALSE
+\code{character} The new nlType i.e. "OLS.Y" or "VIIRS.M"
 }
 \description{
 Convert pre-0.2.0 nlType names to their new names. Pre 0.2.0

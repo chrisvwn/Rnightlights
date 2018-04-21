@@ -1,8 +1,6 @@
 .onLoad <- function(libname, pkgname)
 {
-  # Setup the data path, possibly by prompting the user. if not found
-  #if(is.null(getNlDataPath()))
-  #  setupDataPath(tempdir())
+
 }
 
 .onAttach <- function(libname, pkgname)
@@ -21,6 +19,8 @@
   #ntLtsIndexUrlVIIRS = "https://www.ngdc.noaa.gov/eog/viirs/download_monthly.html"
   
   compiler::enableJIT(3)
+  
+  upgradeRnightlights()
 }
 
 .onDetach <- function(libname)

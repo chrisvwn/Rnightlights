@@ -4,7 +4,7 @@
 #'
 #' Download VIIRS nightlight tile
 #'
-#' @param nlYearMonth the year in "YYYYMM" format e.g. "201401"
+#' @param nlPeriod the nlPeriod of the tile to download
 #'
 #' @param tileNum the index of the tile as given by \code{getNlTiles}
 #' 
@@ -20,10 +20,10 @@
 #'   print("download successful")
 #'   }
 #'
-downloadNlTilesVIIRS <- function(nlYearMonth, tileNum, downloadMethod=pkgOptions("downloadMethod"), nlType)
+downloadNlTilesVIIRS <- function(nlPeriod, tileNum, downloadMethod=pkgOptions("downloadMethod"), nlType)
 {
-  if(missing(nlYearMonth))
-    stop("Missing required parameter nlYear")
+  if(missing(nlPeriod))
+    stop("Missing required parameter nlPeriod")
   
   if(missing(tileNum))
     stop("Missing required parameter tileNum")
@@ -34,8 +34,8 @@ downloadNlTilesVIIRS <- function(nlYearMonth, tileNum, downloadMethod=pkgOptions
   if(!validNlTypes(nlType))
     stop("Invalid nlType")
   
-  if(!allValidNlPeriods(nlPeriods = nlYearMonth, nlTypes = nlType))
-    stop("Invalid nlYear: ", nlYearMonth)
+  if(!allValidNlPeriods(nlPeriods = nlPeriod, nlTypes = nlType))
+    stop("Invalid nlPeriod: ", nlPeriod)
   
   if(!validNlTileNumVIIRS(tileNum, nlType))
     stop("Invalid tileNum: ", tileNum)
@@ -43,15 +43,15 @@ downloadNlTilesVIIRS <- function(nlYearMonth, tileNum, downloadMethod=pkgOptions
   rsltDnld <- NA
   
   #get the zip and tif local names
-  ntLtsZipLocalNamePathVIIRS <- getNlTileZipLclNamePath(nlType, nlYearMonth, tileNum)
-  ntLtsTifLocalNamePathVIIRS <- getNlTileTifLclNamePath(nlType, nlYearMonth, tileNum)
+  ntLtsZipLocalNamePathVIIRS <- getNlTileZipLclNamePath(nlType, nlPeriod, tileNum)
+  ntLtsTifLocalNamePathVIIRS <- getNlTileTifLclNamePath(nlType, nlPeriod, tileNum)
 
   #if the .tif doesn't exist download tgz tile. For aria and wget, if the tgz exists
   #it should attempt to complete it if incomplete else confirm it is complete and move
   #to extraction. For the other methods it will restart the download and overwrite
   if (!file.exists(ntLtsTifLocalNamePathVIIRS))
   {
-    ntLtsFileUrl <- getNlUrlVIIRS(nlYearMonth, tileNum, nlType)
+    ntLtsFileUrl <- getNlUrlVIIRS(nlPeriod, tileNum, nlType)
     
     validDnldMethods <- c(c("auto", "curl", "libcurl", "wget", "aria"), nlType)
     
@@ -61,7 +61,7 @@ downloadNlTilesVIIRS <- function(nlYearMonth, tileNum, downloadMethod=pkgOptions
     if (downloadMethod %in% c("auto", "curl", "libcurl", "wget"))
       rsltDnld <- utils::download.file(ntLtsFileUrl, ntLtsZipLocalNamePathVIIRS, mode = "wb", method = downloadMethod, extra = "-c")
     else if (downloadMethod == "aria")
-      rsltDnld <- system(paste0("aria2c -c -x2 ", ntLtsFileUrl, " -d ", getNlDir("dirNlTiles"), " -o ", getNlTileZipLclNameVIIRS(nlYearMonth, tileNum, nlType))) #downloads to path relative to -d if specified else local dir
+      rsltDnld <- system(paste0("aria2c -c -x2 ", ntLtsFileUrl, " -d ", getNlDir("dirNlTiles"), " -o ", getNlTileZipLclNameVIIRS(nlPeriod, tileNum, nlType))) #downloads to path relative to -d if specified else local dir
   }
   else
   {
@@ -87,7 +87,7 @@ downloadNlTilesVIIRS <- function(nlYearMonth, tileNum, downloadMethod=pkgOptions
       }
     }
     else
-      if (!file.exists(getNlTileTifLclNamePathVIIRS(nlYearMonth, tileNum, nlType)))
+      if (!file.exists(getNlTileTifLclNamePathVIIRS(nlPeriod, tileNum, nlType)))
     {
       message("Getting list of files in ", ntLtsZipLocalNamePathVIIRS, " ", base::date())
       
@@ -105,11 +105,11 @@ downloadNlTilesVIIRS <- function(nlYearMonth, tileNum, downloadMethod=pkgOptions
       
       message("Decompressing ", tgzAvgRadFilename, " ", base::date())
       
-      if(!file.exists(getNlTileTifLclNamePathVIIRS(nlYearMonth, tileNum, nlType)))
+      if(!file.exists(getNlTileTifLclNamePathVIIRS(nlPeriod, tileNum, nlType)))
       {
         utils::untar(ntLtsZipLocalNamePathVIIRS, files = tgzAvgRadFilename, exdir = getNlDir("dirNlTiles"), tar="internal")
         
-        file.rename(file.path(getNlDir("dirNlTiles"), tgzAvgRadFilename), getNlTileTifLclNamePathVIIRS(nlYearMonth, tileNum, nlType))
+        file.rename(file.path(getNlDir("dirNlTiles"), tgzAvgRadFilename), getNlTileTifLclNamePathVIIRS(nlPeriod, tileNum, nlType))
         
         unlink(ntLtsZipLocalNamePathVIIRS, force = TRUE)
       }
@@ -134,7 +134,7 @@ downloadNlTilesVIIRS <- function(nlYearMonth, tileNum, downloadMethod=pkgOptions
 #'
 #' Download OLS nightlight tile
 #'
-#' @param nlYear the year in "YYYY" format e.g. "2012"
+#' @param nlPeriod the nlPeriod of the tile
 #'
 #' @param downloadMethod The method to use for download.
 #'
@@ -146,27 +146,27 @@ downloadNlTilesVIIRS <- function(nlYearMonth, tileNum, downloadMethod=pkgOptions
 #'   print("download successful")
 #'   }
 #'
-downloadNlTilesOLS <- function(nlYear, downloadMethod=pkgOptions("downloadMethod"))
+downloadNlTilesOLS <- function(nlPeriod, downloadMethod=pkgOptions("downloadMethod"))
 {
   nlType <- "OLS.Y"
   
-  if(missing(nlYear))
-    stop("Missing required parameter nlYear")
+  if(missing(nlPeriod))
+    stop("Missing required parameter nlPeriod")
   
-  if(!allValidNlPeriods(nlPeriods = nlYear, nlTypes = nlType))
-    stop("Invalid nlYear: ", nlYear)
+  if(!allValidNlPeriods(nlPeriods = nlPeriod, nlTypes = nlType))
+    stop("Invalid nlPeriod: ", nlPeriod)
   
   rsltDnld <- NA
   
   #get the zip and tif local names
-  ntLtsZipLocalNamePathOLS <- getNlTileZipLclNamePath(nlType, nlYear)
-  ntLtsTifLocalNamePathOLS <- getNlTileTifLclNamePath(nlType, nlYear)
+  ntLtsZipLocalNamePathOLS <- getNlTileZipLclNamePath(nlType, nlPeriod)
+  ntLtsTifLocalNamePathOLS <- getNlTileTifLclNamePath(nlType, nlPeriod)
   
   #if (!file.exists(ntLtsZipLocalNameVIIRS) && !file.exists(ntLtsTifLocalNameVIIRS))
   if (!file.exists(ntLtsTifLocalNamePathOLS))
   {
     #get the first only to cater for Where multiple tiles exist 
-    ntLtsFileUrl <- getNlUrlOLS(nlYear)[1]
+    ntLtsFileUrl <- getNlUrlOLS(nlPeriod)[1]
     
     ntLtsFileUrl <- gsub("\n", "", ntLtsFileUrl)
     
@@ -178,7 +178,7 @@ downloadNlTilesOLS <- function(nlYear, downloadMethod=pkgOptions("downloadMethod
     if (downloadMethod %in% c("auto", "curl", "libcurl", "wget"))
       rsltDnld <- utils::download.file(ntLtsFileUrl, ntLtsZipLocalNamePathOLS, mode = "wb", method = downloadMethod, extra = "-c")
     else if (downloadMethod == "aria")
-      rsltDnld <- system(paste0("aria2c -c -x2 ", ntLtsFileUrl, " -d ", getNlDir("dirNlTiles"), " -o ", getNlTileZipLclNameOLS(nlYear))) #downloads to path relative to -d if specified else local dir
+      rsltDnld <- system(paste0("aria2c -c -x2 ", ntLtsFileUrl, " -d ", getNlDir("dirNlTiles"), " -o ", getNlTileZipLclNameOLS(nlPeriod))) #downloads to path relative to -d if specified else local dir
     
   }
   else
@@ -196,7 +196,7 @@ downloadNlTilesOLS <- function(nlYear, downloadMethod=pkgOptions("downloadMethod
     
     tileNum <- "dummyTileNum"
     
-    if (!file.exists(getNlTileTifLclNamePathOLS(nlYear, tileNum)))
+    if (!file.exists(getNlTileTifLclNamePathOLS(nlPeriod, tileNum)))
     {
       message("Getting list of files in ", ntLtsZipLocalNamePathOLS, " ", base::date())
       

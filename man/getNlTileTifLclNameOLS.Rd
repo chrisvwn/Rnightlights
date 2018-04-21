@@ -4,10 +4,10 @@
 \alias{getNlTileTifLclNameOLS}
 \title{Constructs the filename of the decompressed OLS .tif file}
 \usage{
-getNlTileTifLclNameOLS(nlYear)
+getNlTileTifLclNameOLS(nlPeriod)
 }
 \arguments{
-\item{nlYear}{the nlYear in which the tile was created}
+\item{nlPeriod}{the nlPeriod in which the tile was created}
 }
 \value{
 a character vector filename of the .tif OLS tile

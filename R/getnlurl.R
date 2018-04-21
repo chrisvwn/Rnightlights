@@ -4,7 +4,7 @@
 #'
 #' Function to return the url of the OLS tile to download given the year
 #'
-#' @param nlYear The year of the tile for which to return the tile download URL
+#' @param nlPeriod The nlPeriod of the tile for which to return the tile download URL
 #'
 #' @return character string Url of the OLS tile file
 #'
@@ -13,9 +13,9 @@
 #' tileUrl <- Rnightlights:::getNlUrlOLS("1999")
 #' }
 #'
-getNlUrlOLS <- function(nlYear)
+getNlUrlOLS <- function(nlPeriod)
 {
-  nlYear <- as.character(nlYear)
+  nlPeriod <- as.character(nlPeriod)
   
   #Function to return the url of the file to download given the year, month, and nlTile index
   #nlTile is a global list
@@ -45,7 +45,7 @@ getNlUrlOLS <- function(nlYear)
   #search for a line containing the patterns that make the files unique
   #sample url: https://www.ngdc.noaa.gov/eog/data/web_data/v4composites/F101992.v4.tar
   #create the pattern
-  ntLtsPageRgxp <- paste0("F.*.", nlYear,".*.tar")
+  ntLtsPageRgxp <- paste0("F.*.", nlPeriod,".*.tar")
   
   #search for the pattern in the page
   ntLtsPageHtml <- ntLtsPage[grep(pattern = ntLtsPageRgxp, x=ntLtsPage)]

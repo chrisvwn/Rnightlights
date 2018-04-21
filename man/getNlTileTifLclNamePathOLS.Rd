@@ -4,10 +4,10 @@
 \alias{getNlTileTifLclNamePathOLS}
 \title{Constructs the full path used to save/access the decompressed OLS .tif file}
 \usage{
-getNlTileTifLclNamePathOLS(nlYear, tileNum)
+getNlTileTifLclNamePathOLS(nlPeriod, tileNum)
 }
 \arguments{
-\item{nlYear}{the year in which the tile was created}
+\item{nlPeriod}{the year in which the tile was created}
 
 \item{tileNum}{ignored}
 }
