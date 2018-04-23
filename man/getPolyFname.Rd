@@ -3,7 +3,7 @@
 \name{getPolyFname}
 \alias{getPolyFname}
 \title{Returns the directory name of the unzipped shapefile downloaded from
-    GADM.ORG without the path}
+    http://gadm.org without the path}
 \usage{
 getPolyFname(ctryCode)
 }
@@ -15,7 +15,7 @@ character name of shapefile directory
 }
 \description{
 Returns the directory name of the unzipped shapefile downloaded from 
-    \url{www.GADM.ORG} without the path
+    \url{http://gadm.org} without the path
 }
 \examples{
 Rnightlights:::getPolyFname("KEN")

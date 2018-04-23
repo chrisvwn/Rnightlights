@@ -14,7 +14,7 @@ Character string url of the zipped ESRI shapefile for the ctryCode
 }
 \description{
 Get the url from which to download country polygons. Polygons are downloaded from 
-    \url{http://www.gadm.org}. This provides the url to the zipped ESRI Shapefile 
+    \url{http://gadm.org}. This provides the url to the zipped ESRI Shapefile 
     which when decompressed contains a directory with the different country admin 
     level boundary files. A sample url returned for Afghanistan: 
     http://biogeo.ucdavis.edu/data/gadm2.8/shp/AFG_adm_shp.zip

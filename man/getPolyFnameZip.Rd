@@ -2,7 +2,7 @@
 % Please edit documentation in R/polygons.R
 \name{getPolyFnameZip}
 \alias{getPolyFnameZip}
-\title{Get the filename of the polygon zip file as downloaded from \url{http://www.GADM.ORG}}
+\title{Get the filename of the polygon zip file as downloaded from \url{http://GADM.ORG}}
 \usage{
 getPolyFnameZip(ctryCode)
 }
@@ -13,7 +13,7 @@ getPolyFnameZip(ctryCode)
 character path to zip
 }
 \description{
-Get the filename of the polygon zip file as downloaded from \url{http://www.GADM.ORG}
+Get the filename of the polygon zip file as downloaded from \url{http://GADM.ORG}
 }
 \examples{
 Rnightlights:::getPolyFnameZip("KEN")
