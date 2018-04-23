@@ -510,7 +510,7 @@ getCtryNlData <- function(ctryCode, admLevel, nlTypes, nlPeriods, nlStats=pkgOpt
   else if(admLevel %in% c("bottom", "lowest"))
     admLevel <- getCtryShpLowestLyrNames(ctryCode)
   else if(admLevel %in% c("top","highest"))
-    admLevels <- getCtryShpLyrNames(ctryCode, 1)
+    admLevel <- getCtryShpLyrNames(ctryCode, 1)
   else if(admLevel=="all")
     admLevel <- getCtryShpAllAdmLvls(ctryCode)
   else
@@ -540,13 +540,20 @@ getCtryNlData <- function(ctryCode, admLevel, nlTypes, nlPeriods, nlStats=pkgOpt
   if (!missing(nlPeriods)) #if nlPeriods is provided process else return all ctry data
   {
     #check if the stats exist in the given year months will test nlYm1+stat1, nlYm2+stat1, ..., nlYm1+stat2, nlYm2+stat2
-    a <- lapply(1:length(nlTypes), function(i) cbind(nlTypes[i], nlPeriods[[i]]))
+    if(is.list(nlPeriods))
+      a <- lapply(1:length(nlTypes), function(i) cbind(nlTypes[i], nlPeriods[[i]]))
+    else
+      a <- lapply(1:length(nlTypes), function(i) cbind(nlTypes[i], nlPeriods))
+    
     a <- data.frame(do.call("rbind", a), stringsAsFactors = F)
+    
     if(length(nlStats) == 1)
       nlPeriodStats <- data.frame(a, X3=nlStats, stringsAsFactors = F)
     else
       nlPeriodStats <- data.frame(apply(a, 2,function(x) rep(x, length(nlStats))), X3=as.vector(sapply(nlStats, rep, nrow(a))), stringsAsFactors = F)
+    
     #nlPeriodStats <- nlPeriodStats[order(nlPeriodStats$X1, nlPeriodStats$X2),]
+    
     existnlPeriodStats <- apply(nlPeriodStats, 1, function(x) existsCtryNlData(ctryCode = ctryCode, admLevel = admLevel, nlTypes =  x[1], nlPeriods = x[2], nlStats = as.character(x[3])))
     
     missingData <- paste0(apply(nlPeriodStats[!existnlPeriodStats,], 1, function(x)paste0(x[1], ":", x[2], ":", x[3])), collapse = ", ")
