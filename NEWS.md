@@ -2,11 +2,13 @@
 
 ### ChangeLog
 ####v0.2.0
+**IMPORTANT: Raster and data files as well as data column names from previous Rnightlights versions will be renamed as part of the upgrade to version 0.2.0**
+
 1. There are two major changes in v0.2.0 which warranted the increment of the major package version:
 
 * The change of the nlTypes naming convention to allow different time resolutions in the rasters. This mainly affects VIIRS which has daily, monthly and yearly data. The names reflect the time resolution e.g. VIIRS.D = daily, VIIRS.M = monthly and VIIRS.Y = yearly. OLS only has OLS.Y = yearly data but can easily be expanded to add other resolutions should they become available. This also has affected the naming conventions of raster and data files.
-**NOTE: By the time of release (2018-04-23) only yearly rasters for 2015 are available**
-**DAILY Raster availability seems to be limited to the present and immediate past month only**
+**NOTE 1: By the time of release (2018-04-23) only yearly rasters for 2015 are available**
+**NOTE 2: DAILY Raster availability seems to be limited to the present and immediate past month only**
 
 * The addition of admLevels as a parameter to the getCtryNlData() and processNlData functions allowing one to specify the admin level(s) at which to perform calculations. Previously all calculations were performed at the lowest country level and then would have to be aggregated to the required admin level. This has also affected the naming of data files and columns.
 
