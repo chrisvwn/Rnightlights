@@ -53,6 +53,12 @@ downloadNlTilesVIIRS <- function(nlPeriod, tileNum, downloadMethod=pkgOptions("d
   {
     ntLtsFileUrl <- getNlUrlVIIRS(nlPeriod, tileNum, nlType)
     
+    if(is.null(ntLtsFileUrl))
+    {
+      message("** Tile not available on the NOAA page.\n Please manually check for the ", nlPeriod, " tile at 'https://ngdc.noaa.gov/eog/viirs/download_dnb_composites.html'. If it exists please report this as a bug **")
+      return(FALSE)
+    }
+    
     validDnldMethods <- c(c("auto", "curl", "libcurl", "wget", "aria"), nlType)
     
     if (!(downloadMethod %in% validDnldMethods))

@@ -218,7 +218,7 @@ readCtryStruct <- function(ctryCode)
 #' Get the GADM url from which to download country polygons
 #'
 #' Get the url from which to download country polygons. Polygons are downloaded from 
-#'     \url{http://www.gadm.org}. This provides the url to the zipped ESRI Shapefile 
+#'     \url{http://gadm.org}. This provides the url to the zipped ESRI Shapefile 
 #'     which when decompressed contains a directory with the different country admin 
 #'     level boundary files. A sample url returned for Afghanistan: 
 #'     http://biogeo.ucdavis.edu/data/gadm2.8/shp/AFG_adm_shp.zip
@@ -480,6 +480,9 @@ searchAdmLevel <- function(ctryCode, admLevelName, dnldPoly)
   if(missing(admLevelName))
     stop("Missing required parameter admLevelName")
 
+  if(missing(dnldPoly))
+    dnldPoly <- TRUE
+  
   if(!existsCtryPoly(ctryCode))
     if(!dnldPoly)
       message("ctryPoly doesn't exist. Set dnldPoly=TRUE to download it")
@@ -603,10 +606,10 @@ getCtryShpAllAdmLvls <- function(ctryCodes)
 ######################## getPolyFname ###################################
 
 #' Returns the directory name of the unzipped shapefile downloaded from
-#'     GADM.ORG without the path
+#'     http://gadm.org without the path
 #'
 #' Returns the directory name of the unzipped shapefile downloaded from 
-#'     \url{www.GADM.ORG} without the path
+#'     \url{http://gadm.org} without the path
 #'
 #' @param ctryCode character the ISO3 code of the country
 #'
@@ -667,9 +670,9 @@ getPolyFnamePath <- function(ctryCode)
 
 ######################## getPolyFnameZip ###################################
 
-#' Get the filename of the polygon zip file as downloaded from \url{http://www.GADM.ORG}
+#' Get the filename of the polygon zip file as downloaded from \url{http://GADM.ORG}
 #'
-#' Get the filename of the polygon zip file as downloaded from \url{http://www.GADM.ORG}
+#' Get the filename of the polygon zip file as downloaded from \url{http://GADM.ORG}
 #'
 #' @param ctryCode character the ISO3 code of the country
 #'
