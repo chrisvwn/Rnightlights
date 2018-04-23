@@ -31,6 +31,69 @@ An example to process VIIRS monthly nightlights for Kenya for the year 2014 from
 3. This calculates total radiances per region and so may be biased by area. Normalize by area to see 
         regions with higher radiances per unit area e.g. to estimate areas with higher economic activity
 
+**a) In Rnightlights version 0.2.0 and later calculate directly at the county level with one line:**
+
+```{r}
+#install.packages(“Rnightlights”)
+#install.packages("ggplot2")
+#install.packages("plotly")
+
+library(Rnightlights)
+
+ctry <- "KEN" #replace to do for any other country
+
+#(Optional performance enhancement if you have aria2c and gdal installed)
+#pkgOptions(downloadMethod = "aria", cropMaskMethod = "gdal", extractMethod = "gdal", deleteTiles = TRUE)
+
+#Optional performance enhancement. If extractMethod="rast" you can specify the number of
+#CPU cores to use in parallel
+#pkgOptions(extractMethod = "rast", numCores=4)
+
+#download and process monthly VIIRS stats at the lowest admin level
+highestAdmLevelStats <- getCtryNlData(ctryCode = ctry, 
+                                     admLevel = "highest",
+                                     nlType = "VIIRS.M", 
+                                     nlPeriods = nlRange("201401", "201412"), 
+                                     nlStats = "sum",
+                                     ignoreMissing=FALSE)
+
+#Optionally plot the data
+library(ggplot2)
+library(plotly)
+
+#melt the stats into key-value format for easy multi-line plotting with ggplot2
+highestAdmLevelStats <- melt(highestAdmLevelStats,
+                              id.vars = grep("NL_", names(highestAdmLevelStats), 
+                                             invert=TRUE), 
+                              variable.name = "nlPeriod", 
+                              value.name = "radiancesum")
+
+#extract date from the NL col names
+highestAdmLevelStats$nlPeriod <- substr(highestAdmLevelStats$nlPeriod, 12, 17)
+
+#format period as date
+highestAdmLevelStats$nlPeriod <- ymd(paste0(substr(highestAdmLevelStats$nlPeriod, 1,4), 
+                                               "-",substr(highestAdmLevelStats$nlPeriod, 5,6), "-01"))
+
+#plot 2nd admin level sums for the year
+g <- ggplot(data = highestAdmLevelStats, 
+            aes(x=nlPeriod, y=radiancesum, 
+                color=highestAdmLevelStats[[2]])) +
+  scale_x_date(date_breaks = "1 month", date_labels = "%Y-%m")+
+  geom_line()+geom_point() + labs(color = names(highestAdmLevelStats)[2]) + 
+  xlab("Month") + 
+  ylab("Sum of Radiances") +
+  ggtitle(paste0(unique(names(highestAdmLevelStats)[2]), " sum of radiances for ", ctry))
+
+print(g)
+
+#quick conversion to interactive map with plotly
+ggplotly(g)
+
+```
+
+**b) In Rnightlights versions pre-0.2.0:**
+
 ```{r}
 #install.packages(“Rnightlights”)
 #install.packages("reshape2")
@@ -45,12 +108,15 @@ library(lubridate)
 ctry <- "KEN" #replace to do for any other country
 
 #(Optional performance enhancement if you have aria2c and gdal installed)
-#pkgOptions(downloadMethod = "aria", cropMaskMethod = "gdal", extractMethod = "gdal", deleteTiles = TRUE) 
+#pkgOptions(downloadMethod = "aria", cropMaskMethod = "gdal", extractMethod = "gdal", deleteTiles = TRUE)
+
+#Optional performance enhancement. If extractMethod="rast" you can specify the number of
+#CPU cores to use in parallel
+#pkgOptions(extractMethod = "rast", numCores=4)
 
 #download and process monthly VIIRS stats at the lowest admin level
 lowestAdmLevelStats <- getCtryNlData(ctryCode = ctry, 
-                                     admLevel = "lowest", 
-                                     nlType = "VIIRS.M", 
+                                     nlType = "VIIRS", 
                                      nlPeriods = nlRange("201401", "201412"), 
                                      nlStats = "sum",
                                      ignoreMissing=FALSE)
@@ -76,8 +142,8 @@ highestAdmLevelStatsAgg <- setNames(aggregate(lowestAdmLevelStatsMelted$radiance
 highestAdmLevelStatsAgg$nlperiod <- ymd(paste0(substr(highestAdmLevelStatsAgg$nlperiod, 1,4), 
                                                "-",substr(highestAdmLevelStatsAgg$nlperiod, 5,6), "-01"))
 
+#Optionally plot the data
 
-#(optionally plot the data)
 library(ggplot2)
 library(plotly)
 
@@ -95,9 +161,11 @@ print(g)
 
 #quick conversion to interactive map with plotly
 ggplotly(g)
+```
 
+**Browse the cached data with the internal Shiny app**
 
-#browse the cached data with internal Shiny app
+```
 exploreData()
 
 ```

@@ -7,7 +7,7 @@ tags:
 authors:
  - name: Christopher Njuguna
    orcid: 0000-0001-9691-8008
-date: 22 November 2017
+date: 23 April 2017
 ---
 
 # Summary
@@ -18,7 +18,7 @@ Both the DMSP-OLS annual and SNPP-VIIRS monthly nightlight raster data are suppo
 
 Researchers often spend an inordinate amount of time gathering and pre-processing the data they require for their projects. This is especially true while dealing with geospatial imagery which requires special knowledge of the domain, data types and tools. For illustration, if one needed a monthly time series of nightlight radiance sums for, say, Kenya aggregated at the county level for the year 2014 one would have to follow something akin to these steps:
 
-1. Identify and download administrative level country boundaries for Kenya. The polygon administrative boundaries can be obtained from http://www.gadm.org
+1. Identify and download administrative level country boundaries for Kenya. The polygon administrative boundaries can be obtained from http://gadm.org
 
 2. Identify the tiles required for Kenya. This can be obtained by getting the geospatial extents of Kenya and finding which VIIRS tiles intersect them.
 
