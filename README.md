@@ -36,13 +36,13 @@ An example to process VIIRS monthly nightlights for Kenya for the year 2014 from
 ```{r}
 #install.packages(“Rnightlights”)
 #install.packages("lubridate")
+#install.packages("reshape2")
 #install.packages("ggplot2")
 #install.packages("plotly")
 
 library(Rnightlights)
 library(lubridate)
-
-ctry <- "KEN" #replace to do for any other country
+library(reshape2)
 
 #(Optional performance enhancement if you have aria2c and gdal installed)
 #pkgOptions(downloadMethod = "aria", cropMaskMethod = "gdal", extractMethod = "gdal", deleteTiles = TRUE)
@@ -50,6 +50,8 @@ ctry <- "KEN" #replace to do for any other country
 #Optional performance enhancement. If extractMethod="rast" you can specify the number of
 #CPU cores to use in parallel
 #pkgOptions(extractMethod = "rast", numCores=4)
+
+# ctry <- "KEN" #replace to run for any other country
 
 #download and process monthly VIIRS stats at the lowest admin level
 highestAdmLevelStats <- getCtryNlData(ctryCode = ctry, 
