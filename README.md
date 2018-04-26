@@ -35,10 +35,12 @@ An example to process VIIRS monthly nightlights for Kenya for the year 2014 from
 
 ```{r}
 #install.packages(“Rnightlights”)
+#install.packages("lubridate")
 #install.packages("ggplot2")
 #install.packages("plotly")
 
 library(Rnightlights)
+library(lubridate)
 
 ctry <- "KEN" #replace to do for any other country
 
