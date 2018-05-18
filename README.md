@@ -2,16 +2,16 @@
 
 ## Nightlights Data Extraction in R
 
-The Rnightlights package extracts rasters and zonal statistics from satellite nightlight rasters downloaded from the United States National Oceanic and Atmospheric Administration (<http://www.noaa.gov>) free data repositories. 
+The Rnightlights package extracts country rasters and zonal statistics from satellite nightlight rasters downloaded from the United States National Oceanic and Atmospheric Administration (<http://www.noaa.gov>) free data repositories. 
 
-Both the DMSP-OLS annual and SNPP-VIIRS monthly nightlight raster data are supported. Satellite nightlight raster tiles are downloaded and cropped to the country boundaries using shapefiles from the GADM database of Global Administrative Areas (<http://gadm.org>). Zonal statistics are then calculated at the lowest administrative boundary for the selected country and cached locally for future retrieval. Finally, a simple data explorer/browser is included that allows one to visualize the cached data e.g. graphing, mapping and clustering regional data.
+The package supports DMSP-OLS annual and SNPP-VIIRS daily, monthly and annual (yearly) nightlight raster data. Satellite nightlight raster tiles are downloaded and cropped to the country boundaries using shapefiles from the GADM database of Global Administrative Areas (<http://gadm.org>). Specified zonal statistics are then calculated at the selected administrative level(s) for the selected country(ies) and cached locally for future retrieval. Finally, a simple data explorer/browser is included that allows one to visualize the cached data e.g. graphing, mapping and clustering regional data.
 
 ## Installation
 
 R package Rnightlights is available on CRAN and can be installed in R as:
 
 ```
-install.packages("Rnightlights", dependencies=TRUE)
+install.packages("Rnightlights")
 ```
 
 To install the development version run:
@@ -19,6 +19,13 @@ To install the development version run:
 ````
 devtools::install_github("chrisvwn/Rnightlights")
 ````
+
+## Performance enhancements
+Some performance enhancements are available to speed up processing speeds and they fall into 2 classes:
+
+a. Parallel processing: The most straightforward way to speed up processing is by increasing the number of CPU cores used to process the raster data. By default only one CPU core is used. This option is available out of the box and is enabled by setting the `numCores` package option e.g. to process in parallel across 4 CPU cores run `pkgOptions(numCores=4)` before processing.
+
+b. GDAL: The GDAL tools provide tools that are often much faster than the usual processing workflow. For example, zonal statistics can be calculated much faster using GDAL than looping over sub-polygons even with a number of CPUs in parallel. GDAL tools are provided by the `rgdal` and `gdalUtils` packages, however, they require the GDAL software to be installed in the operating system.
 
 ### Example
 
