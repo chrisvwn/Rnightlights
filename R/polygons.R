@@ -306,6 +306,9 @@ existsPolyFnameZip <- function(ctryCode)
 #'
 #' @param lyrNums the layer numbers starting from 0 = country level, 
 #'     1 = first admin level
+#'     
+#' @param dnldPoly \code{logical} If the country polygon doesn't exist 
+#'     should we download it?
 #'
 #' @return Character layer name
 #'

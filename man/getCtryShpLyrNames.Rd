@@ -4,13 +4,16 @@
 \alias{getCtryShpLyrNames}
 \title{Get the standard names of polygon layers in a country}
 \usage{
-getCtryShpLyrNames(ctryCodes, lyrNums)
+getCtryShpLyrNames(ctryCodes, lyrNums, dnldPoly)
 }
 \arguments{
 \item{ctryCodes}{the ISO3 codes for the countries}
 
 \item{lyrNums}{the layer numbers starting from 0 = country level, 
 1 = first admin level}
+
+\item{dnldPoly}{\code{logical} If the country polygon doesn't exist 
+should we download it?}
 }
 \value{
 Character layer name
