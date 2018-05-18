@@ -318,7 +318,7 @@ existsPolyFnameZip <- function(ctryCode)
 #' 
 #' #export only due to exploreData() shiny app
 #' @export
-getCtryShpLyrNames <- function(ctryCodes, lyrNums)
+getCtryShpLyrNames <- function(ctryCodes, lyrNums, dnldPoly)
 {
   if(missing(ctryCodes))
     stop("Missing required parameter ctryCode")
@@ -326,8 +326,14 @@ getCtryShpLyrNames <- function(ctryCodes, lyrNums)
   if(!allValidCtryCodes(ctryCodes))
     stop("Invalid ctryCode detected")
   
-
-  #TODO: check if the polygon exists
+  if(missing(dnldPoly))
+    dnldPoly <- TRUE
+  
+  if(!existsCtryPoly(ctryCodes))
+    if(!dnldPoly)
+      message("ctryPoly doesn't exist. Set dnldPoly=TRUE to download it")
+  else
+    dnldCtryPoly(ctryCodes)
   
   admLyrNames <- stats::setNames(lapply(ctryCodes, function(ctryCode)
   {
