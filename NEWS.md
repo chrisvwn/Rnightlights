@@ -1,6 +1,9 @@
 # Rnightlights: Nightlights for R
 
 ### ChangeLog
+####v0.2.1
+This is a bugfix version. Some bugs with the `getCtryNlData` function and specifically with the `admLevel` parameter. The bugfixes fix the case where the country polygons have not been downloaded yet so that it will force a download from GADM. The polygons are required to search for admLevels but this happens before getCtryNlData downloads polygons. A few updates to the documentation as well to clarify that we no longer calculate only at the lowest level but at the specified admLevel.
+
 ####v0.2.0
 **IMPORTANT: Raster and data files as well as data column names from previous Rnightlights versions will be renamed as part of the upgrade to version 0.2.0**
 
