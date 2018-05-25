@@ -489,6 +489,9 @@ searchAdmLevel <- function(ctryCode, admLevelName, dnldPoly)
   if(missing(admLevelName))
     stop("Missing required parameter admLevelName")
 
+  if(length(admLevelName) > 1)
+    stop("Only 1 admLevel allowed")
+  
   if(missing(dnldPoly))
     dnldPoly <- TRUE
   
@@ -500,10 +503,19 @@ searchAdmLevel <- function(ctryCode, admLevelName, dnldPoly)
   
   allAdmLevels <- getCtryPolyAdmLevelNames(ctryCode)
 
+  if(admLevelName=="country")
+    return(getCtryShpLyrNames(ctryCode, 0))
+  else if(admLevelName %in% c("bottom", "lowest"))
+    return(getCtryShpLyrNames(ctryCode, length(allAdmLevels)))
+  else if(admLevelName %in% c("top","highest"))
+    return(getCtryShpLyrNames(ctryCode, 1))
+  
   idxFound <- grep(pattern = admLevelName, x = allAdmLevels, ignore.case = TRUE)
   
   if(length(idxFound) == 0)
-    return(NA)
+  {
+      return(NA)
+  }
 
   return (getCtryShpLyrNames(ctryCode, idxFound))
 }
