@@ -90,8 +90,7 @@ upgradeRnightlights <- function()
       #we are already using the latest data version. Exit
       if(dataVersion == pkg$Version)
       {
-        message("Data directory is up to date")
-        return(0)
+        return(FALSE)
       }
     }
     
@@ -253,14 +252,17 @@ upgradeRnightlights <- function()
       
       #if we got here all went well
       message("Upgrade complete!")
+      
       return(TRUE)
     }
   }, error=function(err)
   {
     message("An error occurred in upgrading the Rnightlights data dir. 
-            Some of your old data may not be accessible from the package. 
+            Some of your old data may not be accessible from the upgraded package. 
             Please open an issue on the package github page if you encounter
             any issues. Continuing")
+    
+    return(FALSE)
   },finally = {
     #mark as upgraded
     cat(pkg$Version, file = file.path(paste0(Rnightlights::getNlDir("dirNlData"), "/../data-version.txt")))
