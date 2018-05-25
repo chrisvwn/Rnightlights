@@ -537,7 +537,7 @@ validCtryAdmLvls <- function(ctryCode, admLevels)
   if(!validCtryCodes(ctryCode))
     stop("Invalid ISO3 ctryCode: ", ctryCode)
   
-  ctryAdmLvls <- getCtryShpAllAdmLvls(ctryCode)
+  ctryAdmLvls <- getCtryPolyAdmLevelNames(ctryCode)
   
   validAdmLvls <- sapply(toupper(admLevels), `%in%`, sapply(ctryAdmLvls, toupper))
   
