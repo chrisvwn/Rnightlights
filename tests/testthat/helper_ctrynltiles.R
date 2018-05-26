@@ -1,28 +1,33 @@
 library(testthat)
 library(Rnightlights)
 
-nlTilesUrlOLS <- pkgOptions("ntLtsIndexUrlOLS.Y")
+.runThisTest <- Sys.getenv("RunAllTests") == "yes"
 
-nlTilesUrlVIIRS <- pkgOptions("ntLtsIndexUrlVIIRS.D")
-
-nlTilesOrig <- read.csv("nltiles.csv", header = T, stringsAsFactors = F)
-nlTilesOrigVIIRS <- nlTilesOrig[grep("VIIRS", nlTilesOrig$type),]
-nlTilesOrigOLS <- nlTilesOrig[grep("OLS", nlTilesOrig$type),]
-
-nlTilesVIIRS <- Rnightlights:::getNlTiles("VIIRS.M")
-nlTilesOLS <- Rnightlights:::getNlTiles("OLS.Y")
-
-noaaDownloadSiteIsAvailable <- function(dnldSite="www.ngdc.noaa.gov")
+if(.runThisTest)
 {
-  !as.logical(system(paste("ping -n -c 1 ", dnldSite)))
-}
-
-noaaIndexUrlIsAvailableOLS <- function(indexUrl=pkgOptions("ntLtsIndexUrlOLS"))
-{
-  !as.logical(download.file(pkgOptions("ntLtsIndexUrlOLS"), tempfile()))
-}
-
-noaaIndexUrlIsAvailableVIIRS <- function(indexUrl=pkgOptions("ntLtsIndexUrlVIIRS"))
-{
-  !as.logical(download.file(pkgOptions("ntLtsIndexUrlOLS"), tempfile()))
+  nlTilesUrlOLS <- pkgOptions("ntLtsIndexUrlOLS.Y")
+  
+  nlTilesUrlVIIRS <- pkgOptions("ntLtsIndexUrlVIIRS.D")
+  
+  nlTilesOrig <- read.csv("nltiles.csv", header = T, stringsAsFactors = F)
+  nlTilesOrigVIIRS <- nlTilesOrig[grep("VIIRS", nlTilesOrig$type),]
+  nlTilesOrigOLS <- nlTilesOrig[grep("OLS", nlTilesOrig$type),]
+  
+  nlTilesVIIRS <- Rnightlights:::getNlTiles("VIIRS.M")
+  nlTilesOLS <- Rnightlights:::getNlTiles("OLS.Y")
+  
+  noaaDownloadSiteIsAvailable <- function(dnldSite="www.ngdc.noaa.gov")
+  {
+    !as.logical(system(paste("ping -n -c 1 ", dnldSite)))
+  }
+  
+  noaaIndexUrlIsAvailableOLS <- function(indexUrl=pkgOptions("ntLtsIndexUrlOLS"))
+  {
+    !as.logical(download.file(pkgOptions("ntLtsIndexUrlOLS"), tempfile()))
+  }
+  
+  noaaIndexUrlIsAvailableVIIRS <- function(indexUrl=pkgOptions("ntLtsIndexUrlVIIRS"))
+  {
+    !as.logical(download.file(pkgOptions("ntLtsIndexUrlOLS"), tempfile()))
+  }
 }

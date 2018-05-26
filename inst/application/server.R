@@ -88,12 +88,21 @@ shiny::shinyServer(function(input, output, session){
   #Since renderUI does not like intraCountry returning NULL we init with an empty renderUI, set suspendWhenHidden = FALSE to force it to recheck intraCountry even if null
   output$intraCountry <- shiny::renderUI({})
   shiny::outputOptions(output, "intraCountry", suspendWhenHidden = FALSE)
-  shinyjs::useShinyjs()
+  #shinyjs::useShinyjs()
 
   #yrs <- getAllNlYears("VIIRS")
   
   #isolate({updateTabItems(session, "inputs", "plotNightLights")})
 
+  ######################## actionButton btnGo ###################################
+  
+  output$btnGo <- shiny::renderUI({
+    if(values$needsDataUpdate)
+      shiny::actionButton("btnGo", "LOAD", style="background-color:orange")
+    else
+      shiny::actionButton("btnGo", "LOAD", style="background-color:lightblue")
+  })
+  
   ######################## reactive ctryAdmLevels ###################################
   
     ctryAdmLevels <- shiny::reactive({
@@ -104,18 +113,18 @@ shiny::shinyServer(function(input, output, session){
 
       admLevelNames <- lapply(input$countries, function(country)
       {
-      ctryStructPath <- Rnightlights:::getCtryStructFnamePath(country)
-      
-      if(!file.exists(ctryStructPath))
-        return()
-      
-      temp <- data.table::fread(ctryStructPath, nrows = 1, header = T)
-      
-      cols <- names(temp)
-      
-      cols <- cols[-grep("area_sq_km|NL_", cols)]
-      
-      cols
+        ctryStructPath <- Rnightlights:::getCtryStructFnamePath(country)
+        
+        if(!file.exists(ctryStructPath))
+          return()
+        
+        temp <- data.table::fread(ctryStructPath, nrows = 1, header = T)
+        
+        cols <- names(temp)
+        
+        cols <- cols[-grep("area_sq_km|NL_", cols)]
+        
+        cols
       })
       
       admLevelNames
@@ -604,7 +613,8 @@ shiny::shinyServer(function(input, output, session){
   ######################## reactiveValues values ###################################
   
     values <- shiny::reactiveValues(
-      lastUpdated = NULL
+      lastUpdated = NULL,
+      needsDataUpdate = FALSE
     )
     
 
@@ -619,27 +629,39 @@ shiny::shinyServer(function(input, output, session){
       })
     })
     
-  observe({
-    if(length(input$countries) != 1)
-      return()
-    
-    admLvlCtrlNames <- names(input)
-    
-    selectAdmLvls <- admLvlCtrlNames[grep("selectAdm", admLvlCtrlNames)]
-    
-    if(length(selectAdmLvls) > 0)
-    lapply(selectAdmLvls, function(selectAdmLvl){
-      lyrNum <- as.numeric(gsub("[^[:digit:]]", "", selectAdmLvl))-1
-      
-      admLevel <- unlist(Rnightlights:::getCtryShpLyrNames(input$countries, lyrNum))
+  # observe({
+  #   if(length(input$countries) != 1)
+  #     return()
+  #   
+  #   admLvlCtrlNames <- names(input)
+  #   
+  #   selectAdmLvls <- admLvlCtrlNames[grep("selectAdm", admLvlCtrlNames)]
+  #   
+  #   if(length(selectAdmLvls) > 0)
+  #   lapply(selectAdmLvls, function(selectAdmLvl){
+  #     lyrNum <- as.numeric(gsub("[^[:digit:]]", "", selectAdmLvl))-1
+  #     
+  #     admLevel <- unlist(Rnightlights:::getCtryShpLyrNames(input$countries, lyrNum))
+  # 
+  #     ctryNlDataFile <- Rnightlights::getCtryNlDataFnamePath(input$countries, admLevel)
+  #       
+  #     if(!file.exists(ctryNlDataFile))
+  #       shinyjs::disable(selectAdmLvl)
+  #   })
+  # })
 
-      ctryNlDataFile <- Rnightlights::getCtryNlDataFnamePath(input$countries, admLevel)
-        
-      if(!file.exists(ctryNlDataFile))
-        shinyjs::disable(selectAdmLvl)
-    })
-    
+  observeEvent(input$nlType, {
+    values$needsDataUpdate <- TRUE
   })
+  
+  observeEvent(input$countries, {
+    values$needsDataUpdate <- TRUE
+  })
+  
+  observeEvent(input$btnGo, {
+    values$needsDataUpdate <- FALSE
+  })
+  
   ######################## renderUI intraCountry1 ###################################
   
     output$intraCountry1 <- shiny::renderUI({
@@ -669,7 +691,9 @@ shiny::shinyServer(function(input, output, session){
     })
 
     ######################## render UI: intraCountry ###################################
-    
+    tags$head(tags$style(HTML("div.form-group.shiny-input-container {margin-top: -20px; margin-bottom: -20px;}")))
+  
+  
     output$intraCountry <- shiny::renderUI({
       
       #print("here: renderUI intracountry")
@@ -691,7 +715,7 @@ shiny::shinyServer(function(input, output, session){
           lvl <- ctryAdmLevels[lvlIdx]
           
           if(input$strict)
-            lvlEnabled <- file.exists(Rnightlights::getCtryNlDataFnamePath(countries, Rnightlights:::getCtryShpLyrNames(countries, lvlIdx-1)))
+            lvlEnabled <- file.exists(Rnightlights::getCtryNlDataFnamePath(countries, paste(input$countries, "_adm", lvlIdx-1, sep = "")))
           else
             lvlEnabled <- TRUE
           
@@ -718,27 +742,13 @@ shiny::shinyServer(function(input, output, session){
           )
           }else
           {
-            b<- shiny::textInput(inputId = "dummy",
+            b <- shiny::textInput(inputId = "dummy",
                              label = ctryAdmLevels[lvlIdx],
                              value = "Strict: Data Not Available",
                              placeholder = "Disable Strict to aggregate data")
           }
           
-          if(!lvlEnabled)
-          {
-            #shinyjs::disable(selector = paste0("[type=][value=selectAdm", lvlIdx,"]"))
-            shinyjs::disable(paste0("selectAdm", lvlIdx))
-            shinyjs::runjs(paste0("$('selectAdm", lvlIdx,"').parent().parent().addClass('disabled').css('opacity', 0.4)"))
-          }
-          
-          #shiny::updateSelectizeInput(session = session,
-          #                     inputId = paste0("selectAdm", lvlIdx),
-          #                     choices = lvlSelect,
-          #                     server = TRUE
-          #                     )
-          
           b
-          #list(a,b)
         })
     })
     
@@ -996,14 +1006,14 @@ shiny::shinyServer(function(input, output, session){
           }
         }
         
-        if(!lvlEnabled)
-        {
-          shinyjs::disable(selector = paste0("[type=radio][value=selectAdm", lvlIdx,"]"))
-          
-          shinyjs::disable(paste0("selectAdm", lvlIdx))
-          
-          shinyjs::runjs(paste0("$('selectAdm", lvlIdx, "').parent().parent().addClass('disabled').css('opacity', 0.4)"))
-        }
+        # if(!lvlEnabled)
+        # {
+        #   shinyjs::disable(selector = paste0("[type=radio][value=selectAdm", lvlIdx,"]"))
+        #   
+        #   shinyjs::disable(paste0("selectAdm", lvlIdx))
+        #   
+        #   shinyjs::runjs(paste0("$('selectAdm", lvlIdx, "').parent().parent().addClass('disabled').css('opacity', 0.4)"))
+        # }
       }
       #})
     })
@@ -1095,7 +1105,7 @@ shiny::shinyServer(function(input, output, session){
                       timeFormat = tmFmt,
                       step = step,
                       value = c(startDate, endDate),
-                      animate = animationOptions(interval = 2000, loop = FALSE, playButton = NULL, pauseButton = NULL)
+                      animate = animationOptions(interval = 1000, loop = FALSE, playButton = NULL, pauseButton = NULL)
           )
         }
       })
@@ -1171,7 +1181,7 @@ shiny::shinyServer(function(input, output, session){
                              timeFormat = tmFmt,
                              step = step,
                              value = value,
-                             animate = animationOptions(interval = 10000, loop = FALSE, playButton = "Play", pauseButton = NULL)
+                             animate = animationOptions(interval = 1000, loop = FALSE, playButton = "Play", pauseButton = NULL)
           )
         }
       })
@@ -1191,40 +1201,40 @@ shiny::shinyServer(function(input, output, session){
       scale <- input$scale
       normArea <- input$norm_area
       
-      #shiny::isolate({
-      nlPeriodRange <- input$nlPeriodRange
-      graphType <- input$graphType
-      admLevel <- unlist(ctryAdmLevels())[2]
-
-      #return if the country doesn't have adm levels below country
-      if (is.null(admLevel) || is.na(admLevel))
-        return()
-      
-      #meltCtryData <- ctryNlDataMelted()
-      
-      meltCtryData <- ctryNlDataMeltedLvl2()
-      
-      if (is.null(countries) || is.null(meltCtryData))
-        return()
-      
-      if (normArea)
-        meltCtryData$value <- (meltCtryData$value)/meltCtryData$area_sq_km
-      
-      #aggMeltCtryData <- stats::aggregate(mean(value), by=list(eval(admLevel)+variable), data=meltCtryData, mean)
-      aggMeltCtryData <- stats::setNames(meltCtryData[,list(mean(value, na.rm = TRUE)), by = list(meltCtryData[[make.names(admLevel)]], variable)], c(admLevel, "variable", "value"))
-      
-      dcastFormula <- paste(paste0("`", admLevel, "`", collapse = " + "), "~", paste("variable", collapse = " + "))
-      
-      unmeltCtryData <- data.table::dcast(aggMeltCtryData, dcastFormula, value.var='value', aggregate='mean')
-      
-      d <- stats::dist(unmeltCtryData)
-      
-      h <- stats::hclust(d)
-      
-      h$labels <- unmeltCtryData[[make.names(admLevel)]]
-      
-      h
-      #})
+      shiny::isolate({
+        nlPeriodRange <- input$nlPeriodRange
+        graphType <- input$graphType
+        admLevel <- unlist(ctryAdmLevels())[2]
+  
+        #return if the country doesn't have adm levels below country
+        if (is.null(admLevel) || is.na(admLevel))
+          return()
+        
+        #meltCtryData <- ctryNlDataMelted()
+        
+        meltCtryData <- ctryNlDataMeltedLvl2()
+        
+        if (is.null(countries) || is.null(meltCtryData))
+          return()
+        
+        if (normArea)
+          meltCtryData$value <- (meltCtryData$value)/meltCtryData$area_sq_km
+        
+        #aggMeltCtryData <- stats::aggregate(mean(value), by=list(eval(admLevel)+variable), data=meltCtryData, mean)
+        aggMeltCtryData <- stats::setNames(meltCtryData[,list(mean(value, na.rm = TRUE)), by = list(meltCtryData[[make.names(admLevel)]], variable)], c(admLevel, "variable", "value"))
+        
+        dcastFormula <- paste(paste0("`", admLevel, "`", collapse = " + "), "~", paste("variable", collapse = " + "))
+        
+        unmeltCtryData <- data.table::dcast(aggMeltCtryData, dcastFormula, value.var='value', aggregate='mean')
+        
+        d <- stats::dist(unmeltCtryData)
+        
+        h <- stats::hclust(d)
+        
+        h$labels <- unmeltCtryData[[make.names(admLevel)]]
+        
+        h
+      })
     })
     
     ######################## plotHCluster ###################################
@@ -1239,18 +1249,16 @@ shiny::shinyServer(function(input, output, session){
         return("Country has no adm levels")
       
       shiny::isolate({
-      dendro <- stats::as.dendrogram(clusts)
-      
-      cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-
-      dendro %>% dendextend::color_branches(k=numClusters, col = cbPalette) %>% 
-        dendextend::color_labels(k=numClusters, col = cbPalette) %>%
-        graphics::plot(horiz=FALSE, main = "")
-      
-      dendro %>% dendextend::rect.dendrogram(k=numClusters,horiz=FALSE,border = cbPalette)
-      
+        dendro <- stats::as.dendrogram(clusts)
+        
+        cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+  
+        dendro %>% dendextend::color_branches(k=numClusters, col = cbPalette) %>% 
+          dendextend::color_labels(k=numClusters, col = cbPalette) %>%
+          graphics::plot(horiz=FALSE, main = "")
+        
+        dendro %>% dendextend::rect.dendrogram(k=numClusters,horiz=FALSE,border = cbPalette)
       })
-      
     })
 
     ######################## plotPointsCluster ###################################
@@ -1306,7 +1314,9 @@ shiny::shinyServer(function(input, output, session){
           xlab(admLevel) +
           ylab("Radiance")
         
-        plotly::ggplotly(g)
+          p <- plotly::ggplotly(g)
+          p$elementId <- NULL
+          p
       })
     })
     
@@ -1417,7 +1427,7 @@ shiny::shinyServer(function(input, output, session){
       })
     })
     
-    ######################## renderPlotly plotTSDecomposed ###################################
+    ######################## renderPlot plotTSDecomposed ###################################
 
     output$plotTSDecomposed <- shiny::renderPlot({
       #print(paste0("here: plotTSDecomposed"))
@@ -1605,8 +1615,7 @@ shiny::shinyServer(function(input, output, session){
     
     ######################## plotNightLights ###################################
     
-    #output$plotNightLights <- plotly::renderPlotly({
-    output$plotNightLights <- shiny::renderPlot({
+    output$plotNightLights <- plotly::renderPlotly({
       #print(paste0("here: renderPlot"))
       input$btnGo
       
@@ -1739,8 +1748,9 @@ shiny::shinyServer(function(input, output, session){
       else
         g <- g + ggplot2::labs(title="Nightlight Radiances", x = "Month", y = "Total Rad (W.Sr^-1.cm^-2)") #y=expression(~Total~Rad~W %.% Sr^{-1}%.%cm^{-2}))
       
-      #plotly::ggplotly(g)
-      g
+        p <- plotly::ggplotly(g)
+        p$elementId <- NULL
+        p
       })
     })
     
@@ -1750,7 +1760,24 @@ shiny::shinyServer(function(input, output, session){
       if(is.null(ctryNlData()))
         return()
       
-      ctryNlData()
+      ctryData <- ctryNlData()
+      
+      allCols <- names(ctryData)
+      
+      dataCols <- grep("NL_", allCols, value = T)
+      
+      admCols <- setdiff(allCols, dataCols)
+      
+      if(!is.null(input$nlType))
+        dataCols <- grep(input$nlType, dataCols, value = T)
+        
+      if(!is.null(input$nlPeriod))
+        dataCols <- grep(input$nlPeriod, dataCols, value = T)
+      
+      if(!is.null(input$ctryStat))
+        dataCols <- grep(input$ctryStat, dataCols, value = T)
+      
+      ctryData <- ctryData[, c(admCols, dataCols), with=F]
     },
       
       options = list(scrollX = TRUE, scrolly = TRUE)
@@ -1801,6 +1828,8 @@ shiny::shinyServer(function(input, output, session){
       
       input$btnGo
 
+      if(is.null(input$countries) || is.null(input$nlPeriod) || is.null(input$nlType))
+        return()
 
       countries <- shiny::isolate(input$countries)
       nlPeriod <- input$nlPeriod
@@ -1809,7 +1838,7 @@ shiny::shinyServer(function(input, output, session){
       nlType <- shiny::isolate(input$nlType)
       normArea <- input$norm_area
       
-      shiny::isolate({
+      #shiny::isolate({
       # if (is.null(countries) || is.null(nlPeriod) || is.null(admLevel))
       #   return()
       
@@ -2072,7 +2101,7 @@ shiny::shinyServer(function(input, output, session){
 #         map <- map %>% fitBounds(mapExtent@xmin, mapExtent@ymin, mapExtent@xmax, mapExtent@ymax)
       
       map
-      })
+      #})
     })
     
 })

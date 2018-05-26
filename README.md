@@ -60,7 +60,7 @@ library(reshape2)
 
 # ctry <- "KEN" #replace to run for any other country
 
-#download and process monthly VIIRS stats at the lowest admin level
+#download and process monthly VIIRS stats at the highest admin level
 highestAdmLevelStats <- getCtryNlData(ctryCode = ctry, 
                                      admLevel = "highest",
                                      nlType = "VIIRS.M", 

@@ -67,13 +67,11 @@ upgradeRnightlights <- function()
   tryCatch(
   {
     #will only make alterations after the current package version updates
-    pkgs <- as.data.frame(utils::installed.packages(), stringsAsFactors=F)
-    
-    pkg <- pkgs[pkgs$Package == "Rnightlights",c("Package", "Version")]
+    pkgVersion <- utils::packageDescription("Rnightlights")$Version
     
     upgradeLog <- data.frame("idx"=NULL, "operation"=NULL, "params"=NULL)
     
-    if(nrow(pkg) == 0)
+    if(is.null(pkgVersion) || pkgVersion == "")
       return(0)
     
     dataVersionFile <- file.path(paste0(Rnightlights::getNlDir("dirNlData"), "/../data-version.txt"))
@@ -88,16 +86,16 @@ upgradeRnightlights <- function()
   
       #if the data version == pkg version
       #we are already using the latest data version. Exit
-      if(dataVersion == pkg$Version)
+      if(dataVersion == pkgVersion)
       {
         return(FALSE)
       }
     }
     
     #ver 0.2.0 is the first version employing upgrade
-    if(pkg$Version >= "0.2.0")
+    if(pkgVersion >= "0.2.0")
     {
-      message("Upgrading data directory to ver. ", pkg$Version)
+      message("Upgrading data directory to ver. ", pkgVersion)
       
       idx <- 1
       
@@ -125,9 +123,8 @@ upgradeRnightlights <- function()
   
           newTileName <- getNlTileTifLclNamePath(nlType,
                                                  nlPeriod,
-                                            tileName2Idx(tileName,
-                                                         nlType)
-                                            )
+                                                 tileName2Idx(tileName, nlType)
+                                                 )
           
           message("Rename: '", fileName, "' -> '", newTileName, "' : ", ifelse(file.rename(fileName, newTileName), "Success", "Fail"))
           
@@ -257,6 +254,7 @@ upgradeRnightlights <- function()
     }
   }, error=function(err)
   {
+    message(err)
     message("An error occurred in upgrading the Rnightlights data dir. 
             Some of your old data may not be accessible from the upgraded package. 
             Please open an issue on the package github page if you encounter
@@ -265,10 +263,10 @@ upgradeRnightlights <- function()
     return(FALSE)
   },finally = {
     #mark as upgraded
-    cat(pkg$Version, file = file.path(paste0(Rnightlights::getNlDir("dirNlData"), "/../data-version.txt")))
+    cat(pkgVersion, file = file.path(paste0(Rnightlights::getNlDir("dirNlData"), "/../data-version.txt")))
     if(nrow(upgradeLog) > 0)
     {
-      con = file(file.path(paste0(Rnightlights::getNlDir("dirNlData"), "/../upgrade-",pkg$Version,".log")))
+      con = file(file.path(paste0(Rnightlights::getNlDir("dirNlData"), "/../upgrade-",pkgVersion,".log")))
       writeLines(upgradeLog, con)
       close(con)
     }

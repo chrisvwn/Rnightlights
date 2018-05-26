@@ -4,6 +4,8 @@ library(Rnightlights)
 context("admLevels")
 
 test_that("admLevel lookups work", {
+  skip_if_not(internetAvailable(), "Internet not available")
+  
   #ctryCodeToName
   expect_equal(Rnightlights:::getCtryPolyAdmLevelNames("STP"), c("Municipality_(Concelho)", "District"), fixed=TRUE)
   expect_equal(Rnightlights:::getCtryPolyAdmLevelNames("STP", "1"), c("Municipality_(Concelho)"), fixed=TRUE)

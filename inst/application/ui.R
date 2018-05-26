@@ -100,11 +100,7 @@ alignCenter <- function(el) {
                                 multiple = TRUE
                  ),
 
-                 tags$head(
-                   tags$style(HTML('#btnGo{background-color:lightblue}'))
-                 ),
-                 
-                 shiny::actionButton("btnGo", "LOAD"),                 
+                 shiny::uiOutput(outputId = "btnGo"),
 
                  shiny::uiOutput(outputId = "intraCountry"),
                  
@@ -155,7 +151,7 @@ alignCenter <- function(el) {
       shinydashboard::dashboardBody(
         shinydashboard::tabBox(width = 12,
           shiny::tabPanel(title = "plots",
-                   shiny::plotOutput(outputId = "plotNightLights"),
+                   plotly::plotlyOutput(outputId = "plotNightLights"),
                    
                    shiny::uiOutput("sliderNlPeriodRange")
                    ),
