@@ -24,7 +24,6 @@ Imports:
     ff,
     ffbase,
     foreach,
-    gdalUtils,
     lubridate,
     methods,
     raster,
@@ -45,6 +44,7 @@ Imports:
 Suggests:
     dendextend,
     DT,
+    gdalUtils,
     ggdendro,
     ggplot2,
     leaflet,
