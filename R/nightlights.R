@@ -743,13 +743,21 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
       {
         for (tile in tileList)
         {
+          tileTif <- getNlTileTifLclNamePath(nlType, nlPeriod, tileName2Idx(tile, nlType))
+          
+          message("Deleting tile TIF: ", tileTif)
+          
           #del the tif file
-          if (file.exists(getNlTileTifLclNamePath(nlType, nlPeriod, tileName2Idx(tile, nlType))))
-            unlink(file.path(getNlTileTifLclNamePath(nlType, nlPeriod, tileName2Idx(tile, nlType))), force = TRUE)
+          if (file.exists(tileTif))
+            unlink(file.path(tileTif), force = TRUE)
+          
+          tileZip <- file.path(getNlTileZipLclNamePath(nlType, nlPeriod, tileName2Idx(tile, nlType)))
+          
+          message("Deleting tile ZIP: ", tileZip)
           
           #del the zip file
-          if (file.exists(file.path(getNlTileZipLclNamePath(nlType, nlPeriod, tileName2Idx(tile, nlType)))))
-            unlink(file.path(getNlTileZipLclNamePath(nlType, nlPeriod, tileName2Idx(tile, nlType))), force = TRUE)
+          if (file.exists(tileZip))
+            unlink(file.path(tileZip), force = TRUE)
         }
       }
       

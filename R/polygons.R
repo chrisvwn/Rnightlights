@@ -93,10 +93,10 @@ dnldCtryPoly <- function(ctryCode)
   }
   else
   {
+    message("Polygon dir for ", ctryCode, " already exists")
+    
     if(!file.exists(paste0(getPolyFnamePath(ctryCode), ".RDS")))
     {
-      message("Polygon ", ctryCode, " already exists")
-      
       message("Saving shapefile as RDS for faster access")
       message("Getting admLevels in ", ctryCode)
       allCtryLevels <- unlist(getCtryShpAllAdmLvls(ctryCode))
