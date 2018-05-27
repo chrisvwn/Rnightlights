@@ -23,9 +23,11 @@ devtools::install_github("chrisvwn/Rnightlights")
 ## Performance enhancements
 Some performance enhancements are available to speed up processing speeds and they fall into 2 classes:
 
-a. Parallel processing: The most straightforward way to speed up processing is by increasing the number of CPU cores used to process the raster data. By default only one CPU core is used. This option is available out of the box and is enabled by setting the `numCores` package option e.g. to process in parallel across 4 CPU cores run `pkgOptions(numCores=4)` before processing.
+a. **Parallel processing**: The most straightforward way to speed up processing is by increasing the number of CPU cores used to calculate the zonal statistics. By default only one CPU core is used. This option is available out of the box and is enabled by setting the `numCores` package option e.g. to process in parallel across 4 CPU cores run `pkgOptions(extractMethod="rast", numCores=4)` before processing. Note numCores is only used when `pkgOptions(extractMethod="rast")` which is the default.
 
-b. GDAL: The GDAL tools provide tools that are often much faster than the usual processing workflow. For example, zonal statistics can be calculated much faster using GDAL than looping over sub-polygons even with a number of CPUs in parallel. GDAL tools are provided by the `rgdal` and `gdalUtils` packages, however, they require the GDAL software to be installed in the operating system.
+b. **GDAL**: The GDAL tools provide tools that are often much faster than the usual processing workflow. For example, zonal statistics can be calculated much faster using GDAL than looping over sub-polygons even with a number of CPUs in parallel. GDAL tools are provided by the `rgdal` and `gdalUtils` packages, however, they require the GDAL software to be installed in the operating system. GDAL can be enabled at 2 stages:
+    i)  when cropping rasters by setting `pkgOptions(cropMaskMethod="gdal"")` and
+    ii) when calculating zonal stats by setting `pkgOptions(extractMethod='gdal')`
 
 ### Example
 
