@@ -593,11 +593,10 @@ getCtryNlData <- function(ctryCode, admLevel, nlTypes, nlPeriods, nlStats=pkgOpt
                        "or \nignoreMissing=FALSE to download and extract missing data"))
         return(NULL)
       }
-    }else
-    {
-      #if all nlPeriodStats exist  get the data
-      ctryData <- as.data.frame(data.table::fread(getCtryNlDataFnamePath(ctryCode, admLevel, gadmVersion = gadmVersion)))
     }
+    
+    #if all nlPeriodStats exist  get the data
+    ctryData <- as.data.frame(data.table::fread(getCtryNlDataFnamePath(ctryCode, admLevel, gadmVersion = gadmVersion)))
   }
   else
   {

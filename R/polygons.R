@@ -171,7 +171,7 @@ dnldCtryPoly <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"))
     {
       message("Saving shapefile as RDS for faster access")
       message("Getting admLevels in ", ctryCode)
-      allCtryLevels <- unlist(grep("adm", rgdal::ogrListLayers(getPolyFnamePath(ctryCode, gadmVersion)), value = T))
+      allCtryLevels <- sort(unlist(grep("adm", rgdal::ogrListLayers(getPolyFnamePath(ctryCode, gadmVersion)), value = T)))
       
       message("Reading in all admLevels")
       listCtryPolys <- lapply(allCtryLevels, function(lvl) rgdal::readOGR(getPolyFnamePath(ctryCode,gadmVersion), lvl))

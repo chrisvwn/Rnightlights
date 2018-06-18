@@ -93,7 +93,8 @@ upgradeRnightlights <- function()
     }
     
     #ver 0.2.0 is the first version employing upgrade
-    if(pkgVersion >= "0.2.0")
+    #upgrades required for 0.2.0, 0.2.1 & 0.2.2
+    if(pkgVersion >= "0.2.0" && dataVersion < "0.2.2")
     {
       message("Upgrading data directory to ver. ", pkgVersion)
       
