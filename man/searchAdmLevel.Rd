@@ -4,7 +4,8 @@
 \alias{searchAdmLevel}
 \title{Search for the admLevel by official name}
 \usage{
-searchAdmLevel(ctryCode, admLevelName, dnldPoly)
+searchAdmLevel(ctryCode, admLevelName, dnldPoly,
+  gadmVersion = pkgOptions("gadmVersion"))
 }
 \arguments{
 \item{ctryCode}{\code{character} The ctryCode of the country of interest}

@@ -4,7 +4,7 @@
 \alias{readCtryStruct}
 \title{Reads the ctry admin structure from struct text file}
 \usage{
-readCtryStruct(ctryCode)
+readCtryStruct(ctryCode, gadmVersion = pkgOptions("gadmVersion"))
 }
 \arguments{
 \item{ctryCode}{The ISO3 ctryCode of the country structure to read}

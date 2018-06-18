@@ -5,7 +5,7 @@
 \title{Downloads nightlight tiles and country polygons and calls the function to process them}
 \usage{
 processNlData(ctryCodes, admLevels, nlTypes, nlPeriods,
-  nlStats = pkgOptions("nlStats"))
+  nlStats = pkgOptions("nlStats"), gadmVersion = pkgOptions("gadmVersion"))
 }
 \arguments{
 \item{ctryCodes}{the list of countries to be processed}

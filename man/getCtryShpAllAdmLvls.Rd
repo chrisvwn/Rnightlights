@@ -4,7 +4,7 @@
 \alias{getCtryShpAllAdmLvls}
 \title{Get all the admLevels in a country}
 \usage{
-getCtryShpAllAdmLvls(ctryCodes)
+getCtryShpAllAdmLvls(ctryCodes, gadmVersion = pkgOptions("gadmVersion"))
 }
 \arguments{
 \item{ctryCodes}{\code{character} The ctryCode of the country of interest}

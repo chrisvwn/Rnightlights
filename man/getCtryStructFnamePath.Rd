@@ -4,7 +4,7 @@
 \alias{getCtryStructFnamePath}
 \title{Construct the full path to the country struct file}
 \usage{
-getCtryStructFnamePath(ctryCode)
+getCtryStructFnamePath(ctryCode, gadmVersion = pkgOptions("gadmVersion"))
 }
 \arguments{
 \item{ctryCode}{The ISO3 ctryCode of the country}

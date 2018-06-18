@@ -4,7 +4,8 @@
 \alias{deleteNlDataCol}
 \title{Delete an aggregate nightlight data column in a country nightlights dataframe}
 \usage{
-deleteNlDataCol(ctryCode, nlType, nlPeriod, statType)
+deleteNlDataCol(ctryCode, nlType, nlPeriod, statType,
+  gadmVersion = pkgOptions("gadmVersion"))
 }
 \arguments{
 \item{ctryCode}{country with the  data column to remove}

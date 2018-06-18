@@ -115,7 +115,7 @@
 #' Rnightlights:::processNLCountry("KEN", "KEN_adm2", "VIIRS.M", "201412", "gdal", "gdal", "sum")
 #' }
 #'
-processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, cropMaskMethod=pkgOptions("cropMaskMethod"), extractMethod=pkgOptions("extractMethod"), nlStats=pkgOptions("nlStats"))
+processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, cropMaskMethod=pkgOptions("cropMaskMethod"), extractMethod=pkgOptions("extractMethod"), nlStats=pkgOptions("nlStats"), gadmVersion=pkgOptions("gadmVersion"))
 {
   if(missing(ctryCode))
     stop("Missing required parameter ctryCode")
@@ -136,7 +136,7 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, cropMaskMetho
     stop("Invalid nlType: ", nlType)
   
   if(missing(admLevel))
-    admLevel <- getCtryShpLowestLyrNames(ctryCode)
+    admLevel <- getCtryShpLowestLyrNames(ctryCode, gadmVersion)
   
   message("processNLCountry: ", paste(ctryCode, admLevel, nlType, nlPeriod, sep=" "))
 
@@ -146,7 +146,7 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, cropMaskMetho
   
   if (existsCtryNlDataFile(ctryCode, admLevel))
   {
-    message("Data file found: ", getCtryNlDataFnamePath(ctryCode, admLevel))
+    message("Data file found: ", getCtryNlDataFnamePath(ctryCode, admLevel, gadmVersion))
     
     existStats <- sapply(nlStats, function(nlStat) existsCtryNlData(ctryCode = ctryCode, admLevel = admLevel, nlTypes = nlType, nlPeriods = nlPeriod, nlStats = nlStat))
     
@@ -163,10 +163,10 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, cropMaskMetho
     }
     
     message("Load country data file")
-    ctryNlDataDF <- utils::read.csv(getCtryNlDataFnamePath(ctryCode, admLevel))
+    ctryNlDataDF <- utils::read.csv(getCtryNlDataFnamePath(ctryCode, admLevel, gadmVersion))
     
     message("Load country polygon admin level")
-    ctryPolyAdm0 <- readCtryPolyAdmLayer(ctryCode, unlist(getCtryShpLyrNames(ctryCode, 0)))
+    ctryPolyAdm0 <- readCtryPolyAdmLayer(ctryCode, unlist(getCtryShpLyrNames(ctryCode, 0, gadmVersion)), gadmVersion)
     
     ctryExtent <- raster::extent(ctryPolyAdm0)
     
@@ -176,13 +176,13 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, cropMaskMetho
   {
     message("Data file not found. Creating ...")
     
-    ctryNlDataDF <- createCtryNlDataDF(ctryCode = ctryCode, admLevel = admLevel)
+    ctryNlDataDF <- createCtryNlDataDF(ctryCode = ctryCode, admLevel = admLevel, gadmVersion)
     
     message("Data file not found. Creating ... DONE")
     
-    message("Load country polygon lowest admin level for crop")
+    message("Load country polygon country layer for crop")
     
-    ctryPolyAdm0 <- readCtryPolyAdmLayer(ctryCode, unlist(getCtryShpLyrNames(ctryCode, 0)))
+    ctryPolyAdm0 <- readCtryPolyAdmLayer(ctryCode = ctryCode, admLevel = unlist(getCtryShpLyrNames(ctryCode, 0, gadmVersion)), gadmVersion=gadmVersion)
   }
   
   if(!file.exists(getCtryRasterOutputFnamePath(ctryCode = ctryCode, nlPeriod = nlPeriod, nlType = nlType)))
@@ -270,7 +270,7 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, cropMaskMetho
       
       message("gdalwarp masking to VRT ",base::date())
       
-      gdalUtils::gdalwarp(srcfile=rstTmp, dstfile=output_file_vrt, s_srs=wgs84, t_srs=wgs84, cutline=getPolyFnamePath(ctryCode), cl= getCtryShpLyrNames(ctryCode,0), multi=TRUE, wm=pkgOptions("gdalCacheMax"), wo=paste0("NUM_THREADS=", pkgOptions("numCores")), q = FALSE)
+      gdalUtils::gdalwarp(srcfile=rstTmp, dstfile=output_file_vrt, s_srs=wgs84, t_srs=wgs84, cutline=getPolyFnamePath(ctryCode, gadmVersion), cl= getCtryShpLyrNames(ctryCode,0), multi=TRUE, wm=pkgOptions("gdalCacheMax"), wo=paste0("NUM_THREADS=", pkgOptions("numCores")), q = FALSE)
 
       message("gdal_translate converting VRT to TIFF ", base::date())
       gdalUtils::gdal_translate(co = "compress=LZW", src_dataset = output_file_vrt, dst_dataset = getCtryRasterOutputFnamePath(ctryCode, nlType, nlPeriod))
@@ -319,7 +319,7 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, cropMaskMetho
   if (extractMethod == "rast")
     sumAvgRad <- fnAggRadRast(ctryPoly=ctryPoly, ctryRastCropped=ctryRastCropped, nlType=nlType, nlStats=nlStats)
   else if (extractMethod == "gdal")
-    sumAvgRad <- fnAggRadGdal(ctryCode=ctryCode, admLevel=admLevel, ctryPoly=ctryPoly, nlType=nlType, nlPeriod=nlPeriod, nlStats=nlStats)
+    sumAvgRad <- fnAggRadGdal(ctryCode=ctryCode, admLevel=admLevel, ctryPoly=ctryPoly, nlType=nlType, nlPeriod=nlPeriod, nlStats=nlStats, gadmVersion=gadmVersion)
   
   for(nlStat in nlStats)
     ctryNlDataDF <- insertNlDataCol(ctryNlDataDF, sumAvgRad[,nlStat], nlStat, nlPeriod, nlType = nlType)
@@ -515,7 +515,7 @@ getCtryRasterOutputFnamePath <- function(ctryCode, nlType, nlPeriod)
 #'     #R CMD BATCH script_name_2014.R
 #'     }
 #' @export
-processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkgOptions("nlStats"))
+processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkgOptions("nlStats"), gadmVersion=pkgOptions("gadmVersion"))
 {
   if(missing(ctryCodes))
     ctryCodes <- getAllNlCtryCodes(omit = "error")
@@ -547,7 +547,7 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
   for (ctryCode in ctryCodes)
   {
     message("Downloading polygon: ", ctryCode)
-    dnldCtryPoly(ctryCode)
+    dnldCtryPoly(ctryCode, gadmVersion)
   }
   
   message("Downloading country polygons ... DONE")
@@ -559,14 +559,14 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
   if(length(admLevels) == 1)
   {
     if(admLevels=="lowest")
-      admLevels <- getCtryShpLowestLyrNames(ctryCodes)
+      admLevels <- getCtryShpLowestLyrNames(ctryCodes, gadmVersion)
     else if(admLevels=="top")
-      admLevels <- getCtryShpLyrNames(ctryCodes, 0)
+      admLevels <- getCtryShpLyrNames(ctryCodes, 0, gadmVersion)
     else if(admLevels=="all")
-      admLevels <- getCtryShpAllAdmLvls(ctryCodes)
+      admLevels <- getCtryShpAllAdmLvls(ctryCodes, gadmVersion)
     else
     {
-      tmpAdmLevel <- searchAdmLevel(ctryCode, admLevels)
+      tmpAdmLevel <- searchAdmLevel(ctryCode, admLevels, gadmVersion)
       
       admLevels <- ifelse(is.na(tmpAdmLevel), admLevels, tmpAdmLevel)
     }

@@ -4,7 +4,7 @@
 \alias{existsPolyFnamePath}
 \title{Check if the decompressed country polygon has been downloaded and stored in the polygon folder}
 \usage{
-existsPolyFnamePath(ctryCode)
+existsPolyFnamePath(ctryCode, gadmVersion = pkgOptions("gadmVersion"))
 }
 \arguments{
 \item{ctryCode}{The ctryCode to process}

@@ -142,6 +142,88 @@ ctryCodeToName <- function(ctryCodes)
   return(result)
 }
 
+######################## searchCountry ###################################
+
+#' Search for a country by name or code
+#'
+#' Serves as a frontend to the ctryNameToCode and ctryCodeToName functions
+#'     in one.
+#'
+#' @param searchTerm The country code/name to search for
+#'
+#' @return data.frame A mapping of the ctryCode to ctryName if the supplied
+#'     \code{searchTerm} is a ctryCode or vice-versa if the \code{searchTerm}
+#'     was a ctryName
+#'
+#' @examples
+#' searchCountry("KEN") #returns Kenya
+#' 
+#' searchCountry("Tanzania") #returns United Republic of Tanzania
+#' 
+#' searchCountry("uk", TRUE) #returns United Kingdom and Ukraine
+#' 
+#' searchCountry("rwa", TRUE) #returns Rwanda and Norway
+#'
+#' @export
+searchCountry <- function(searchTerms, extended=FALSE)
+{
+  resCountry <- do.call("rbind.data.frame", lapply(searchTerms, function(searchTerm)
+  {
+    ctryName <- ctryCodeToName(searchTerm)
+    
+    if(length(ctryName)>1 || !is.na(ctryName))
+    {
+      allCtryNames <- ctryCodeToName()
+      resCountry <- allCtryNames[which(allCtryNames$ADMIN %in% ctryName),]
+    }else
+      resCountry <- stats::setNames(data.frame(matrix(ncol = 2, nrow = 0)), c("ISO3", "ADMIN"))
+  
+    #if not extended only check country names if we did not find a matching
+    #country  code
+    if(nrow(resCountry) == 0 || extended)
+    {
+      ctryCode <- ctryNameToCode(searchTerm)
+      
+      if(length(ctryCode) > 1 || !is.na(ctryCode))
+      {
+        allCtryCodes <- ctryNameToCode()
+        resCountry <- allCtryCodes[which(allCtryCodes$ISO3 %in% ctryCode),]
+      }else
+        resCountry <- stats::setNames(data.frame(matrix(ncol = 2, nrow = 0)), c("ADMIN", "ISO3"))
+    }
+    
+    if(extended)
+    {
+      #if extended only partial search is sufficient since it searches
+      #partial search
+      allCtryNames <- ctryNameToCode()
+      
+      partialNameIdx <- unlist(sapply(searchTerm, function(x) grep(x, allCtryNames$ADMIN, ignore.case = T)))
+      partialCodeIdx <- unlist(sapply(searchTerm, function(x) grep(x, allCtryNames$ISO3, ignore.case = T)))
+      
+      partialIdx <- c(partialNameIdx, partialCodeIdx)
+      
+      if(length(partialIdx) > 0)
+      {
+        partialCountry <- allCtryNames[partialIdx, ]
+        
+        #scalar if resCountry is NA
+        if(nrow(resCountry) == 0)
+          resCountry <- partialCountry
+        else
+          resCountry <- rbind.data.frame(resCountry, partialCountry)
+      }
+    }
+    
+    resCountry
+  }))
+  
+  #remove duplicates if results found
+  resCountry <- unique.data.frame(resCountry)
+  
+  return(resCountry)
+}
+
 ######################## validCtryCodes ###################################
 
 #' Check if country codes are valid

@@ -5,7 +5,8 @@
 \title{Returns nightlight statistics for the given ctryCode and nlType in the given nPeriods}
 \usage{
 getCtryNlData(ctryCode, admLevel, nlTypes, nlPeriods,
-  nlStats = pkgOptions("nlStats"), ignoreMissing = NULL, source = "local")
+  nlStats = pkgOptions("nlStats"), ignoreMissing = NULL,
+  gadmVersion = pkgOptions("gadmVersion"), source = "local")
 }
 \arguments{
 \item{ctryCode}{the ISO3 code of the country. Only 1 country can be 

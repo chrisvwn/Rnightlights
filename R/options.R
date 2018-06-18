@@ -30,6 +30,9 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   #methods to extract data. Options: raster, gdal
   extractMethod = "rast",
 
+  #the gadm polygons to use
+  gadmVersion = "2.8",
+  
   #gdalCacheMax Speeds up gdal_rasterize calculation of stats in function ZonalPipe with more cache (advice: max 1/3 of your total RAM) see: http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/
   gdalCacheMax = 1024,
 
@@ -61,6 +64,7 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
     cropMaskMethod = settings::inlist("gdal","rast"),
     extractMethod = settings::inlist("gdal", "rast"),
     downloadMethod = settings::inlist("aria", "auto", "curl", "libcurl", "wget"),
+    gadmVersion = settings::inlist("2.8", "3.6"),
     omitCountries = settings::inlist("error", "missing", "long", "all", "none")
   )
 )

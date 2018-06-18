@@ -4,7 +4,8 @@
 \alias{existsCtryNlData}
 \title{Check if VIIRS nightlight stats exist locally}
 \usage{
-existsCtryNlData(ctryCode, admLevel, nlTypes, nlPeriods, nlStats)
+existsCtryNlData(ctryCode, admLevel, nlTypes, nlPeriods, nlStats,
+  gadmVersion = pkgOptions("gadmVersion"))
 }
 \arguments{
 \item{ctryCode}{character The ISO3 code of the country}

@@ -4,7 +4,8 @@
 \alias{readCtryPolyAdmLayer}
 \title{Read a country admLevel polygon}
 \usage{
-readCtryPolyAdmLayer(ctryCode, admLevel, polyType = "rds", dnldPoly = TRUE)
+readCtryPolyAdmLayer(ctryCode, admLevel, polyType = "rds", dnldPoly = TRUE,
+  gadmVersion = pkgOptions("gadmVersion"))
 }
 \arguments{
 \item{ctryCode}{\code{character} The ctryCode of the country of interest}

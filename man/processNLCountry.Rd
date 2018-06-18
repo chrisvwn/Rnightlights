@@ -7,7 +7,7 @@
 processNLCountry(ctryCode, admLevel, nlType, nlPeriod,
   cropMaskMethod = pkgOptions("cropMaskMethod"),
   extractMethod = pkgOptions("extractMethod"),
-  nlStats = pkgOptions("nlStats"))
+  nlStats = pkgOptions("nlStats"), gadmVersion = pkgOptions("gadmVersion"))
 }
 \arguments{
 \item{ctryCode}{\code{character} The ctryCode of interest}

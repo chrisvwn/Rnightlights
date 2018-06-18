@@ -1,3 +1,69 @@
+getAllGadmVersions <- function()
+{
+  return(c("2.8", "3.6"))
+}
+
+validGadmVersions <- function(gadmVersions)
+{
+  return(stats::setNames(gadmVersions %in% getAllGadmVersions(), gadmVersions))
+}
+
+getGadmLayerNames <- function(ctryCode, layerNum, gadmVersion)
+{
+  
+}
+
+getGadmLevelNames <- function(ctryCode, layerNum)
+{
+  
+}
+
+
+gadmLayerToAlias <- function(layerNames, gadmVersion=pkgOptions("gadmVersion"))
+{
+  admLevels <- sapply(layerNames, function(layerName)
+  {
+    ctryCode <- toupper(gsub("_","", stringr::str_extract(tolower(layerName), "_*[a-z]{3}_+")))
+    levelNum <- stringr::str_extract(layerName, "\\d+$")
+    paste0(ctryCode, "_adm", levelNum)
+  })
+  
+  return(admLevels)
+}
+
+gadmAliasToLayer <- function(layerAlias, gadmVersion=pkgOptions("gadmVersion"))
+{
+  
+}
+
+addCtryPolyIdx <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"))
+{
+  if(gadmVersion == "3.6")
+  {
+    for(admLevel in rgdal::ogrListLayers(getPolyFnamePath(ctryCode, gadmVersion)))
+    {
+      ctryPoly <- rgdal::readOGR(getPolyFnamePath(ctryCode,gadmVersion), admLevel)
+      
+      lowestIDCol <- paste0("GID_", stringr::str_extract(admLevel, "\\d+$"), "_IDX")
+      
+      #for GADM 3.6 polygons the attribute col GID_3 contains
+      #strings which cannot be used by gdal_rasterize
+      #Create an integer col in the shapefile corresponding to the unique GIDs
+      if(is.null(ctryPoly@data[[lowestIDCol]]))
+      {
+        message("Creating integer zone attribute col for GADM 3.6")
+        
+        lowestIDColOrig <- gsub("_IDX", "", lowestIDCol)
+        
+        ctryPoly@data[,lowestIDCol] <- 1:length(sort(ctryPoly@data[,lowestIDColOrig]))  # Make new attribute
+        
+        message("Writing layer with new idx col")
+        rgdal::writeOGR(obj = ctryPoly, dsn = getPolyFnamePath(ctryCode, gadmVersion), layer = admLevel, driver = "ESRI Shapefile", overwrite_layer = T) # Save new version of shapefile
+      }
+    }
+  }
+}
+
 ######################## dnldCtryPoly ###################################
 
 #' Download a country's polygon shapefile from \url{http://gadm.org}
@@ -13,7 +79,7 @@
 #' Rnightlights:::dnldCtryPoly("KEN")
 #' }
 #'
-dnldCtryPoly <- function(ctryCode)
+dnldCtryPoly <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"))
 {
   if(missing(ctryCode))
     stop("Missing required parameter ctryCode")
@@ -23,40 +89,43 @@ dnldCtryPoly <- function(ctryCode)
   
   message("Downloading ctry poly: ", ctryCode)
   
-  fullPolyUrl <- getCtryPolyUrl(ctryCode)
+  fullPolyUrl <- getCtryPolyUrl(ctryCode, gadmVersion)
   
   result <- NULL
   
   #if the path doesn't exist
-  if (!existsPolyFnamePath(ctryCode))
+  if (!existsPolyFnamePath(ctryCode, gadmVersion))
   {
     #if the dir and zip dont exist download and unzip
-    if (!existsPolyFnameZip(ctryCode))
+    if (!existsPolyFnameZip(ctryCode, gadmVersion))
     {
       #download
       
       downloadMethod <- pkgOptions("downloadMethod")
 
       if (downloadMethod %in% c("auto", "curl", "libcurl", "wget"))
-        rsltDnld <- utils::download.file(url = getCtryPolyUrl(ctryCode), destfile = getPolyFnameZip(ctryCode), method = "auto", mode = "wb", extra = "-c")
+        rsltDnld <- utils::download.file(url = fullPolyUrl, destfile = getPolyFnameZip(ctryCode, gadmVersion), method = "auto", mode = "wb", extra = "-c")
       else if (downloadMethod == "aria")
-        rsltDnld <- system(paste0("aria2c -c -x2 ", getCtryPolyUrl(ctryCode), " -d ", getNlDir("dirPolygon"), " -o ", basename(getPolyFnameZip(ctryCode)))) #downloads to path relative to -d if specified else local dir
+        rsltDnld <- system(paste0("aria2c -c -x2 ", fullPolyUrl, " -d ", getNlDir("dirPolygon"), " -o ", basename(getPolyFnameZip(ctryCode, gadmVersion)))) #downloads to path relative to -d if specified else local dir
 
       if(rsltDnld == 0)
       {
         #unzip does not like double slashes! Replace with singles if found
         
-        polyFnameZip <- getPolyFnameZip(ctryCode)
+        polyFnameZip <- getPolyFnameZip(ctryCode, gadmVersion)
         polyFnameZip <- gsub("//", "/", polyFnameZip, perl=TRUE)
         polyFnameZip <- gsub("\\\\\\\\", "\\\\", polyFnameZip, perl=TRUE)
         
-        polyFnamePath <- getPolyFnamePath(ctryCode)
+        polyFnamePath <- getPolyFnamePath(ctryCode, gadmVersion)
         polyFnamePath <- gsub("//", "/", polyFnamePath, perl=TRUE)
         polyFnamePath <- gsub("\\\\\\\\", "\\\\", polyFnamePath, perl=TRUE)
         
         #unzip
         result <- utils::unzip(polyFnameZip, exdir = polyFnamePath)
-        file.remove(getPolyFnameZip(ctryCode))
+        file.remove(polyFnameZip)
+        
+        if(gadmVersion == "3.6")
+          addCtryPolyIdx(ctryCode, gadmVersion)
       }else
       {
         stop("Something went wrong. Polygon download failed!")
@@ -67,54 +136,57 @@ dnldCtryPoly <- function(ctryCode)
       #unzip does not like double slashes! Replace with singles if found
       
       #Convert double forward slashes to single
-      polyFnameZip <- getPolyFnameZip(ctryCode)
+      polyFnameZip <- getPolyFnameZip(ctryCode, gadmVersion)
       polyFnameZip <- gsub("//", "/", polyFnameZip, perl=TRUE) #forward
       polyFnameZip <- gsub("\\\\\\\\", "\\\\", polyFnameZip, perl=TRUE) #back
       
-      polyFnamePath <- getPolyFnamePath(ctryCode)
+      polyFnamePath <- getPolyFnamePath(ctryCode, gadmVersion)
       polyFnamePath <- gsub("//", "/", polyFnamePath, perl=TRUE)
       polyFnamePath <- gsub("\\\\\\\\", "\\\\", polyFnamePath, perl=TRUE)
       
       #unzip
       result <- utils::unzip(polyFnameZip, exdir = polyFnamePath)
-      file.remove(getPolyFnameZip(ctryCode))
+      file.remove(polyFnameZip)
+      
+      if(gadmVersion == "3.6")
+        addCtryPolyIdx(ctryCode, gadmVersion)
     }
     
     #saving RDS
     message("Saving shapefile as RDS for faster access")
     message("Getting admLevels in ", ctryCode)
-    allCtryLevels <- unlist(getCtryShpAllAdmLvls(ctryCode))
+    allCtryLevels <- unlist(grep("adm", rgdal::ogrListLayers(getPolyFnamePath(ctryCode, gadmVersion)), value = T))
     
     message("Reading in all admLevels")
-    listCtryPolys <- unlist(lapply(allCtryLevels, function(lvl) rgdal::readOGR(getPolyFnamePath(ctryCode), lvl)))
+    listCtryPolys <- unlist(lapply(allCtryLevels, function(lvl) rgdal::readOGR(getPolyFnamePath(ctryCode, gadmVersion), lvl)))
     
     message("Saving admLevel polygons as RDS")
-    saveRDS(listCtryPolys, paste0(getPolyFnamePath(ctryCode), ".RDS"))
+    saveRDS(listCtryPolys, getPolyFnameRDS(ctryCode, gadmVersion))
   }
   else
   {
     message("Polygon dir for ", ctryCode, " already exists")
     
-    if(!file.exists(paste0(getPolyFnamePath(ctryCode), ".RDS")))
+    if(!file.exists(getPolyFnameRDS(ctryCode, gadmVersion)))
     {
       message("Saving shapefile as RDS for faster access")
       message("Getting admLevels in ", ctryCode)
-      allCtryLevels <- unlist(getCtryShpAllAdmLvls(ctryCode))
+      allCtryLevels <- unlist(grep("adm", rgdal::ogrListLayers(getPolyFnamePath(ctryCode, gadmVersion)), value = T))
       
       message("Reading in all admLevels")
-      listCtryPolys <- lapply(allCtryLevels, function(lvl) rgdal::readOGR(getPolyFnamePath(ctryCode), lvl))
+      listCtryPolys <- lapply(allCtryLevels, function(lvl) rgdal::readOGR(getPolyFnamePath(ctryCode,gadmVersion), lvl))
       
       message("Saving admLevel polygons as RDS")
-      saveRDS(listCtryPolys, paste0(getPolyFnamePath(ctryCode), ".RDS"))
+      saveRDS(listCtryPolys, getPolyFnameRDS(ctryCode, gadmVersion))
     }
   }
   
   #save ctry structure as CSV in data dir
-  if(!file.exists(getCtryStructFnamePath(ctryCode)))
+  if(!file.exists(getCtryStructFnamePath(ctryCode, gadmVersion)))
   {
     message("Saving country admLevel structure to CSV")
   
-    createCtryStruct(ctryCode)
+    createCtryStruct(ctryCode, gadmVersion)
   }
 
   return (!is.null(result))
@@ -133,9 +205,9 @@ dnldCtryPoly <- function(ctryCode)
 #' @examples
 #' Rnightlights:::getCtryStructFname("KEN")
 #'
-getCtryStructFname <- function(ctryCode)
+getCtryStructFname <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"))
 {
-  return(paste0("NL_STRUCT_", ctryCode, ".csv"))
+  return(paste0("NL_STRUCT_", ctryCode, "_GADM_", gadmVersion, ".csv"))
 }
 
 ######################## getCtryStructFnamePath ###################################
@@ -151,9 +223,9 @@ getCtryStructFname <- function(ctryCode)
 #' @examples
 #' Rnightlights:::getCtryStructFnamePath("KEN")
 #'
-getCtryStructFnamePath <- function(ctryCode)
+getCtryStructFnamePath <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"))
 {
-  return(file.path(getNlDir("dirNlData"), getCtryStructFname(ctryCode)))
+  return(file.path(getNlDir("dirNlData"), getCtryStructFname(ctryCode, gadmVersion)))
 }
 
 ######################## createCtryStruct ###################################
@@ -171,13 +243,13 @@ getCtryStructFnamePath <- function(ctryCode)
 #'   Rnightlights:::createCtryStruct("KEN")
 #' }
 #'
-createCtryStruct <- function(ctryCode)
+createCtryStruct <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"))
 {
-  ctryStructFnamePath <- getCtryStructFnamePath(ctryCode)
+  ctryStructFnamePath <- getCtryStructFnamePath(ctryCode, gadmVersion)
   
   if(!exists(ctryStructFnamePath))
   {
-    ctryNlDataDF <- createCtryNlDataDF(ctryCode, getCtryShpLowestLyrNames(ctryCode))
+    ctryNlDataDF <- createCtryNlDataDF(ctryCode, getCtryShpLowestLyrNames(ctryCode, gadmVersion))
     
     utils::write.table(ctryNlDataDF, ctryStructFnamePath, row.names = F, sep = ",")
   }
@@ -198,11 +270,11 @@ createCtryStruct <- function(ctryCode)
 #' Rnightlights:::createCtryStruct("KEN")
 #' }
 #'
-readCtryStruct <- function(ctryCode)
+readCtryStruct <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"))
 {
   nlCtryData <- NULL
   
-  ctryStructFnamePath <- getCtryStructFnamePath(ctryCode)
+  ctryStructFnamePath <- getCtryStructFnamePath(ctryCode, gadmVersion)
   
   if(file.exists(ctryStructFnamePath))
   {
@@ -232,7 +304,7 @@ readCtryStruct <- function(ctryCode)
 #' Rnightlights:::getCtryPolyUrl(ctryCode)
 #'  #returns url for the zipped country ESRI shapefile
 #'
-getCtryPolyUrl <- function(ctryCode)
+getCtryPolyUrl <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"))
 {
   if(missing(ctryCode))
     stop("Missing required parameter ctryCode")
@@ -241,9 +313,14 @@ getCtryPolyUrl <- function(ctryCode)
     stop("Invalid ctryCode: ", ctryCode)
   
   #Sample url: http://biogeo.ucdavis.edu/data/gadm2.8/shp/AFG_adm_shp.zip
-  basePolyUrl <- "http://biogeo.ucdavis.edu/data/gadm2.8/shp/"
-  
-  return (paste0(basePolyUrl, ctryCode, "_adm_shp.zip"))
+  ctryPolyUrl <- if(gadmVersion == "2.8")
+    paste0("http://biogeo.ucdavis.edu/data/gadm2.8/shp/", ctryCode, "_adm_shp.zip")
+  else if(gadmVersion == "3.6")
+    paste0("http://biogeo.ucdavis.edu/data/gadm3.6/shp/gadm36_", ctryCode, "_shp.zip")
+  else
+    stop("Invalid gadmVersion")
+
+  return (ctryPolyUrl)
 }
 
 ######################## existsPolyFnamePath ###################################
@@ -260,10 +337,10 @@ getCtryPolyUrl <- function(ctryCode)
 #' Rnightlights:::existsPolyFnamePath("KEN")
 #'  #returns TRUE/FALSE
 #'
-existsPolyFnamePath <- function(ctryCode)
+existsPolyFnamePath <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"))
 {
   #for polygons look for shapefile dir
-  return(dir.exists(getPolyFnamePath(ctryCode)))
+  return(dir.exists(getPolyFnamePath(ctryCode, gadmVersion)))
 }
 
 ######################## existsPolyFnameZip ###################################
@@ -280,7 +357,7 @@ existsPolyFnamePath <- function(ctryCode)
 #' Rnightlights:::existsPolyFnameZip("KEN")
 #'  #returns TRUE/FALSE
 #'
-existsPolyFnameZip <- function(ctryCode)
+existsPolyFnameZip <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"))
 {
   if(missing(ctryCode))
     stop("Missing required parameter ctryCode")
@@ -288,7 +365,7 @@ existsPolyFnameZip <- function(ctryCode)
   if(!validCtryCodes(ctryCode))
     stop("Invalid ctryCode: ", ctryCode)
   
-  return(file.exists(getPolyFnameZip(ctryCode)))
+  return(file.exists(getPolyFnameZip(ctryCode, gadmVersion)))
 }
 
 ######################## getCtryShpLyrName ###################################
@@ -321,7 +398,7 @@ existsPolyFnameZip <- function(ctryCode)
 #' 
 #' #export only due to exploreData() shiny app
 #' @export
-getCtryShpLyrNames <- function(ctryCodes, lyrNums, dnldPoly)
+getCtryShpLyrNames <- function(ctryCodes, lyrNums, dnldPoly, gadmVersion=pkgOptions("gadmVersion"))
 {
   if(missing(ctryCodes))
     stop("Missing required parameter ctryCode")
@@ -332,19 +409,22 @@ getCtryShpLyrNames <- function(ctryCodes, lyrNums, dnldPoly)
   if(missing(dnldPoly))
     dnldPoly <- TRUE
   
-  if(!existsCtryPoly(ctryCodes))
+  if(!existsCtryPoly(ctryCodes, gadmVersion))
     if(!dnldPoly)
       message("ctryPoly doesn't exist. Set dnldPoly=TRUE to download it")
   else
-    dnldCtryPoly(ctryCodes)
+    dnldCtryPoly(ctryCodes, gadmVersion)
   
   admLyrNames <- stats::setNames(lapply(ctryCodes, function(ctryCode)
   {
-    layers <- rgdal::ogrListLayers(path.expand(getPolyFnamePath(ctryCodes)))
+    layers <- rgdal::ogrListLayers(path.expand(getPolyFnamePath(ctryCodes, gadmVersion)))
     
-    admLayers <- layers[grep("adm", layers)]
+    if(gadmVersion == "2.8")
+      admLayers <- layers[grep("adm", layers)]
+    else if(gadmVersion == "3.6")
+      admLayers <- layers[grep("adm", layers)]
     
-    admLayerNums <- sapply(lyrNums, function(lyrNum) grep(lyrNum, admLayers))
+    admLayerNums <- sapply(lyrNums, function(lyrNum) grep(paste0(lyrNum,"$"), admLayers))
     
     admLyrName <- admLayers[as.numeric(admLayerNums)]
   }), ctryCodes)
@@ -362,7 +442,7 @@ getCtryShpLyrNames <- function(ctryCodes, lyrNums, dnldPoly)
 #'
 #' @return character string The name of the lowest admin level
 #'
-getCtryShpLowestLyrNames <- function(ctryCodes)
+getCtryShpLowestLyrNames <- function(ctryCodes, gadmVersion=pkgOptions("gadmVersion"))
 {
   if(missing(ctryCodes))
     stop("Missing required parameter ctryCode")
@@ -370,15 +450,15 @@ getCtryShpLowestLyrNames <- function(ctryCodes)
   if(!allValidCtryCodes(ctryCodes))
     stop("Invalid ctryCode(s) detected ")
   
-  if(!dir.exists(path.expand(getPolyFnamePath(ctryCodes))))
-    dnldCtryPoly(ctryCodes)
+  if(!dir.exists(path.expand(getPolyFnamePath(ctryCodes, gadmVersion))))
+    dnldCtryPoly(ctryCodes, gadmVersion)
   
-  if(!dir.exists(path.expand(getPolyFnamePath(ctryCodes))))
+  if(!dir.exists(path.expand(getPolyFnamePath(ctryCodes, gadmVersion))))
     stop("Unable to find/download ctry polygon")
   
   lowestAdmLyrNames <- stats::setNames(sapply(ctryCodes, function(ctryCode)
   {
-    layers <- rgdal::ogrListLayers(path.expand(getPolyFnamePath(ctryCode)))
+    layers <- rgdal::ogrListLayers(path.expand(getPolyFnamePath(ctryCode, gadmVersion)))
     
     admLayers <- layers[grep("adm", layers)]
     
@@ -412,7 +492,7 @@ getCtryShpLowestLyrNames <- function(ctryCodes)
 #' #if KEN shapefile exists otherwise errors
 #' }
 #'
-getCtryPolyAdmLevelNames <- function(ctryCode, lowestAdmLevel=getCtryShpLowestLyrNames(ctryCode))
+getCtryPolyAdmLevelNames <- function(ctryCode, lowestAdmLevel=getCtryShpLowestLyrNames(ctryCode), gadmVersion=pkgOptions("gadmVersion"))
 {
   if(missing(ctryCode))
     stop("Missing required parameter ctryCode")
@@ -429,7 +509,7 @@ getCtryPolyAdmLevelNames <- function(ctryCode, lowestAdmLevel=getCtryShpLowestLy
   if (numLayers > 0)
     for (lyrNum in 1:numLayers)
     {
-      lyrPoly <- readCtryPolyAdmLayer(ctryCode, as.character(getCtryShpLyrNames(ctryCode, lyrNum)))
+      lyrPoly <- readCtryPolyAdmLayer(ctryCode, as.character(getCtryShpLyrNames(ctryCode, lyrNum, gadmVersion = gadmVersion)))
       
       lvlTypeName <- paste0("TYPE_",lyrNum)
       
@@ -478,7 +558,7 @@ getCtryPolyAdmLevelNames <- function(ctryCode, lowestAdmLevel=getCtryShpLowestLy
 #' }
 #'
 #' @export
-searchAdmLevel <- function(ctryCode, admLevelName, dnldPoly)
+searchAdmLevel <- function(ctryCode, admLevelName, dnldPoly, gadmVersion=pkgOptions("gadmVersion"))
 {
   if(missing(ctryCode))
     stop("Missing required parameter ctryCode")
@@ -495,20 +575,20 @@ searchAdmLevel <- function(ctryCode, admLevelName, dnldPoly)
   if(missing(dnldPoly))
     dnldPoly <- TRUE
   
-  if(!existsCtryPoly(ctryCode))
+  if(!existsCtryPoly(ctryCode, gadmVersion))
     if(!dnldPoly)
       message("ctryPoly doesn't exist. Set dnldPoly=TRUE to download it")
     else
-      dnldCtryPoly(ctryCode)
+      dnldCtryPoly(ctryCode, gadmVersion)
   
-  allAdmLevels <- getCtryPolyAdmLevelNames(ctryCode)
+  allAdmLevels <- getCtryPolyAdmLevelNames(ctryCode, gadmVersion = gadmVersion)
 
   if(admLevelName=="country")
-    return(getCtryShpLyrNames(ctryCode, 0))
+    return(getCtryShpLyrNames(ctryCode, 0, gadmVersion = gadmVersion))
   else if(admLevelName %in% c("bottom", "lowest"))
-    return(getCtryShpLyrNames(ctryCode, length(allAdmLevels)))
+    return(getCtryShpLyrNames(ctryCode, length(allAdmLevels), gadmVersion = gadmVersion))
   else if(admLevelName %in% c("top","highest"))
-    return(getCtryShpLyrNames(ctryCode, 1))
+    return(getCtryShpLyrNames(ctryCode, 1, gadmVersion = gadmVersion))
   
   idxFound <- grep(pattern = admLevelName, x = allAdmLevels, ignore.case = TRUE)
   
@@ -517,7 +597,7 @@ searchAdmLevel <- function(ctryCode, admLevelName, dnldPoly)
       return(NA)
   }
 
-  return (getCtryShpLyrNames(ctryCode, idxFound))
+  return (getCtryShpLyrNames(ctryCode, idxFound, gadmVersion = gadmVersion))
 }
 
 ######################## validCtryAdmLvls ###################################
@@ -538,7 +618,7 @@ searchAdmLevel <- function(ctryCode, admLevelName, dnldPoly)
 #' #returns "KEN_adm1"
 #' }
 #'
-validCtryAdmLvls <- function(ctryCode, admLevels)
+validCtryAdmLvls <- function(ctryCode, admLevels, gadmVersion=pkgOptions("gadmVersion"))
 {
   if(missing(ctryCode))
     stop("Missing required parameter ctryCode")
@@ -549,7 +629,7 @@ validCtryAdmLvls <- function(ctryCode, admLevels)
   if(!validCtryCodes(ctryCode))
     stop("Invalid ISO3 ctryCode: ", ctryCode)
   
-  ctryAdmLvls <- unlist(getCtryShpAllAdmLvls(ctryCode))
+  ctryAdmLvls <- unlist(getCtryShpAllAdmLvls(ctryCode, gadmVersion))
   
   validAdmLvls <- sapply(admLevels, function(x) toupper(x) %in% toupper(ctryAdmLvls))
   
@@ -577,12 +657,26 @@ validCtryAdmLvls <- function(ctryCode, admLevels)
 #' #returns "KEN_adm1"
 #' }
 #'
-allValidCtryAdmLvls <- function(ctryCode, admLevels)
+allValidCtryAdmLvls <- function(ctryCode, admLevels, gadmVersion=pkgOptions("gadmVersion"))
 {
-  return(all(validCtryAdmLvls(ctryCode, admLevels)))
+  return(all(validCtryAdmLvls(ctryCode, admLevels, gadmVersion)))
 }
 
-existsCtryPoly <- function(ctryCode)
+######################## existsCtryPoly ###################################
+
+#' Checks if a country polygon exists
+#'
+#' Checks if a country polygon exists
+#' 
+#' @param ctryCode \code{character} The ctryCode of the country of interest
+#'
+#' @examples
+#' \dontrun{
+#' existCtryPoly("KEN")
+#' #returns TRUE/FALSE
+#' }
+#'
+existsCtryPoly <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"))
 {
   if(missing(ctryCode))
     stop("Missing required parameter ctryCode")
@@ -590,7 +684,7 @@ existsCtryPoly <- function(ctryCode)
   if(!validCtryCodes(ctryCode))
     stop("Invalid ISO3 ctryCode: ", ctryCode)
   
-  return(dir.exists(getPolyFnamePath(ctryCode)))
+  return(dir.exists(getPolyFnamePath(ctryCode, gadmVersion)))
 }
 
 ######################## getCtryShpAllAdmLvls ###################################
@@ -609,16 +703,16 @@ existsCtryPoly <- function(ctryCode)
 #' #returns "KEN_adm1"
 #' }
 #'
-getCtryShpAllAdmLvls <- function(ctryCodes)
+getCtryShpAllAdmLvls <- function(ctryCodes, gadmVersion=pkgOptions("gadmVersion"))
 {
   stats::setNames(lapply(ctryCodes, 
          function(ctryCode)
          {
-           lvl <- gsub("[^[:digit:]]","", getCtryShpLowestLyrNames(ctryCode)); 
+           lvl <- ctryShpLyrName2Num(getCtryShpLowestLyrNames(ctryCode, gadmVersion))
            adms <- apply(cbind(0:lvl,ctryCode), 1,
                          function(lv) 
                          {
-                           adm <- getCtryShpLyrNames(unlist(lv)[2], unlist(lv)[1])
+                           adm <- getCtryShpLyrNames(unlist(lv)[2], unlist(lv)[1], gadmVersion = gadmVersion)
                          })
            as.character(unlist(adms))
          }),ctryCodes)
@@ -640,7 +734,7 @@ getCtryShpAllAdmLvls <- function(ctryCodes)
 #' Rnightlights:::getPolyFname("KEN")
 #'  #returns "KEN_adm_shp"
 #'
-getPolyFname <- function(ctryCode)
+getPolyFname <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"))
 {
   if(missing(ctryCode))
     stop("Missing required parameter ctryCode")
@@ -649,9 +743,9 @@ getPolyFname <- function(ctryCode)
     stop("Invalid ctryCode: ", ctryCode)
   
   #format of shapefiles is CTR_adm_shp e.g. KEN_adm_shp
-  polyFname <- paste0(ctryCode, "_adm_shp")
-  
-  return (polyFname)
+  polyFname <- paste0("SHP_", ctryCode, "_GADM_", gadmVersion)
+
+  return(polyFname)
 }
 
 ######################## getPolyFnamePath ###################################
@@ -674,7 +768,7 @@ getPolyFname <- function(ctryCode)
 #'  
 #' #@export only due to exploreData() shiny app
 #' @export
-getPolyFnamePath <- function(ctryCode)
+getPolyFnamePath <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"))
 {
   if(missing(ctryCode))
     stop("Missing required parameter ctryCode")
@@ -684,7 +778,7 @@ getPolyFnamePath <- function(ctryCode)
   
   #check for the shapefile directory created with
   #format of shapefiles is CTR_adm_shp e.g. KEN_adm_shp
-  polyFnamePath <- file.path(getNlDir("dirPolygon"), getPolyFname(ctryCode))
+  polyFnamePath <- file.path(getNlDir("dirPolygon"), getPolyFname(ctryCode, gadmVersion))
   
   return (polyFnamePath)
 }
@@ -703,7 +797,7 @@ getPolyFnamePath <- function(ctryCode)
 #' Rnightlights:::getPolyFnameZip("KEN")
 #'  #returns "path/to/"
 #'
-getPolyFnameZip <- function(ctryCode)
+getPolyFnameZip <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"))
 {
   if(missing(ctryCode))
     stop("Missing required parameter ctryCode")
@@ -712,7 +806,35 @@ getPolyFnameZip <- function(ctryCode)
     stop("Invalid ctryCode: ", ctryCode)
   
   #format of shapefiles is <ctryCode>_adm_shp e.g. KEN_adm_shp
-  polyFname <- paste0(getPolyFnamePath(ctryCode),".zip")
+  polyFname <- paste0(getPolyFnamePath(ctryCode, gadmVersion),".zip")
+  
+  return (polyFname)
+}
+
+######################## getPolyFnameZip ###################################
+
+#' Get the filename of the polygon zip file as downloaded from \url{http://GADM.ORG}
+#'
+#' Get the filename of the polygon zip file as downloaded from \url{http://GADM.ORG}
+#'
+#' @param ctryCode character the ISO3 code of the country
+#'
+#' @return character path to zip
+#'
+#' @examples
+#' Rnightlights:::getPolyFnameZip("KEN")
+#'  #returns "path/to/"
+#'
+getPolyFnameRDS <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"))
+{
+  if(missing(ctryCode))
+    stop("Missing required parameter ctryCode")
+  
+  if(!validCtryCodes(ctryCode))
+    stop("Invalid ctryCode: ", ctryCode)
+  
+  #format of shapefiles is <ctryCode>_adm_shp e.g. KEN_adm_shp
+  polyFname <- paste0(getPolyFnamePath(ctryCode, gadmVersion), ".RDS")
   
   return (polyFname)
 }
@@ -741,7 +863,7 @@ ctryShpLyrName2Num <- function(layerName)
   if (class(layerName) != "character" || is.null(layerName) || is.na(layerName) || layerName =="")
     stop("Invalid layerName: ", layerName)
   
-  return(as.numeric(gsub("[^[:digit:]]", "", layerName)))
+  return(as.numeric(stringr::str_extract(layerName,"\\d+$")))
 }
 
 
@@ -772,7 +894,7 @@ ctryShpLyrName2Num <- function(layerName)
 #' }
 #'
 #' @export
-readCtryPolyAdmLayer <- function(ctryCode, admLevel, polyType="rds", dnldPoly=TRUE)
+readCtryPolyAdmLayer <- function(ctryCode, admLevel, polyType="rds", dnldPoly=TRUE, gadmVersion=pkgOptions("gadmVersion"))
 {
   if(missing(ctryCode))
     stop("Missing required parameter ctryCode")
@@ -783,22 +905,22 @@ readCtryPolyAdmLayer <- function(ctryCode, admLevel, polyType="rds", dnldPoly=TR
   if(missing(admLevel))
     stop("Missing required parameter admLevelName")
   
-  if(!existsCtryPoly(ctryCode))
+  if(!existsCtryPoly(ctryCode, gadmVersion))
   {
     if(!dnldPoly)
       message("ctryPoly doesn't exist. Set dnldPoly=TRUE to download it")
     else
-      dnldCtryPoly(ctryCode)
+      dnldCtryPoly(ctryCode, gadmVersion)
   }
 
-  rdsPath <- paste0(getPolyFnamePath(ctryCode), ".RDS")
+  rdsPath <- getPolyFnameRDS(ctryCode, gadmVersion)
   
   if(polyType=="rds")
   {
     if(!file.exists(rdsPath))
     {
       if(dnldPoly)
-        dnldCtryPoly(ctryCode)
+        dnldCtryPoly(ctryCode, gadmVersion)
       else
         stop("RDS doesn't exist. Set dnldPoly=TRUE to download/create it")
     }
@@ -817,12 +939,12 @@ readCtryPolyAdmLayer <- function(ctryCode, admLevel, polyType="rds", dnldPoly=TR
   }
   else if(polyType == "shp")
   {
-    shpPath <- getPolyFnamePath(ctryCode)
+    shpPath <- getPolyFnamePath(ctryCode, gadmVersion)
     
     if(!dir.exists(rdsPath))
     {
       if(dnldPoly)
-        dnldCtryPoly(ctryCode)
+        dnldCtryPoly(ctryCode, gadmVersion)
       else
         stop("Shapefile doesn't exist. Set dnldPoly=TRUE to download it")
     }

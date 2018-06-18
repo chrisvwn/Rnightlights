@@ -4,7 +4,7 @@
 \alias{validCtryAdmLvls}
 \title{Checks if ctry admLevels are valid}
 \usage{
-validCtryAdmLvls(ctryCode, admLevels)
+validCtryAdmLvls(ctryCode, admLevels, gadmVersion = pkgOptions("gadmVersion"))
 }
 \arguments{
 \item{ctryCode}{\code{character} The ctryCode of the country of interest}

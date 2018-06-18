@@ -5,7 +5,7 @@
 \title{Returns the directory name of the unzipped shapefile downloaded from
     http://gadm.org without the path}
 \usage{
-getPolyFname(ctryCode)
+getPolyFname(ctryCode, gadmVersion = pkgOptions("gadmVersion"))
 }
 \arguments{
 \item{ctryCode}{character the ISO3 code of the country}

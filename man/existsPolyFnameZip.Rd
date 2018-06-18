@@ -4,7 +4,7 @@
 \alias{existsPolyFnameZip}
 \title{Check if the compressed country polygon has been downloaded and stored in the polygon folder}
 \usage{
-existsPolyFnameZip(ctryCode)
+existsPolyFnameZip(ctryCode, gadmVersion = pkgOptions("gadmVersion"))
 }
 \arguments{
 \item{ctryCode}{The ctryCode of interest}
