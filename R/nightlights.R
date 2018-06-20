@@ -166,7 +166,7 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, cropMaskMetho
     ctryNlDataDF <- utils::read.csv(getCtryNlDataFnamePath(ctryCode, admLevel, gadmVersion))
     
     message("Load country polygon admin level")
-    ctryPolyAdm0 <- readCtryPolyAdmLayer(ctryCode, unlist(getCtryShpLyrNames(ctryCode, 0, gadmVersion)), gadmVersion)
+    ctryPolyAdm0 <- readCtryPolyAdmLayer(ctryCode = ctryCode, admLevel = unlist(getCtryShpLyrNames(ctryCodes = ctryCode, lyrNums = 0, gadmVersion = gadmVersion)), gadmVersion = gadmVersion)
     
     ctryExtent <- raster::extent(ctryPolyAdm0)
     
@@ -270,7 +270,7 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, cropMaskMetho
       
       message("gdalwarp masking to VRT ",base::date())
       
-      gdalUtils::gdalwarp(srcfile=rstTmp, dstfile=output_file_vrt, s_srs=wgs84, t_srs=wgs84, cutline=getPolyFnamePath(ctryCode, gadmVersion), cl= getCtryShpLyrNames(ctryCode,0), multi=TRUE, wm=pkgOptions("gdalCacheMax"), wo=paste0("NUM_THREADS=", pkgOptions("numCores")), q = FALSE)
+      gdalUtils::gdalwarp(srcfile=rstTmp, dstfile=output_file_vrt, s_srs=wgs84, t_srs=wgs84, cutline=getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion), cl= getCtryShpLyrNames(ctryCodes = ctryCode, 0), multi=TRUE, wm=pkgOptions("gdalCacheMax"), wo=paste0("NUM_THREADS=", pkgOptions("numCores")), q = FALSE)
 
       message("gdal_translate converting VRT to TIFF ", base::date())
       gdalUtils::gdal_translate(co = "compress=LZW", src_dataset = output_file_vrt, dst_dataset = getCtryRasterOutputFnamePath(ctryCode, nlType, nlPeriod))
@@ -561,9 +561,9 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
     if(admLevels=="lowest")
       admLevels <- getCtryShpLowestLyrNames(ctryCodes, gadmVersion)
     else if(admLevels=="top")
-      admLevels <- getCtryShpLyrNames(ctryCodes, 0, gadmVersion)
+      admLevels <- getCtryShpLyrNames(ctryCodes = ctryCodes, lyrNums = 0, gadmVersion = gadmVersion)
     else if(admLevels=="all")
-      admLevels <- getCtryShpAllAdmLvls(ctryCodes, gadmVersion)
+      admLevels <- getCtryShpAllAdmLvls(ctryCodes, gadmVersion=gadmVersion)
     else
     {
       tmpAdmLevel <- searchAdmLevel(ctryCode, admLevels, gadmVersion)
