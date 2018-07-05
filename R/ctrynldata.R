@@ -35,6 +35,9 @@ createCtryNlDataDF <- function(ctryCode, admLevel, gadmVersion=pkgOptions("gadmV
   
   ctryPoly <- readCtryPolyAdmLayer(ctryCode = ctryCode, admLevel = admLevel, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
   
+  if(is.null(ctryPoly))
+    stop("Could not read admLevel '", admLevel, "' from given polygon")
+  
   ctryExtent <- raster::extent(ctryPoly)
   
   raster::projection(ctryPoly) <- sp::CRS(wgs84)
@@ -55,7 +58,7 @@ createCtryNlDataDF <- function(ctryCode, admLevel, gadmVersion=pkgOptions("gadmV
     #the number of admin levels
     nLyrs <- length(ctryPolyAdmLevels)
     
-    if(!is.null(custPolyPath))
+    if(is.null(custPolyPath))
     {
       ctryPolyAdmCols <- paste(c("NAME_"), 1:nLyrs, sep="")
       
@@ -63,7 +66,7 @@ createCtryNlDataDF <- function(ctryCode, admLevel, gadmVersion=pkgOptions("gadmV
       ctryNlDataDF <- as.data.frame(ctryPoly@data[,eval(ctryPolyAdmCols)])
     }else
     {
-      
+      ctryNlDataDF <- as.data.frame(ctryPoly@data)
     }
     
     #add the area as reported by the polygon shapefile as a convenience

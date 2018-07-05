@@ -137,7 +137,7 @@ dnldCtryPoly <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"), custPo
         polyFnamePath <- gsub("\\\\\\\\", "\\\\", polyFnamePath, perl=TRUE)
         
         #unzip
-        result <- utils::unzip(zipfile = polyFnameZip, exdir = polyFnamePath)
+        result <- utils::unzip(zipfile = polyFnameZip, junkpaths = TRUE, exdir = polyFnamePath)
         file.remove(polyFnameZip)
         
         if(missing(custPolyPath) && gadmVersion == "3.6")
@@ -161,17 +161,20 @@ dnldCtryPoly <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"), custPo
       polyFnamePath <- gsub("\\\\\\\\", "\\\\", polyFnamePath, perl=TRUE)
       
       #unzip
-      result <- utils::unzip(zipfile = polyFnameZip, exdir = polyFnamePath)
+      result <- utils::unzip(zipfile = polyFnameZip, junkpaths = TRUE, exdir = polyFnamePath)
       file.remove(polyFnameZip)
       
-      if(missin(custPolyPath) && gadmVersion == "3.6")
+      if(missing(custPolyPath) && gadmVersion == "3.6")
         addCtryPolyIdx(ctryCode, gadmVersion)
     }
     
     #saving RDS
     message("Saving shapefile as RDS for faster access")
     message("Getting admLevels in ", ctryCode)
-    allCtryLevels <- unlist(grep("adm", rgdal::ogrListLayers(getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)), value = T))
+    if(is.null(custPolyPath))
+      allCtryLevels <- unlist(grep("adm", rgdal::ogrListLayers(getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)), value = T))
+    else
+      allCtryLevels <- rgdal::ogrListLayers(getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath))
     
     message("Reading in all admLevels")
     listCtryPolys <- unlist(lapply(allCtryLevels, function(lvl) rgdal::readOGR(dsn = getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath), layer = lvl)))
@@ -187,7 +190,10 @@ dnldCtryPoly <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"), custPo
     {
       message("Saving shapefile as RDS for faster access")
       message("Getting admLevels in ", ctryCode)
-      allCtryLevels <- sort(unlist(grep("adm", rgdal::ogrListLayers(dsn = getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)), value = T)))
+      if(is.null(custPolyPath))
+        allCtryLevels <- sort(unlist(grep("adm", rgdal::ogrListLayers(dsn = getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)), value = T)))
+      else
+        allCtryLevels <- rgdal::ogrListLayers(getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath))
       
       message("Reading in all admLevels")
       listCtryPolys <- lapply(allCtryLevels, function(lvl) rgdal::readOGR(dsn = getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath), layer = lvl))
@@ -456,7 +462,7 @@ getCtryShpLyrNames <- function(ctryCodes, lyrNums, dnldPoly, gadmVersion=pkgOpti
   {
     layers <- rgdal::ogrListLayers(dsn = path.expand(path = getPolyFnamePath(ctryCode = ctryCodes, gadmVersion = gadmVersion, custPolyPath = custPolyPath)))
     
-    if(!is.null(custPolyPath))
+    if(is.null(custPolyPath))
     {
       if(gadmVersion == "2.8")
         admLayers <- layers[grep(pattern = "adm", x = layers)]
@@ -468,9 +474,7 @@ getCtryShpLyrNames <- function(ctryCodes, lyrNums, dnldPoly, gadmVersion=pkgOpti
       admLyrName <- admLayers[as.numeric(admLayerNums)]
     }else
     {
-      admLayers <- layers[grep("adm", layers)]
-      
-      admLyrName <- admLayers[as.numeric(lyrNums)+1]
+      admLyrName <- layers[as.numeric(lyrNums)]
     }
   }), ctryCodes)
   
