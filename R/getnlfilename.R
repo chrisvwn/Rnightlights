@@ -286,7 +286,7 @@ getNlTileTifLclNamePathOLS <- function(nlPeriod, tileNum)
   if(!allValidNlPeriods(nlPeriod, "OLS.Y"))
     stop("Invalid nlPeriod: ", nlPeriod)
   
-  return (file.path(getNlDir("dirNlTiles"), getNlTileTifLclNameOLS(nlPeriod)))
+  return (file.path(getNlDir(dirName = "dirNlTiles"), getNlTileTifLclNameOLS(nlPeriod = nlPeriod)))
 }
 
 ######################## getNlTileZipLclNameOLS ###################################

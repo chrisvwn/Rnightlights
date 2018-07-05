@@ -115,7 +115,7 @@
 #' Rnightlights:::processNLCountry("KEN", "KEN_adm2", "VIIRS.M", "201412", "gdal", "gdal", "sum")
 #' }
 #'
-processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, cropMaskMethod=pkgOptions("cropMaskMethod"), extractMethod=pkgOptions("extractMethod"), nlStats=pkgOptions("nlStats"), gadmVersion=pkgOptions("gadmVersion"))
+processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, nlStats=pkgOptions("nlStats"), downloadMethod=pkgOptions("downloadMethod"), cropMaskMethod=pkgOptions("cropMaskMethod"), extractMethod=pkgOptions("extractMethod"), gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
 {
   if(missing(ctryCode))
     stop("Missing required parameter ctryCode")
@@ -126,17 +126,17 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, cropMaskMetho
   if(missing(nlType))
     stop("Missing required parameter nlType")
   
-  if(!validCtryCodes(ctryCode))
+  if(!validCtryCodes(ctryCodes = ctryCode))
     stop("Invalid ctryCode: ", ctryCode)
   
   if(!allValidNlPeriods(nlPeriods = nlPeriod, nlTypes = nlType))
     stop("Invalid nlPeriod: ", nlPeriod, " for nlType ", nlType)
   
-  if(!validNlTypes(nlType))
+  if(!validNlTypes(nlTypes = nlType))
     stop("Invalid nlType: ", nlType)
   
   if(missing(admLevel))
-    admLevel <- getCtryShpLowestLyrNames(ctryCode, gadmVersion)
+    admLevel <- getCtryShpLowestLyrNames(ctryCode=ctryCode, gadmVersion=gadmVersion, custPolyPath=custPolyPath)
   
   message("processNLCountry: ", paste(ctryCode, admLevel, nlType, nlPeriod, sep=" "))
 
@@ -144,11 +144,11 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, cropMaskMetho
   
   message("Check for existing data file")
   
-  if (existsCtryNlDataFile(ctryCode, admLevel))
+  if (existsCtryNlDataFile(ctryCode = ctryCode, admLevel = admLevel, gadmVersion = gadmVersion, custPolyPath = custPolyPath))
   {
-    message("Data file found: ", getCtryNlDataFnamePath(ctryCode, admLevel, gadmVersion))
+    message("Data file found: ", getCtryNlDataFnamePath(ctryCode = ctryCode, admLevel = admLevel, gadmVersion = gadmVersion, custPolyPath = custPolyPath))
     
-    existStats <- sapply(nlStats, function(nlStat) existsCtryNlData(ctryCode = ctryCode, admLevel = admLevel, nlTypes = nlType, nlPeriods = nlPeriod, nlStats = nlStat))
+    existStats <- sapply(nlStats, function(nlStat) existsCtryNlData(ctryCode = ctryCode, admLevel = admLevel, nlTypes = nlType, nlPeriods = nlPeriod, nlStats = nlStat, gadmVersion = gadmVersion, custPolyPath = custPolyPath))
     
     if(all(existStats))
     {
@@ -163,26 +163,41 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, cropMaskMetho
     }
     
     message("Load country data file")
-    ctryNlDataDF <- utils::read.csv(getCtryNlDataFnamePath(ctryCode, admLevel, gadmVersion))
+    ctryNlDataDF <- utils::read.csv(getCtryNlDataFnamePath(ctryCode = ctryCode,
+                                                           admLevel = admLevel,
+                                                           gadmVersion = gadmVersion,
+                                                           custPolyPath = custPolyPath))
     
     message("Load country polygon admin level")
-    ctryPolyAdm0 <- readCtryPolyAdmLayer(ctryCode = ctryCode, admLevel = unlist(getCtryShpLyrNames(ctryCodes = ctryCode, lyrNums = 0, gadmVersion = gadmVersion)), gadmVersion = gadmVersion)
+    ctryPolyAdm0 <- readCtryPolyAdmLayer(ctryCode = ctryCode,
+                                         admLevel = unlist(getCtryShpLyrNames(ctryCodes = ctryCode,
+                                                                              lyrNums = 0,
+                                                                              gadmVersion = gadmVersion,
+                                                                              custPolyPath = custPolyPath)),
+                                         gadmVersion = gadmVersion,
+                                         custPolyPath = custPolyPath)
     
-    ctryExtent <- raster::extent(ctryPolyAdm0)
+    ctryExtent <- raster::extent(x = ctryPolyAdm0)
     
-    raster::projection(ctryPolyAdm0) <- sp::CRS(wgs84)
+    raster::projection(ctryPolyAdm0) <- sp::CRS(projargs = wgs84)
     
   } else
   {
     message("Data file not found. Creating ...")
     
-    ctryNlDataDF <- createCtryNlDataDF(ctryCode = ctryCode, admLevel = admLevel, gadmVersion)
+    ctryNlDataDF <- createCtryNlDataDF(ctryCode = ctryCode, admLevel = admLevel, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
     
     message("Data file not found. Creating ... DONE")
     
     message("Load country polygon country layer for crop")
     
-    ctryPolyAdm0 <- readCtryPolyAdmLayer(ctryCode = ctryCode, admLevel = unlist(getCtryShpLyrNames(ctryCode, 0, gadmVersion)), gadmVersion=gadmVersion)
+    ctryPolyAdm0 <- readCtryPolyAdmLayer(ctryCode = ctryCode,
+                                         admLevel = unlist(getCtryShpLyrNames(ctryCodes = ctryCode,
+                                                                              lyrNums =  0,
+                                                                              gadmVersion = gadmVersion,
+                                                                              custPolyPath = custPolyPath)),
+                                         gadmVersion=gadmVersion,
+                                         custPolyPath = custPolyPath)
   }
   
   if(!file.exists(getCtryRasterOutputFnamePath(ctryCode = ctryCode, nlPeriod = nlPeriod, nlType = nlType)))
@@ -191,23 +206,23 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, cropMaskMetho
     
     message("Reading in the raster tiles " , base::date())
     
-    tileList <- getCtryTileList(ctryCode, nlType)
+    tileList <- getCtryTileList(ctryCodes = ctryCode, nlType = nlType)
     
     ctryRastCropped <- NULL
     
     for (tile in tileList)
     {
-      rastFilename <- getNlTileTifLclNamePath(nlType, nlPeriod, tileName2Idx(tile, nlType))
+      rastFilename <- getNlTileTifLclNamePath(nlType = nlType, nlPeriod = nlPeriod, tileNum = tileName2Idx(tileName = tile, nlType = nlType))
       
-      rastTile <- raster::raster(rastFilename)
+      rastTile <- raster::raster(x = rastFilename)
       
-      raster::projection(rastTile) <- sp::CRS(wgs84)
+      raster::projection(rastTile) <- sp::CRS(projargs = wgs84)
       
       message("Cropping the raster tiles ", base::date())
       
       #extTempCrop <- crop(rastTile, ctryExtent)
       
-      tempCrop <- raster::crop(rastTile, ctryPolyAdm0, progress='text')
+      tempCrop <- raster::crop(x = rastTile, y = ctryPolyAdm0, progress='text')
       
       if(is.null(ctryRastCropped))
       {
@@ -221,7 +236,7 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, cropMaskMetho
         
         ctryRastCropped <- NULL
         
-        ctryRastCropped <- raster::merge(ctryRastMerged, tempCrop)
+        ctryRastCropped <- raster::merge(x = ctryRastMerged, y = tempCrop)
         
         rm(ctryRastMerged)
       }
@@ -240,11 +255,15 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, cropMaskMetho
       
       #RASTERIZE
       message("Mask using rasterize ", base::date())
-      ctryRastCropped <- raster::rasterize(ctryPolyAdm0, ctryRastCropped, mask=TRUE, progress="text") #crops to polygon edge & converts to raster
+      ctryRastCropped <- raster::rasterize(x = ctryPolyAdm0, y = ctryRastCropped, mask=TRUE, progress="text") #crops to polygon edge & converts to raster
       
       message("Writing the merged raster to disk ", base::date())
       
-      raster::writeRaster(x = ctryRastCropped, filename = getCtryRasterOutputFnamePath(ctryCode, nlType, nlPeriod), overwrite=TRUE, progress="text")
+      raster::writeRaster(x = ctryRastCropped,
+                          filename = getCtryRasterOutputFnamePath(ctryCode = ctryCode,
+                                                                  nlType = nlType,
+                                                                  nlPeriod = nlPeriod),
+                          overwrite=TRUE, progress="text")
       
       message("Crop and mask using rasterize ... Done", base::date())
     }
@@ -253,27 +272,41 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, cropMaskMetho
       message("Crop and mask using gdalwarp ... ", base::date())
       
       #GDALWARP
-      rstTmp <- file.path(getNlDir("dirNlTemp"), paste0(basename(tempfile()), ".tif"))
+      rstTmp <- file.path(getNlDir(dirName = "dirNlTemp"), paste0(basename(tempfile()), ".tif"))
       
       message("Writing merged raster to disk for gdalwarp masking", base::date())
       
-      raster::writeRaster(ctryRastCropped, rstTmp, progress="text")
+      raster::writeRaster(x = ctryRastCropped, filename = rstTmp, progress="text")
       
       ctryRastCropped <- NULL
       
       gc()
       
-      output_file_vrt <- file.path(getNlDir("dirNlTemp"), paste0(ctryCode, "_", nlType, "_", nlPeriod, ".vrt"), fsep = )
+      output_file_vrt <- file.path(getNlDir(dirName = "dirNlTemp"), paste0(ctryCode, "_", nlType, "_", nlPeriod, ".vrt"), fsep = )
       
       if (file.exists(output_file_vrt))
         file.remove(output_file_vrt)
       
       message("gdalwarp masking to VRT ",base::date())
       
-      gdalUtils::gdalwarp(srcfile=rstTmp, dstfile=output_file_vrt, s_srs=wgs84, t_srs=wgs84, cutline=getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion), cl= getCtryShpLyrNames(ctryCodes = ctryCode, 0), multi=TRUE, wm=pkgOptions("gdalCacheMax"), wo=paste0("NUM_THREADS=", pkgOptions("numCores")), q = FALSE)
+      gdalUtils::gdalwarp(srcfile=rstTmp,
+                          dstfile=output_file_vrt,
+                          s_srs=wgs84, t_srs=wgs84,
+                          cutline=getPolyFnamePath(ctryCode = ctryCode,
+                                                   gadmVersion = gadmVersion,
+                                                   custPolyPath = custPolyPath),
+                          cl= getCtryShpLyrNames(ctryCodes = ctryCode,
+                                                 lyrNums = 0,
+                                                 gadmVersion = gadmVersion,
+                                                 custPolyPath = custPolyPath),
+                          multi=TRUE,
+                          wm=pkgOptions("gdalCacheMax"),
+                          wo=paste0("NUM_THREADS=",
+                                    pkgOptions("numCores")),
+                          q = FALSE)
 
       message("gdal_translate converting VRT to TIFF ", base::date())
-      gdalUtils::gdal_translate(co = "compress=LZW", src_dataset = output_file_vrt, dst_dataset = getCtryRasterOutputFnamePath(ctryCode, nlType, nlPeriod))
+      gdalUtils::gdal_translate(co = "compress=LZW", src_dataset = output_file_vrt, dst_dataset = getCtryRasterOutputFnamePath(ctryCode = ctryCode, nlType = nlType, nlPeriod = nlPeriod))
       
       message("Deleting the component rasters ", base::date())
       
@@ -287,14 +320,14 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, cropMaskMetho
   }
   else
   {
-    rastFilename <- getCtryRasterOutputFnamePath(ctryCode, nlType, nlPeriod)
+    rastFilename <- getCtryRasterOutputFnamePath(ctryCode = ctryCode, nlType = nlType, nlPeriod = nlPeriod)
     
-    ctryRastCropped <- raster::raster(rastFilename)
+    ctryRastCropped <- raster::raster(x = rastFilename)
     
-    raster::projection(ctryRastCropped) <- sp::CRS(wgs84)
+    raster::projection(x = ctryRastCropped) <- sp::CRS(projargs = wgs84)
   }
   
-  message("Create web version of raster", base::date())
+  #message("Create web version of raster", base::date())
   
   #gdal_translate -co COMPRESS=JPEG -co PHOTOMETRIC=YCBCR -co TILED=YES 5255C.tif 5255C_JPEG_YCBCR.tif
   
@@ -314,7 +347,7 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, cropMaskMetho
   
   message("Begin extracting the data from the merged raster ", base::date())
   
-  ctryPoly <- readCtryPolyAdmLayer(ctryCode, admLevel)
+  ctryPoly <- readCtryPolyAdmLayer(ctryCode = ctryCode, admLevel = admLevel, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
   
   if (extractMethod == "rast")
     sumAvgRad <- fnAggRadRast(ctryPoly=ctryPoly, ctryRastCropped=ctryRastCropped, nlType=nlType, nlStats=nlStats)
@@ -322,14 +355,14 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, cropMaskMetho
     sumAvgRad <- fnAggRadGdal(ctryCode=ctryCode, admLevel=admLevel, ctryPoly=ctryPoly, nlType=nlType, nlPeriod=nlPeriod, nlStats=nlStats, gadmVersion=gadmVersion)
   
   for(nlStat in nlStats)
-    ctryNlDataDF <- insertNlDataCol(ctryNlDataDF, sumAvgRad[,nlStat], nlStat, nlPeriod, nlType = nlType)
+    ctryNlDataDF <- insertNlDataCol(ctryNlDataDF = ctryNlDataDF, dataCol = sumAvgRad[,nlStat], statType = nlStat, nlPeriod = nlPeriod, nlType = nlType)
   
   message("DONE processing ", ctryCode, " ", nlPeriod, " ", base::date())
   
   message("COMPLETE. Writing data to disk")
   
   #Write the country data dataframe to disk
-  saveCtryNlData(ctryNlDataDF, ctryCode, admLevel)
+  saveCtryNlData(ctryNlDataDF = ctryNlDataDF, ctryCode = ctryCode, admLevel = admLevel, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
   
   #release the cropped raster
   rm (ctryRastCropped)
@@ -368,10 +401,10 @@ getCtryRasterOutputFname <- function(ctryCode, nlType, nlPeriod)
   if(missing(nlPeriod))
     stop("Missing required parameter nlPeriod")
   
-  if(!validCtryCodes(ctryCode))
+  if(!validCtryCodes(ctryCodes = ctryCode))
     stop("Invalid ctryCode: ", ctryCode)
   
-  if(!validNlTypes(nlType))
+  if(!validNlTypes(nlTypes = nlType))
     stop("Invalid nlType: ", nlType)
   
   if(!allValidNlPeriods(nlPeriods = nlPeriod, nlTypes = nlType))
@@ -413,16 +446,16 @@ getCtryRasterOutputFnamePath <- function(ctryCode, nlType, nlPeriod)
   if(missing(nlPeriod))
     stop("Missing required parameter nlPeriod")
   
-  if(!validCtryCodes(ctryCode))
+  if(!validCtryCodes(ctryCodes = ctryCode))
     stop("Invalid ctryCode: ", ctryCode)
   
-  if(!validNlTypes(nlType))
+  if(!validNlTypes(nlTypes = nlType))
     stop("Invalid nlType: ", nlType)
   
   if(!allValidNlPeriods(nlPeriods = nlPeriod, nlTypes = nlType))
     stop("Invalid nlPeriod: ", nlPeriod, " for nlType: ", nlType)
   
-  return (file.path(getNlDir("dirRasterOutput"), getCtryRasterOutputFname(ctryCode, nlType, nlPeriod)))
+  return (file.path(getNlDir("dirRasterOutput"), getCtryRasterOutputFname(ctryCode = ctryCode, nlType = nlType, nlPeriod = nlPeriod)))
 }
 
 ######################## processNlData ###################################
@@ -515,7 +548,7 @@ getCtryRasterOutputFnamePath <- function(ctryCode, nlType, nlPeriod)
 #'     #R CMD BATCH script_name_2014.R
 #'     }
 #' @export
-processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkgOptions("nlStats"), gadmVersion=pkgOptions("gadmVersion"))
+processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkgOptions("nlStats"), custPolyPath=NULL, gadmVersion=pkgOptions("gadmVersion"), downloadMethod=pkgOptions("downloadMethod"), cropMaskMethod=pkgOptions("cropMaskMethod"), extractMethod=pkgOptions("extractMethod"))
 {
   if(missing(ctryCodes))
     ctryCodes <- getAllNlCtryCodes(omit = "error")
@@ -531,7 +564,7 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
     nlPeriods <- getAllNlPeriods(nlTypes = nlTypes)
   }
   
-  if(!allValid(ctryCodes, validCtryCodes))
+  if(!allValid(testData = ctryCodes, testFun = validCtryCodes))
     stop("Invalid ctryCode detected")
   
   if(!missing(admLevels) && is.list(admLevels))
@@ -547,7 +580,7 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
   for (ctryCode in ctryCodes)
   {
     message("Downloading polygon: ", ctryCode)
-    dnldCtryPoly(ctryCode, gadmVersion)
+    dnldCtryPoly(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath, downloadMethod = downloadMethod)
   }
   
   message("Downloading country polygons ... DONE")
@@ -559,11 +592,11 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
   if(length(admLevels) == 1)
   {
     if(admLevels=="lowest")
-      admLevels <- getCtryShpLowestLyrNames(ctryCodes, gadmVersion)
+      admLevels <- getCtryShpLowestLyrNames(ctryCodes = ctryCodes, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
     else if(admLevels=="top")
-      admLevels <- getCtryShpLyrNames(ctryCodes = ctryCodes, lyrNums = 0, gadmVersion = gadmVersion)
+      admLevels <- getCtryShpLyrNames(ctryCodes = ctryCodes, lyrNums = 0, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
     else if(admLevels=="all")
-      admLevels <- getCtryShpAllAdmLvls(ctryCodes, gadmVersion=gadmVersion)
+      admLevels <- getCtryShpAllAdmLvls(ctryCodes, gadmVersion=gadmVersion, custPolyPath = custPolyPath)
     else
     {
       tmpAdmLevel <- searchAdmLevel(ctryCode, admLevels, gadmVersion)
@@ -583,17 +616,17 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
   }
   
   #traverse and check all admLevel component lists/vectors
-  if(!all(sapply(1:length(ctryCodes), 
+  if(!all(sapply(1:length(ctryCodes),
                 function(i)
                 {
                    if(class(admLevels) == "list")
-                      allValidCtryAdmLvls(ctryCodes[i], admLevels[[i]])
+                      allValidCtryAdmLvls(ctryCode = ctryCodes[i], admLevels = admLevels[[i]], gadmVersion = gadmVersion, custPolyPath = custPolyPath)
                    else
                    {
                      if(length(ctryCodes)==1)
-                      allValidCtryAdmLvls(ctryCodes[i], admLevels)
+                      allValidCtryAdmLvls(ctryCode = ctryCodes[i], admLevels = admLevels, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
                      else
-                       allValidCtryAdmLvls(ctryCodes[i], admLevels[i])
+                       allValidCtryAdmLvls(ctryCode = ctryCodes[i], admLevels = admLevels[i], gadmVersion = gadmVersion, custPolyPath = custPolyPath)
                    }
                 })))
     stop("Invalid admLevels detected")
@@ -643,7 +676,7 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
 
     #if the tile mapping does not exist create it
     if (!exists("nlTiles") || is.null(nlTiles))
-      nlTiles <- getNlTiles(nlType)
+      nlTiles <- getNlTiles(nlType = nlType)
 
     #for all nlPeriods check if the tiles exist else download
     for (nlPeriod in nlTypePeriods)
@@ -669,7 +702,7 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
         else
           ctryAdmLevels <- admLevels[idxCtryCode]
         
-        existAdmLvlStats <- unlist(lapply(ctryAdmLevels, function(admLevel) allExistsCtryNlData(ctryCode, admLevel, nlType, nlPeriod, nlStats)))
+        existAdmLvlStats <- unlist(lapply(ctryAdmLevels, function(admLevel) allExistsCtryNlData(ctryCodes = ctryCode, admLevels = admLevel, nlTypes = nlType, nlPeriods = nlPeriod, nlStats = nlStats, gadmVersion = gadmVersion, custPolyPath = custPolyPath)))
         
         #Check if all stats exist for the ctryCode
         if (all(existAdmLvlStats))
@@ -682,10 +715,10 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
         message(ctryCode, ": Stats missing. Adding tiles")
         
         #get the list of tiles required for the ctryCode
-        ctryTiles <- getCtryTileList(ctryCode, nlType)
+        ctryTiles <- getCtryTileList(ctryCodes = ctryCode, nlType = nlType)
         
         #combine the list of unique tiles across all ctryCodes in tileList
-        tileList <- c(tileList, setdiff(ctryTiles, tileList))
+        tileList <- c(tileList, setdiff(x = ctryTiles, y = tileList))
         
         #if all the unique tiles have been listed no need to proceed checking
         if (length(tileList) == nrow(nlTiles))
@@ -707,9 +740,9 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
       else
       {
         #tile not found. if the cropped raster is not found try to download
-        if (!file.exists(getCtryRasterOutputFnamePath(ctryCode, nlType, nlPeriod)))
+        if (!file.exists(getCtryRasterOutputFnamePath(ctryCode = ctryCode, nlType = nlType, nlPeriod = nlPeriod)))
         {
-          if(!downloadNlTiles(nlType, nlPeriod, tileList))
+          if(!downloadNlTiles(nlType = nlType, nlPeriod = nlPeriod, tileList = tileList))
           {
             message("Something went wrong with the tile downloads. Aborting ...")
             
@@ -735,7 +768,7 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
           ctryAdmLevels <- admLevels[idxCtryCode]
         
         for(admLevel in ctryAdmLevels)
-          processNLCountry(ctryCode = ctryCode, admLevel = admLevel, nlType = nlType, nlPeriod = nlPeriod, cropMaskMethod = pkgOptions("cropMaskMethod"), extractMethod = pkgOptions("extractMethod"), nlStats = nlStats)
+          processNLCountry(ctryCode = ctryCode, admLevel = admLevel, nlType = nlType, nlPeriod = nlPeriod, nlStats = nlStats, custPolyPath = custPolyPath, downloadMethod = downloadMethod, cropMaskMethod = cropMaskMethod, extractMethod = extractMethod, gadmVersion = gadmVersion)
       }
       
       #post-processing. Delete the downloaded tiles to release disk space
@@ -743,7 +776,7 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
       {
         for (tile in tileList)
         {
-          tileTif <- getNlTileTifLclNamePath(nlType, nlPeriod, tileName2Idx(tile, nlType))
+          tileTif <- getNlTileTifLclNamePath(nlType = nlType, nlPeriod = nlPeriod, tileNum = tileName2Idx(tile, nlType))
           
           message("Deleting tile TIF: ", tileTif)
           
@@ -751,13 +784,13 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
           if (file.exists(tileTif))
             unlink(file.path(tileTif), force = TRUE)
           
-          tileZip <- file.path(getNlTileZipLclNamePath(nlType, nlPeriod, tileName2Idx(tile, nlType)))
+          tileZip <- file.path(getNlTileZipLclNamePath(nlType = nlType, nlPeriod = nlPeriod, tileNum = tileName2Idx(tileName = tile, nlType = nlType)))
           
           message("Deleting tile ZIP: ", tileZip)
           
           #del the zip file
           if (file.exists(tileZip))
-            unlink(file.path(tileZip), force = TRUE)
+            unlink(x = file.path(tileZip), force = TRUE)
         }
       }
       

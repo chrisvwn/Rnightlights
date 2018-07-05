@@ -45,8 +45,13 @@ validNlPeriods <- function(nlPeriods, nlTypes)
   #nlPeriods <- as.character(nlPeriods)
   #nlTypes <- as.character(nlTypes)
 
-  if(length(nlTypes) == 1)
-    return(stats::setNames(list(stats::setNames(nlPeriods %in% unlist(getAllNlPeriods(nlTypes)), nlPeriods)),nlTypes))
+  # if(length(nlTypes) == 1)
+  #   return(stats::setNames(list(stats::setNames(nlPeriods %in% unlist(getAllNlPeriods(nlTypes)), nlPeriods)),nlTypes))
+
+  # if(is.list(nlPeriods)length(nlPeriods) != length(nlTypes))
+  #   stop("nlPeriods and nlTypes are not same length")
+  
+  nlTypes <- unlist(nlTypes)
   
   validPeriods <- stats::setNames(lapply(1:length(nlTypes), function(i){
     nlT <- nlTypes[i]
@@ -54,8 +59,9 @@ validNlPeriods <- function(nlPeriods, nlTypes)
     allNlPeriods <- unlist(getAllNlPeriods(nlT))
     
     valid <- stats::setNames(nlPs %in% allNlPeriods, nlPs)
+    
     if(!all(valid))
-      message("Invalid nlPeriods::", nlT,":",paste0(nlPs[!valid], sep=","))
+      message("Invalid nlPeriods:: ", nlT,":",paste0(nlPs[!valid], sep=","))
     return(valid)
     }), nlTypes)
 
@@ -182,7 +188,7 @@ getAllNlPeriods <- function(nlTypes)
   if (!allValidNlTypes(nlTypes))
     stop("Invalid nlType: ", nlTypes)
   
-  lapply(nlTypes, function(nlType)
+  sapply(nlTypes, function(nlType)
   if (stringr::str_detect(nlType, "OLS"))
   {
     return (1992:2013)
