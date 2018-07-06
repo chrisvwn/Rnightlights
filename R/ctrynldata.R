@@ -506,7 +506,7 @@ getCtryNlData <- function(ctryCode, admLevel, nlTypes, nlPeriods, nlStats=pkgOpt
     stop("Missing required ctryCode")
   
   if(missing(admLevel))
-    admLevel <- "all"
+    admLevel <- "country"
 
   if(missing(nlTypes))
     stop("Missing required parameter nlTypes")
