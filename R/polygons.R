@@ -36,9 +36,31 @@ gadmAliasToLayer <- function(layerAlias, gadmVersion=pkgOptions("gadmVersion"))
   
 }
 
-addCtryPolyIdx <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"))
+addCtryPolyIdx <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
 {
-  if(gadmVersion == "3.6")
+  if(!is.null(custPolyPath))
+  {
+    for(admLevel in rgdal::ogrListLayers(getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)))
+    {
+      ctryPoly <- rgdal::readOGR(dsn = getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath), layer = admLevel)
+      
+      #Create an integer col in the shapefile with unique GIDs
+        message("Creating integer zone attribute col for polygon")
+        
+        lowestIDCol <- "GID_IDX"
+        
+        ctryPoly@data[,lowestIDCol] <- 1:nrow(ctryPoly@data)  # Make new attribute
+        
+        message("Writing layer with new idx col")
+        rgdal::writeOGR(obj = ctryPoly,
+                        dsn = getPolyFnamePath(ctryCode = ctryCode,
+                                               gadmVersion = gadmVersion,
+                                               custPolyPath = custPolyPath),
+                        layer = admLevel,
+                        driver = "ESRI Shapefile",
+                        overwrite_layer = T) # Save new version of shapefile
+    }
+  } else if(gadmVersion == "3.6")
   {
     for(admLevel in rgdal::ogrListLayers(getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)))
     {
@@ -51,7 +73,7 @@ addCtryPolyIdx <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"))
       #Create an integer col in the shapefile corresponding to the unique GIDs
       if(is.null(ctryPoly@data[[lowestIDCol]]))
       {
-        message("Creating integer zone attribute col for GADM 3.6")
+        message("Creating integer zone attribute col for polygon")
         
         lowestIDColOrig <- gsub("_IDX", "", lowestIDCol)
         
@@ -140,8 +162,8 @@ dnldCtryPoly <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"), custPo
         result <- utils::unzip(zipfile = polyFnameZip, junkpaths = TRUE, exdir = polyFnamePath)
         file.remove(polyFnameZip)
         
-        if(missing(custPolyPath) && gadmVersion == "3.6")
-          addCtryPolyIdx(ctryCode = ctryCode, gadmVersion = gadmVersion)
+        if(!is.null(custPolyPath) || gadmVersion == "3.6")
+          addCtryPolyIdx(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
       }else
       {
         stop("Something went wrong. Polygon download failed!")
@@ -229,9 +251,6 @@ dnldCtryPoly <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"), custPo
 #'
 getCtryStructFname <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
 {
-  if(missing(custPolyPath))
-    custPolyPath <- NULL
-  
   fName <- if(is.null(custPolyPath))
               paste0("NL_STRUCT_", ctryCode, "_GADM-", gadmVersion, ".csv")
             else
@@ -474,7 +493,8 @@ getCtryShpLyrNames <- function(ctryCodes, lyrNums, dnldPoly, gadmVersion=pkgOpti
       admLyrName <- admLayers[as.numeric(admLayerNums)]
     }else
     {
-      admLyrName <- layers[as.numeric(lyrNums)]
+      #layer number to index
+      admLyrName <- layers[as.numeric(lyrNums)+1]
     }
   }), ctryCodes)
   
@@ -553,14 +573,14 @@ getCtryPolyAdmLevelNames <- function(ctryCode, lowestAdmLevel=getCtryShpLowestLy
   
   allLayers <- rgdal::ogrListLayers(dsn = getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath))
   
-  numLayers <- which(allLayers == lowestLayer)
+  layerNum <- which(allLayers == lowestLayer)
   
   admLevels <- NULL
   
   #get the names of each layer starting from level 1
-  if (length(numLayers) > 0 && numLayers > 0)
+  if (length(layerNum) > 0 && layerNum > 1)
   {
-    for (lyrNum in 1:(numLayers-1)) #skip country layer
+    for (lyrNum in 1:(layerNum-1)) #skip country layer
     {
       lyrPoly <- readCtryPolyAdmLayer(ctryCode = ctryCode, admLevel = as.character(getCtryShpLyrNames(ctryCode, lyrNum, gadmVersion = gadmVersion, custPolyPath = custPolyPath)), custPolyPath = custPolyPath)
       
@@ -621,7 +641,7 @@ getCtryPolyAdmLevelNames <- function(ctryCode, lowestAdmLevel=getCtryShpLowestLy
 #' }
 #'
 #' @export
-searchAdmLevel <- function(ctryCode, admLevelName, dnldPoly, downloadMethod=pkgOptions("downloadMethod"), gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
+searchAdmLevel <- function(ctryCode, admLevelName, dnldPoly=TRUE, downloadMethod=pkgOptions("downloadMethod"), gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
 {
   if(missing(ctryCode))
     stop("Missing required parameter ctryCode")
@@ -807,10 +827,7 @@ getPolyFname <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"), custPo
   
   if(!validCtryCodes(ctryCode))
     stop("Invalid ctryCode: ", ctryCode)
-  
-  if(missing(custPolyPath))
-    custPolyPath <- NULL
-  
+
   #if any value is given for custAdmPoly override GADM
   if(!is.null(custPolyPath))
   {

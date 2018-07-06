@@ -45,7 +45,7 @@ createCtryNlDataDF <- function(ctryCode, admLevel, gadmVersion=pkgOptions("gadmV
   #get the list of admin levels in the polygon shapefile
   ctryPolyAdmLevels <- getCtryPolyAdmLevelNames(ctryCode = ctryCode, lowestAdmLevel = admLevel, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
   
-  #conver to lower case for consistency
+  #convert to lower case for consistency
   ctryPolyAdmLevels <- tolower(ctryPolyAdmLevels)
 
   if(missing(custPolyPath))
@@ -91,7 +91,13 @@ createCtryNlDataDF <- function(ctryCode, admLevel, gadmVersion=pkgOptions("gadmV
     #add the area as reported by the polygon shapefile as a convenience
     areas <- raster::area(ctryPoly)/1e6
     
-    ctryNlDataDF <- data.frame("country"=ctryCode, "area_sq_km"=areas)
+    if(is.null(custPolyPath))
+    {
+      ctryNlDataDF <- data.frame("country"=ctryCode, "area_sq_km"=areas)
+    }else
+    {
+      ctryNlDataDF <- as.data.frame(ctryPoly@data)
+    }
   }
   
   return(ctryNlDataDF)
@@ -307,7 +313,7 @@ validCtryNlDataDF <- function(ctryNlDataDF)
   if(missing(ctryNlDataDF))
     stop("Missing required parameter ctryNlDataDF")
   
-  if(class(ctryNlDataDF) == "data.frame" && !is.null(ctryNlDataDF) && names(ctryNlDataDF)[1] == "country")
+  if(class(ctryNlDataDF) == "data.frame" && !is.null(ctryNlDataDF))
     return(TRUE)
   else
     return(FALSE)

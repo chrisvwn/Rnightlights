@@ -204,7 +204,7 @@ myZonal <- function (x, z, nlStats, digits = 0, na.rm = TRUE, ...)
 #'
 #' @return TRUE/FALSE
 #'
-ZonalPipe <- function (ctryCode, admLevel, ctryPoly, path.in.shp, path.in.r, path.out.r, path.out.shp, zone.attribute, nlStats, gadmVersion=pkgOptions("gadmVersion"))
+ZonalPipe <- function (ctryCode, admLevel, ctryPoly, path.in.shp, path.in.r, path.out.r, path.out.shp, zone.attribute, nlStats, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
 {
   #Source: http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/
   #path.in.shp: Shapefile with zone (INPUT)
@@ -267,12 +267,18 @@ ZonalPipe <- function (ctryCode, admLevel, ctryPoly, path.in.shp, path.in.r, pat
     res<-paste(raster::res(r)[1], raster::res(r)[2])
     
     lyrName <- admLevel #getCtryShpLowestLyrNames(ctryCode)
-    lowestIDCol <- if(gadmVersion == "2.8")
-      paste0("ID_", stringr::str_extract(lyrName, "\\d+$"))
-    else if(gadmVersion == "3.6")
-      paste0("GID_", stringr::str_extract(lyrName, "\\d+$"), "_IDX")
+    lowestIDCol <- if(!is.null(custPolyPath))
+      {
+      if(gadmVersion == "2.8")
+        paste0("ID_", stringr::str_extract(lyrName, "\\d+$"))
+      else if(gadmVersion == "3.6")
+        paste0("GID_", stringr::str_extract(lyrName, "\\d+$"), "_IDX")
+    }else
+    {
+      paste0("GID_IDX")
+    }
     
-    tempRast <- file.path(getNlDir("dirZonals"), "temprast.tif")
+    tempRast <- file.path(getNlDir("dirNlTemp"), paste0(basename(tempfile()), ".tif"))
     
     #Gdal_rasterize
     message("Creating zonal raster")
@@ -362,7 +368,7 @@ ZonalPipe <- function (ctryCode, admLevel, ctryPoly, path.in.shp, path.in.r, pat
 #'     nlType="VIIRS.M", nlPeriod="201401", nlStats=c("sum","mean"))
 #' }
 #'
-fnAggRadGdal <- function(ctryCode, admLevel, ctryPoly, nlType, nlPeriod, nlStats=pkgOptions("nlStats"), gadmVersion=pkgOptions("gadmVersion"))
+fnAggRadGdal <- function(ctryCode, admLevel, ctryPoly, nlType, nlPeriod, nlStats=pkgOptions("nlStats"), gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
 {
   if(missing(ctryCode))
     stop("Missing required parameter ctryCode")
@@ -381,9 +387,9 @@ fnAggRadGdal <- function(ctryCode, admLevel, ctryPoly, nlType, nlPeriod, nlStats
   
   #source: http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/
   
-  path.in.shp<- getPolyFnamePath(ctryCode, gadmVersion)
+  path.in.shp<- getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
   
-  path.in.r<- getCtryRasterOutputFnamePath(ctryCode, nlType, nlPeriod) #or path.in.r<-list.files("/home/, pattern=".tif$")
+  path.in.r<- getCtryRasterOutputFnamePath(ctryCode = ctryCode, nlType = nlType, nlPeriod = nlPeriod) #or path.in.r<-list.files("/home/, pattern=".tif$")
   
   if(stringr::str_detect(nlType, "VIIRS"))
     nlTp <- "VIIRS"
@@ -394,19 +400,31 @@ fnAggRadGdal <- function(ctryCode, admLevel, ctryPoly, nlType, nlPeriod, nlStats
   
   path.out.shp <- file.path(getNlDir("dirZonals"), paste0(admLevel, "_zone_", nlTp, "_", gadmVersion, ".shp"))
   
-  zone.attribute <- if(gadmVersion == "2.8")
-    paste0("ID_", stringr::str_extract(admLevel, "\\d+$"))
-  else if(gadmVersion == "3.6")
-    paste0("GID_", stringr::str_extract(admLevel, "\\d+$"), "_IDX")
+  zone.attribute <- if(is.null(custPolyPath))
+  {
+    if(gadmVersion == "2.8")
+      paste0("ID_", stringr::str_extract(admLevel, "\\d+$"))
+    else if(gadmVersion == "3.6")
+      paste0("GID_", stringr::str_extract(admLevel, "\\d+$"), "_IDX")
+  }else
+  {
+    paste0("GID_IDX")
+  }
   
   lyrName <- admLevel #getCtryShpLowestLyrNames(ctryCode)
   
-  lyrIDCol <- if(gadmVersion == "2.8")
-    paste0("ID_", stringr::str_extract(lyrName, "\\d+$"))
-  else if(gadmVersion == "3.6")
-    paste0("GID_", stringr::str_extract(lyrName, "\\d+$"), "_IDX")
+  lyrIDCol <- if(is.null(custPolyPath))
+  {
+    if(gadmVersion == "2.8")
+      paste0("ID_", stringr::str_extract(lyrName, "\\d+$"))
+    else if(gadmVersion == "3.6")
+      paste0("GID_", stringr::str_extract(lyrName, "\\d+$"), "_IDX")
+  }else
+  {
+    paste0("GID_IDX")
+  }
   
-  sumAvgRad <- ZonalPipe(ctryCode, admLevel, ctryPoly, path.in.shp, path.in.r, path.out.r, path.out.shp, zone.attribute, nlStats=nlStats)
+  sumAvgRad <- ZonalPipe(ctryCode = ctryCode, admLevel = admLevel, ctryPoly = ctryPoly, path.in.shp = path.in.shp, path.in.r = path.in.r, path.out.r = path.out.r, path.out.shp = path.out.shp, zone.attribute = zone.attribute, nlStats=nlStats, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
   
   ctryPolyData <- ctryPoly@data
   
@@ -467,7 +485,7 @@ fnAggRadGdal <- function(ctryCode, admLevel, ctryPoly, nlType, nlPeriod, nlStats
 #'     ctryRastCropped=ctryRastCropped, nlType="VIIRS.M", nlStats=c("sum","mean"))
 #' }
 #' @importFrom foreach %dopar%
-fnAggRadRast <- function(ctryPoly, ctryRastCropped, nlType, nlStats)
+fnAggRadRast <- function(ctryPoly, ctryRastCropped, nlType, nlStats, custPolyPath=NULL)
 {
   if(missing(ctryPoly))
     stop("Missing required parameter ctryPoly")

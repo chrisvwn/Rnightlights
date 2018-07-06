@@ -350,9 +350,9 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, nlStats=pkgOp
   ctryPoly <- readCtryPolyAdmLayer(ctryCode = ctryCode, admLevel = admLevel, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
   
   if (extractMethod == "rast")
-    sumAvgRad <- fnAggRadRast(ctryPoly=ctryPoly, ctryRastCropped=ctryRastCropped, nlType=nlType, nlStats=nlStats)
+    sumAvgRad <- fnAggRadRast(ctryPoly=ctryPoly, ctryRastCropped=ctryRastCropped, nlType=nlType, nlStats=nlStats, custPolyPath = custPolyPath)
   else if (extractMethod == "gdal")
-    sumAvgRad <- fnAggRadGdal(ctryCode=ctryCode, admLevel=admLevel, ctryPoly=ctryPoly, nlType=nlType, nlPeriod=nlPeriod, nlStats=nlStats, gadmVersion=gadmVersion)
+    sumAvgRad <- fnAggRadGdal(ctryCode=ctryCode, admLevel=admLevel, ctryPoly=ctryPoly, nlType=nlType, nlPeriod=nlPeriod, nlStats=nlStats, gadmVersion=gadmVersion, custPolyPath = custPolyPath)
   
   for(nlStat in nlStats)
     ctryNlDataDF <- insertNlDataCol(ctryNlDataDF = ctryNlDataDF, dataCol = sumAvgRad[,nlStat], statType = nlStat, nlPeriod = nlPeriod, nlType = nlType)
@@ -596,10 +596,10 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
     else if(admLevels=="top")
       admLevels <- getCtryShpLyrNames(ctryCodes = ctryCodes, lyrNums = 0, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
     else if(admLevels=="all")
-      admLevels <- getCtryShpAllAdmLvls(ctryCodes, gadmVersion=gadmVersion, custPolyPath = custPolyPath)
+      admLevels <- getCtryShpAllAdmLvls(ctryCodes=ctryCodes, gadmVersion=gadmVersion, custPolyPath = custPolyPath)
     else
     {
-      tmpAdmLevel <- searchAdmLevel(ctryCode, admLevels, gadmVersion)
+      tmpAdmLevel <- searchAdmLevel(ctryCode = ctryCode, admLevelName = admLevels, gadmVersion = gadmVersion, downloadMethod = downloadMethod, custPolyPath = custPolyPath)
       
       admLevels <- ifelse(is.na(tmpAdmLevel), admLevels, tmpAdmLevel)
     }
