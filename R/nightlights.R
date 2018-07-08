@@ -569,7 +569,11 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
   
   if(!missing(admLevels) && is.list(admLevels))
   {
-    if(length(ctryCodes) != length(admLevels))
+    if(length(ctryCodes) > 1 && length(ctryCodes) != length(admLevels))
+      stop("admLevels do not match ctryCodes")
+  } else
+  {
+    if(length(ctryCodes) > 1 && length(ctryCodes) != length(admLevels))
       stop("admLevels do not match ctryCodes")
   }
   
@@ -588,23 +592,47 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
   if(missing(admLevels))
     admLevels <- "lowest"
   
-  #allow keywords/aliases instead of admLevels
-  if(length(admLevels) == 1)
+  admLevels <- sapply(1:length(unlist(ctryCodes)), function(cCodeIdx)
   {
-    if(admLevels=="lowest")
-      admLevels <- getCtryShpLowestLyrNames(ctryCodes = ctryCodes, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
-    else if(admLevels=="top")
-      admLevels <- getCtryShpLyrNames(ctryCodes = ctryCodes, lyrNums = 0, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
-    else if(admLevels=="all")
-      admLevels <- getCtryShpAllAdmLvls(ctryCodes=ctryCodes, gadmVersion=gadmVersion, custPolyPath = custPolyPath)
-    else
+    ctryCode <- ctryCodes[[cCodeIdx]]
+    
+    ctryAdmLevels <- admLevels[[cCodeIdx]]
+    
+    unlist(sapply(ctryAdmLevels, function(admLevel)
     {
-      tmpAdmLevel <- searchAdmLevel(ctryCode = ctryCode, admLevelName = admLevels, gadmVersion = gadmVersion, downloadMethod = downloadMethod, custPolyPath = custPolyPath)
+      #allow keywords/aliases instead of admLevels
+      if(length(admLevel) == 1)
+      {
+        if(admLevel=="country")
+          admLevel <- getCtryShpLyrNames(ctryCodes = ctryCode, lyrNums = 0, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+        else if(admLevel %in% c("bottom", "lowest"))
+          admLevel <- getCtryShpLowestLyrNames(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+        else if(admLevel %in% c("top","highest"))
+          admLevel <- getCtryShpLyrNames(ctryCodes = ctryCode, lyrNums = 1, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+        else if(admLevel=="all")
+          admLevel <- getCtryShpAllAdmLvls(ctryCodes = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+        else
+        {
+          tmpAdmLevel <- searchAdmLevel(ctryCode = ctryCode, admLevelName = admLevel, downloadMethod = downloadMethod, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+          
+          admLevel <- ifelse(is.na(tmpAdmLevel), admLevel, tmpAdmLevel)
+        }
+        
+        #after processing admLevels if any are not in proper format e.g. KEN_adm0
+        #check if they might have been supplied as e.g. adm0 or e.g. 0
+        if(!length(grep(paste0(ctryCode,"_adm\\d+"), admLevel, ignore.case = T)) == length(admLevel))
+        {
+          if(length(grep("^adm\\d+$", admLevel, ignore.case = T)) > 0)
+            admLevel <- paste(ctryCode, admLevel, sep="_")
+          else if(length(grep("^\\d+$", admLevels, ignore.case = T)) > 0)
+            admLevel <- paste(ctryCode, paste0("adm", admLevel), sep="_")
+        }
+      }
       
-      admLevels <- ifelse(is.na(tmpAdmLevel), admLevels, tmpAdmLevel)
-    }
-  }
-  
+      admLevel
+    }))
+  })
+
   #if the admLevels are input as "adm0" convert to proper admLevel e.g. "KEN_adm0"
   for(i in 1:length(ctryCodes))
   if(!length(grep(paste0(ctryCodes[i],"_adm\\d+"), admLevels[i], ignore.case = T)) == length(admLevels[i]))
@@ -615,11 +643,14 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
       admLevels[i] <- paste(ctryCode, paste0("adm", admLevels[i]), sep="_")
   }
   
+  # if(!allValidCtryAdmLvls(ctryCode = ctryCodes, admLevels = admLevels, gadmVersion = gadmVersion, custPolyPath = custPolyPath))
+  #   stop("Invalid admLevels detected")
+  
   #traverse and check all admLevel component lists/vectors
   if(!all(sapply(1:length(ctryCodes),
                 function(i)
                 {
-                   if(class(admLevels) == "list")
+                   if(is.list(admLevels))
                       allValidCtryAdmLvls(ctryCode = ctryCodes[i], admLevels = admLevels[[i]], gadmVersion = gadmVersion, custPolyPath = custPolyPath)
                    else
                    {
