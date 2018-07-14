@@ -156,7 +156,7 @@ upgradeRnightlights <- function()
           
           ctryCode <- splits[1]
           
-          admLevel <- unlist(getCtryShpLowestLyrNames(ctryCode))
+          admLevel <- unlist(getCtryShpLowestLyrNames(ctryCodes=ctryCode))
          
           newFileName <- getCtryNlDataFname(ctryCode, admLevel)
           

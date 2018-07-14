@@ -149,7 +149,9 @@ ctryCodeToName <- function(ctryCodes)
 #' Serves as a frontend to the ctryNameToCode and ctryCodeToName functions
 #'     in one.
 #'
-#' @param searchTerm The country code/name to search for
+#' @param searchTerms The country code/name to search for
+#' 
+#' @param extended Whether to do partial searches
 #'
 #' @return data.frame A mapping of the ctryCode to ctryName if the supplied
 #'     \code{searchTerm} is a ctryCode or vice-versa if the \code{searchTerm}

@@ -96,14 +96,20 @@
 #'
 #' @param nlPeriod \code{character} The nlPeriod of interest
 #' 
+#' @param nlStats the statistics to calculate. If not provided will calculate 
+#'     the stats specified in \code{pkgOptions("nlStats")}
+#' 
+#' @param downloadMethod The method used to download polygons and rasters
+#' 
 #' @param cropMaskMethod \code{character} Whether to use rasterize or 
 #'     gdal-based functions to crop and mask the country rasters
 #'     
 #' @param extractMethod ("rast" or "gdal") Whether to use rasterize or 
 #'     gdal-based functions to crop and mask the country rasters
 #' 
-#' @param nlStats the statistics to calculate. If not provided will calculate 
-#'     the stats specified in \code{pkgOptions("nlStats")}
+#' @param gadmVersion The GADM version to use
+#' 
+#' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #'
 #' @return None
 #'
@@ -136,7 +142,7 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, nlStats=pkgOp
     stop("Invalid nlType: ", nlType)
   
   if(missing(admLevel))
-    admLevel <- getCtryShpLowestLyrNames(ctryCode=ctryCode, gadmVersion=gadmVersion, custPolyPath=custPolyPath)
+    admLevel <- getCtryShpLowestLyrNames(ctryCodes=ctryCode, gadmVersion=gadmVersion, custPolyPath=custPolyPath)
   
   message("processNLCountry: ", paste(ctryCode, admLevel, nlType, nlPeriod, sep=" "))
 
@@ -492,6 +498,16 @@ getCtryRasterOutputFnamePath <- function(ctryCode, nlType, nlPeriod)
 #' @param nlStats the statistics to calculate. If not provided will calculate
 #'     the stats specified in \code{pkgOptions("nlStats")}
 #'
+#' @param gadmVersion The GADM version to use
+#' 
+#' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
+#' 
+#' @param downloadMethod The method used to download rasters and polygons
+#' 
+#' @param cropMaskMethod The method used to crop and mask satellite rasters
+#' 
+#' @param extractMethod The method used to extract and perform functions on raster data
+#' 
 #' @return None
 #'
 #' @examples
@@ -606,14 +622,14 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
         if(admLevel=="country")
           admLevel <- getCtryShpLyrNames(ctryCodes = ctryCode, lyrNums = 0, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
         else if(admLevel %in% c("bottom", "lowest"))
-          admLevel <- getCtryShpLowestLyrNames(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+          admLevel <- getCtryShpLowestLyrNames(ctryCodes = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
         else if(admLevel %in% c("top","highest"))
           admLevel <- getCtryShpLyrNames(ctryCodes = ctryCode, lyrNums = 1, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
         else if(admLevel=="all")
           admLevel <- getCtryShpAllAdmLvls(ctryCodes = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
         else
         {
-          tmpAdmLevel <- searchAdmLevel(ctryCode = ctryCode, admLevelName = admLevel, downloadMethod = downloadMethod, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+          tmpAdmLevel <- searchAdmLevel(ctryCodes = ctryCode, admLevelNames = admLevel, downloadMethod = downloadMethod, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
           
           admLevel <- ifelse(is.na(tmpAdmLevel), admLevel, tmpAdmLevel)
         }

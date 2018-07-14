@@ -189,40 +189,41 @@ getAllNlPeriods <- function(nlTypes)
     stop("Invalid nlType: ", nlTypes)
   
   sapply(nlTypes, function(nlType)
-  if (stringr::str_detect(nlType, "OLS"))
   {
-    return (1992:2013)
-  }
-  else if(stringr::str_detect(nlType, "VIIRS"))
-  {
-    if (stringr::str_detect(nlType, "D")) #D=daily
+    if (stringr::str_detect(nlType, "OLS"))
     {
-      startDate <- "2017-11-20"
-      
-      nlYrMthDys <- gsub("-", "", seq(as.Date(startDate), as.Date(date(), "%c"), by = "day"))
-      
-      return (nlYrMthDys)
+      return (1992:2013)
     }
-    else if (stringr::str_detect(nlType, "M")) #M=monthly
+    else if(stringr::str_detect(nlType, "VIIRS"))
     {
-      startDate <- "2012-04-01"
-      
-      nlYrMths <- substr(gsub("-", "", seq(as.Date(startDate), as.Date(date(), "%c"), by = "month")), 1, 6)
-  
-      return (nlYrMths)
-    }
-    else if (stringr::str_detect(nlType, "Y")) #Y=yearly
-    {
-      startDate <- "2012-04-01"
-      
-      nlYrs <- substr(gsub("-", "", seq(as.Date(startDate), as.Date(date(), "%c"), by = "year")), 1, 4)
-      
-      return (nlYrs)
+      if (stringr::str_detect(nlType, "D")) #D=daily
+      {
+        startDate <- "2017-11-20"
+        
+        nlYrMthDys <- gsub("-", "", seq(as.Date(startDate), as.Date(date(), "%c"), by = "day"))
+        
+        return (nlYrMthDys)
+      }
+      else if (stringr::str_detect(nlType, "M")) #M=monthly
+      {
+        startDate <- "2012-04-01"
+        
+        nlYrMths <- substr(gsub("-", "", seq(as.Date(startDate), as.Date(date(), "%c"), by = "month")), 1, 6)
+    
+        return (nlYrMths)
+      }
+      else if (stringr::str_detect(nlType, "Y")) #Y=yearly
+      {
+        startDate <- "2012-04-01"
+        
+        nlYrs <- substr(gsub("-", "", seq(as.Date(startDate), as.Date(date(), "%c"), by = "year")), 1, 4)
+        
+        return (nlYrs)
+      }
+      else
+        return()
     }
     else
       return()
-  }
-  else
-    return()
-  )
+  }, simplify = FALSE)
 }

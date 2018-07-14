@@ -201,7 +201,11 @@ myZonal <- function (x, z, nlStats, digits = 0, na.rm = TRUE, ...)
 #' @param zone.attribute The zonal attribute to calculate
 #'
 #' @param nlStats The stats to calculate
-#'
+#' 
+#' @param gadmVersion The GADM version to use
+#' 
+#' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
+#' 
 #' @return TRUE/FALSE
 #'
 ZonalPipe <- function (ctryCode, admLevel, ctryPoly, path.in.shp, path.in.r, path.out.r, path.out.shp, zone.attribute, nlStats, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
@@ -354,14 +358,18 @@ ZonalPipe <- function (ctryCode, admLevel, ctryPoly, path.in.shp, path.in.r, pat
 #' @param nlPeriod character string the nlPeriod to be processed
 #' 
 #' @param nlStats character vector The stats to calculate
-#'
+#' 
+#' @param gadmVersion The GADM version to use
+#' 
+#' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
+#' 
 #' @return data.frame of polygon attributes and the calculated stats, one column per stat
 #'
 #' @examples
 #' #read the Kenya polygon downloaded from GADM and load the lowest admin level (ward)
 #' \dontrun{
 #' ctryPoly <- readCtryPolyAdmLayer(ctryCode="KEN", 
-#'     Rnightlights:::getCtryShpLowestLyrNames(ctryCode="KEN"))
+#'     Rnightlights:::getCtryShpLowestLyrNames(ctryCodes="KEN"))
 #'     
 #' #calculate the sum of radiances for the wards in Kenya
 #' sumAvgRadRast <- Rnightlights:::fnAggRadGdal(ctryCode="KEN", ctryPoly=ctryPoly,
@@ -468,13 +476,15 @@ fnAggRadGdal <- function(ctryCode, admLevel, ctryPoly, nlType, nlPeriod, nlStats
 #' 
 #' @param nlStats The statistics to calculate
 #' 
+#' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
+#' 
 #' @return data.frame of polygon attributes and the calculated stats, one column per nlStat
 #'
 #' @examples
 #' #read the Kenya polygon downloaded from GADM and load the lowest admin level (ward)
 #' \dontrun{
 #' ctryPoly <- readCtryPolyAdmLayer(ctryCode="KEN", 
-#'     Rnightlights:::getCtryShpLowestLyrNames(ctryCode="KEN"))
+#'     Rnightlights:::getCtryShpLowestLyrNames(ctryCodes="KEN"))
 #'     
 #' # the VIIRS nightlight raster cropped earlier to the country outline
 #' ctryRastCropped <- raster::raster(Rnightlights:::getCtryRasterOutputFnamePath(ctryCode="KEN",

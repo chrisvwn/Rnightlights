@@ -10,7 +10,11 @@
 #' @param ctryCode the ISO3 code of the country
 #' 
 #' @param admLevel The country admin level of interest
-#'
+#' 
+#' @param gadmVersion The GADM version to use
+#' 
+#' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
+#' 
 #' @return dataframe with the country admin level data
 #'
 #' @examples
@@ -29,7 +33,7 @@ createCtryNlDataDF <- function(ctryCode, admLevel, gadmVersion=pkgOptions("gadmV
     stop("Invalid ctryCode: ", ctryCode)
   
   if(missing(admLevel))
-    admLevel=getCtryShpLowestLyrNames(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+    admLevel=getCtryShpLowestLyrNames(ctryCodes = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
   
   wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
   
@@ -67,6 +71,8 @@ createCtryNlDataDF <- function(ctryCode, admLevel, gadmVersion=pkgOptions("gadmV
     }else
     {
       ctryNlDataDF <- as.data.frame(ctryPoly@data)
+      
+      
     }
     
     #add the area as reported by the polygon shapefile as a convenience
@@ -79,7 +85,6 @@ createCtryNlDataDF <- function(ctryCode, admLevel, gadmVersion=pkgOptions("gadmV
     #combine the columns
     ctryNlDataDF <- cbind(ctryCodeCol, ctryNlDataDF, areas)
     
-    #ctryPolyColNames <- paste(ctryPolyAdmLevels[nums, "name"], c("_id", "_name"), sep="")
     ctryPolyColNames <- ctryPolyAdmLevels
     
     #add the country code and area columns to the dataframe
@@ -188,12 +193,18 @@ insertNlDataCol <- function (ctryNlDataDF, dataCol, statType, nlPeriod, nlType)
 #'
 #' @param ctryCode country with the  data column to remove
 #' 
+#' @param admLevel admLevel to process
+#' 
 #' @param nlType  the type of nightlight data
 #' 
 #' @param nlPeriod the nlPeriod that the dataCol belongs to
 #' 
 #' @param statType the stat which produced the dataCol vector
-#'
+#' 
+#' @param gadmVersion The GADM version to use
+#' 
+#' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
+#' 
 #' @examples
 #' 
 #' \dontrun{
@@ -207,7 +218,7 @@ insertNlDataCol <- function (ctryNlDataDF, dataCol, statType, nlPeriod, nlType)
 #'     }
 #'
 #' @export
-deleteNlDataCol <- function (ctryCode,nlType, nlPeriod, statType, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
+deleteNlDataCol <- function (ctryCode, admLevel, nlType, nlPeriod, statType, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
 {
   if(missing(ctryCode))
     stop("Missing required parameter ctryCode")
@@ -263,7 +274,11 @@ deleteNlDataCol <- function (ctryCode,nlType, nlPeriod, statType, gadmVersion=pk
 #' @param ctryCode the ctryCode to which the data belongs
 #' 
 #' @param admLevel the country admin level to process
-#'
+#' 
+#' @param gadmVersion The GADM version to use
+#' 
+#' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
+#' 
 #' @return None
 #'
 #' @examples
@@ -331,7 +346,11 @@ validCtryNlDataDF <- function(ctryNlDataDF)
 #' @param ctryCode The ctryCode of interest
 #' 
 #' @param admLevel The country admin level of interest
-#'
+#' 
+#' @param gadmVersion The GADM version to use
+#' 
+#' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
+#' 
 #' @return Character filename of the country data file
 #'
 #' @examples
@@ -369,7 +388,11 @@ getCtryNlDataFname <- function(ctryCode, admLevel, gadmVersion=pkgOptions("gadmV
 #' @param ctryCode \code{character string} The ctryCode of interest
 #' 
 #' @param admLevel \code{character string} The admin level of interest
-#'
+#' 
+#' @param gadmVersion The GADM version to use
+#' 
+#' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
+#' 
 #' @return Character string the full path to the data file of a country
 #'             admin level
 #'
@@ -443,9 +466,22 @@ getCtryNlDataFnamePath <- function(ctryCode, admLevel, gadmVersion=pkgOptions("g
 #'            to download and process any missing nlPeriods and stats
 #'     }
 #' 
+#' @param gadmVersion The GADM version to use
+#' 
+#' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
+#' 
+#' @param downloadMethod The method used to download polygons
+#' 
+#' @param cropMaskMethod The method used to crop and mask the satellite raster
+#' 
+#' @param extractMethod The method used to extract data and perform calculations
+#'     on the satellite raster
+#' 
 #' @param source "local" or "remote" Whether to download and process the
 #'     data locally or to download the pre-processed data from a remote 
 #'     source/repo
+#'
+#' @param ... other arguments
 #'     
 #' @return dataframe of data for one country in one nlType in one or multiple
 #'     nlPeriods
@@ -538,14 +574,14 @@ getCtryNlData <- function(ctryCode, admLevel, nlTypes, nlPeriods, nlStats=pkgOpt
   if(admLevel=="country")
     admLevel <- getCtryShpLyrNames(ctryCodes = ctryCode, lyrNums = 0, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
   else if(admLevel %in% c("bottom", "lowest"))
-    admLevel <- getCtryShpLowestLyrNames(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+    admLevel <- getCtryShpLowestLyrNames(ctryCodes = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
   else if(admLevel %in% c("top","highest"))
     admLevel <- getCtryShpLyrNames(ctryCodes = ctryCode, lyrNums = 1, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
   else if(admLevel=="all")
     admLevel <- getCtryShpAllAdmLvls(ctryCodes = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
   else
   {
-    tmpAdmLevel <- searchAdmLevel(ctryCode = ctryCode, admLevelName = admLevel, downloadMethod = downloadMethod, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+    tmpAdmLevel <- searchAdmLevel(ctryCodes = ctryCode, admLevelNames = admLevel, downloadMethod = downloadMethod, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
     
     admLevel <- ifelse(is.na(tmpAdmLevel), admLevel, tmpAdmLevel)
   }
@@ -809,6 +845,10 @@ getCtryNlDataColName <- function(nlPeriod, nlStat, nlType)
 #' @param ctryCode the ISO3 country code
 #' 
 #' @param admLevel The country admin level of interest.
+#' 
+#' @param gadmVersion The GADM version to use
+#' 
+#' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #'
 #' @return TRUE/FALSE
 #'
@@ -845,13 +885,17 @@ existsCtryNlDataFile <- function(ctryCode, admLevel, gadmVersion=pkgOptions("gad
 #' @param ctryCode character The ISO3 code of the country
 #' 
 #' @param admLevel character string The country admin level of interest
+#' 
+#' @param nlTypes character The nlTypes
 #'
 #' @param nlPeriods character The nlPeriods
 #' 
 #' @param nlStats character The nlStats to check for
 #' 
-#' @param nlTypes character The nlTypes
-#'
+#' @param gadmVersion The GADM version to use
+#' 
+#' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
+#' 
 #' @return TRUE/FALSE
 #'
 #' @examples
@@ -1073,7 +1117,7 @@ listCtryNlRasters <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, sour
   rasterList <- as.data.frame(rasterList)
   
   #label the columns
-  names(rasterList) <- c("ctryCode", "nlType", "nlPeriod")
+  names(rasterList) <- c("rastType", "ctryCode", "nlType", "nlPeriod")
   
   #filters
   #filter by ctryCode if supplied
