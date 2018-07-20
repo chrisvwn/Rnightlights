@@ -55,54 +55,111 @@ createCtryNlDataDF <- function(ctryCode, admLevel, gadmVersion=pkgOptions("gadmV
   if(missing(custPolyPath))
     custPolyPath <- NULL
   
-  if (length(ctryPolyAdmLevels) > 0)
+  if(is.null(custPolyPath))
   {
-    #When a country does not have lower administrative levels
-
-    #the number of admin levels
-    nLyrs <- length(ctryPolyAdmLevels)
-    
-    if(is.null(custPolyPath))
+    if (length(ctryPolyAdmLevels) > 0)
     {
-      ctryPolyAdmCols <- paste(c("NAME_"), 1:nLyrs, sep="")
+      #When a country does not have lower administrative levels
+  
+      #the number of admin levels
+      nLyrs <- length(ctryPolyAdmLevels)
+      
+      ctryPolyAdmCols <- paste(c("NAME_"), 0:(nLyrs-1), sep="")
       
       #pull the ID_ and NAME_ cols from layer1 to lowest layer (layer0 has country code not req'd)
       ctryNlDataDF <- as.data.frame(ctryPoly@data[,eval(ctryPolyAdmCols)])
-    }else
+  
+      #add the area as reported by the polygon shapefile as a convenience
+      areas <- raster::area(ctryPoly)/1e6
+      
+      #we add the country code to ensure even a renamed file is identifiable
+      #repeat ctryCode for each row in the polygon. equiv of picking layer0
+      #ctryCodeCol <- rep(ctryCode, nrow(ctryNlDataDF))
+      
+      #combine the columns
+      ctryNlDataDF <- cbind(ctryCodeCol, ctryNlDataDF, areas)
+      
+      ctryPolyColNames <- ctryPolyAdmLevels
+      
+      #add the country code and area columns to the dataframe
+      ctryPolyColNames <- c(ctryPolyColNames, "area_sq_km")
+      
+      names(ctryNlDataDF) <- ctryPolyColNames
+    } else
     {
-      ctryNlDataDF <- as.data.frame(ctryPoly@data)
+      #add the area as reported by the polygon shapefile as a convenience
+      areas <- raster::area(ctryPoly)/1e6
       
-      
+      ctryNlDataDF <- data.frame("country"=ctryCode, "area_sq_km"=areas)
     }
-    
-    #add the area as reported by the polygon shapefile as a convenience
-    areas <- raster::area(ctryPoly)/1e6
-    
-    #we add the country code to ensure even a renamed file is identifiable
-    #repeat ctryCode for each row in the polygon. equiv of picking layer0
-    ctryCodeCol <- rep(ctryCode, nrow(ctryNlDataDF))
-    
-    #combine the columns
-    ctryNlDataDF <- cbind(ctryCodeCol, ctryNlDataDF, areas)
-    
-    ctryPolyColNames <- ctryPolyAdmLevels
-    
-    #add the country code and area columns to the dataframe
-    ctryPolyColNames <- c("country", ctryPolyColNames, "area_sq_km")
-    
-    names(ctryNlDataDF) <- ctryPolyColNames
   } else
   {
+    #custpolyPath
+    polyFnamePath <- getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+    
+    lyrNames <- rgdal::ogrListLayers(polyFnamePath)
+    
+    polyColNames <- sapply(lyrNames, function(lyrName) 
+    {
+      ctryPoly <- rgdal::readOGR(dsn = polyFnamePath, layer = lyrName)
+      
+      colNames <- names(ctryPoly@data)
+      
+      uniqueColVals <- nrow(ctryPoly@data)/sapply(colNames, function(x) length(unique(ctryPoly@data[[x]])))
+      
+      intColVals <-  sapply(colNames, function(x) length(grep("^\\d+$", ctryPoly@data[[x]])))
+      
+      possibleColNames <- intersect(names(uniqueColVals[which(uniqueColVals < 1.1)]), names(intColVals[which(intColVals == intColVals[which.min(intColVals)])]))
+      
+      if(length(possibleColNames) == 1)
+        return(possibleColNames)
+      
+      missingColVals <- sapply(possibleColNames, function(x) sum(is.na(ctryPoly@data[[x]]) | ctryPoly@data[[x]] == ""))
+      
+      possibleColNames <- intersect(possibleColNames, names(missingColVals[which(missingColVals == missingColVals[which.min(missingColVals)])]))
+      
+      if(length(possibleColNames) == 1)
+        return(possibleColNames)
+      
+      partIntColVals <-  sapply(possibleColNames, function(x) length(grep("\\d+", ctryPoly@data[[x]])))
+      
+      possibleColNames <- intersect(possibleColNames, names(partIntColVals[which(partIntColVals == partIntColVals[which.min(partIntColVals)])]))
+      
+      if(length(possibleColNames) == 1)
+        return(possibleColNames)
+      
+      lyrNameParts <- unlist(strsplit(gsub("^\\d+_", "", lyrName), "[^[:alnum:]]"))
+      
+      partialMatchColNames <- unlist(sapply(lyrNameParts, function(x) grep(x, colNames, ignore.case = T, value = T)))
+      
+      a <- intersect(possibleColNames, partialMatchColNames)
+      
+      if(length(a) == 1)
+        return(a)
+      
+      if(length(a) > 1)
+        possibleColNames <- a
+      
+      return(possibleColNames[1])
+      
+    })
+    
+    #the number of admin levels
+    nLyrs <- length(ctryPolyAdmLevels)
+    
+    polyColNames <- polyColNames[1:nLyrs]
+    
+    ctryPoly <- readCtryPolyAdmLayer(ctryCode = ctryCode, admLevel = admLevel, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+    
+    ctryNlDataDF <- as.data.frame(ctryPoly@data[, polyColNames], stringsAsFactors=F)
+    
     #add the area as reported by the polygon shapefile as a convenience
     areas <- raster::area(ctryPoly)/1e6
-    
-    if(is.null(custPolyPath))
-    {
-      ctryNlDataDF <- data.frame("country"=ctryCode, "area_sq_km"=areas)
-    }else
-    {
-      ctryNlDataDF <- as.data.frame(ctryPoly@data)
-    }
+
+    #combine the columns
+    ctryNlDataDF <- cbind(ctryNlDataDF, areas)
+
+    names(ctryNlDataDF) <- c(lyrNames[1:nLyrs], "area_sq_km")
   }
   
   return(ctryNlDataDF)
@@ -542,7 +599,7 @@ getCtryNlData <- function(ctryCode, admLevel, nlTypes, nlPeriods, nlStats=pkgOpt
     stop("Missing required ctryCode")
   
   if(missing(admLevel))
-    admLevel <- "country"
+    admLevel <- "top"
 
   if(missing(nlTypes))
     stop("Missing required parameter nlTypes")
@@ -987,7 +1044,7 @@ allExistsCtryNlData <- function(ctryCodes, admLevels, nlTypes, nlPeriods, nlStat
 #' listCtryNlData(ctryCodes = c("KEN","RWA"), nlPeriods = c("2012", "2013"), nlTypes = "OLS.Y")
 #'
 #' @export
-listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlPeriods=NULL, nlTypes=NULL, source="local")
+listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlTypes=NULL, nlPeriods=NULL, polySrcs=NULL, polyVers=NULL, nlStats=NULL, source="local")
 {
   dataList <- NULL
   dataType <- NULL #appease CRAN note for global variables
@@ -995,16 +1052,43 @@ listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlPeriods=NULL, nlTyp
   nlPeriod <- NULL #appease CRAN note for global variables
   
   #get a list of country data files present
-  countries <- list.files(path = getNlDir(dirName = "dirNlData"), pattern = "^NL_DATA_.*\\.csv$")
+  countries <- list.files(path = getNlDir(dirName = "dirNlData"), pattern = "^NL_DATA_.*(GADM|CUST).*\\.csv$")
   
   #for each country filename
   for (ctry in countries)
   {
-    #get first 3 chars which gives the ctryCode
-    ctryCode <- substr(ctry, 9, 11)
-    
-    admLevel <- substr(ctry, nchar(ctry)-7, nchar(ctry)-4)
-    
+    if(grepl("_GADM-", ctry))
+    {
+      #prefix
+      prefix <- "NL_DATA_"
+      
+      ctryCode <- substr(ctry, 9, 11)
+      
+      admLevel <- substr(ctry, nchar(prefix)+nchar(ctryCode)+2, nchar(prefix)+nchar(ctryCode)+5)
+      
+      polyPart <- unlist(strsplit(substr(ctry, nchar(prefix)+nchar(ctryCode)+nchar(admLevel)+3, nchar(ctry)-4), "-"))
+      
+      polySrc <- polyPart[1]
+      
+      polyVer <- polyPart[2]
+    } else
+    {
+      #prefix
+      prefix <- "NL_DATA_"
+      
+      ctryCode <- "---"
+      
+      polyPos <- stringr::str_locate(ctry, "CUST")
+      
+      admLevel <- substr(ctry, nchar(prefix)+1, polyPos[1]-2)
+      
+      polyPart <- unlist(strsplit(substr(ctry, polyPos[1], nchar(ctry)-4), "-"))
+      
+      polySrc <- polyPart[1]
+      
+      polyVer <- polyPart[2]
+    }
+
     #read in the header row
     ctryHdr <- data.table::fread(input = file.path(getNlDir(dirName = "dirNlData"), ctry), header = F, nrows = 1)
     
@@ -1020,7 +1104,7 @@ listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlPeriods=NULL, nlTyp
     nlCtryHdr <- stats::aggregate(V4 ~ V1 + V2 + V3, data=nlCtryHdr, FUN=paste, collapse=",")
     
     #add a ctryCode column
-    nlCtryHdr <- cbind(rep(ctryCode, nrow(nlCtryHdr)), rep(admLevel, nrow(nlCtryHdr)), nlCtryHdr)
+    nlCtryHdr <- cbind(rep(ctryCode, nrow(nlCtryHdr)), rep(admLevel, nrow(nlCtryHdr)), rep(polySrc, nrow(nlCtryHdr)), rep(polyVer, nrow(nlCtryHdr)), nlCtryHdr)
     
     #combine into one table
     dataList <- rbind(dataList, nlCtryHdr)
@@ -1033,7 +1117,7 @@ listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlPeriods=NULL, nlTyp
   dataList <- as.data.frame(dataList, row.names = 1:nrow(dataList))
   
   #label the columns
-  names(dataList) <- c("ctryCode", "admLevel", "dataType", "nlType", "nlPeriod", "nlStats")
+  names(dataList) <- c("ctryCode", "admLevel", "polySrc", "polyVer", "dataType", "nlType", "nlPeriod", "nlStats")
 
   dataList$ctryCode <- as.character(dataList$ctryCode)
   dataList$admLevel <- as.character(dataList$admLevel)
@@ -1055,8 +1139,20 @@ listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlPeriods=NULL, nlTyp
   if(!is.null(nlPeriods))
     dataList <- dataList[which(dataList[,"nlPeriod"] %in% nlPeriods),]
   
+  #filter by polySrc if supplied
+  if(!is.null(polySrcs))
+    dataList <- dataList[which(dataList[,"polySrc"] %in% polySrcs),]
+  
+  #filter by polyVer if supplied
+  if(!is.null(polyVers))
+    dataList <- dataList[which(dataList[,"polyVer"] %in% polyVers),]
+  
+  #filter by polyVer if supplied
+  if(!is.null(nlStats))
+    dataList <- dataList[unique(unlist(sapply(nlStats, function(nlStat) grep(nlStat, dataList[,"nlStats"], ignore.case = T)))),]
+  
   #Reorder the columns
-  dataList <- dplyr::select(dataList, dataType, ctryCode, admLevel, nlType, nlPeriod, dplyr::contains("stat"))
+  dataList <- dplyr::select(dataList, dataType, ctryCode, admLevel, nlType, nlPeriod, polySrc, polyVer, dplyr::contains("stat"))
   
   #only return dataList if we have records esp. after filtering else return NULL
   if(nrow(dataList) > 0)
@@ -1104,7 +1200,7 @@ listCtryNlRasters <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, sour
   nlPeriod <- NULL #appease CRAN note for global variables
   
   #get a list of country data files present
-  rasterList <- list.files(path = getNlDir(dirName = "dirRasterOutput"), pattern = "NL_.*\\.tif$")
+  rasterList <- list.files(path = getNlDir(dirName = "dirRasterOutput"), pattern = "^NL_.*(GADM|CUST).*\\.tif$")
 
   if(length(rasterList) == 0)
     return(NULL)
@@ -1117,7 +1213,7 @@ listCtryNlRasters <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, sour
   rasterList <- as.data.frame(rasterList)
   
   #label the columns
-  names(rasterList) <- c("rastType", "ctryCode", "nlType", "nlPeriod")
+  names(rasterList) <- c("rastType", "ctryCode", "nlType", "nlPeriod", "polySrc")
   
   #filters
   #filter by ctryCode if supplied
@@ -1133,7 +1229,7 @@ listCtryNlRasters <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, sour
     rasterList <- rasterList[which(rasterList[,"nlPeriod"] %in% nlPeriods),]
   
   #Reorder the columns
-  rasterList <- dplyr::select(rasterList, ctryCode, nlType, nlPeriod)
+  rasterList <- dplyr::select(rasterList, rastType, ctryCode, nlType, nlPeriod, polySrc)
   
   #only return dataList if we have records esp. after filtering else return NULL
   if(nrow(rasterList) > 0)

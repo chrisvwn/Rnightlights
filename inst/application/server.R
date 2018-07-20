@@ -103,6 +103,28 @@ shiny::shinyServer(function(input, output, session){
       shiny::actionButton("btnGo", "LOAD", style="background-color:lightblue")
   })
   
+  output$countries <- shiny::renderUI({
+    shiny::selectizeInput(inputId = "countries",
+                        label = "Select Country(ies)",
+                        choices = ctryCodesWithData(),
+                        multiple = TRUE
+    )
+  })
+  
+  ######################## reactive ctryCodesWithData ###################################
+  
+  ctryCodesWithData <- shiny::reactive({
+    existingData <- Rnightlights::listCtryNlData()
+    
+    ctryCodesWithData <- unique(existingData$ctryCode)
+    
+    ctryCodeNames <- lapply(ctryCodesWithData, function(x) Rnightlights::ctryCodeToName(x))
+    
+    ctryCodesWithData <- stats::setNames(ctryCodesWithData, ctryCodeNames)
+    
+    ctryCodesWithData
+  })
+  
   ######################## reactive ctryAdmLevels ###################################
   
     ctryAdmLevels <- shiny::reactive({
@@ -111,23 +133,9 @@ shiny::shinyServer(function(input, output, session){
       # if (length(input$countries) != 1)
       #   return()
 
-      admLevelNames <- lapply(input$countries, function(country)
-      {
-        ctryStructPath <- Rnightlights:::getCtryStructFnamePath(country)
-        
-        if(!file.exists(ctryStructPath))
-          return()
-        
-        temp <- data.table::fread(ctryStructPath, nrows = 1, header = T)
-        
-        cols <- names(temp)
-        
-        cols <- cols[-grep("area_sq_km|NL_", cols)]
-        
-        cols
-      })
+      admLevelNames <- Rnightlights:::getCtryStructAdmLevelNames(ctryCode = input$countries)
       
-      admLevelNames
+      c("country", admLevelNames)
     })
     
   ######################## reactive ctryAdmLevelNames ###################################
@@ -140,7 +148,7 @@ shiny::shinyServer(function(input, output, session){
       if (length(countries) != 1)
         return()
 
-      ctryStructFile <- Rnightlights:::getCtryStructFnamePath(countries)
+      ctryStructFile <- Rnightlights:::getCtryStructFnamePath(ctryCode = countries)
       
       if(!file.exists(ctryStructFile))
         return()
@@ -152,7 +160,7 @@ shiny::shinyServer(function(input, output, session){
       colClasses[-grep("area_sq_km|NL_", colClasses)] <- "character"
       colClasses[grep("area_sq_km|NL_", colClasses)] <- "NULL"
       
-      data <- data.table::fread(Rnightlights:::getCtryStructFnamePath(countries), colClasses = colClasses, header = T)
+      data <- data.table::fread(Rnightlights:::getCtryStructFnamePath(ctryCode = countries), colClasses = colClasses, header = T)
     })
   
   ######################## reactive ctryNlTypes ###################################
@@ -179,7 +187,7 @@ shiny::shinyServer(function(input, output, session){
         return()
       
       #admLevel <- paste0(countries,"_adm", admLevel)
-      ctryNlDataFile <- Rnightlights::getCtryNlDataFnamePath(countries, admLevel)
+      ctryNlDataFile <- Rnightlights::getCtryNlDataFnamePath(ctryCode = countries, admLevel = admLevel)
       
       if(file.exists(ctryNlDataFile))
         hdrs <- data.table::fread(ctryNlDataFile, nrows = 1, header = T)
@@ -196,7 +204,7 @@ shiny::shinyServer(function(input, output, session){
       {
         admLevel <- paste0(ctryCode, "_adm0")
 
-        ctryNlDataFile <- Rnightlights::getCtryNlDataFnamePath(ctryCode, admLevel)
+        ctryNlDataFile <- Rnightlights::getCtryNlDataFnamePath(ctryCode = ctryCode, admLevel = admLevel)
         
         if(file.exists(ctryNlDataFile))
           hdrs <- data.table::fread(ctryNlDataFile, nrows = 1, header = T)
@@ -244,7 +252,7 @@ shiny::shinyServer(function(input, output, session){
     {
       admLevel <- selectedAdmLevel()
       
-      ctryNlDataFile <- Rnightlights::getCtryNlDataFnamePath(countries, admLevel)
+      ctryNlDataFile <- Rnightlights::getCtryNlDataFnamePath(ctryCode = countries, admLevel = admLevel)
       
       if(file.exists(ctryNlDataFile))
         hdrs <- data.table::fread(ctryNlDataFile, nrows = 1, header = T)

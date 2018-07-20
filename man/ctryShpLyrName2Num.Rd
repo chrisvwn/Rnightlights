@@ -4,10 +4,17 @@
 \alias{ctryShpLyrName2Num}
 \title{Get the integer number of the layer.}
 \usage{
-ctryShpLyrName2Num(layerName)
+ctryShpLyrName2Num(ctryCode, layerName,
+  gadmVersion = pkgOptions("gadmVersion"), custPolyPath = NULL)
 }
 \arguments{
+\item{ctryCode}{The ctryCode to process}
+
 \item{layerName}{- the name of the polygon layer}
+
+\item{gadmVersion}{The GADM version to use}
+
+\item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
 }
 \value{
 Integer layer number
@@ -19,6 +26,6 @@ Get the integer number of the layer. Is the last character in the name
     is \code{0}
 }
 \examples{
-Rnightlights:::ctryShpLyrName2Num("KEN_adm1") #returns 1
+Rnightlights:::ctryShpLyrName2Num("KEN", "KEN_adm1") #returns 1
 
 }

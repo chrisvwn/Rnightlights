@@ -4,10 +4,15 @@
 \alias{getCtryShpLowestLyrNames}
 \title{Get the name of the lowest ctry admin level}
 \usage{
-getCtryShpLowestLyrNames(ctryCodes, gadmVersion = pkgOptions("gadmVersion"))
+getCtryShpLowestLyrNames(ctryCodes, gadmVersion = pkgOptions("gadmVersion"),
+  custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCodes}{\code{character} ctryCodes the ctryCodes of interest}
+
+\item{gadmVersion}{The GADM version to use}
+
+\item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
 }
 \value{
 character string The name of the lowest admin level

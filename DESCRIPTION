@@ -1,6 +1,6 @@
 Package: Rnightlights
-Version: 0.2.2
-Date: 2018-05-20
+Version: 0.2.1.1
+Date: 2018-07-15
 Title: Satellite Nightlight Data Extraction
 Description: Extracts raster and zonal statistics
     from satellite nightlight rasters downloaded from the United States 
@@ -54,9 +54,9 @@ Suggests:
     shinydashboard,
     testthat
 SystemRequirements:
-    gdal
-    wget
-    curl
+    gdal,
+    wget,
+    curl,
     aria2
 RoxygenNote: 6.0.1
 BugReports: https://github.com/chrisvwn/Rnightlights/issues

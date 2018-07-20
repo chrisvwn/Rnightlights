@@ -64,6 +64,51 @@ gadmAliasToLayer <- function(layerAlias, gadmVersion=pkgOptions("gadmVersion"))
   
 }
 
+######################## orderCustPolyLayers ###################################
+
+#' Order polygon shapefile layers in custom polygons
+#' 
+#' Order polygon shapefile layers in custom polygons
+#'
+#' Add an index column to all layers of a polygon
+#' 
+#' @param ctryCode The ISO3 ctryCode of the country polygon to download
+#' 
+#' @param ctryCode The ISO3 ctryCode of the country polygon to download
+#' 
+#' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
+#'
+#' @return None
+#'
+#' @examples
+#' \dontrun{
+#' Rnightlights:::addCtryPolyIdx(ctryCode="KEN")
+#' }
+#'
+orderCustPolyLayers <- function(ctryCode, custPolyPath=NULL)
+{
+  polyFnamePath <- getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+  
+  lyrNames <- rgdal::ogrListLayers(polyFnamePath)
+  
+  ctryPolyNRows <- sapply(lyrNames, function(lyrName)
+  {
+    ctryPoly <- rgdal::readOGR(dsn = getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath), layer = lyrName)
+    
+    return(nrow(ctryPoly@data))
+  })
+
+  lyrOrders <- order(ctryPolyNRows)
+  
+  for(lyrIdx in 1:length(lyrNames))
+  {
+    lyrFiles <- list.files(path = polyFnamePath, pattern = lyrNames[lyrIdx], full.names = TRUE)
+    
+    for(lyrFile in lyrFiles)
+      file.rename(from = lyrFile, to = file.path(dirname(lyrFile), paste0(lyrOrders[lyrIdx]-1, "_", basename(lyrFile))))
+  }
+}
+
 ######################## addCtryPolyIdx ###################################
 
 #' Add an index column to all layers of a polygon
@@ -85,6 +130,8 @@ gadmAliasToLayer <- function(layerAlias, gadmVersion=pkgOptions("gadmVersion"))
 #'
 addCtryPolyIdx <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
 {
+  wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+  
   if(!is.null(custPolyPath))
   {
     for(admLevel in rgdal::ogrListLayers(getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)))
@@ -97,7 +144,10 @@ addCtryPolyIdx <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"), cust
         lowestIDCol <- "GID_IDX"
         
         ctryPoly@data[,lowestIDCol] <- 1:nrow(ctryPoly@data)  # Make new attribute
-        
+      
+        #project to wgs84
+        ctryPoly <- sp::spTransform(ctryPoly, sp::CRS(wgs84))
+          
         message("Writing layer with new idx col")
         rgdal::writeOGR(obj = ctryPoly,
                         dsn = getPolyFnamePath(ctryCode = ctryCode,
@@ -239,9 +289,17 @@ dnldCtryPoly <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"), custPo
       result <- utils::unzip(zipfile = polyFnameZip, junkpaths = TRUE, exdir = polyFnamePath)
       file.remove(polyFnameZip)
       
-      if(missing(custPolyPath) && gadmVersion == "3.6")
-        addCtryPolyIdx(ctryCode, gadmVersion)
+      if(!is.null(custPolyPath) || gadmVersion == "3.6")
+        addCtryPolyIdx(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+      
     }
+
+    if(!is.null(custPolyPath))
+    {
+      orderCustPolyLayers(ctryCode = ctryCode, custPolyPath = custPolyPath)
+    }
+        
+    wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
     
     #saving RDS
     message("Saving shapefile as RDS for faster access")
@@ -252,7 +310,7 @@ dnldCtryPoly <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"), custPo
       allCtryLevels <- rgdal::ogrListLayers(getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath))
     
     message("Reading in all admLevels")
-    listCtryPolys <- unlist(lapply(allCtryLevels, function(lvl) rgdal::readOGR(dsn = getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath), layer = lvl)))
+    listCtryPolys <- unlist(lapply(allCtryLevels, function(lvl){ ctryPoly <- rgdal::readOGR(dsn = getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath), layer = lvl)}))
     
     message("Saving admLevel polygons as RDS")
     saveRDS(object = listCtryPolys, file = getPolyFnameRDS(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath))
@@ -271,7 +329,7 @@ dnldCtryPoly <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"), custPo
         allCtryLevels <- rgdal::ogrListLayers(getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath))
       
       message("Reading in all admLevels")
-      listCtryPolys <- lapply(allCtryLevels, function(lvl) rgdal::readOGR(dsn = getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath), layer = lvl))
+      listCtryPolys <- unlist(lapply(allCtryLevels, function(lvl){ ctryPoly <- rgdal::readOGR(dsn = getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath), layer = lvl); ctryPoly <- cleangeo::clgeo_Clean(ctryPoly)}))
       
       message("Saving admLevel polygons as RDS")
       saveRDS(listCtryPolys, getPolyFnameRDS(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath))
@@ -396,6 +454,11 @@ readCtryStruct <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"), cust
   
   if(file.exists(ctryStructFnamePath))
   {
+    nlCtryStruct <- data.table::fread(input = ctryStructFnamePath)
+  } else
+  {
+    createCtryStruct(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+    
     nlCtryStruct <- data.table::fread(input = ctryStructFnamePath)
   }
   
@@ -580,6 +643,8 @@ getCtryShpLyrNames <- function(ctryCodes, lyrNums, dnldPoly, gadmVersion=pkgOpti
       admLyrName <- admLayers[as.numeric(admLayerNums)]
     }else
     {
+      #layers <- gsub("^\\d+_", "", layers)
+      
       #layer number to index
       admLyrName <- layers[as.numeric(lyrNums)+1]
     }
@@ -623,6 +688,8 @@ getCtryShpLowestLyrNames <- function(ctryCodes, gadmVersion=pkgOptions("gadmVers
     
     if(is.null(custPolyPath))
       layers <- sort(layers)
+    #else
+    #  layers <- gsub("^\\d+_", "", layers)
     
     layers[length(layers)]
   })
@@ -656,13 +723,16 @@ getCtryShpLowestLyrNames <- function(ctryCodes, gadmVersion=pkgOptions("gadmVers
 #' #if KEN shapefile exists otherwise errors
 #' }
 #'
-getCtryPolyAdmLevelNames <- function(ctryCode, lowestAdmLevel=getCtryShpLowestLyrNames(ctryCodes = ctryCode, custPolyPath = custPolyPath), gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
+getCtryPolyAdmLevelNames <- function(ctryCode, lowestAdmLevel, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
 {
   if(missing(ctryCode))
     stop("Missing required parameter ctryCode")
   
   if(!validCtryCodes(ctryCode))
     stop("Invalid ISO3 ctryCode: ", ctryCode)
+  
+  if(missing(lowestAdmLevel))
+    lowestAdmLevel <- getCtryShpLowestLyrNames(ctryCodes = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
   
   if(missing(custPolyPath))
     custPolyPath <- NULL
@@ -674,19 +744,21 @@ getCtryPolyAdmLevelNames <- function(ctryCode, lowestAdmLevel=getCtryShpLowestLy
   #gadm layers if out of order should be sorted by name. The X=integer in KEN_admX ensures correct order
   if(is.null(custPolyPath))
     allLayers <- sort(allLayers)
+  #else
+  #  allLayers <- gsub("^\\d+_", "", allLayers)
   
   layerNum <- which(tolower(allLayers) == tolower(lowestLayer))-1
   
   admLevels <- NULL
   
   #get the names of each layer starting from level 1
-  if (length(layerNum) > 0 && layerNum > 0)
+  if(is.null(custPolyPath))
   {
-    for (lyrNum in 1:(layerNum)) #skip country layer
+    for (lyrNum in 0:layerNum)
     {
       lyrPoly <- readCtryPolyAdmLayer(ctryCode = ctryCode, admLevel = as.character(getCtryShpLyrNames(ctryCode, lyrNum, gadmVersion = gadmVersion, custPolyPath = custPolyPath)), custPolyPath = custPolyPath)
       
-      if(is.null(custPolyPath))
+      if(lyrNum > 0)
       {
         lvlTypeName <- paste0("TYPE_",lyrNum)
         
@@ -703,20 +775,22 @@ getCtryPolyAdmLevelNames <- function(ctryCode, lowestAdmLevel=getCtryShpLowestLy
           lvlName <- "Unknown"
       }else
       {
-        lvlName <- allLayers[as.numeric(lyrNum)+1]
+        lvlName <- "country"
       }
       
       admLevels <- c(admLevels, as.character(lvlName))
     }
-  }else if (length(layerNum) > 0 && layerNum == 0)
+  }else
   {
-    if(is.null(custPolyPath))
-      admLevels <- "country"
-    else
-      admLevels <- allLayers[1]
-  } else
-  {
-    admLevels <- NULL
+    for (lyrNum in 0:layerNum)
+    {
+      if(lyrNum > 0)
+        lvlName <- allLayers[as.numeric(lyrNum)+1]
+      else
+        lvlName <- allLayers[1]
+      
+      admLevels <- c(admLevels, as.character(lvlName))
+    }
   }
   
   return (admLevels)
@@ -749,13 +823,16 @@ getCtryPolyAdmLevelNames <- function(ctryCode, lowestAdmLevel=getCtryShpLowestLy
 #' #if KEN shapefile exists otherwise errors
 #' }
 #'
-getCtryStructAdmLevelNames <- function(ctryCode, lowestAdmLevel=getCtryShpLowestLyrNames(ctryCodes = ctryCode, custPolyPath = custPolyPath), gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
+getCtryStructAdmLevelNames <- function(ctryCode, lowestAdmLevel, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
 {
   if(missing(ctryCode))
     stop("Missing required parameter ctryCode")
   
   if(!validCtryCodes(ctryCode))
     stop("Invalid ISO3 ctryCode: ", ctryCode)
+  
+  if(missing(lowestAdmLevel))
+    lowestAdmLevel <- getCtryShpLowestLyrNames(ctryCodes = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
   
   if(missing(custPolyPath))
     custPolyPath <- NULL
@@ -765,10 +842,13 @@ getCtryStructAdmLevelNames <- function(ctryCode, lowestAdmLevel=getCtryShpLowest
   allLayers <- rgdal::ogrListLayers(dsn = getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath))
   
   #gadm layers if out of order should be sorted by name. The X=integer in KEN_admX ensures correct order
+  #for custom polys remove the idx prefix e.g. 1_lyrname
   if(is.null(custPolyPath))
     allLayers <- sort(allLayers)
+  #else
+  #  allLayers <- gsub("^\\d+_", "", allLayers)
   
-  layerNum <- which(allLayers == lowestLayer)-1
+  layerNum <- which(allLayers == lowestLayer)
   
   admLevels <- NULL
   
@@ -776,7 +856,7 @@ getCtryStructAdmLevelNames <- function(ctryCode, lowestAdmLevel=getCtryShpLowest
   if (length(layerNum) > 0 && layerNum > 0)
   {
     lvlNames <- names(readCtryStruct(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath))
-    lvlNames <- lvlNames[-c(1,length(lvlNames))]
+    lvlNames <- lvlNames[-c(length(lvlNames))]
     
     for (lyrNum in 1:(layerNum)) #skip country layer
     {
@@ -843,7 +923,7 @@ searchAdmLevel <- function(ctryCodes, admLevelNames, dnldPoly=TRUE, downloadMeth
   if(missing(dnldPoly))
     dnldPoly <- TRUE
   
-  sapply(1:length(unlist(ctryCodes)), function(cCodeIdx)
+  admLevels <- sapply(1:length(unlist(ctryCodes)), function(cCodeIdx)
   {
     if(!existsCtryPoly(ctryCode = ctryCodes[[cCodeIdx]], gadmVersion = gadmVersion, custPolyPath = custPolyPath))
     {
@@ -856,7 +936,7 @@ searchAdmLevel <- function(ctryCodes, admLevelNames, dnldPoly=TRUE, downloadMeth
     allAdmLevels <- getCtryStructAdmLevelNames(ctryCode = ctryCodes[[cCodeIdx]], gadmVersion = gadmVersion, custPolyPath = custPolyPath)
   
     if(is.null(admLevelNames))
-      return(allAdmLevels)
+      return(as.character(allAdmLevels))
     
     ctryAdmLevelNames <- admLevelNames[[cCodeIdx]]
     
@@ -891,6 +971,7 @@ searchAdmLevel <- function(ctryCodes, admLevelNames, dnldPoly=TRUE, downloadMeth
     })
   })
 
+  setNames(admLevels, ctryCodes)
 }
 
 ######################## validCtryAdmLvls ###################################
@@ -1209,8 +1290,12 @@ ctryShpLyrName2Num <- function(ctryCode, layerName, gadmVersion = pkgOptions("ga
   
   allLyrNames <- rgdal::ogrListLayers(dsn = getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath))
   
+  #if gadm layers are listed out of order sort them
+  #for custpolypath remove the index prefix e.g. 1_
   if(is.null(custPolyPath))
     allLyrNames <- sort(allLyrNames)
+  #else
+  #  allLyrNames <- gsub("^\\d+_", "", allLyrNames)
   
   return(which(allLyrNames == layerName)-1)
 }

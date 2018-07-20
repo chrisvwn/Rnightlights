@@ -4,10 +4,15 @@
 \alias{getCtryStructFname}
 \title{Construct the name for the country struct file}
 \usage{
-getCtryStructFname(ctryCode, gadmVersion = pkgOptions("gadmVersion"))
+getCtryStructFname(ctryCode, gadmVersion = pkgOptions("gadmVersion"),
+  custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCode}{The ISO3 ctryCode of the country}
+
+\item{gadmVersion}{The GADM version to use}
+
+\item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
 }
 \value{
 character string The filename

@@ -5,12 +5,16 @@
 \title{Construct the name of the country data file.}
 \usage{
 getCtryNlDataFname(ctryCode, admLevel,
-  gadmVersion = pkgOptions("gadmVersion"))
+  gadmVersion = pkgOptions("gadmVersion"), custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCode}{The ctryCode of interest}
 
 \item{admLevel}{The country admin level of interest}
+
+\item{gadmVersion}{The GADM version to use}
+
+\item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
 }
 \value{
 Character filename of the country data file

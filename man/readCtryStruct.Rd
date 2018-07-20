@@ -4,10 +4,15 @@
 \alias{readCtryStruct}
 \title{Reads the ctry admin structure from struct text file}
 \usage{
-readCtryStruct(ctryCode, gadmVersion = pkgOptions("gadmVersion"))
+readCtryStruct(ctryCode, gadmVersion = pkgOptions("gadmVersion"),
+  custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCode}{The ISO3 ctryCode of the country structure to read}
+
+\item{gadmVersion}{The GADM version to use}
+
+\item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
 }
 \value{
 None

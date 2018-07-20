@@ -64,6 +64,19 @@ newNlType <- function(oldNlType)
 #' @export
 upgradeRnightlights <- function()
 {
+  nlDataFilePatterns <- list("pre-v0.2.0"="", "v0.2.0"="", "v0.2.1"="", "v0.2.2"="")
+  
+  nlDataColPatterns <- list("pre-v0.2.0"="", "v0.2.0"="", "v0.2.1"="", "v0.2.2"="")
+  
+  #0.2.0,1 - NL_ETH_VIIRS.M_201701.tif
+  #0.2.2 - NL_ETH_VIIRS.M_201701_GADM-2.8.tif NL_ETH_VIIRS.M_201701_CUST-Ethiopia_zip_all.tif
+  nlRasterFilePatterns <- list("pre-v0.2.0"="",
+                               "v0.2.0"="",
+                               "v0.2.1"="NL_.*_[A-Z]{3,5}\\.[A-Z]_[0-9]{4,6}",
+                               "v0.2.2"="NL_.*_[A-Z]{3,5}\\.[A-Z]_[0-9]{4,6}_(GADM|CUST)-.*")
+  
+  nlTilePatterns <- list("pre-v0.2.0"="", "v0.2.0"="", "v0.2.1"="", "v0.2.2"="")
+
   tryCatch(
   {
     #will only make alterations after the current package version updates
@@ -74,7 +87,7 @@ upgradeRnightlights <- function()
     if(is.null(pkgVersion) || pkgVersion == "")
       return(0)
     
-    dataVersionFile <- file.path(paste0(Rnightlights::getNlDir("dirNlData"), "/../data-version.txt"))
+    dataVersionFile <- file.path(Rnightlights::getNlDir("dirNlDataPath"), "data-version.txt")
     
     if(file.exists(dataVersionFile))
     {
@@ -90,11 +103,14 @@ upgradeRnightlights <- function()
       {
         return(FALSE)
       }
+    } else
+    {
+      dataVersion <- "0.1.0" #assume a pre-0.2.0 folder to force trying all upgrades
     }
     
     #ver 0.2.0 is the first version employing upgrade
     #upgrades required for 0.2.0, 0.2.1 & 0.2.2
-    if(pkgVersion >= "0.2.0" && dataVersion < "0.2.2")
+    if(pkgVersion >= "0.2.0" && dataVersion < "0.2.3")
     {
       message("Upgrading data directory to ver. ", pkgVersion)
       
@@ -143,6 +159,7 @@ upgradeRnightlights <- function()
       
       message("Renaming data files:")
       setwd(Rnightlights::getNlDir("dirNlData"))
+      
       fileNames <- list.files(pattern = "^[[:alpha:]]{3,5}_NLData\\.csv$")
       
       if(length(fileNames) > 0)
@@ -205,6 +222,7 @@ upgradeRnightlights <- function()
       
       #rename tiles using new format
       message("Renaming country rasters:")
+
       setwd(Rnightlights::getNlDir("dirRasterOutput"))
       fileNames <- list.files(pattern = "^[a-zA-Z]{3}_[a-zA-Z]{3,5}_[0-9]{4,6}\\.tif$")
       
@@ -223,7 +241,7 @@ upgradeRnightlights <- function()
           
           nlPeriod <- splits[3]
           
-          newFileName <- getCtryRasterOutputFname(ctryCode, nlType, nlPeriod)
+          newFileName <- getCtryRasterOutputFname(ctryCode=ctryCode, nlType=nlType, nlPeriod=nlPeriod)
           
           message("Rename:: '", fileName, "' -> '", newFileName, "' : ", ifelse(file.rename(fileName, newFileName), "Success", "Fail"))
           
@@ -257,7 +275,8 @@ upgradeRnightlights <- function()
   {
     message(err)
     message("An error occurred in upgrading the Rnightlights data dir. 
-            Some of your old data may not be accessible from the upgraded package. 
+            Some of your old data may not be accessible from the upgraded package
+            but can be accessed directly from the Rnightlights data folder. 
             Please open an issue on the package github page if you encounter
             any issues. Continuing")
     

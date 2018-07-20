@@ -90,7 +90,7 @@ getNlTileZipLclNameVIIRS <- function(nlPeriod, tileNum, nlType)
   if(!allValidNlPeriods(nlPeriod, nlType))
     stop("Invalid nlPeriod: ", nlPeriod)
   
-  return (paste0(nlType, "_", nlPeriod, "_", tileIdx2Name(tileNum, nlType), ".tgz"))
+  return (paste0("NL_TILE_", nlType, "_", nlPeriod, "_", tileIdx2Name(tileNum, nlType), ".tgz"))
 }
 
 ######################## getNlTileTifLclNamePath ###################################
@@ -185,7 +185,7 @@ getNlTileTifLclNameVIIRS <- function(nlPeriod, tileNum, nlType)
   if(!validNlTileNumVIIRS(tileNum, nlType))
     stop("Invalid tileNum: ", tileNum)
 
-  return (paste0(nlType, "_", nlPeriod, "_", tileIdx2Name(tileNum, nlType), ".tif"))
+  return (paste0("NL_TILE_", nlType, "_", nlPeriod, "_", tileIdx2Name(tileNum, nlType), ".tif"))
 }
 
 ######################## getNlTileTifLclNameOLS ###################################
@@ -213,7 +213,7 @@ getNlTileTifLclNameOLS <- function(nlPeriod)
   if(!allValidNlPeriods(nlPeriod, "OLS.Y"))
     stop("Invalid nlPeriod: ", nlPeriod)
   
-  return (paste0("OLS.Y_", nlPeriod, "_00N180W.tif"))
+  return (paste0("NL_TILE_OLS.Y_", nlPeriod, "_00N180W.tif"))
 }
 
 ######################## getNlTileTifLclNamePathVIIRS ###################################
@@ -313,7 +313,7 @@ getNlTileZipLclNameOLS <- function(nlPeriod)
   if(!allValidNlPeriods(nlPeriod, "OLS.Y"))
     stop("Invalid nlPeriod")
   
-  return (paste0("OLS.Y_", nlPeriod, "_00N180W.tar"))
+  return (paste0("NL_TILE_OLS.Y_", nlPeriod, "_00N180W.tar"))
 }
 
 ######################## getNlTifLclNameOLS ###################################
@@ -341,5 +341,5 @@ getNlTifLclNameOLS <- function(nlPeriod)
   if(!allValidNlPeriods(nlPeriod, "OLS.Y"))
     stop("Invalid nlPeriod")
   
-  return (paste0("OLS_", nlPeriod, ".tif"))
+  return (paste0("NL_TILE_OLS_", nlPeriod, ".tif"))
 }

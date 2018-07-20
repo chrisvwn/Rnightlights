@@ -7,7 +7,9 @@
 searchCountry(searchTerms, extended = FALSE)
 }
 \arguments{
-\item{searchTerm}{The country code/name to search for}
+\item{searchTerms}{The country code/name to search for}
+
+\item{extended}{Whether to do partial searches}
 }
 \value{
 data.frame A mapping of the ctryCode to ctryName if the supplied

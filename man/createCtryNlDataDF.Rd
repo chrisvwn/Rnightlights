@@ -6,12 +6,16 @@
     data read from the polygon}
 \usage{
 createCtryNlDataDF(ctryCode, admLevel,
-  gadmVersion = pkgOptions("gadmVersion"))
+  gadmVersion = pkgOptions("gadmVersion"), custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCode}{the ISO3 code of the country}
 
 \item{admLevel}{The country admin level of interest}
+
+\item{gadmVersion}{The GADM version to use}
+
+\item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
 }
 \value{
 dataframe with the country admin level data

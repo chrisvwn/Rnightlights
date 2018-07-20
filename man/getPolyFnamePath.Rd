@@ -4,10 +4,15 @@
 \alias{getPolyFnamePath}
 \title{Get the path of the unzipped polygon directory downloaded from GADM.ORG}
 \usage{
-getPolyFnamePath(ctryCode, gadmVersion = pkgOptions("gadmVersion"))
+getPolyFnamePath(ctryCode, gadmVersion = pkgOptions("gadmVersion"),
+  custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCode}{character the ISO3 code of the country}
+
+\item{gadmVersion}{The GADM version to use}
+
+\item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
 }
 \value{
 character path to polygon shapefile directory

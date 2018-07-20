@@ -4,10 +4,15 @@
 \alias{existsPolyFnamePath}
 \title{Check if the decompressed country polygon has been downloaded and stored in the polygon folder}
 \usage{
-existsPolyFnamePath(ctryCode, gadmVersion = pkgOptions("gadmVersion"))
+existsPolyFnamePath(ctryCode, gadmVersion = pkgOptions("gadmVersion"),
+  custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCode}{The ctryCode to process}
+
+\item{gadmVersion}{The GADM version to use}
+
+\item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
 }
 \value{
 TRUE/FALSE

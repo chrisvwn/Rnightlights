@@ -5,12 +5,16 @@
 \title{Checks if all ctry admLevels are valid}
 \usage{
 allValidCtryAdmLvls(ctryCode, admLevels,
-  gadmVersion = pkgOptions("gadmVersion"))
+  gadmVersion = pkgOptions("gadmVersion"), custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCode}{\code{character} The ctryCode of the country of interest}
 
 \item{admLevels}{\code{character} The admLevel(s) to search for}
+
+\item{gadmVersion}{The GADM version to use}
+
+\item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
 }
 \value{
 \code{logical} whether inputted admLevels are valid

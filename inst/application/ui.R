@@ -69,7 +69,9 @@ if(!is.null(missingPkgs))
 
 #ctryCodesWithData <- substr(filenames, 1, 3)
 
-ctryCodesWithData <- unique(Rnightlights::listCtryNlData()$ctryCode)
+existingData <- Rnightlights::listCtryNlData()
+
+ctryCodesWithData <- unique(existingData$ctryCode)
 
 ctryCodeNames <- lapply(ctryCodesWithData, function(x) Rnightlights::ctryCodeToName(x))
 
@@ -94,13 +96,13 @@ alignCenter <- function(el) {
       
         shinydashboard::menuItem("Inputs", selected = TRUE, startExpanded = TRUE, tabName = "inputs",
                  
-                 shiny::selectizeInput(inputId = "countries",
-                                label = "Select Country(ies)",
-                                choices = ctryCodesWithData,
-                                multiple = TRUE
-                 ),
+                 shiny::uiOutput(outputId = "countries"),
 
                  shiny::uiOutput(outputId = "btnGo"),
+                 
+                 shiny::radioButtons(inputId = "polySrc", label = "polySrc", choices = c("GADM","CUST"), inline = T),
+                 
+                 shiny::radioButtons(inputId = "polyVer", label = "polyVer", choices = c("2.8","3.6"), inline = T),
 
                  shiny::uiOutput(outputId = "intraCountry"),
                  

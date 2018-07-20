@@ -5,12 +5,16 @@
 \title{Check if a country admin level data file exists}
 \usage{
 existsCtryNlDataFile(ctryCode, admLevel,
-  gadmVersion = pkgOptions("gadmVersion"), ...)
+  gadmVersion = pkgOptions("gadmVersion"), custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCode}{the ISO3 country code}
 
 \item{admLevel}{The country admin level of interest.}
+
+\item{gadmVersion}{The GADM version to use}
+
+\item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
 }
 \value{
 TRUE/FALSE

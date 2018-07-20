@@ -4,16 +4,23 @@
 \alias{searchAdmLevel}
 \title{Search for the admLevel by official name}
 \usage{
-searchAdmLevel(ctryCode, admLevelName, dnldPoly,
-  gadmVersion = pkgOptions("gadmVersion"))
+searchAdmLevel(ctryCodes, admLevelNames, dnldPoly = TRUE,
+  downloadMethod = pkgOptions("downloadMethod"),
+  gadmVersion = pkgOptions("gadmVersion"), custPolyPath = NULL)
 }
 \arguments{
-\item{ctryCode}{\code{character} The ctryCode of the country of interest}
+\item{ctryCodes}{\code{character} The ctryCodes of the country of interest}
 
-\item{admLevelName}{\code{character} The name to search for}
+\item{admLevelNames}{\code{character} The names to search for}
 
 \item{dnldPoly}{\code{logical} If the country polygon doesn't exist 
 should we download it?}
+
+\item{downloadMethod}{The method used to download polygons}
+
+\item{gadmVersion}{The GADM version to use}
+
+\item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
 }
 \value{
 character vector of admin level names

@@ -4,10 +4,15 @@
 \alias{getPolyFnameRDS}
 \title{Get the filename of the polygon zip file as downloaded from \url{http://GADM.ORG}}
 \usage{
-getPolyFnameRDS(ctryCode, gadmVersion = pkgOptions("gadmVersion"))
+getPolyFnameRDS(ctryCode, gadmVersion = pkgOptions("gadmVersion"),
+  custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCode}{character the ISO3 code of the country}
+
+\item{gadmVersion}{The GADM version to use}
+
+\item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
 }
 \value{
 character path to zip

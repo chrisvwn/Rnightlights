@@ -5,7 +5,7 @@
 \title{Get the standard names of polygon layers in a country}
 \usage{
 getCtryShpLyrNames(ctryCodes, lyrNums, dnldPoly,
-  gadmVersion = pkgOptions("gadmVersion"))
+  gadmVersion = pkgOptions("gadmVersion"), custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCodes}{the ISO3 codes for the countries}
@@ -15,6 +15,10 @@ getCtryShpLyrNames(ctryCodes, lyrNums, dnldPoly,
 
 \item{dnldPoly}{\code{logical} If the country polygon doesn't exist 
 should we download it?}
+
+\item{gadmVersion}{The GADM version to use}
+
+\item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
 }
 \value{
 Character layer name

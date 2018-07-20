@@ -5,9 +5,11 @@
 \title{Processes nightlights for an individual country in a particular nlPeriod}
 \usage{
 processNLCountry(ctryCode, admLevel, nlType, nlPeriod,
+  nlStats = pkgOptions("nlStats"),
+  downloadMethod = pkgOptions("downloadMethod"),
   cropMaskMethod = pkgOptions("cropMaskMethod"),
   extractMethod = pkgOptions("extractMethod"),
-  nlStats = pkgOptions("nlStats"), gadmVersion = pkgOptions("gadmVersion"))
+  gadmVersion = pkgOptions("gadmVersion"), custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCode}{\code{character} The ctryCode of interest}
@@ -19,14 +21,20 @@ ctryCode at which to calculate stats}
 
 \item{nlPeriod}{\code{character} The nlPeriod of interest}
 
+\item{nlStats}{the statistics to calculate. If not provided will calculate 
+the stats specified in \code{pkgOptions("nlStats")}}
+
+\item{downloadMethod}{The method used to download polygons and rasters}
+
 \item{cropMaskMethod}{\code{character} Whether to use rasterize or 
 gdal-based functions to crop and mask the country rasters}
 
 \item{extractMethod}{("rast" or "gdal") Whether to use rasterize or 
 gdal-based functions to crop and mask the country rasters}
 
-\item{nlStats}{the statistics to calculate. If not provided will calculate 
-the stats specified in \code{pkgOptions("nlStats")}}
+\item{gadmVersion}{The GADM version to use}
+
+\item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
 }
 \value{
 None

@@ -34,7 +34,7 @@ test_that("nlPeriod nlTypes are correct", {
   expect_error(unlist(validNlPeriods(nlPeriods = "201401", nlType = "VIIIS"), "Invalid nlType", fixed=TRUE))
   
   expect_that(unlist(getAllNlPeriods(nlTypes = "OLS.Y")), is_a("integer"))
-  expect_equal(unlist(getAllNlPeriods(nlTypes = "OLS.Y")), 1992:2013)
+  expect_equal(unname(unlist(getAllNlPeriods(nlTypes = "OLS.Y"))), 1992:2013)
   expect_that(unlist(getAllNlPeriods(nlTypes = "VIIRS.M")), is_a("character"))
-  expect_equal(unlist(getAllNlPeriods(nlTypes = "VIIRS.M")), gsub("-","",format.Date(as.character(seq.Date(from = as.Date("2012-04-01"), to = as.Date(date(), "%a %b %d %H:%M:%S %Y"), by = "month")), "%Y-%m")))
+  expect_equal(unname(unlist(getAllNlPeriods(nlTypes = "VIIRS.M"))), gsub("-","",format.Date(as.character(seq.Date(from = as.Date("2012-04-01"), to = as.Date(date(), "%a %b %d %H:%M:%S %Y"), by = "month")), "%Y-%m")))
 })

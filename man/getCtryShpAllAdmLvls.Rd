@@ -4,10 +4,15 @@
 \alias{getCtryShpAllAdmLvls}
 \title{Get all the admLevels in a country}
 \usage{
-getCtryShpAllAdmLvls(ctryCodes, gadmVersion = pkgOptions("gadmVersion"))
+getCtryShpAllAdmLvls(ctryCodes, gadmVersion = pkgOptions("gadmVersion"),
+  custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCodes}{\code{character} The ctryCode of the country of interest}
+
+\item{gadmVersion}{The GADM version to use}
+
+\item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
 }
 \value{
 \code{logical} whether inputted admLevels are valid

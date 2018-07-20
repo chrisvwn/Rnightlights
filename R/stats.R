@@ -272,7 +272,7 @@ ZonalPipe <- function (ctryCode, admLevel, ctryPoly, path.in.shp, path.in.r, pat
     
     lyrName <- admLevel #getCtryShpLowestLyrNames(ctryCode)
     lowestIDCol <- if(!is.null(custPolyPath))
-      {
+    {
       if(gadmVersion == "2.8")
         paste0("ID_", stringr::str_extract(lyrName, "\\d+$"))
       else if(gadmVersion == "3.6")
@@ -397,16 +397,22 @@ fnAggRadGdal <- function(ctryCode, admLevel, ctryPoly, nlType, nlPeriod, nlStats
   
   path.in.shp<- getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
   
-  path.in.r<- getCtryRasterOutputFnamePath(ctryCode = ctryCode, nlType = nlType, nlPeriod = nlPeriod) #or path.in.r<-list.files("/home/, pattern=".tif$")
+  path.in.r<- getCtryRasterOutputFnamePath(ctryCode = ctryCode, nlType = nlType, nlPeriod = nlPeriod, gadmVersion = gadmVersion, custPolyPath = custPolyPath) #or path.in.r<-list.files("/home/, pattern=".tif$")
   
   if(stringr::str_detect(nlType, "VIIRS"))
     nlTp <- "VIIRS"
   else
     nlTp <- "OLS"
   
-  path.out.r<- file.path(getNlDir("dirZonals"), paste0(admLevel, "_zone_", nlTp, "_", gadmVersion, ".tif"))
+  if(is.null(custPolyPath))
+    path.out.r<- file.path(getNlDir("dirZonals"), paste0(admLevel, "_zone_", nlTp, "_", gadmVersion, ".tif"))
+  else
+    path.out.r<- file.path(getNlDir("dirZonals"), paste0(admLevel, "_zone_", nlTp, ".tif"))
   
-  path.out.shp <- file.path(getNlDir("dirZonals"), paste0(admLevel, "_zone_", nlTp, "_", gadmVersion, ".shp"))
+  if(is.null(custPolyPath))
+    path.out.shp <- file.path(getNlDir("dirZonals"), paste0(admLevel, "_zone_", nlTp, "_", gadmVersion, ".shp"))
+  else
+    path.out.shp <- file.path(getNlDir("dirZonals"), paste0(admLevel, "_zone_", nlTp, ".shp"))
   
   zone.attribute <- if(is.null(custPolyPath))
   {

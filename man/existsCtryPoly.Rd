@@ -4,10 +4,15 @@
 \alias{existsCtryPoly}
 \title{Checks if a country polygon exists}
 \usage{
-existsCtryPoly(ctryCode, gadmVersion = pkgOptions("gadmVersion"))
+existsCtryPoly(ctryCode, gadmVersion = pkgOptions("gadmVersion"),
+  custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCode}{\code{character} The ctryCode of the country of interest}
+
+\item{gadmVersion}{The GADM version to use}
+
+\item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
 }
 \description{
 Checks if a country polygon exists

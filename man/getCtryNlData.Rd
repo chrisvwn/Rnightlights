@@ -6,7 +6,10 @@
 \usage{
 getCtryNlData(ctryCode, admLevel, nlTypes, nlPeriods,
   nlStats = pkgOptions("nlStats"), ignoreMissing = NULL,
-  gadmVersion = pkgOptions("gadmVersion"), source = "local")
+  gadmVersion = pkgOptions("gadmVersion"), custPolyPath = NULL,
+  downloadMethod = pkgOptions("downloadMethod"),
+  cropMaskMethod = pkgOptions("cropMaskMethod"),
+  extractMethod = pkgOptions("extractMethod"), source = "local", ...)
 }
 \arguments{
 \item{ctryCode}{the ISO3 code of the country. Only 1 country can be 
@@ -35,9 +38,22 @@ found in the data file.
        to download and process any missing nlPeriods and stats
 }}
 
+\item{gadmVersion}{The GADM version to use}
+
+\item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
+
+\item{downloadMethod}{The method used to download polygons}
+
+\item{cropMaskMethod}{The method used to crop and mask the satellite raster}
+
+\item{extractMethod}{The method used to extract data and perform calculations
+on the satellite raster}
+
 \item{source}{"local" or "remote" Whether to download and process the
 data locally or to download the pre-processed data from a remote 
 source/repo}
+
+\item{...}{other arguments}
 }
 \value{
 dataframe of data for one country in one nlType in one or multiple

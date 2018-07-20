@@ -4,10 +4,15 @@
 \alias{getCtryPolyUrl}
 \title{Get the GADM url from which to download country polygons}
 \usage{
-getCtryPolyUrl(ctryCode, gadmVersion = pkgOptions("gadmVersion"))
+getCtryPolyUrl(ctryCode, gadmVersion = pkgOptions("gadmVersion"),
+  custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCode}{character string The ctryCode of interest}
+
+\item{gadmVersion}{The GADM version to use}
+
+\item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
 }
 \value{
 Character string url of the zipped ESRI shapefile for the ctryCode

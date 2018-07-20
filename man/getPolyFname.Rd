@@ -5,10 +5,15 @@
 \title{Returns the directory name of the unzipped shapefile downloaded from
     http://gadm.org without the path}
 \usage{
-getPolyFname(ctryCode, gadmVersion = pkgOptions("gadmVersion"))
+getPolyFname(ctryCode, gadmVersion = pkgOptions("gadmVersion"),
+  custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCode}{character the ISO3 code of the country}
+
+\item{gadmVersion}{The GADM version to use}
+
+\item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
 }
 \value{
 character name of shapefile directory

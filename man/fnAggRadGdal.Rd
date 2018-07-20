@@ -5,7 +5,8 @@
 \title{Calculate zonal statistics using GDAL}
 \usage{
 fnAggRadGdal(ctryCode, admLevel, ctryPoly, nlType, nlPeriod,
-  nlStats = pkgOptions("nlStats"), gadmVersion = pkgOptions("gadmVersion"))
+  nlStats = pkgOptions("nlStats"), gadmVersion = pkgOptions("gadmVersion"),
+  custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCode}{character string the ISO3 country code to be processed}
@@ -20,6 +21,10 @@ the \code{ctryPoly} given but no checks are made currently.}
 \item{nlPeriod}{character string the nlPeriod to be processed}
 
 \item{nlStats}{character vector The stats to calculate}
+
+\item{gadmVersion}{The GADM version to use}
+
+\item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
 }
 \value{
 data.frame of polygon attributes and the calculated stats, one column per stat
@@ -33,7 +38,7 @@ Calculate zonal statistics using GDAL. Alternative to fnAggRadRast and
 #read the Kenya polygon downloaded from GADM and load the lowest admin level (ward)
 \dontrun{
 ctryPoly <- readCtryPolyAdmLayer(ctryCode="KEN", 
-    Rnightlights:::getCtryShpLowestLyrNames(ctryCode="KEN"))
+    Rnightlights:::getCtryShpLowestLyrNames(ctryCodes="KEN"))
     
 #calculate the sum of radiances for the wards in Kenya
 sumAvgRadRast <- Rnightlights:::fnAggRadGdal(ctryCode="KEN", ctryPoly=ctryPoly,

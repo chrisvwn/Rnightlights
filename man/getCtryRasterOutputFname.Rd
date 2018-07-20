@@ -4,7 +4,8 @@
 \alias{getCtryRasterOutputFname}
 \title{Constructs the name of the output raster}
 \usage{
-getCtryRasterOutputFname(ctryCode, nlType, nlPeriod)
+getCtryRasterOutputFname(ctryCode, nlType, nlPeriod,
+  gadmVersion = pkgOptions("gadmVersion"), custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCode}{the ctryCode of interest}
@@ -12,6 +13,8 @@ getCtryRasterOutputFname(ctryCode, nlType, nlPeriod)
 \item{nlType}{the nlType of interest}
 
 \item{nlPeriod}{the nlPeriod of interest}
+
+\item{gadmVersion}{The GADM version to use}
 }
 \value{
 Character the name of country raster for a country and a given 

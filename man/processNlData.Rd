@@ -5,7 +5,11 @@
 \title{Downloads nightlight tiles and country polygons and calls the function to process them}
 \usage{
 processNlData(ctryCodes, admLevels, nlTypes, nlPeriods,
-  nlStats = pkgOptions("nlStats"), gadmVersion = pkgOptions("gadmVersion"))
+  nlStats = pkgOptions("nlStats"), custPolyPath = NULL,
+  gadmVersion = pkgOptions("gadmVersion"),
+  downloadMethod = pkgOptions("downloadMethod"),
+  cropMaskMethod = pkgOptions("cropMaskMethod"),
+  extractMethod = pkgOptions("extractMethod"))
 }
 \arguments{
 \item{ctryCodes}{the list of countries to be processed}
@@ -19,6 +23,16 @@ which to calculate stats}
 
 \item{nlStats}{the statistics to calculate. If not provided will calculate
 the stats specified in \code{pkgOptions("nlStats")}}
+
+\item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
+
+\item{gadmVersion}{The GADM version to use}
+
+\item{downloadMethod}{The method used to download rasters and polygons}
+
+\item{cropMaskMethod}{The method used to crop and mask satellite rasters}
+
+\item{extractMethod}{The method used to extract and perform functions on raster data}
 }
 \value{
 None

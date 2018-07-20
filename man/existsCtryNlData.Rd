@@ -5,7 +5,7 @@
 \title{Check if VIIRS nightlight stats exist locally}
 \usage{
 existsCtryNlData(ctryCode, admLevel, nlTypes, nlPeriods, nlStats,
-  gadmVersion = pkgOptions("gadmVersion"))
+  gadmVersion = pkgOptions("gadmVersion"), custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCode}{character The ISO3 code of the country}
@@ -17,6 +17,10 @@ existsCtryNlData(ctryCode, admLevel, nlTypes, nlPeriods, nlStats,
 \item{nlPeriods}{character The nlPeriods}
 
 \item{nlStats}{character The nlStats to check for}
+
+\item{gadmVersion}{The GADM version to use}
+
+\item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
 }
 \value{
 TRUE/FALSE
