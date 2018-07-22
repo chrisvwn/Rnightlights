@@ -936,7 +936,7 @@ searchAdmLevel <- function(ctryCodes, admLevelNames, dnldPoly=TRUE, downloadMeth
     allAdmLevels <- getCtryStructAdmLevelNames(ctryCode = ctryCodes[[cCodeIdx]], gadmVersion = gadmVersion, custPolyPath = custPolyPath)
   
     if(is.null(admLevelNames))
-      return(as.character(allAdmLevels))
+      return(setNames(list(allAdmLevels), ctryCodes[[cCodeIdx]]))
     
     ctryAdmLevelNames <- admLevelNames[[cCodeIdx]]
     
@@ -967,7 +967,7 @@ searchAdmLevel <- function(ctryCodes, admLevelNames, dnldPoly=TRUE, downloadMeth
       
       ctryShpLyrNames <- getCtryShpLyrNames(ctryCodes = ctryCodes[[cCodeIdx]], lyrNums = idxFound, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
       
-      return(unlist(ctryShpLyrNames))
+      return(ctryShpLyrNames)
     })
   })
 

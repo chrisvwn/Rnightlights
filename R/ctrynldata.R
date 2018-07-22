@@ -77,7 +77,7 @@ createCtryNlDataDF <- function(ctryCode, admLevel, gadmVersion=pkgOptions("gadmV
       #ctryCodeCol <- rep(ctryCode, nrow(ctryNlDataDF))
       
       #combine the columns
-      ctryNlDataDF <- cbind(ctryCodeCol, ctryNlDataDF, areas)
+      ctryNlDataDF <- cbind(ctryNlDataDF, areas)
       
       ctryPolyColNames <- ctryPolyAdmLevels
       
