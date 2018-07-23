@@ -138,19 +138,17 @@ nlRange <- function(startNlPeriod, endNlPeriod, nlType)
   }
   else
   {
-    if(allValidNlPeriods(nlPeriods = c(startNlPeriod, endNlPeriod), nlTypes =  "OLS.Y"))
-      nlType <- "OLS.Y"
-    else if(allValidNlPeriods(nlPeriods = c(startNlPeriod, endNlPeriod), nlTypes="VIIRS.D"))
-      nlType <- "VIIRS.D"
-    else if(allValidNlPeriods(nlPeriods = c(startNlPeriod, endNlPeriod), nlTypes = "VIIRS.M"))
-      nlType <- "VIIRS.M"
-    else if(allValidNlPeriods(nlPeriods = c(startNlPeriod, endNlPeriod), nlTypes = "VIIRS.Y"))
-      nlType <- "VIIRS.Y"
-    else
+    for(x in getAllNlTypes())
+    {
+      if(unlist(suppressMessages(validNlPeriods(nlPeriods = startNlPeriod, nlTypes = x))) && unlist(suppressMessages(validNlPeriods(nlPeriods = endNlPeriod, nlTypes = x))))
+        nlType <- x
+    }
+    
+    if(is.null(nlType))
       stop("Invalid start/end nlPeriod")
   }
 
-  allNlPeriods <- unlist(getAllNlPeriods(nlType))
+  allNlPeriods <- unname(unlist(getAllNlPeriods(nlType)))
     
   start <- grep(startNlPeriod, allNlPeriods)
   

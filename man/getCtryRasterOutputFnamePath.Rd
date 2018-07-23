@@ -4,7 +4,8 @@
 \alias{getCtryRasterOutputFnamePath}
 \title{Get the full path to the file where the cropped VIIRS country raster is stored.}
 \usage{
-getCtryRasterOutputFnamePath(ctryCode, nlType, nlPeriod)
+getCtryRasterOutputFnamePath(ctryCode, nlType, nlPeriod,
+  gadmVersion = pkgOptions("gadmVersion"), custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCode}{the ctryCode of interest}
@@ -12,6 +13,11 @@ getCtryRasterOutputFnamePath(ctryCode, nlType, nlPeriod)
 \item{nlType}{the nlType of interest}
 
 \item{nlPeriod}{the nlPeriod of interest}
+
+\item{gadmVersion}{The GADM version to use}
+
+\item{custPolyPath}{The path to a custom polygon as an alternative
+to using GADM polygons}
 }
 \value{
 Character full path to the cropped VIIRS country raster for a country and a given year and month

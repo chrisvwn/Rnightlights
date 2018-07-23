@@ -15,6 +15,9 @@ getCtryRasterOutputFname(ctryCode, nlType, nlPeriod,
 \item{nlPeriod}{the nlPeriod of interest}
 
 \item{gadmVersion}{The GADM version to use}
+
+\item{custPolyPath}{The path to a custom polygon as an alternative
+to using GADM polygons}
 }
 \value{
 Character the name of country raster for a country and a given 

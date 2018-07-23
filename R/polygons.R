@@ -74,8 +74,6 @@ gadmAliasToLayer <- function(layerAlias, gadmVersion=pkgOptions("gadmVersion"))
 #' 
 #' @param ctryCode The ISO3 ctryCode of the country polygon to download
 #' 
-#' @param ctryCode The ISO3 ctryCode of the country polygon to download
-#' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #'
 #' @return None
@@ -87,13 +85,13 @@ gadmAliasToLayer <- function(layerAlias, gadmVersion=pkgOptions("gadmVersion"))
 #'
 orderCustPolyLayers <- function(ctryCode, custPolyPath=NULL)
 {
-  polyFnamePath <- getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+  polyFnamePath <- getPolyFnamePath(ctryCode = ctryCode, custPolyPath = custPolyPath)
   
   lyrNames <- rgdal::ogrListLayers(polyFnamePath)
   
   ctryPolyNRows <- sapply(lyrNames, function(lyrName)
   {
-    ctryPoly <- rgdal::readOGR(dsn = getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath), layer = lyrName)
+    ctryPoly <- rgdal::readOGR(dsn = getPolyFnamePath(ctryCode = ctryCode, custPolyPath = custPolyPath), layer = lyrName)
     
     return(nrow(ctryPoly@data))
   })
@@ -936,7 +934,7 @@ searchAdmLevel <- function(ctryCodes, admLevelNames, dnldPoly=TRUE, downloadMeth
     allAdmLevels <- getCtryStructAdmLevelNames(ctryCode = ctryCodes[[cCodeIdx]], gadmVersion = gadmVersion, custPolyPath = custPolyPath)
   
     if(is.null(admLevelNames))
-      return(setNames(list(allAdmLevels), ctryCodes[[cCodeIdx]]))
+      return(stats::setNames(list(allAdmLevels), ctryCodes[[cCodeIdx]]))
     
     ctryAdmLevelNames <- admLevelNames[[cCodeIdx]]
     
@@ -971,7 +969,7 @@ searchAdmLevel <- function(ctryCodes, admLevelNames, dnldPoly=TRUE, downloadMeth
     })
   })
 
-  setNames(admLevels, ctryCodes)
+  stats::setNames(admLevels, ctryCodes)
 }
 
 ######################## validCtryAdmLvls ###################################

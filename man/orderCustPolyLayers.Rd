@@ -10,8 +10,6 @@ orderCustPolyLayers(ctryCode, custPolyPath = NULL)
 \item{ctryCode}{The ISO3 ctryCode of the country polygon to download}
 
 \item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
-
-\item{gadmVersion}{The GADM version to use}
 }
 \value{
 None

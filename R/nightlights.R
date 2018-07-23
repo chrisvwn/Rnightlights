@@ -449,6 +449,8 @@ getCtryRasterOutputFname <- function(ctryCode, nlType, nlPeriod, gadmVersion = p
 #'
 #' @param nlPeriod the nlPeriod of interest
 #' 
+#' @param gadmVersion The GADM version to use
+#'  
 #' @param custPolyPath The path to a custom polygon as an alternative
 #'     to using GADM polygons
 #'     
@@ -837,7 +839,7 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
           ctryAdmLevels <- admLevels[idxCtryCode]
         
         for(admLevel in ctryAdmLevels)
-          processNLCountry(ctryCode = ctryCode, admLevel = admLevel, nlType = nlType, nlPeriod = nlPeriod, nlStats = nlStats, downloadMethod = downloadMethod, cropMaskMethod = cropMaskMethod, extractMethod = extractMethod, gadmVersion = gadmVersion, custPolyPath = custPolyPath,)
+          processNLCountry(ctryCode = ctryCode, admLevel = admLevel, nlType = nlType, nlPeriod = nlPeriod, nlStats = nlStats, downloadMethod = downloadMethod, cropMaskMethod = cropMaskMethod, extractMethod = extractMethod, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
       }
       
       #post-processing. Delete the downloaded tiles to release disk space

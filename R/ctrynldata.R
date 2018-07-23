@@ -1017,13 +1017,19 @@ allExistsCtryNlData <- function(ctryCodes, admLevels, nlTypes, nlPeriods, nlStat
 #' List available data. If source is "local" it lists data cached locally.
 #'     If source is remote lists available data on the remote repository.
 #' 
-#' @param ctryCodes  A character vector of ctryCodes to filter by
+#' @param ctryCodes  \code{character} vector of ctryCodes to filter by
 #' 
 #' @param admLevels A character vector of admLevels to filter by
 #' 
-#' @param nlPeriods A character vector of nlPeriods to filter by
-#' 
 #' @param nlTypes A character vector of nlTypes to filter by
+#' 
+#' @param nlPeriods A character vector of nlPeriods to filter by 
+#' 
+#' @param polySrcs The source of polygons e.g. GADM or CUST to filter by
+#' 
+#' @param polyVers The version of the polygon source to filter by
+#' 
+#' @param nlStats The stats to filter by
 #' 
 #' @param source Character string. Whether to check data availability "local" or "remote"
 #'     Not in use.
@@ -1170,9 +1176,15 @@ listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlTypes=NULL, nlPerio
 #' 
 #' @param ctryCodes  A character vector of ctryCodes to filter by
 #' 
+#' @param nlTypes A character vector of nlTypes to filter by
+#' 
 #' @param nlPeriods A character vector of nlPeriods to filter by
 #' 
-#' @param nlTypes A character vector of nlTypes to filter by
+#' @param polySrcs The source of polygons e.g. GADM or CUST to filter by
+#' 
+#' @param polyVers The version of the polygon source to filter by
+#' 
+#' @param nlStats The stats to filter by
 #' 
 #' @param source Character string. Whether to check data availability
 #'  "local" or "remote". Default is "local".
@@ -1193,11 +1205,14 @@ listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlTypes=NULL, nlPerio
 #' listCtryNlRasters(ctryCodes = c("KEN","RWA"), nlPeriods = c("2012", "2013"), nlTypes = "OLS.Y")
 #'
 #' @export
-listCtryNlRasters <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, source="local")
+listCtryNlRasters <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, polySrcs=NULL, polyVers=NULL, nlStats=NULL, source="local")
 {
-  ctryCode <- NULL #appease CRAN note for global variables
-  nlType <- NULL #appease CRAN note for global variables
-  nlPeriod <- NULL #appease CRAN note for global variables
+  #appease CRAN note for global variables
+  rastType <- NULL
+  ctryCode <- NULL
+  nlType <- NULL
+  nlPeriod <- NULL
+  polySrc <- NULL
   
   #get a list of country data files present
   rasterList <- list.files(path = getNlDir(dirName = "dirRasterOutput"), pattern = "^NL_.*(GADM|CUST).*\\.tif$")
@@ -1244,10 +1259,12 @@ listCtryNlRasters <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, sour
 #'
 #' List the tiles which have been downloaded previously and are currently
 #'     cached in the local tiles folder
+#'
+#' @param nlTypes A character vector of nlTypes to filter by
 #' 
 #' @param nlPeriods A character vector of nlPeriods to filter by
 #' 
-#' @param nlTypes A character vector of nlTypes to filter by
+#' @param tileName Character vector tileNames to filter by
 #' 
 #' @param source Character string. Whether to check data availability.
 #'     "local" or "remote". Default is "local".
@@ -1269,11 +1286,13 @@ listCtryNlRasters <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, sour
 #' listNlTiles(nlTypes = "OLS.Y", nlPeriods = c("2012", "2013"))
 #'
 #' @export
-listNlTiles <- function(nlTypes=NULL, nlPeriods=NULL, source="local")
+listNlTiles <- function(nlTypes=NULL, nlPeriods=NULL, tileName=NULL, source="local")
 {
-  nlType <- NULL #appease CRAN note for global variables
-  nlPeriod <- NULL #appease CRAN note for global variables
-  tileName <- NULL #appease CRAN note for global variables
+  #appease CRAN note for global variables
+  dataType <- NULL
+  nlType <- NULL
+  nlPeriod <- NULL
+  tileName <- NULL
   
   if(source=="remote")
   {
@@ -1283,12 +1302,12 @@ listNlTiles <- function(nlTypes=NULL, nlPeriods=NULL, source="local")
   }
   
   #get a list of country data files present
-  rasterList <- list.files(path = getNlDir(dirName = "dirNlTiles"), pattern = "\\..*\\.tif$")
+  rasterList <- list.files(path = getNlDir(dirName = "dirNlTiles"), pattern = "^NL_TILE_.*\\..*\\.tif$")
   
   if(length(rasterList) == 0)
     return(NULL)
   
-  rasterList <- strsplit(gsub(".tif", "", rasterList), "_")
+  rasterList <- strsplit(gsub("TILE_|.tif", "", rasterList), "_")
   
   rasterList <- t(unlist(sapply(rasterList, rbind)))
   
@@ -1296,7 +1315,7 @@ listNlTiles <- function(nlTypes=NULL, nlPeriods=NULL, source="local")
   rasterList <- as.data.frame(rasterList)
   
   #label the columns
-  names(rasterList) <- c("nlType", "nlPeriod", "tileName")
+  names(rasterList) <- c("dataType", "nlType", "nlPeriod", "tileName")
   
   #filters
   #filter by nlType if supplied
@@ -1307,8 +1326,12 @@ listNlTiles <- function(nlTypes=NULL, nlPeriods=NULL, source="local")
   if(!is.null(nlPeriods))
     rasterList <- rasterList[which(rasterList[,"nlPeriod"] %in% nlPeriods),]
   
+  #filter by tileName if supplied
+  if(!is.null(tileName))
+    rasterList <- rasterList[which(rasterList[,"tileName"] %in% tileName),]
+  
   #Reorder the columns
-  rasterList <- dplyr::select(rasterList, nlType, nlPeriod, tileName)
+  rasterList <- dplyr::select(rasterList, dataType, nlType, nlPeriod, tileName)
   
   #only return list if we have records esp. after filtering else return NULL
   if(nrow(rasterList) > 0)

@@ -4,12 +4,15 @@
 \alias{listNlTiles}
 \title{List locally cached tiles}
 \usage{
-listNlTiles(nlTypes = NULL, nlPeriods = NULL, source = "local")
+listNlTiles(nlTypes = NULL, nlPeriods = NULL, tileName = NULL,
+  source = "local")
 }
 \arguments{
 \item{nlTypes}{A character vector of nlTypes to filter by}
 
 \item{nlPeriods}{A character vector of nlPeriods to filter by}
+
+\item{tileName}{Character vector tileNames to filter by}
 
 \item{source}{Character string. Whether to check data availability.
 "local" or "remote". Default is "local".}
