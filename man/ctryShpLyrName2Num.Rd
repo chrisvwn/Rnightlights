@@ -26,6 +26,8 @@ Get the integer number of the layer. Is the last character in the name
     is \code{0}
 }
 \examples{
-Rnightlights:::ctryShpLyrName2Num("KEN", "KEN_adm1") #returns 1
+\dontrun{
+  Rnightlights:::ctryShpLyrName2Num("KEN", "KEN_adm1") #returns 1
+}
 
 }

@@ -85,6 +85,12 @@ gadmAliasToLayer <- function(layerAlias, gadmVersion=pkgOptions("gadmVersion"))
 #'
 orderCustPolyLayers <- function(ctryCode, custPolyPath=NULL)
 {
+  if(is.null(custPolyPath))
+    stop("Missing required parameter custPolyPath")
+  
+  if(is.null(custPolyPath) && !validCtryCodes(ctryCode))
+    stop("Invalid ISO3 ctryCode: ", ctryCode)
+  
   polyFnamePath <- getPolyFnamePath(ctryCode = ctryCode, custPolyPath = custPolyPath)
   
   lyrNames <- rgdal::ogrListLayers(polyFnamePath)
@@ -364,10 +370,13 @@ dnldCtryPoly <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"), custPo
 #'
 getCtryStructFname <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
 {
+  if(missing(ctryCode) || ctryCode == "")
+    ctryCode <- NULL
+  
   fName <- if(is.null(custPolyPath))
               paste0("NL_STRUCT_", ctryCode, "_GADM-", gadmVersion, ".csv")
             else
-              paste0("NL_STRUCT_", ctryCode, "_CUST-", basename(custPolyPath), ".csv")
+              paste0("NL_STRUCT_", ifelse(is.null(ctryCode), "", paste0(ctryCode, "_")), "CUST-", basename(custPolyPath), ".csv")
   
   return(fName)
 }
@@ -667,10 +676,10 @@ getCtryShpLyrNames <- function(ctryCodes, lyrNums, dnldPoly, gadmVersion=pkgOpti
 #'
 getCtryShpLowestLyrNames <- function(ctryCodes, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
 {
-  if(missing(ctryCodes))
+  if(is.null(custPolyPath) && missing(ctryCodes))
     stop("Missing required parameter ctryCode")
   
-  if(!allValidCtryCodes(ctryCodes = ctryCodes))
+  if(is.null(custPolyPath) && !allValidCtryCodes(ctryCodes = ctryCodes))
     stop("Invalid ctryCode(s) detected ")
   
   if(!dir.exists(path.expand(getPolyFnamePath(ctryCode = ctryCodes, gadmVersion = gadmVersion, custPolyPath = custPolyPath))))
@@ -823,10 +832,10 @@ getCtryPolyAdmLevelNames <- function(ctryCode, lowestAdmLevel, gadmVersion=pkgOp
 #'
 getCtryStructAdmLevelNames <- function(ctryCode, lowestAdmLevel, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
 {
-  if(missing(ctryCode))
+  if(is.null(custPolyPath) && missing(ctryCode))
     stop("Missing required parameter ctryCode")
   
-  if(!validCtryCodes(ctryCode))
+  if(is.null(custPolyPath) && !validCtryCodes(ctryCode))
     stop("Invalid ISO3 ctryCode: ", ctryCode)
   
   if(missing(lowestAdmLevel))
@@ -1131,19 +1140,22 @@ getCtryShpAllAdmLvls <- function(ctryCodes, gadmVersion=pkgOptions("gadmVersion"
 #'
 getPolyFname <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
 {
-  if(missing(ctryCode))
-    stop("Missing required parameter ctryCode")
+  if(is.null(custPolyPath) && missing(ctryCode))
+    stop("Missing required parameter. One of ctryCode/custPolyPath required")
   
-  if(!validCtryCodes(ctryCode))
+  if(is.null(custPolyPath) && !validCtryCodes(ctryCode))
     stop("Invalid ctryCode: ", ctryCode)
 
   #if any value is given for custAdmPoly override GADM
   if(!is.null(custPolyPath))
   {
+    if(missing(ctryCode))
+      ctryCode <- NULL
+    
     fName <- basename(custPolyPath)
     
     #format of shapefiles is CTR_adm_shp e.g. KEN_adm_shp
-    polyFname <- paste0("SHP_", ctryCode, "_CUST-", fName)
+    polyFname <- paste0("SHP_", ifelse(is.null(ctryCode), "", paste0(ctryCode,"_")), "CUST-", fName)
   }else
   {
     #format of shapefiles is CTR_adm_shp e.g. KEN_adm_shp
@@ -1179,10 +1191,10 @@ getPolyFname <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"), custPo
 #' @export
 getPolyFnamePath <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
 {
-  if(missing(ctryCode))
-    stop("Missing required parameter ctryCode")
+  if(is.null(custPolyPath) && missing(ctryCode))
+    stop("Missing required parameter. One of ctryCode/custPolyPath required")
   
-  if(!validCtryCodes(ctryCode))
+  if(is.null(custPolyPath) && !validCtryCodes(ctryCode))
     stop("Invalid ctryCode: ", ctryCode)
   
   #check for the shapefile directory created with
@@ -1276,7 +1288,9 @@ getPolyFnameRDS <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"), cus
 #' @return Integer layer number
 #'
 #' @examples
-#' Rnightlights:::ctryShpLyrName2Num("KEN", "KEN_adm1") #returns 1
+#' \dontrun{
+#'   Rnightlights:::ctryShpLyrName2Num("KEN", "KEN_adm1") #returns 1
+#' }
 #'
 ctryShpLyrName2Num <- function(ctryCode, layerName, gadmVersion = pkgOptions("gadmVersion"), custPolyPath=NULL)
 {

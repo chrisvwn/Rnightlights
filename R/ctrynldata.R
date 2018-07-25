@@ -416,20 +416,17 @@ validCtryNlDataDF <- function(ctryNlDataDF)
 #' Rnightlights:::getCtryNlDataFname(ctryCode, admLevel)
 #' #returns string of name of the ctry data file
 #'
-getCtryNlDataFname <- function(ctryCode, admLevel, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
+getCtryNlDataFname <- function(ctryCode=NULL, admLevel, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
 {
-  if(missing(ctryCode))
-    stop("Missing required parameter ctryCode")
+  if(is.null(custPolyPath) && missing(ctryCode))
+    stop("Missing required parameter. One of ctryCode/custPolyPath required")
   
   if(missing(admLevel))
     stop("Missing required parameter admLevel")
   
-  if(!validCtryCodes(ctryCode))
-    stop("Invalid ctryCode: ", ctryCode)
-  
-  if(missing(custPolyPath))
-    custPolyPath <- NULL
-  
+  if(!is.null(ctryCode) && ctryCode == "")
+    ctryCode <- NULL
+
   polyVer <- ifelse(is.null(custPolyPath), paste0("GADM-", gadmVersion), paste0("CUST-", basename(custPolyPath)))
   
   return (paste0(paste("NL", "DATA", toupper(admLevel), polyVer, sep="_"), ".csv"))
@@ -459,15 +456,15 @@ getCtryNlDataFname <- function(ctryCode, admLevel, gadmVersion=pkgOptions("gadmV
 #'
 #' #@export only due to exploreData() shiny app
 #' @export
-getCtryNlDataFnamePath <- function(ctryCode, admLevel, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
+getCtryNlDataFnamePath <- function(ctryCode=NULL, admLevel, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
 {
-  if(missing(ctryCode))
-    stop("Missing required parameter ctryCode")
+  if(is.null(custPolyPath) && missing(ctryCode))
+    stop("Missing required parameter. One of ctryCode/custPolyPath required")
   
   if(missing(admLevel))
     stop("Missing required parameter admLevel")
   
-  if(!validCtryCodes(ctryCode))
+  if(is.null(custPolyPath) && !validCtryCodes(ctryCode))
     stop("Invalid ctryCode: ", ctryCode)
 
   return (file.path(getNlDir(dirName = "dirNlData"), getCtryNlDataFname(ctryCode = ctryCode, admLevel = admLevel, gadmVersion = gadmVersion, custPolyPath = custPolyPath)))
@@ -1082,11 +1079,14 @@ listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlTypes=NULL, nlPerio
       #prefix
       prefix <- "NL_DATA_"
       
-      ctryCode <- "---"
+      #TODO: optional ctryCode extraction
+      possibleCtryCode <- substr(ctry, nchar(prefix)+1, nchar(prefix)+5)
+      
+      ctryCode <- if(grepl("^[A-Z]{3}_", possibleCtryCode)) possibleCtryCode else " "
       
       polyPos <- stringr::str_locate(ctry, "CUST")
       
-      admLevel <- substr(ctry, nchar(prefix)+1, polyPos[1]-2)
+      admLevel <- substr(ctry, nchar(prefix)+nchar(ctryCode)+1, polyPos[1]-2)
       
       polyPart <- unlist(strsplit(substr(ctry, polyPos[1], nchar(ctry)-4), "-"))
       
@@ -1120,7 +1120,7 @@ listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlTypes=NULL, nlPerio
     return(NULL)
   
   #convert into a dataframe with numbered rownames
-  dataList <- as.data.frame(dataList, row.names = 1:nrow(dataList))
+  dataList <- data.frame(dataList, row.names = 1:nrow(dataList), stringsAsFactors=F)
   
   #label the columns
   names(dataList) <- c("ctryCode", "admLevel", "polySrc", "polyVer", "dataType", "nlType", "nlPeriod", "nlStats")
@@ -1128,17 +1128,19 @@ listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlTypes=NULL, nlPerio
   dataList$ctryCode <- as.character(dataList$ctryCode)
   dataList$admLevel <- as.character(dataList$admLevel)
   dataList$nlPeriod <- as.character(dataList$nlPeriod)
+  dataList$polySrc <- as.character(dataList$polySrc)
+  dataList$polyVer <- as.character(dataList$polyVer)
     
   #filters
   #filter by ctryCode if supplied
-  if(!is.null(ctryCodes))
+  if(!is.null(ctryCodes) && ctryCodes != "")
     dataList <- dataList[which(dataList[,"ctryCode"] %in% ctryCodes),]
   
-  if(!is.null(admLevels))
+  if(!is.null(admLevels) && admLevels != "")
     dataList <- dataList[which(dataList[,"admLevel"] %in% admLevels),]
   
   #filter by nlType if supplied
-  if(!is.null(nlTypes))
+  if(!is.null(nlTypes) && nlTypes != "")
     dataList <- dataList[which(dataList[,"nlType"] %in% nlTypes),]
   
   #filter by nlPeriod if supplied
@@ -1146,11 +1148,11 @@ listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlTypes=NULL, nlPerio
     dataList <- dataList[which(dataList[,"nlPeriod"] %in% nlPeriods),]
   
   #filter by polySrc if supplied
-  if(!is.null(polySrcs))
+  if(!is.null(polySrcs) && polySrcs != "")
     dataList <- dataList[which(dataList[,"polySrc"] %in% polySrcs),]
   
   #filter by polyVer if supplied
-  if(!is.null(polyVers))
+  if(!is.null(polyVers) && polyVers != "")
     dataList <- dataList[which(dataList[,"polyVer"] %in% polyVers),]
   
   #filter by polyVer if supplied

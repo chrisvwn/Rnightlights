@@ -17,13 +17,9 @@
 # 
 # suppressMessages(library(leaflet))
 # 
- suppressMessages(library(plotly)) #some functions don't work unless library is imported
-# 
-# suppressMessages(library(aws.s3))
 
-#suppressMessages(source("nightlights.R"))
+suppressMessages(library(plotly)) #some functions don't work unless library is imported
 
-#source("nightlights.R")
 
 missingPkgs <- NULL
  
@@ -61,30 +57,20 @@ if(!is.null(missingPkgs))
   stop("Missing packages needed for this function to work. 
        Please install missing packages: '", paste0(missingPkgs, collapse = ", "), "'", call. = FALSE)
 
-#library(Rnightlights)
+# existingData <- Rnightlights::listCtryNlData()
+# 
+# ctryCodesWithData <- unique(existingData$ctryCode)
+# 
+# ctryCodeNames <- lapply(ctryCodesWithData, function(x) Rnightlights::ctryCodeToName(x))
+# 
+# ctryCodesWithData <- stats::setNames(ctryCodesWithData, ctryCodeNames)
 
-#filenames <- list.files(file.path(Rnightlights::getNlDir("dirNlData")))
-
-#print(file.path(Rnightlights::getNlDir("dirNlData")))
-
-#ctryCodesWithData <- substr(filenames, 1, 3)
-
-existingData <- Rnightlights::listCtryNlData()
-
-ctryCodesWithData <- unique(existingData$ctryCode)
-
-ctryCodeNames <- lapply(ctryCodesWithData, function(x) Rnightlights::ctryCodeToName(x))
-
-ctryCodesWithData <- stats::setNames(ctryCodesWithData, ctryCodeNames)
-
-#allCtryCodes <- getAllNlCtryCodes()
 alignCenter <- function(el) {
   htmltools::tagAppendAttributes(el,
                                  style="margin-left:auto;margin-right:auto;"
   )
 }
 
-#shinyUI(
   shinydashboard::dashboardPage(
 
     # Application title
@@ -98,11 +84,11 @@ alignCenter <- function(el) {
                  
                  shiny::uiOutput(outputId = "countries"),
 
+                 shiny::uiOutput(outputId = "polySrc"),
+                 
+                 shiny::uiOutput(outputId = "polyVer"),
+                 
                  shiny::uiOutput(outputId = "btnGo"),
-                 
-                 shiny::radioButtons(inputId = "polySrc", label = "polySrc", choices = c("GADM","CUST"), inline = T),
-                 
-                 shiny::radioButtons(inputId = "polyVer", label = "polyVer", choices = c("2.8","3.6"), inline = T),
 
                  shiny::uiOutput(outputId = "intraCountry"),
                  
@@ -135,18 +121,7 @@ alignCenter <- function(el) {
                                         choices = c("scale_x_log", "scale_y_log")
                           )
                 )
-        )#,
-        
-        # shinydashboard::menuItem("plots", tabName = "plots"),
-        # 
-        # shinydashboard::menuItem("maps", tabName = "maps"),
-        # 
-        # shinydashboard::menuItem("stats", tabName = "stats"),
-        # 
-        # shinydashboard::menuItem("models", tabName = "models"),
-        # 
-        # shinydashboard::menuItem("data", tabName = "data")
-        #)
+        )
       ),
 
       # body
@@ -156,17 +131,14 @@ alignCenter <- function(el) {
                    plotly::plotlyOutput(outputId = "plotNightLights"),
                    
                    shiny::uiOutput("sliderNlPeriodRange")
-                   ),
+          ),
 
           shiny::tabPanel(title = "maps",
                   tags$style(type = "text/css", "#map {height: calc(100vh - 80px) !important;}"),
                   leaflet::leafletOutput("map"),
                   
                   shiny::uiOutput("sliderNlPeriod")
-                  
-#                   actionButton(inputId="drawMap",
-#                                label = "Draw Map")
-                  ),
+          ),
 
           shiny::tabPanel(title = "stats",
                    shiny::fluidRow(
@@ -208,5 +180,3 @@ alignCenter <- function(el) {
         )
       )
     )
-  #)
-#)

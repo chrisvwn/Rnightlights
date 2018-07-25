@@ -115,7 +115,7 @@ ctryCodeToName <- function(ctryCodes)
     return(ctryList)
   }
   
-  if (class(ctryCodes) != "character" || is.null(ctryCodes) || is.na(ctryCodes) || ctryCodes =="")
+  if (class(ctryCodes) != "character" || is.null(ctryCodes) || is.na(ctryCodes) || ctryCodes =="" || ctryCodes == " ")
     stop("Invalid ctryCode: ", ctryCodes)
   
   ctryList <- rworldmap::getMap()@data[,c("ISO3", "ADMIN")]
