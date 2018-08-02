@@ -4,7 +4,7 @@
 \alias{getPolyFnamePath}
 \title{Get the path of the unzipped polygon directory downloaded from GADM.ORG}
 \usage{
-getPolyFnamePath(ctryCode, gadmVersion = pkgOptions("gadmVersion"),
+getPolyFnamePath(ctryCode = NULL, gadmVersion = pkgOptions("gadmVersion"),
   custPolyPath = NULL)
 }
 \arguments{

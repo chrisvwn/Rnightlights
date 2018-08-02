@@ -4,7 +4,7 @@
 \alias{getCtryNlDataFname}
 \title{Construct the name of the country data file.}
 \usage{
-getCtryNlDataFname(ctryCode, admLevel,
+getCtryNlDataFname(ctryCode = NULL, admLevel,
   gadmVersion = pkgOptions("gadmVersion"), custPolyPath = NULL)
 }
 \arguments{

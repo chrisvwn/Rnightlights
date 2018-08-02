@@ -4,7 +4,7 @@
 \alias{getCtryNlDataFnamePath}
 \title{Construct the full path to save the file containing the country data}
 \usage{
-getCtryNlDataFnamePath(ctryCode, admLevel,
+getCtryNlDataFnamePath(ctryCode = NULL, admLevel,
   gadmVersion = pkgOptions("gadmVersion"), custPolyPath = NULL)
 }
 \arguments{

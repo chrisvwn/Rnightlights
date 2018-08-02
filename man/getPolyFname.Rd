@@ -5,7 +5,7 @@
 \title{Returns the directory name of the unzipped shapefile downloaded from
     http://gadm.org without the path}
 \usage{
-getPolyFname(ctryCode, gadmVersion = pkgOptions("gadmVersion"),
+getPolyFname(ctryCode = NULL, gadmVersion = pkgOptions("gadmVersion"),
   custPolyPath = NULL)
 }
 \arguments{
