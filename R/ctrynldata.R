@@ -57,7 +57,7 @@ createCtryNlDataDF <- function(ctryCode, admLevel, gadmVersion=pkgOptions("gadmV
   
   if(is.null(custPolyPath))
   {
-    if (length(ctryPolyAdmLevels) > 0)
+    if (length(ctryPolyAdmLevels) > 1)
     {
       #When a country does not have lower administrative levels
   
@@ -625,7 +625,7 @@ getCtryNlData <- function(ctryCode, admLevel, nlTypes, nlPeriods, nlStats=pkgOpt
   if(!validCtryCodes(ctryCode))
     stop("Invalid ctryCode", ctryCode)
   
-  if(admLevel=="country")
+  if(grepl("country", admLevel))
     admLevel <- getCtryShpLyrNames(ctryCodes = ctryCode, lyrNums = 0, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
   else if(admLevel %in% c("bottom", "lowest"))
     admLevel <- getCtryShpLowestLyrNames(ctryCodes = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)

@@ -216,8 +216,11 @@ addCtryPolyIdx <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"), cust
 #'
 dnldCtryPoly <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL, downloadMethod=pkgOptions("downloadMethod"))
 {
-  if(missing(ctryCode))
-    stop("Missing required parameter ctryCode")
+  if(is.null(custPolyPath) && missing(ctryCode))
+    stop("Missing required parameter. One of ctryCode/custPolyPath required")
+  
+  if(is.null(custPolyPath) && !validCtryCodes(ctryCode))
+    stop("Invalid ISO3 ctryCode: ", ctryCode)
   
   if(!validCtryCodes(ctryCode))
     stop("Invalid ctryCode: ", ctryCode)
@@ -965,7 +968,7 @@ searchAdmLevel <- function(ctryCodes, admLevelNames, dnldPoly=TRUE, downloadMeth
       if(length(grep("\\d+$", admLevelName, ignore.case = T)) > 0)
         idxFound <- as.numeric(stringr::str_extract(admLevelName, "\\d+$"))
       else
-        idxFound <- grep(pattern = admLevelName, x = allAdmLevels, ignore.case = TRUE)
+        idxFound <- grep(pattern = admLevelName, x = allAdmLevels, ignore.case = TRUE)-1
       
       if(length(idxFound) == 0)
       {
@@ -1138,9 +1141,12 @@ getCtryShpAllAdmLvls <- function(ctryCodes, gadmVersion=pkgOptions("gadmVersion"
 #' Rnightlights:::getPolyFname("KEN")
 #'  #returns "KEN_adm_shp"
 #'
-getPolyFname <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
+getPolyFname <- function(ctryCode=NULL, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
 {
-  if(is.null(custPolyPath) && missing(ctryCode))
+  if(ctryCode == " " || ctryCode == "")
+    ctryCode <- NULL
+  
+  if(is.null(custPolyPath) && is.null(ctryCode))
     stop("Missing required parameter. One of ctryCode/custPolyPath required")
   
   if(is.null(custPolyPath) && !validCtryCodes(ctryCode))
@@ -1189,9 +1195,9 @@ getPolyFname <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"), custPo
 #'  
 #' #@export only due to exploreData() shiny app
 #' @export
-getPolyFnamePath <- function(ctryCode, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
+getPolyFnamePath <- function(ctryCode=NULL, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
 {
-  if(is.null(custPolyPath) && missing(ctryCode))
+  if(is.null(custPolyPath) && is.null(ctryCode))
     stop("Missing required parameter. One of ctryCode/custPolyPath required")
   
   if(is.null(custPolyPath) && !validCtryCodes(ctryCode))
