@@ -24,13 +24,13 @@
 #' }
 #' 
 #'
-createCtryNlDataDF <- function(ctryCode, admLevel, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
+createCtryNlDataDF <- function(ctryCode=NULL, admLevel, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
 {
-  if(missing(ctryCode))
+  if(is.null(ctryCode) && is.null(custPolyPath))
     stop("Missing required parameter ctryCode")
   
-  if(!validCtryCodes(ctryCode))
-    stop("Invalid ctryCode: ", ctryCode)
+  if(!is.null(ctryCode) && !allValidCtryCodes(ctryCodes = ctryCode))
+    stop("Invalid ctryCode(s) detected ")
   
   if(missing(admLevel))
     admLevel=getCtryShpLowestLyrNames(ctryCodes = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
@@ -71,14 +71,17 @@ createCtryNlDataDF <- function(ctryCode, admLevel, gadmVersion=pkgOptions("gadmV
   
       #add the area as reported by the polygon shapefile as a convenience
       areas <- raster::area(ctryPoly)/1e6
-      
+  
       #we add the country code to ensure even a renamed file is identifiable
       #repeat ctryCode for each row in the polygon. equiv of picking layer0
-      #ctryCodeCol <- rep(ctryCode, nrow(ctryNlDataDF))
+      ctryCodeCol <- rep(ctryCode, nrow(ctryNlDataDF))
       
       #combine the columns
-      ctryNlDataDF <- cbind(ctryNlDataDF, areas)
-      
+      ctryNlDataDF <- cbind(ctryCodeCol, ctryNlDataDF, areas)
+
+      #remove the NAME_0 column which has the country name. We want ctryCode only
+      ctryNlDataDF <- ctryNlDataDF[,-which(names(ctryNlDataDF)=="NAME_0")]
+            
       ctryPolyColNames <- ctryPolyAdmLevels
       
       #add the country code and area columns to the dataframe
@@ -275,10 +278,13 @@ insertNlDataCol <- function (ctryNlDataDF, dataCol, statType, nlPeriod, nlType)
 #'     }
 #'
 #' @export
-deleteNlDataCol <- function (ctryCode, admLevel, nlType, nlPeriod, statType, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
+deleteNlDataCol <- function (ctryCode=NULL, admLevel, nlType, nlPeriod, statType, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
 {
-  if(missing(ctryCode))
+  if(is.null(ctryCode) && is.null(custPolyPath))
     stop("Missing required parameter ctryCode")
+  
+  if(!is.null(ctryCode) && !allValidCtryCodes(ctryCodes = ctryCode))
+    stop("Invalid ctryCode(s) detected ")
 
   if(missing(nlType))
     warning("Missing required parameter nlType")
@@ -344,13 +350,16 @@ deleteNlDataCol <- function (ctryCode, admLevel, nlType, nlPeriod, statType, gad
 #' Rnightlights:::saveCtryNlData(ctryNlDataDF, ctryCode)
 #' }
 #'
-saveCtryNlData <- function(ctryNlDataDF, ctryCode, admLevel, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
+saveCtryNlData <- function(ctryNlDataDF, ctryCode=NULL, admLevel, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
 {
   if(missing(ctryNlDataDF))
     stop("Missing required parameter ctryNlDataDF")
   
-  if(missing(ctryCode))
+  if(is.null(ctryCode) && is.null(custPolyPath))
     stop("Missing required parameter ctryCode")
+  
+  if(!is.null(ctryCode) && !allValidCtryCodes(ctryCodes = ctryCode))
+    stop("Invalid ctryCode(s) detected ")
   
   if(missing(admLevel))
     stop("Missing required parameter admLevel")
@@ -385,7 +394,7 @@ validCtryNlDataDF <- function(ctryNlDataDF)
   if(missing(ctryNlDataDF))
     stop("Missing required parameter ctryNlDataDF")
   
-  if(class(ctryNlDataDF) == "data.frame" && !is.null(ctryNlDataDF))
+  if(class(ctryNlDataDF) == "data.frame" && !is.null(ctryNlDataDF) && names(ctryNlDataDF)[1]=="country" && any(grepl("area_sq_km", names(ctryNlDataDF))))
     return(TRUE)
   else
     return(FALSE)
@@ -418,8 +427,11 @@ validCtryNlDataDF <- function(ctryNlDataDF)
 #'
 getCtryNlDataFname <- function(ctryCode=NULL, admLevel, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
 {
-  if(is.null(custPolyPath) && missing(ctryCode))
-    stop("Missing required parameter. One of ctryCode/custPolyPath required")
+  if(is.null(ctryCode) && is.null(custPolyPath))
+    stop("Missing required parameter ctryCode")
+  
+  if(!is.null(ctryCode) && !allValidCtryCodes(ctryCodes = ctryCode))
+    stop("Invalid ctryCode(s) detected ")
   
   if(missing(admLevel))
     stop("Missing required parameter admLevel")
@@ -458,8 +470,11 @@ getCtryNlDataFname <- function(ctryCode=NULL, admLevel, gadmVersion=pkgOptions("
 #' @export
 getCtryNlDataFnamePath <- function(ctryCode=NULL, admLevel, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
 {
-  if(is.null(custPolyPath) && missing(ctryCode))
-    stop("Missing required parameter. One of ctryCode/custPolyPath required")
+  if(is.null(ctryCode) && is.null(custPolyPath))
+    stop("Missing required parameter ctryCode")
+  
+  if(!is.null(ctryCode) && !allValidCtryCodes(ctryCodes = ctryCode))
+    stop("Invalid ctryCode(s) detected ")
   
   if(missing(admLevel))
     stop("Missing required parameter admLevel")
@@ -586,14 +601,17 @@ getCtryNlDataFnamePath <- function(ctryCode=NULL, admLevel, gadmVersion=pkgOptio
 #'     }
 #'  
 #' @export
-getCtryNlData <- function(ctryCode, admLevel, nlTypes, nlPeriods, nlStats=pkgOptions("nlStats"), ignoreMissing=NULL, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL, downloadMethod=pkgOptions("downloadMethod"), cropMaskMethod=pkgOptions("cropMaskMethod"), extractMethod=pkgOptions("extractMethod"), source="local", ...)
+getCtryNlData <- function(ctryCode=NULL, admLevel, nlTypes, nlPeriods, nlStats=pkgOptions("nlStats"), ignoreMissing=NULL, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL, downloadMethod=pkgOptions("downloadMethod"), cropMaskMethod=pkgOptions("cropMaskMethod"), extractMethod=pkgOptions("extractMethod"), source="local", ...)
 {
   if(source != "local")
     stop("Non-local sources not currently supported. \n
          Please request this feature at https://github.com/chrisvwn/Rnightlights to fasttrack it.")
   
-  if(missing(ctryCode))
-    stop("Missing required ctryCode")
+  if(is.null(ctryCode) && is.null(custPolyPath))
+    stop("Missing required parameter ctryCode")
+  
+  if(!is.null(ctryCode) && !allValidCtryCodes(ctryCodes = ctryCode))
+    stop("Invalid ctryCode(s) detected ")
   
   if(missing(admLevel))
     admLevel <- "top"
@@ -913,16 +931,16 @@ getCtryNlDataColName <- function(nlPeriod, nlStat, nlType)
 #'     ifelse(Rnightlights:::existsCtryNlDataFile(ctryCode, admLevel), 
 #'         " FOUND", " NOT FOUND"))
 #'
-existsCtryNlDataFile <- function(ctryCode, admLevel, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
+existsCtryNlDataFile <- function(ctryCode=NULL, admLevel, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
 {
-  if(missing(ctryCode))
+  if(is.null(ctryCode) && is.null(custPolyPath))
     stop("Missing required parameter ctryCode")
+  
+  if(!is.null(ctryCode) && !allValidCtryCodes(ctryCodes = ctryCode))
+    stop("Invalid ctryCode(s) detected ")
   
   if(missing(admLevel))
     stop("Missing required parameter admLevel")
-  
-  if(!validCtryCodes(ctryCode))
-    stop("Invalid/Unknown ctryCode: ", ctryCode)
   
   #for polygons look for shapefile dir
   return(file.exists(getCtryNlDataFnamePath(ctryCode = ctryCode, admLevel = admLevel, gadmVersion = gadmVersion, custPolyPath = custPolyPath)))
@@ -955,10 +973,13 @@ existsCtryNlDataFile <- function(ctryCode, admLevel, gadmVersion=pkgOptions("gad
 #' @examples
 #' Rnightlights:::existsCtryNlData("KEN", "KEN_adm0", "VIIRS.M","201401", "sum")
 #'
-existsCtryNlData <- function(ctryCode, admLevel, nlTypes, nlPeriods, nlStats, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
+existsCtryNlData <- function(ctryCode=NULL, admLevel, nlTypes, nlPeriods, nlStats, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
 {
-  if(missing(ctryCode))
+  if(is.null(ctryCode) && is.null(custPolyPath))
     stop("Missing required parameter ctryCode")
+  
+  if(!is.null(ctryCode) && !allValidCtryCodes(ctryCodes = ctryCode))
+    stop("Invalid ctryCode(s) detected ")
 
   if(missing(admLevel))
     stop("Missing required parameter admLevel")
