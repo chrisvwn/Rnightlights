@@ -67,7 +67,7 @@ downloadNlTilesVIIRS <- function(nlPeriod, tileNum, downloadMethod=pkgOptions("d
     if (downloadMethod %in% c("auto", "curl", "libcurl", "wget"))
       rsltDnld <- utils::download.file(ntLtsFileUrl, ntLtsZipLocalNamePathVIIRS, mode = "wb", method = downloadMethod, extra = "-c")
     else if (downloadMethod == "aria")
-      rsltDnld <- system(paste0("aria2c -c -x2 ", ntLtsFileUrl, " -d ", getNlDir("dirNlTiles"), " -o ", getNlTileZipLclNameVIIRS(nlPeriod, tileNum, nlType))) #downloads to path relative to -d if specified else local dir
+      rsltDnld <- system(paste0("aria2c -c -x2 --show-console-readout=false --summary-interval=10 ", ntLtsFileUrl, " -d ", getNlDir("dirNlTiles"), " -o ", getNlTileZipLclNameVIIRS(nlPeriod, tileNum, nlType))) #downloads to path relative to -d if specified else local dir
   }
   else
   {
@@ -181,10 +181,12 @@ downloadNlTilesOLS <- function(nlPeriod, downloadMethod=pkgOptions("downloadMeth
     if (!(downloadMethod %in% validDnldMethods))
       downloadMethod <- "auto"
     
+    message(Sys.time(), ": Downloading ", ntLtsFileUrl)
+    
     if (downloadMethod %in% c("auto", "curl", "libcurl", "wget"))
       rsltDnld <- utils::download.file(ntLtsFileUrl, ntLtsZipLocalNamePathOLS, mode = "wb", method = downloadMethod, extra = "-c")
     else if (downloadMethod == "aria")
-      rsltDnld <- system(paste0("aria2c -c -x2 ", ntLtsFileUrl, " -d ", getNlDir("dirNlTiles"), " -o ", getNlTileZipLclNameOLS(nlPeriod))) #downloads to path relative to -d if specified else local dir
+      rsltDnld <- system(paste0("aria2c -c -x2 --show-console-readout=false --summary-interval=10 ", ntLtsFileUrl, " -d ", getNlDir("dirNlTiles"), " -o ", getNlTileZipLclNameOLS(nlPeriod))) #downloads to path relative to -d if specified else local dir
     
   }
   else
