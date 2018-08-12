@@ -35,12 +35,12 @@ ctryNameToCode <- function(ctryNames)
   }
   
   if (class(ctryNames) != "character" || is.null(ctryNames) || is.na(ctryNames) || ctryNames =="")
-    stop("Invalid ctryName: ", ctryNames)
+    stop(Sys.time(), ": Invalid ctryName: ", ctryNames)
 
   hasNonAlpha <- sapply(ctryNames, function(ctryName) stringr::str_detect(ctryName, "[^[:alpha:]| ]"))
   
   if(any(hasNonAlpha))
-    stop("Invalid ctryNames detected: ", paste0(ctryNames[hasNonAlpha], sep=","))
+    stop(Sys.time(), ": Invalid ctryNames detected: ", paste0(ctryNames[hasNonAlpha], sep=","))
   
   ctryList <- rworldmap::getMap()@data[,c("ISO3", "ADMIN")]
   
@@ -116,7 +116,7 @@ ctryCodeToName <- function(ctryCodes)
   }
   
   #if (class(ctryCodes) != "character" || is.null(ctryCodes) || is.na(ctryCodes) || ctryCodes =="" || ctryCodes == " ")
-   # stop("Invalid ctryCode: ", ctryCodes)
+   # stop(Sys.time(), ": Invalid ctryCode: ", ctryCodes)
   
   ctryList <- rworldmap::getMap()@data[,c("ISO3", "ADMIN")]
 
@@ -245,7 +245,7 @@ searchCountry <- function(searchTerms, extended=FALSE)
 validCtryCodes <- function(ctryCodes)
 {
   if(missing(ctryCodes))
-    stop("Missing required parameter ctryCode")
+    stop(Sys.time(), ": Missing required parameter ctryCode")
   
   #if the format is invalid return FALSE no need to return an error
   if (!is.character(ctryCodes) || is.null(ctryCodes) || is.na(ctryCodes) || ctryCodes =="")

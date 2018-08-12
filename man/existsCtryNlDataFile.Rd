@@ -4,7 +4,7 @@
 \alias{existsCtryNlDataFile}
 \title{Check if a country admin level data file exists}
 \usage{
-existsCtryNlDataFile(ctryCode, admLevel,
+existsCtryNlDataFile(ctryCode = NULL, admLevel,
   gadmVersion = pkgOptions("gadmVersion"), custPolyPath = NULL)
 }
 \arguments{

@@ -34,13 +34,13 @@
 validNlPeriods <- function(nlPeriods, nlTypes)
 {
   if (missing(nlPeriods))
-    stop("Missing required parameter nlPeriods")
+    stop(Sys.time(), ": Missing required parameter nlPeriods")
   
   if (missing(nlTypes))
-    stop("Missing required parameter nlTypes")
+    stop(Sys.time(), ": Missing required parameter nlTypes")
   
   if(!all(validNlTypes(nlTypes)))
-    stop("Missing or Invalid nlType")
+    stop(Sys.time(), ": Missing or Invalid nlType")
 
   #nlPeriods <- as.character(nlPeriods)
   #nlTypes <- as.character(nlTypes)
@@ -49,7 +49,7 @@ validNlPeriods <- function(nlPeriods, nlTypes)
   #   return(stats::setNames(list(stats::setNames(nlPeriods %in% unlist(getAllNlPeriods(nlTypes)), nlPeriods)),nlTypes))
 
   # if(is.list(nlPeriods)length(nlPeriods) != length(nlTypes))
-  #   stop("nlPeriods and nlTypes are not same length")
+  #   stop(Sys.time(), ": nlPeriods and nlTypes are not same length")
   
   nlTypes <- unlist(nlTypes)
   
@@ -61,7 +61,7 @@ validNlPeriods <- function(nlPeriods, nlTypes)
     valid <- stats::setNames(nlPs %in% allNlPeriods, nlPs)
     
     if(!all(valid))
-      message("Invalid nlPeriods:: ", nlT,":",paste0(nlPs[!valid], sep=","))
+      message(Sys.time(), "Invalid nlPeriods:: ", nlT,":",paste0(nlPs[!valid], sep=","))
     return(valid)
     }), nlTypes)
 
@@ -122,19 +122,19 @@ allValidNlPeriods <- function(nlPeriods, nlTypes)
 nlRange <- function(startNlPeriod, endNlPeriod, nlType)
 {
   if(missing(startNlPeriod))
-    stop("Missing required parameter startNlPeriod")
+    stop(Sys.time(), ": Missing required parameter startNlPeriod")
   
   if(missing(endNlPeriod))
-    stop("Missing required parameter endNlPeriod")
+    stop(Sys.time(), ": Missing required parameter endNlPeriod")
  
   if(!missing(nlType))
   {
     if(length(nlType) > 1)
-      stop("Only 1 nlType accepted")
+      stop(Sys.time(), ": Only 1 nlType accepted")
     
     #if(!allValid(c(startNlPeriod, endNlPeriod), validNlPeriods, nlType))
     if(!allValidNlPeriods(nlTypes = nlType, nlPeriods = c(startNlPeriod, endNlPeriod)))
-       stop("Invalid nlPeriod detected for nlType ", nlType)
+       stop(Sys.time(), ": Invalid nlPeriod detected for nlType ", nlType)
   }
   else
   {
@@ -145,7 +145,7 @@ nlRange <- function(startNlPeriod, endNlPeriod, nlType)
     }
     
     if(is.null(nlType))
-      stop("Invalid start/end nlPeriod")
+      stop(Sys.time(), ": Invalid start/end nlPeriod")
   }
 
   allNlPeriods <- unname(unlist(getAllNlPeriods(nlType)))
@@ -181,10 +181,10 @@ nlRange <- function(startNlPeriod, endNlPeriod, nlType)
 getAllNlPeriods <- function(nlTypes)
 {
   if (missing(nlTypes))
-    stop("Missing required parameter nlTypes")
+    stop(Sys.time(), ": Missing required parameter nlTypes")
   
   if (!allValidNlTypes(nlTypes))
-    stop("Invalid nlType: ", nlTypes)
+    stop(Sys.time(), ": Invalid nlType: ", nlTypes)
   
   sapply(nlTypes, function(nlType)
   {

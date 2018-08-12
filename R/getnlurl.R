@@ -95,16 +95,16 @@ getNlUrlOLS <- function(nlPeriod)
 getNlUrlVIIRS <- function(nlPeriod, tileNum, nlType)
 {
   if(missing(nlPeriod))
-    stop("Missing required parameter nlPeriod")
+    stop(Sys.time(), ": Missing required parameter nlPeriod")
   
   if(missing(tileNum))
-    stop("Missing required parameter tileNum")
+    stop(Sys.time(), ": Missing required parameter tileNum")
   
   if(missing(nlType))
-    stop("Missing required parameter nlType")
+    stop(Sys.time(), ": Missing required parameter nlType")
   
   if(!allValidNlPeriods(nlPeriod, nlType))
-    stop("Invalid nlPeriod")
+    stop(Sys.time(), ": Invalid nlPeriod")
   
   #in case nlTiles exists globally from elsewhere
   if (!exists("nlTiles") || nrow(nlTiles) != 6)

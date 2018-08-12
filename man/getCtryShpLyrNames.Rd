@@ -4,7 +4,7 @@
 \alias{getCtryShpLyrNames}
 \title{Get the standard names of polygon layers in a country}
 \usage{
-getCtryShpLyrNames(ctryCodes, lyrNums, dnldPoly,
+getCtryShpLyrNames(ctryCodes = NULL, lyrNums, dnldPoly,
   gadmVersion = pkgOptions("gadmVersion"), custPolyPath = NULL)
 }
 \arguments{

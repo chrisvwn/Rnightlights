@@ -4,7 +4,7 @@
 \alias{saveCtryNlData}
 \title{Save a data frame of a country's data to the appropriate location}
 \usage{
-saveCtryNlData(ctryNlDataDF, ctryCode, admLevel,
+saveCtryNlData(ctryNlDataDF, ctryCode = NULL, admLevel,
   gadmVersion = pkgOptions("gadmVersion"), custPolyPath = NULL)
 }
 \arguments{

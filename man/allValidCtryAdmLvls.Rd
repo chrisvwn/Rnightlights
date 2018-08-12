@@ -4,7 +4,7 @@
 \alias{allValidCtryAdmLvls}
 \title{Checks if all ctry admLevels are valid}
 \usage{
-allValidCtryAdmLvls(ctryCode, admLevels,
+allValidCtryAdmLvls(ctryCode = NULL, admLevels,
   gadmVersion = pkgOptions("gadmVersion"), custPolyPath = NULL)
 }
 \arguments{

@@ -27,22 +27,22 @@
 getNlTileZipLclNamePath <- function(nlType, nlPeriod, tileNum)
 {
   if(missing(nlType))
-    stop("Missing required parameter nlType")
+    stop(Sys.time(), ": Missing required parameter nlType")
   
   if(missing(nlPeriod))
-    stop("Missing required parameter nlPeriod")
+    stop(Sys.time(), ": Missing required parameter nlPeriod")
   
   if(stringr::str_detect(nlType, "VIIRS") && missing(tileNum))
-    stop("Missing required parameter tileNum")
+    stop(Sys.time(), ": Missing required parameter tileNum")
   
   if(!validNlTypes(nlType))
-    stop("Invalid nlType: ", nlType)
+    stop(Sys.time(), ": Invalid nlType: ", nlType)
   
   if(!allValidNlPeriods(nlPeriods = nlPeriod, nlTypes = nlType))
-    stop("Invalid nlPeriod: ", nlPeriod, " for nlType: ", nlType)
+    stop(Sys.time(), ": Invalid nlPeriod: ", nlPeriod, " for nlType: ", nlType)
   
   if(stringr::str_detect(nlType, "VIIRS") && !validNlTileNumVIIRS(tileNum, nlType))
-    stop("Invalid tileNum: ", tileNum)
+    stop(Sys.time(), ": Invalid tileNum: ", tileNum)
   
   if(stringr::str_detect(nlType, "OLS"))
     return (file.path(getNlDir("dirNlTiles"), getNlTileZipLclNameOLS(nlPeriod)))
@@ -73,22 +73,22 @@ getNlTileZipLclNamePath <- function(nlType, nlPeriod, tileNum)
 getNlTileZipLclNameVIIRS <- function(nlPeriod, tileNum, nlType)
 {
   if(missing(nlPeriod))
-    stop("Missing required parameter nlPeriod")
+    stop(Sys.time(), ": Missing required parameter nlPeriod")
   
   if(missing(tileNum))
-    stop("Missing required parameter tileNum")
+    stop(Sys.time(), ": Missing required parameter tileNum")
   
   if(missing(nlType))
-    stop("Missing required parameter nlType")
+    stop(Sys.time(), ": Missing required parameter nlType")
   
   if(!validNlTypes(nlType))
-    stop("Invalid nlType: ", nlType)
+    stop(Sys.time(), ": Invalid nlType: ", nlType)
 
   if(!validNlTileNumVIIRS(tileNum, nlType))
-    stop("Invalid tileNum: ", tileNum)
+    stop(Sys.time(), ": Invalid tileNum: ", tileNum)
   
   if(!allValidNlPeriods(nlPeriod, nlType))
-    stop("Invalid nlPeriod: ", nlPeriod)
+    stop(Sys.time(), ": Invalid nlPeriod: ", nlPeriod)
   
   return (paste0("NL_TILE_", nlType, "_", nlPeriod, "_", tileIdx2Name(tileNum, nlType), ".tgz"))
 }
@@ -121,22 +121,22 @@ getNlTileZipLclNameVIIRS <- function(nlPeriod, tileNum, nlType)
 getNlTileTifLclNamePath <- function(nlType, nlPeriod, tileNum)
 {
   if(missing(nlType))
-    stop("Missing required parameter nlType")
+    stop(Sys.time(), ": Missing required parameter nlType")
   
   if(missing(nlPeriod))
-    stop("Missing required parameter nlPeriod")
+    stop(Sys.time(), ": Missing required parameter nlPeriod")
   
   if(stringr::str_detect(nlType, "VIIRS") && missing(tileNum))
-    stop("Missing required parameter tileNum")
+    stop(Sys.time(), ": Missing required parameter tileNum")
   
   if(!validNlTypes(nlType))
-    stop("Invalid nlType: ", nlType)
+    stop(Sys.time(), ": Invalid nlType: ", nlType)
   
   if(!allValidNlPeriods(nlPeriod, nlType))
-    stop("Invalid nlPeriod: ", nlPeriod, " for nlType: ", nlType)
+    stop(Sys.time(), ": Invalid nlPeriod: ", nlPeriod, " for nlType: ", nlType)
   
   if(stringr::str_detect(nlType, "VIIRS") && !validNlTileNumVIIRS(tileNum, nlType))
-    stop("Invalid tileNum: ", tileNum)
+    stop(Sys.time(), ": Invalid tileNum: ", tileNum)
   
   if(stringr::str_detect(nlType, "OLS"))
     return (file.path(getNlDir("dirNlTiles"), getNlTileTifLclNameOLS(nlPeriod)))
@@ -168,22 +168,22 @@ getNlTileTifLclNamePath <- function(nlType, nlPeriod, tileNum)
 getNlTileTifLclNameVIIRS <- function(nlPeriod, tileNum, nlType)
 {
   if(missing(nlPeriod))
-    stop("Missing required parameter nlPeriod")
+    stop(Sys.time(), ": Missing required parameter nlPeriod")
   
   if(missing(tileNum))
-    stop("Missing required parameter tileNum")
+    stop(Sys.time(), ": Missing required parameter tileNum")
   
   if(missing(nlType))
-    stop("Missing required parameter nlType")
+    stop(Sys.time(), ": Missing required parameter nlType")
 
   if(!validNlTypes(nlType))
-    stop("Invalid nlType: ", nlType)
+    stop(Sys.time(), ": Invalid nlType: ", nlType)
     
   if(!allValidNlPeriods(nlPeriod, nlType))
-    stop("Invalid nlPeriod: ", nlPeriod)
+    stop(Sys.time(), ": Invalid nlPeriod: ", nlPeriod)
   
   if(!validNlTileNumVIIRS(tileNum, nlType))
-    stop("Invalid tileNum: ", tileNum)
+    stop(Sys.time(), ": Invalid tileNum: ", tileNum)
 
   return (paste0("NL_TILE_", nlType, "_", nlPeriod, "_", tileIdx2Name(tileNum, nlType), ".tif"))
 }
@@ -208,10 +208,10 @@ getNlTileTifLclNameVIIRS <- function(nlPeriod, tileNum, nlType)
 getNlTileTifLclNameOLS <- function(nlPeriod)
 {
   if(missing(nlPeriod))
-    stop("Missing required parameter nlPeriod")
+    stop(Sys.time(), ": Missing required parameter nlPeriod")
   
   if(!allValidNlPeriods(nlPeriod, "OLS.Y"))
-    stop("Invalid nlPeriod: ", nlPeriod)
+    stop(Sys.time(), ": Invalid nlPeriod: ", nlPeriod)
   
   return (paste0("NL_TILE_OLS.Y_", nlPeriod, "_00N180W.tif"))
 }
@@ -240,19 +240,19 @@ getNlTileTifLclNameOLS <- function(nlPeriod)
 getNlTileTifLclNamePathVIIRS <- function(nlPeriod, tileNum, nlType)
 {
   if(missing(nlPeriod))
-    stop("Missing required parameter nlPeriod")
+    stop(Sys.time(), ": Missing required parameter nlPeriod")
   
   if(missing(tileNum))
-    stop("Missing required parameter tileNum")
+    stop(Sys.time(), ": Missing required parameter tileNum")
   
   if(missing(nlType))
-    stop("Missing required parameter nlType")
+    stop(Sys.time(), ": Missing required parameter nlType")
   
   if(!allValidNlPeriods(nlPeriod, nlType))
-    stop("Invalid nlPeriod: ", nlPeriod)
+    stop(Sys.time(), ": Invalid nlPeriod: ", nlPeriod)
   
   if(!validNlTileNumVIIRS(tileNum, nlType))
-    stop("Invalid tileNum: ", tileNum)
+    stop(Sys.time(), ": Invalid tileNum: ", tileNum)
   
   return (file.path(getNlDir("dirNlTiles"), getNlTileTifLclNameVIIRS(nlPeriod, tileNum, nlType)))
 }
@@ -281,10 +281,10 @@ getNlTileTifLclNamePathOLS <- function(nlPeriod, tileNum)
   nlType <- "OLS"
   
   if(missing(nlPeriod))
-    stop("Missing required parameter nlPeriod")
+    stop(Sys.time(), ": Missing required parameter nlPeriod")
   
   if(!allValidNlPeriods(nlPeriod, "OLS.Y"))
-    stop("Invalid nlPeriod: ", nlPeriod)
+    stop(Sys.time(), ": Invalid nlPeriod: ", nlPeriod)
   
   return (file.path(getNlDir(dirName = "dirNlTiles"), getNlTileTifLclNameOLS(nlPeriod = nlPeriod)))
 }
@@ -308,10 +308,10 @@ getNlTileTifLclNamePathOLS <- function(nlPeriod, tileNum)
 getNlTileZipLclNameOLS <- function(nlPeriod)
 {
   if(missing(nlPeriod))
-    stop("Missing required parameter nlPeriod")
+    stop(Sys.time(), ": Missing required parameter nlPeriod")
   
   if(!allValidNlPeriods(nlPeriod, "OLS.Y"))
-    stop("Invalid nlPeriod")
+    stop(Sys.time(), ": Invalid nlPeriod")
   
   return (paste0("NL_TILE_OLS.Y_", nlPeriod, "_00N180W.tar"))
 }
@@ -336,10 +336,10 @@ getNlTileZipLclNameOLS <- function(nlPeriod)
 getNlTifLclNameOLS <- function(nlPeriod)
 {
   if(missing(nlPeriod))
-    stop("Missing required parameter nlPeriod")
+    stop(Sys.time(), ": Missing required parameter nlPeriod")
   
   if(!allValidNlPeriods(nlPeriod, "OLS.Y"))
-    stop("Invalid nlPeriod")
+    stop(Sys.time(), ": Invalid nlPeriod")
   
   return (paste0("NL_TILE_OLS_", nlPeriod, ".tif"))
 }

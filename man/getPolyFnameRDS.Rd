@@ -4,7 +4,7 @@
 \alias{getPolyFnameRDS}
 \title{Get the filename of the polygon zip file as downloaded from \url{http://GADM.ORG}}
 \usage{
-getPolyFnameRDS(ctryCode, gadmVersion = pkgOptions("gadmVersion"),
+getPolyFnameRDS(ctryCode = NULL, gadmVersion = pkgOptions("gadmVersion"),
   custPolyPath = NULL)
 }
 \arguments{

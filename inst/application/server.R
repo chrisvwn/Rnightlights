@@ -72,7 +72,7 @@ if (!requireNamespace("rgdal", quietly = TRUE))
 }
 
 if(!is.null(missingPkgs))
- stop("Missing packages needed for this function to work. 
+ stop(Sys.time(), ": Missing packages needed for this function to work. 
       Please install missing packages: '", paste0(missingPkgs, collapse = ", "), "'", call. = FALSE)
  
  
@@ -490,7 +490,7 @@ shiny::shinyServer(function(input, output, session){
   ######################## reactive ctryNlDataMelted ###################################
   
     ctryNlDataMelted <- shiny::reactive({
-      #print(paste0("here: ctryNlDataMelted"))
+      print(paste0("here: ctryNlDataMelted"))
       
       ctryData <- ctryNlData()
     
@@ -1548,7 +1548,7 @@ shiny::shinyServer(function(input, output, session){
         endYear <- lubridate::year(as.Date(maxDate, fmt))
 
         if(startYear == endYear)
-          stop("Only 1 data point (year) in the dataset")
+          stop(Sys.time(), ": Only 1 data point (year) in the dataset")
         
         tsStart <- c(startYear)
         tsEnd <- c(endYear)

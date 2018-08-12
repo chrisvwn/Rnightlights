@@ -4,7 +4,7 @@
 \alias{createCtryStruct}
 \title{Save ctry admin structure to text file for faster access}
 \usage{
-createCtryStruct(ctryCode, gadmVersion = pkgOptions("gadmVersion"),
+createCtryStruct(ctryCode = NULL, gadmVersion = pkgOptions("gadmVersion"),
   custPolyPath = NULL)
 }
 \arguments{

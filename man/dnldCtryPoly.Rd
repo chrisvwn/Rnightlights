@@ -4,7 +4,7 @@
 \alias{dnldCtryPoly}
 \title{Download a country's polygon shapefile from \url{http://gadm.org}}
 \usage{
-dnldCtryPoly(ctryCode, gadmVersion = pkgOptions("gadmVersion"),
+dnldCtryPoly(ctryCode = NULL, gadmVersion = pkgOptions("gadmVersion"),
   custPolyPath = NULL, downloadMethod = pkgOptions("downloadMethod"))
 }
 \arguments{

@@ -4,8 +4,8 @@
 \alias{getCtryShpLowestLyrNames}
 \title{Get the name of the lowest ctry admin level}
 \usage{
-getCtryShpLowestLyrNames(ctryCodes, gadmVersion = pkgOptions("gadmVersion"),
-  custPolyPath = NULL)
+getCtryShpLowestLyrNames(ctryCodes = NULL,
+  gadmVersion = pkgOptions("gadmVersion"), custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCodes}{\code{character} ctryCodes the ctryCodes of interest}

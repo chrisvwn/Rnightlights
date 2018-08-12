@@ -4,7 +4,7 @@
 \alias{getCtryPolyAdmLevelNames}
 \title{Get the list of admin level names in a polygon shapefile}
 \usage{
-getCtryPolyAdmLevelNames(ctryCode, lowestAdmLevel,
+getCtryPolyAdmLevelNames(ctryCode = NULL, lowestAdmLevel,
   gadmVersion = pkgOptions("gadmVersion"), custPolyPath = NULL)
 }
 \arguments{

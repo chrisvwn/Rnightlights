@@ -33,7 +33,7 @@ allValid <- function(testData, testFun, ...)
   invalidData <- testData[!valid]
   
   if(length(invalidData) > 0)
-    message("Invalid data: ", paste0(invalidData, collapse = ", "))
+    message(Sys.time(), ": Invalid data: ", paste0(invalidData, collapse = ", "))
   
   return(all(valid))
 }

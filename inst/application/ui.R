@@ -54,7 +54,7 @@ if (!requireNamespace("DT", quietly = TRUE))
 }
 
 if(!is.null(missingPkgs))
-  stop("Missing packages needed for this function to work. 
+  stop(Sys.time(), ": Missing packages needed for this function to work. 
        Please install missing packages: '", paste0(missingPkgs, collapse = ", "), "'", call. = FALSE)
 
 # existingData <- Rnightlights::listCtryNlData()

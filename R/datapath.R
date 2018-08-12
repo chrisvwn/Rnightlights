@@ -65,13 +65,13 @@ setupDataPath <- function(newDataPath=tempdir(), ...)
             })
         else if (ans == 0)
         {
-          message("Using temporary directory for this session only")
+          message(Sys.time(), ": Using temporary directory for this session only")
           dataPath <- tempdir()
         }
         
         if (is.null(dataPath) || is.na(dataPath))
         {
-          message("Exiting. dataPath not set: Re-run to set/change dataPath")
+          message(Sys.time(), ": Exiting. dataPath not set: Re-run to set/change dataPath")
           return(invisible(getNlDataPath()))
         }
       }
@@ -80,7 +80,7 @@ setupDataPath <- function(newDataPath=tempdir(), ...)
         #if not interactive and the dataPath isn't set, set dataPath to tempdir()
         dataPath <- tempdir()
         
-        message("Creating data folder in temporary location ", path.expand(file.path(dataPath, dirName)))
+        message(Sys.time(), ": Creating data folder in temporary location ", path.expand(file.path(dataPath, dirName)))
       }
       
       setNlDataPath(dataPath)
@@ -125,7 +125,7 @@ setupDataPath <- function(newDataPath=tempdir(), ...)
           
           if (is.null(dataPath) || is.na(dataPath))
           {
-            message("Exiting. dataPath not set: Re-run to set/change dataPath")
+            message(Sys.time(), ": Exiting. dataPath not set: Re-run to set/change dataPath")
             return(invisible(getNlDataPath()))
           }
           
@@ -134,14 +134,14 @@ setupDataPath <- function(newDataPath=tempdir(), ...)
         }
         else if (ans == 0)
         {
-          message("Using temporary directory for this session only")
+          message(Sys.time(), ": Using temporary directory for this session only")
           dataPath <- tempdir()
         }
         
         #is.na if dialog cancelled, is.null if readline empty
         if (is.null(dataPath) || is.na(dataPath)) 
         {
-          message("Exiting. dataPath not set: Re-run to set/change dataPath")
+          message(Sys.time(), ": Exiting. dataPath not set: Re-run to set/change dataPath")
           return(getNlDataPath())
         }
       }
@@ -150,7 +150,7 @@ setupDataPath <- function(newDataPath=tempdir(), ...)
         dataPath <- getNlDataPath()
         if(!is.null(dataPath))
         {
-          message("Using previous install detected at ", path.expand(file.path(dataPath, dirName)))
+          message(Sys.time(), ": Using previous install detected at ", path.expand(file.path(dataPath, dirName)))
           
           setNlDataPath(tempdir())
         }
@@ -164,15 +164,15 @@ setupDataPath <- function(newDataPath=tempdir(), ...)
     if(is.null(dataPath))
     {
       #create dir in newDataPath
-      message("Creating default directory")
+      message(Sys.time(), ": Creating default directory")
       setNlDataPath("~")
       
-      message("Creating data directory")
+      message(Sys.time(), ": Creating data directory")
       setNlDataPath(newDataPath)
     }
     else
     {
-      message("Attempting data directory move")
+      message(Sys.time(), ": Attempting data directory move")
       setNlDataPath(newDataPath)
       
       #invisible(newDataPath)
@@ -202,10 +202,10 @@ setupDataPath <- function(newDataPath=tempdir(), ...)
 setNlDataPath <- function(dataPath)
 {
   if(missing(dataPath))
-    stop("Missing required parameter dataPath")
+    stop(Sys.time(), ": Missing required parameter dataPath")
   
   if (!is.character(dataPath) || is.null(dataPath) || is.na(dataPath) || dataPath == "")
-    stop("dataPath must be a valid character string")
+    stop(Sys.time(), ": dataPath must be a valid character string")
   
   dataPath <- as.character(dataPath)
   
@@ -221,7 +221,7 @@ setNlDataPath <- function(dataPath)
     #if the supplied directory is the same as the current dataPath stop. Nothing to do
     if(path.expand(dataPath) == path.expand(existingPath))
     {
-      message("The directories are the same. Not changing")
+      message(Sys.time(), ": The directories are the same. Not changing")
       return(invisible(dataPath)) #return user version. less expensive
     }
     else #if they are different we will move
@@ -243,24 +243,24 @@ setNlDataPath <- function(dataPath)
       dir.create(dirCreate)
     }, error=function(err)
     {
-      message("Error: ", err)
+      message(Sys.time(), ": Error: ", err)
       return(FALSE)
     }, warning=function(war)
     {
-      message("Warning: ", war)
+      message(Sys.time(), ": Warning: ", war)
       return(FALSE)
     })
     
     if(!successCreate)
-      message("Unable to create directory ", dirCreate)
+      message(Sys.time(), ": Unable to create directory ", dirCreate)
     else
     {
-      message("Data directory created ", path.expand(dirCreate))
-      message("Rnightlights may require 3GB+. Run setupDataPath() to change the location")
+      message(Sys.time(), ": Data directory created ", path.expand(dirCreate))
+      message(Sys.time(), ": Rnightlights may require 3GB+. Run setupDataPath() to change the location")
     }
   }
   else
-    stop("Directory ", dataPath, " not found")
+    stop(Sys.time(), ": Directory ", dataPath, " not found")
   
   #If we are here we have created a new directory
   #If dataPath not the tempdir(), Make sure the homePath exists and persist the dataPath
@@ -273,17 +273,17 @@ setNlDataPath <- function(dataPath)
   #only if this is a move
   if(isMove && dataPath != tempdir())
   {
-    message("Moving dataPath .Rnightlights from ", existingPath, " to ", dataPath)
+    message(Sys.time(), ": Moving dataPath .Rnightlights from ", existingPath, " to ", dataPath)
     
     copySuccess <- tryCatch({
       file.copy(file.path(existingPath, dataDirName), file.path(dataPath), recursive = TRUE)
     }, error = function(err)
     {
-      message("Error: ", err, "\n")
+      message(Sys.time(), ": Error: ", err, "\n")
       return(FALSE)
     }, warning = function(war)
     {
-      message("Warning: ",war, "\n")
+      message(Sys.time(), ": Warning: ",war, "\n")
       return(FALSE)
     })
     
@@ -305,7 +305,7 @@ setNlDataPath <- function(dataPath)
         if(file.exists(file.path(dataPath, dataDirName, "_RNIGHTLIGHTS_SAFE_TO_DELETE")))
           file.remove(file.path(dataPath, dataDirName, "_RNIGHTLIGHTS_SAFE_TO_DELETE"))
         
-        message("Move of datapath from ", existingPath, " to ", dataPath, " complete.")
+        message(Sys.time(), ": Move of datapath from ", existingPath, " to ", dataPath, " complete.")
       }
       else #else mark the dir for deletion and prompt user to delete it
       {
@@ -321,8 +321,8 @@ setNlDataPath <- function(dataPath)
         if(dataPath != "~")
           file.remove(file.path(dataPath, dataDirName, "datapath.rda"))
         
-        message("Move of datapath from ", existingPath, " to ", dataPath, " complete.")
-        message("You may now delete ", file.path(existingPath, dataDirName))
+        message(Sys.time(), ": Move of datapath from ", existingPath, " to ", dataPath, " complete.")
+        message(Sys.time(), ": You may now delete ", file.path(existingPath, dataDirName))
       }
     }
     else
@@ -330,25 +330,25 @@ setNlDataPath <- function(dataPath)
       if(dataPath != tempdir())
       {  
         #roll back copy
-        message("Rolling back partial copy")
+        message(Sys.time(), ": Rolling back partial copy")
         
         successRollback <- tryCatch(
           {
             unlink(file.path(dataPath, dataDirName), recursive = TRUE)
           }, error = function(err)
           {
-            message("Error: ", err, "\n")
+            message(Sys.time(), ": Error: ", err, "\n")
             return(FALSE)
           }, warning = function(war)
           {
-            message("Warning: ", war, "\n")
+            message(Sys.time(), ": Warning: ", war, "\n")
             return(FALSE)
           })
         
         if(successRollback == 0)
-          message("Rolled back. Please fix errors and try again.")
+          message(Sys.time(), ": Rolled back. Please fix errors and try again.")
         else
-          message("Rollback failed. Please manually delete folder ", file.path(dataPath, dataDirName))
+          message(Sys.time(), ": Rollback failed. Please manually delete folder ", file.path(dataPath, dataDirName))
       }
     }
   }
@@ -443,7 +443,7 @@ getNlDataPath <- function()
 removeDataPath <- function(dataPath = file.path(getNlDataPath(), ".Rnightlights"))
 {
   if(basename(dataPath) != ".Rnightlights")
-    stop("You must specify the full path including .Rnightlights")
+    stop(Sys.time(), ": You must specify the full path including .Rnightlights")
   
   menuPrompt <- paste0("You are about to remove the Rnightlights data folder in \n", dataPath, ". Do you want to continue?")
   
@@ -452,12 +452,12 @@ removeDataPath <- function(dataPath = file.path(getNlDataPath(), ".Rnightlights"
   if(response == "1")
   {
     #file.remove(dataPath)
-    message("Removed dataPath")
+    message(Sys.time(), ": Removed dataPath")
   }
   else if(response == "2")
-    message("Not deleting")
+    message(Sys.time(), ": Not deleting")
   else if(response == "0")
-    message("Aborted")
+    message(Sys.time(), ": Aborted")
 }
 
 ######################## addREADME ###################################
@@ -556,10 +556,10 @@ createNlDataDirs <- function()
 getNlDir <- function(dirName)
 {
   if(missing(dirName))
-    stop("Missing required parameter dirName")
+    stop(Sys.time(), ": Missing required parameter dirName")
   
   if(!is.character(dirName) || is.null(dirName) || is.na(dirName) || dirName == "")
-    stop("Invalid dirName: ", dirName)
+    stop(Sys.time(), ": Invalid dirName: ", dirName)
   
   #check if dataPath is already set
   dataPath <- getNlDataPath()

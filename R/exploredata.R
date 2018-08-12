@@ -20,7 +20,7 @@ exploreData <- function()
   appDir <- system.file("application", package = "Rnightlights")
   if (appDir == "")
   {
-    stop("Could not find application directory.
+    stop(Sys.time(), ": Could not find application directory.
          Try re-installing the `Rnightlights` package.", call. = FALSE)
   }
   

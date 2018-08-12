@@ -4,7 +4,7 @@
 \alias{searchAdmLevel}
 \title{Search for the admLevel by official name}
 \usage{
-searchAdmLevel(ctryCodes, admLevelNames, dnldPoly = TRUE,
+searchAdmLevel(ctryCodes = NULL, admLevelNames, dnldPoly = TRUE,
   downloadMethod = pkgOptions("downloadMethod"),
   gadmVersion = pkgOptions("gadmVersion"), custPolyPath = NULL)
 }

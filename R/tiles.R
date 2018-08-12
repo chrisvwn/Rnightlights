@@ -36,22 +36,22 @@
 downloadNlTiles <- function(nlType, nlPeriod, tileList)
 {
   if(missing(nlType))
-    stop("Missing required parameter nlType")
+    stop(Sys.time(), ": Missing required parameter nlType")
   
   if(missing(nlPeriod))
-    stop("Missing required parameter nlPeriod")
+    stop(Sys.time(), ": Missing required parameter nlPeriod")
   
   if(stringr::str_detect(nlType, "VIIRS") && missing(tileList))
-    stop("Missing required parameter tileList")
+    stop(Sys.time(), ": Missing required parameter tileList")
   
   if(!validNlTypes(nlType))
-    stop("Invalid nlType detected")
+    stop(Sys.time(), ": Invalid nlType detected")
   
   if(!allValidNlPeriods(nlPeriods = nlPeriod, nlTypes = nlType))
-    stop("Invalid nlPeriod: ", nlPeriod)
+    stop(Sys.time(), ": Invalid nlPeriod: ", nlPeriod)
   
   if(stringr::str_detect(nlType, "VIIRS") && !allValid(tileList, validNlTileNameVIIRS, nlType))
-    stop("Invalid tile detected")
+    stop(Sys.time(), ": Invalid tile detected")
   
   success <- TRUE
   
@@ -63,7 +63,7 @@ downloadNlTiles <- function(nlType, nlPeriod, tileList)
     {
       nlTile <- tileName2Idx(tile, nlType)
       
-      message("Downloading tile: ", paste0(nlPeriod, nlTile))
+      message(Sys.time(), ": Downloading tile: ", paste0(nlPeriod, nlTile))
       
       #download tile
       success <- success && downloadNlTilesVIIRS(nlPeriod, nlTile, nlType = nlType)
@@ -107,16 +107,16 @@ downloadNlTiles <- function(nlType, nlPeriod, tileList)
 getCtryTileList <- function(ctryCodes, nlType, omitCountries="none")
 {
   if(missing(ctryCodes))
-    stop("Missing required parameter ctryCodes")
+    stop(Sys.time(), ": Missing required parameter ctryCodes")
   
   if(missing(nlType))
-    stop("Missing required parameter nlType")
+    stop(Sys.time(), ": Missing required parameter nlType")
   
   if(!allValid(ctryCodes, validCtryCodes))
-    stop("Invalid ctryCode(s) detected")
+    stop(Sys.time(), ": Invalid ctryCode(s) detected")
   
   if(!validNlTypes(nlType))
-    stop("Invalid nlType: ", nlType)
+    stop(Sys.time(), ": Invalid nlType: ", nlType)
   
   if(stringr::str_detect(nlType, "OLS"))
     ctryTiles <- "DUMMY"
@@ -159,7 +159,7 @@ getNlTiles <- function(nlType)
   if(!missing(nlType))
   {
     if(!validNlTypes(nlType))
-      stop("Invalid nlType")
+      stop(Sys.time(), ": Invalid nlType")
     
     if(length(grep("VIIRS", nlType)) > 0)
       nlType <- "VIIRS"
@@ -261,10 +261,10 @@ createNlTilesSpPolysDF <- function()
 plotCtryWithTilesVIIRS <- function(ctry)
 {
   if(missing(ctry))
-    stop("You must supply a country code or index")
+    stop(Sys.time(), ": You must supply a country code or index")
   
   if(!is.character(ctry))
-    stop("The parameter you supplied needs to be type character")
+    stop(Sys.time(), ": The parameter you supplied needs to be type character")
   
   wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
   
@@ -291,7 +291,7 @@ plotCtryWithTilesVIIRS <- function(ctry)
     ctryISO3 <- ctryNameToCode(ctryName)
   
   if(is.na(ctryISO3))
-    stop("Invalid ctryCode/Name ", ctry)
+    stop(Sys.time(), ": Invalid ctryCode/Name ", ctry)
   
   #if ctryISO3 is empty then the country was not found
   if (is.na(ctryISO3) || ctryISO3 == "")
@@ -512,7 +512,7 @@ mapCtryPolyToTilesVIIRS <- function(ctryCodes="all", omitCountries=pkgOptions("o
 getTilesCtryIntersectVIIRS <- function(ctryCode)
 {
   if(missing(ctryCode))
-    stop("Missing equired parameter ctryCode")
+    stop(Sys.time(), ": Missing equired parameter ctryCode")
   
   ctryCode <- as.character(ctryCode)
   
@@ -578,10 +578,10 @@ getTilesCtryIntersectVIIRS <- function(ctryCode)
 validNlTileNameVIIRS <- function(tileName, nlType)
 {
   if(missing(tileName))
-    stop("Missing required parameter tileName")
+    stop(Sys.time(), ": Missing required parameter tileName")
   
   if(!is.character(tileName) || is.null(tileName) || is.na(tileName) || tileName == "")
-    stop("Invalid tileName: ", tileName)
+    stop(Sys.time(), ": Invalid tileName: ", tileName)
   
   if(length(tileName2Idx(tileName, nlType)) != 0)
     return(TRUE)
@@ -607,13 +607,13 @@ validNlTileNameVIIRS <- function(tileName, nlType)
 tileName2Idx <- function(tileName, nlType)
 {
   if (missing(tileName))
-    stop("Missing required parameter tileName")
+    stop(Sys.time(), ": Missing required parameter tileName")
   
   if (missing(nlType))
-    stop("Missing required parameter nlType")
+    stop(Sys.time(), ": Missing required parameter nlType")
   
   if(!is.character(tileName) || is.null(tileName) || is.na(tileName) || tileName == "")
-    stop("Invalid tileName: ", tileName)
+    stop(Sys.time(), ": Invalid tileName: ", tileName)
   
   nlType <- toupper(nlType)
   
@@ -643,16 +643,16 @@ tileName2Idx <- function(tileName, nlType)
 tileIdx2Name <- function(tileNum, nlType)
 {
   if(missing(tileNum))
-    stop("Missing required parameter tileNum")
+    stop(Sys.time(), ": Missing required parameter tileNum")
 
   if(missing(nlType))
-    stop("Missing required parameter nlType")
+    stop(Sys.time(), ": Missing required parameter nlType")
   
   if(!validNlTypes(nlType))
-    stop("Invalid nlType: ", nlType)
+    stop(Sys.time(), ": Invalid nlType: ", nlType)
     
   if(!validNlTileNumVIIRS(tileNum, nlType))
-    stop("Invalid tileNum: ", tileNum)
+    stop(Sys.time(), ": Invalid tileNum: ", tileNum)
   
   if (!exists("nlTiles"))
     nlTiles <- getNlTiles(nlType)
@@ -689,7 +689,7 @@ tileIdx2Name <- function(tileNum, nlType)
 tilesPolygonIntersectVIIRS <- function(shpPolygon)
 {
   if(missing(shpPolygon))
-    stop("Missing required parameter shpPolygon")
+    stop(Sys.time(), ": Missing required parameter shpPolygon")
   
   #given a polygon this function returns a list of the names of the viirs tiles
   #that it intersects with
@@ -746,10 +746,10 @@ validNlTileNumVIIRS <- function(nlTileNum, nlType)
   nlTileNum <- as.character(nlTileNum)
   
   if (missing(nlTileNum))
-    stop("Missing parameter nlTileNum")
+    stop(Sys.time(), ": Missing parameter nlTileNum")
   
   if (missing(nlType))
-    stop("Missing parameter nlType")
+    stop(Sys.time(), ": Missing parameter nlType")
   
   if (class(nlTileNum) != "character" || nlTileNum =="" || length(nlTileNum)==0 || length(grep("[^[:digit:]]", nlTileNum) > 0))
     return(FALSE)

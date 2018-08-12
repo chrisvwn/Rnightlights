@@ -5,7 +5,7 @@
 \title{Initiates the country nightlight dataframe with the country admin level 
     data read from the polygon}
 \usage{
-createCtryNlDataDF(ctryCode, admLevel,
+createCtryNlDataDF(ctryCode = NULL, admLevel,
   gadmVersion = pkgOptions("gadmVersion"), custPolyPath = NULL)
 }
 \arguments{

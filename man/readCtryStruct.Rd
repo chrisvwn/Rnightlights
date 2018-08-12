@@ -4,7 +4,7 @@
 \alias{readCtryStruct}
 \title{Reads the ctry admin structure from struct text file}
 \usage{
-readCtryStruct(ctryCode, gadmVersion = pkgOptions("gadmVersion"),
+readCtryStruct(ctryCode = NULL, gadmVersion = pkgOptions("gadmVersion"),
   custPolyPath = NULL)
 }
 \arguments{

@@ -4,7 +4,7 @@
 \alias{getCtryStructFname}
 \title{Construct the name for the country struct file}
 \usage{
-getCtryStructFname(ctryCode, gadmVersion = pkgOptions("gadmVersion"),
+getCtryStructFname(ctryCode = NULL, gadmVersion = pkgOptions("gadmVersion"),
   custPolyPath = NULL)
 }
 \arguments{

@@ -23,22 +23,22 @@
 downloadNlTilesVIIRS <- function(nlPeriod, tileNum, downloadMethod=pkgOptions("downloadMethod"), nlType)
 {
   if(missing(nlPeriod))
-    stop("Missing required parameter nlPeriod")
+    stop(Sys.time(), ": Missing required parameter nlPeriod")
   
   if(missing(tileNum))
-    stop("Missing required parameter tileNum")
+    stop(Sys.time(), ": Missing required parameter tileNum")
   
   if(missing(nlType))
-    stop("Missing required parameter nlType")
+    stop(Sys.time(), ": Missing required parameter nlType")
   
   if(!validNlTypes(nlType))
-    stop("Invalid nlType")
+    stop(Sys.time(), ": Invalid nlType")
   
   if(!allValidNlPeriods(nlPeriods = nlPeriod, nlTypes = nlType))
-    stop("Invalid nlPeriod: ", nlPeriod)
+    stop(Sys.time(), ": Invalid nlPeriod: ", nlPeriod)
   
   if(!validNlTileNumVIIRS(tileNum, nlType))
-    stop("Invalid tileNum: ", tileNum)
+    stop(Sys.time(), ": Invalid tileNum: ", tileNum)
   
   rsltDnld <- NA
   
@@ -55,7 +55,7 @@ downloadNlTilesVIIRS <- function(nlPeriod, tileNum, downloadMethod=pkgOptions("d
     
     if(is.null(ntLtsFileUrl))
     {
-      message("** Tile not available on the NOAA page.\n Please manually check for the ", nlPeriod, " tile at 'https://ngdc.noaa.gov/eog/viirs/download_dnb_composites.html'. If it exists please report this as a bug **")
+      message(Sys.time(), ": ** Tile not available on the NOAA page.\n Please manually check for the ", nlPeriod, " tile at 'https://ngdc.noaa.gov/eog/viirs/download_dnb_composites.html'. If it exists please report this as a bug **")
       return(FALSE)
     }
     
@@ -73,14 +73,14 @@ downloadNlTilesVIIRS <- function(nlPeriod, tileNum, downloadMethod=pkgOptions("d
   {
     #if the file is found we can return positive? Probably not unless there's an overwrite option
     #for our purposes return true
-    message("File exists, set Overwrite = TRUE to overwrite")
+    message(Sys.time(), ": File exists, set Overwrite = TRUE to overwrite")
     
     rsltDnld <- 0
   }
   
   if (rsltDnld == 0)
   {
-    message("Extracting ", ntLtsZipLocalNamePathVIIRS, " ", base::date())
+    message(Sys.time(), ": Extracting ", ntLtsZipLocalNamePathVIIRS)
     
     if(nlType == "VIIRS.D" && exists("ntLtsFileUrl"))
     {
@@ -95,21 +95,21 @@ downloadNlTilesVIIRS <- function(nlPeriod, tileNum, downloadMethod=pkgOptions("d
     else
       if (!file.exists(getNlTileTifLclNamePathVIIRS(nlPeriod, tileNum, nlType)))
     {
-      message("Getting list of files in ", ntLtsZipLocalNamePathVIIRS, " ", base::date())
+      message(Sys.time(), ": Getting list of files in ", ntLtsZipLocalNamePathVIIRS)
       
       tgzFileList <- utils::untar(ntLtsZipLocalNamePathVIIRS, list = TRUE, tar = "internal")
       #tgz_file_list <- stringr::str_replace(tgz_file_list,"./","")
       
       if (is.null(tgzFileList))
       {
-        message("Error extracting file list. ")
+        message(Sys.time(), ": Error extracting file list. ")
         
         return (-1)
       }
       
       tgzAvgRadFilename <- tgzFileList[grep("svdnb.*.avg_rade9.*.tif$",tgzFileList, ignore.case = T)]
       
-      message("Decompressing ", tgzAvgRadFilename, " ", base::date())
+      message(Sys.time(), ": Decompressing ", tgzAvgRadFilename)
       
       if(!file.exists(getNlTileTifLclNamePathVIIRS(nlPeriod, tileNum, nlType)))
       {
@@ -122,12 +122,12 @@ downloadNlTilesVIIRS <- function(nlPeriod, tileNum, downloadMethod=pkgOptions("d
     }
     else
     {
-      message("TIF file found")
+      message(Sys.time(), ": TIF file found")
     }
   }
   else
   {
-    message("An error occurred downloading")
+    message(Sys.time(), ": An error occurred downloading")
     return(-1)
   }
   
@@ -157,10 +157,10 @@ downloadNlTilesOLS <- function(nlPeriod, downloadMethod=pkgOptions("downloadMeth
   nlType <- "OLS.Y"
   
   if(missing(nlPeriod))
-    stop("Missing required parameter nlPeriod")
+    stop(Sys.time(), ": Missing required parameter nlPeriod")
   
   if(!allValidNlPeriods(nlPeriods = nlPeriod, nlTypes = nlType))
-    stop("Invalid nlPeriod: ", nlPeriod)
+    stop(Sys.time(), ": Invalid nlPeriod: ", nlPeriod)
   
   rsltDnld <- NA
   
@@ -193,20 +193,20 @@ downloadNlTilesOLS <- function(nlPeriod, downloadMethod=pkgOptions("downloadMeth
   {
     #if the file is found we can return positive? Probably not unless there's an overwrite option
     #for our purposes return true
-    message("File exists, set Overwrite = TRUE to overwrite")
+    message(Sys.time(), "File exists, set Overwrite = TRUE to overwrite")
     
     rsltDnld <- 0
   }
   
   if (rsltDnld == 0)
   {
-    message("Extracting ", ntLtsZipLocalNamePathOLS, " ", base::date())
+    message(Sys.time(), "Extracting ", ntLtsZipLocalNamePathOLS)
     
     tileNum <- "dummyTileNum"
     
     if (!file.exists(getNlTileTifLclNamePathOLS(nlPeriod, tileNum)))
     {
-      message("Getting list of files in ", ntLtsZipLocalNamePathOLS, " ", base::date())
+      message(Sys.time(), ": Getting list of files in ", ntLtsZipLocalNamePathOLS)
       
       #get a list of files in the tar archive
       tarFileList <- utils::untar(ntLtsZipLocalNamePathOLS, list = TRUE, tar="internal")
@@ -222,7 +222,7 @@ downloadNlTilesOLS <- function(nlPeriod, downloadMethod=pkgOptions("downloadMeth
       #the tif has the same name as the compressed file without the .gz
       tifFile <- stringr::str_replace(tgzFile, ".gz", "")
       
-      message("Decompressing ", tgzFile, " ", date())
+      message(Sys.time(), ": Decompressing ", tgzFile, " ", date())
       
       R.utils::gunzip(file.path(getNlDir("dirNlTiles"), tgzFile), ntLtsTifLocalNamePathOLS)
       
@@ -230,7 +230,7 @@ downloadNlTilesOLS <- function(nlPeriod, downloadMethod=pkgOptions("downloadMeth
     }
     else
     {
-      message("TIF file found")
+      message(Sys.time(), ": TIF file found")
     }
   }
   

@@ -21,7 +21,7 @@
 newNlType <- function(oldNlType)
 {
   if(missing(oldNlType))
-    stop("Missing required parameters oldNlType")
+    stop(Sys.time(), ": Missing required parameters oldNlType")
   
   if(length(oldNlType) > 1 || !oldNlType %in% c("OLS","VIIRS"))
     return(NA)
@@ -35,7 +35,7 @@ newNlType <- function(oldNlType)
     return("VIIRS.M")
 
   #if anything else return NA  
-  message("Invalid old name ", oldNlType)
+  message(Sys.time(), ": Invalid old name ", oldNlType)
   return(NA)
 }
 
@@ -112,14 +112,14 @@ upgradeRnightlights <- function()
     #upgrades required for 0.2.0, 0.2.1 & 0.2.2
     if(pkgVersion >= "0.2.0" && dataVersion < "0.2.3")
     {
-      message("Upgrading data directory to ver. ", pkgVersion)
+      message(Sys.time(), ": Upgrading data directory to ver. ", pkgVersion)
       
       idx <- 1
       
       #rename tiles using new format
       origWd <- setwd(Rnightlights::getNlDir("dirNlTiles"))
       
-      message("Renaming tiles:")
+      message(Sys.time(), ": Renaming tiles:")
       
       fileNames <- list.files(pattern = "^[[a-zA-Z]]{3,5}_[[:digit:]]{4,6}_[[:alnum:]]{7,8}\\.tif$")
       
@@ -143,7 +143,7 @@ upgradeRnightlights <- function()
                                                  tileName2Idx(tileName, nlType)
                                                  )
           
-          message("Rename: '", fileName, "' -> '", newTileName, "' : ", ifelse(file.rename(fileName, newTileName), "Success", "Fail"))
+          message(Sys.time(), ": Rename: '", fileName, "' -> '", newTileName, "' : ", ifelse(file.rename(fileName, newTileName), "Success", "Fail"))
           
           idx <- idx + 0.1
           
@@ -151,13 +151,13 @@ upgradeRnightlights <- function()
         }
       }else
       {
-        message("No upgrade required")
+        message(Sys.time(), ": No upgrade required")
       }
       
       #rename data files using new format
       idx <- round(idx + 1)
       
-      message("Renaming data files:")
+      message(Sys.time(), ": Renaming data files:")
       setwd(Rnightlights::getNlDir("dirNlData"))
       
       fileNames <- list.files(pattern = "^[[:alpha:]]{3,5}_NLData\\.csv$")
@@ -177,11 +177,11 @@ upgradeRnightlights <- function()
          
           newFileName <- getCtryNlDataFname(ctryCode, admLevel)
           
-          message("Rename: '", fileName, "' -> '", newFileName, "' : ", ifelse(file.rename(fileName, newFileName),"Success","Fail"))
+          message(Sys.time(), ": Rename: '", fileName, "' -> '", newFileName, "' : ", ifelse(file.rename(fileName, newFileName),"Success","Fail"))
           
           upgradeLog <- rbind.data.frame(upgradeLog, cbind(idx, "file.rename", paste0(fileName, newFileName, sep="|")))
           
-          message("Renaming columns:")
+          message(Sys.time(), ": Renaming columns:")
           
           idx <- idx + 0.01
           
@@ -214,14 +214,14 @@ upgradeRnightlights <- function()
         }
       }else
       {
-        message("No upgrade required")
+        message(Sys.time(), ": No upgrade required")
       }
       
       #rename rasters
       idx <- round(idx + 1)
       
       #rename tiles using new format
-      message("Renaming country rasters:")
+      message(Sys.time(), ": Renaming country rasters:")
 
       setwd(Rnightlights::getNlDir("dirRasterOutput"))
       fileNames <- list.files(pattern = "^[a-zA-Z]{3}_[a-zA-Z]{3,5}_[0-9]{4,6}\\.tif$")
@@ -243,38 +243,38 @@ upgradeRnightlights <- function()
           
           newFileName <- getCtryRasterOutputFname(ctryCode=ctryCode, nlType=nlType, nlPeriod=nlPeriod)
           
-          message("Rename:: '", fileName, "' -> '", newFileName, "' : ", ifelse(file.rename(fileName, newFileName), "Success", "Fail"))
+          message(Sys.time(), ": Rename:: '", fileName, "' -> '", newFileName, "' : ", ifelse(file.rename(fileName, newFileName), "Success", "Fail"))
           
           upgradeLog <- rbind.data.frame(upgradeLog, cbind(idx, "file.rename", paste0(fileName, newFileName, sep="|")))
           
         }
       }else
       {
-        message("No upgrade required")
+        message(Sys.time(), ": No upgrade required")
       }
       
       #remove zonal rasters will be recreated at next run
-      message("Remove Old Zonal Files:")
+      message(Sys.time(), ": Remove Old Zonal Files:")
       setwd(getNlDir("dirZonals"))
       
       if(length(list.files()) > 0)
         message(ifelse(all(file.remove(list.files())), "Success", "Fail"))
       else
-        message("No upgrade required")
+        message(Sys.time(), ": No upgrade required")
       
       #log alterations for rollback
       
       setwd(origWd)
       
       #if we got here all went well
-      message("Upgrade complete!")
+      message(Sys.time(), ": Upgrade complete!")
       
       return(TRUE)
     }
   }, error=function(err)
   {
     message(err)
-    message("An error occurred in upgrading the Rnightlights data dir. 
+    message(Sys.time(), ": An error occurred in upgrading the Rnightlights data dir. 
             Some of your old data may not be accessible from the upgraded package
             but can be accessed directly from the Rnightlights data folder. 
             Please open an issue on the package github page if you encounter

@@ -4,7 +4,7 @@
 \alias{existsCtryNlData}
 \title{Check if VIIRS nightlight stats exist locally}
 \usage{
-existsCtryNlData(ctryCode, admLevel, nlTypes, nlPeriods, nlStats,
+existsCtryNlData(ctryCode = NULL, admLevel, nlTypes, nlPeriods, nlStats,
   gadmVersion = pkgOptions("gadmVersion"), custPolyPath = NULL)
 }
 \arguments{
