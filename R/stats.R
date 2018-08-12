@@ -21,10 +21,10 @@
 validNlStats <- function(nlStats)
 {
   if(missing(nlStats))
-    stop("Missing required parameter nlStats")
+    stop(Sys.time(), ": Missing required parameter nlStats")
   
   if(!is.character(nlStats) || is.null(nlStats) || is.na(nlStats) || nlStats == "")
-    stop("Invalid nlStats")
+    stop(Sys.time(), ": Invalid nlStats")
   
   matchedFuns <- sapply(nlStats, function(nlStat)
     tryCatch(
@@ -67,7 +67,7 @@ myZonal <- function (x, z, nlStats, digits = 0, na.rm = TRUE, ...)
 {
   options(fftempdir=getNlDir("dirNlTemp"), fffinalizer="delete")
   
-  #vreate the text for the functions
+  #create the text for the functions
   fun <- paste0(sapply(nlStats, function(nlStat) paste0(nlStat,"=", nlStat, "(x, na.rm = TRUE)")), collapse = ", ")
 
   #create the aggregation function
@@ -77,7 +77,7 @@ myZonal <- function (x, z, nlStats, digits = 0, na.rm = TRUE, ...)
   
   zones <- NULL
   
-  message("Reading in raster data")
+  message(Sys.time(), ": Reading in raster data")
 
   #the number of columns in the raster/zone file which are identical in size
   nc <- base::ncol(x)
@@ -96,6 +96,8 @@ myZonal <- function (x, z, nlStats, digits = 0, na.rm = TRUE, ...)
     end <- start + (tr$nrows[i] * nc) - 1
     
     rastVals <- raster::getValues(x, row=tr$row[i], nrows=tr$nrows[i])
+    #for(j in tr$row[i]:(tr$row[i]+tr$nrows[i]-1)) rowNums <- c(rowNums, rep(j,x@ncols))
+    #for(j in tr$row[i]:(tr$row[i]+tr$nrows[i]-1)) colNums <- c(colNums, 1:x@ncols)
     zoneVals <- raster::getValues(z, row=tr$row[i], nrows=tr$nrows[i])
    
     #convert negative values to NA 
@@ -108,6 +110,8 @@ myZonal <- function (x, z, nlStats, digits = 0, na.rm = TRUE, ...)
     #remove zone 0 since in large rasters it can be pretty
     #large and may not fit in memory thus causing calculations to fail
     zoneVals <- zoneVals[-idxZone0]
+    #rowNums <- rowNums[-idxZone0]
+    #colNums <- colNums[-idxZone0]
     rastVals <- rastVals[-idxZone0]
     
     #for first block init the ff to the given filename
@@ -132,7 +136,7 @@ myZonal <- function (x, z, nlStats, digits = 0, na.rm = TRUE, ...)
   #merge the zone and raster ffvectors into an ffdf
   rDT <- ff::ffdf(zones, vals)
 
-  message("Calculating nlStats ", base::date())
+  message(Sys.time(), ": Calculating nlStats ")
   
   if(length(unique(rDT$zones) == 1))
   {
@@ -163,6 +167,27 @@ myZonal <- function (x, z, nlStats, digits = 0, na.rm = TRUE, ...)
                                as.data.frame(result)
                              })
   }
+  
+  #count cols with nlStat in them
+  nlStatColCounts <- sapply(nlStats, function(nlStat) length(grep(nlStat, names(result))))
+  
+  #collapse multi-value cols into one
+  for(nlStat in nlStats)
+  {
+    if(nlStatColCounts[[nlStat]] > 1)
+    {
+      message(Sys.time(), ": ", nlStat, " => Multi-column result detected")
+      #if more than one col detected, get their names
+      nlStatCols <- grep(nlStat, names(result), value = T)
+      
+      #merge them row-wise into one col
+      result[[nlStat]] <- apply(result[, nlStatCols, with=F], 1, function(x) paste(x, collapse=","))
+      
+      #remove the separate cols
+      result[,c(nlStatCols) := NULL]
+    }
+  }
+  
   #name the columns
   result <- stats::setNames(result, c("z", nlStats))
 
@@ -219,38 +244,38 @@ ZonalPipe <- function (ctryCode, admLevel, ctryPoly, path.in.shp, path.in.r, pat
   #nlStat: function to summary path.in.r values ("mean", "sum"...)
   
   if(missing(ctryCode))
-    stop("Missing required parameter ctryCode")
+    stop(Sys.time(), ": Missing required parameter ctryCode")
   
   if(missing(ctryCode))
-    stop("Missing required parameter ctryCode")
+    stop(Sys.time(), ": Missing required parameter ctryCode")
   
   if(missing(path.in.shp))
-    stop("Missing required parameter path.in.shp")
+    stop(Sys.time(), ": Missing required parameter path.in.shp")
   
   if(missing(path.in.r))
-    stop("Missing required parameter path.in.r")
+    stop(Sys.time(), ": Missing required parameter path.in.r")
   
   if(missing(path.out.r))
-    stop("Missing required parameter path.out.r")
+    stop(Sys.time(), ": Missing required parameter path.out.r")
   
   if(missing(zone.attribute))
-    stop("Missing required parameter zone.attribute")
+    stop(Sys.time(), ": Missing required parameter zone.attribute")
   
   if(missing(nlStats))
-    stop("Missing required parameter nlStats")
+    stop(Sys.time(), ": Missing required parameter nlStats")
   
   if(!validCtryCodes(ctryCode))
-    stop("Invalid ctryCode: ", ctryCode)
+    stop(Sys.time(), ": Invalid ctryCode: ", ctryCode)
   
   if(!allValid(nlStats, validNlStats))
-    stop("Invalid stat(s) detected")
+    stop(Sys.time(), ": Invalid stat(s) detected")
   
   # 1/ Rasterize using GDAL
   
   # Find a better multi-platform way to check for gdal.
   # suppressWarnings(
   #   if(system("which gdal_rasterize", intern = T) != 0)
-  #     stop("gdal_rasterize not found. Please check that GDAL is installed")
+  #     stop(Sys.time(), ": gdal_rasterize not found. Please check that GDAL is installed")
   # )
   
   #Initiate parameter
@@ -258,7 +283,7 @@ ZonalPipe <- function (ctryCode, admLevel, ctryPoly, path.in.shp, path.in.r, pat
   
   if (!file.exists(path.out.r))
   {
-    message("Zonal file ", path.out.r, " doesn't exist. Creating", date())
+    message(Sys.time(), ": Zonal file ", path.out.r, " doesn't exist. Creating", date())
     
     #get the extent and change to minx, miny, maxx, maxy order for use
     #in gdal_rasterize. Explanation below
@@ -285,7 +310,7 @@ ZonalPipe <- function (ctryCode, admLevel, ctryPoly, path.in.shp, path.in.r, pat
     tempRast <- file.path(getNlDir("dirNlTemp"), paste0(basename(tempfile()), ".tif"))
     
     #Gdal_rasterize
-    message("Creating zonal raster")
+    message(Sys.time(), ": Creating zonal raster")
     command<-'gdal_rasterize'
     #Speed-up with more cache (avice: max 1/3 of your total RAM)
     command<-paste(command, paste0("--config GDAL_CACHEMAX ", pkgOptions("gdalCacheMax")))
@@ -305,7 +330,7 @@ ZonalPipe <- function (ctryCode, admLevel, ctryPoly, path.in.shp, path.in.r, pat
     
     system(command)
     
-    message("Compressing zonal raster")
+    message(Sys.time(), ": Compressing zonal raster")
     gdalUtils::gdal_translate(co = "compress=LZW", 
                               src_dataset = tempRast, 
                               dst_dataset = path.out.r)
@@ -314,17 +339,17 @@ ZonalPipe <- function (ctryCode, admLevel, ctryPoly, path.in.shp, path.in.r, pat
   }
   
   if(file.exists(path.out.r))
-    message("Zonal file ", path.out.r, " found")
+    message(Sys.time(), ": Zonal file ", path.out.r, " found")
   else
     stop(path.out.r, " not found. Zonal creation failed.")
   
   # 2/ Zonal Stat using myZonal function
   zone<-raster::raster(path.out.r)
   
-  message("Calculating zonal stats ...", date())
+  message(Sys.time(), ": Calculating zonal stats ...", date())
   Zstat<-data.frame(myZonal(r, zone, nlStats))
   
-  message("Calculating zonal stats ... DONE", date())
+  message(Sys.time(), ": Calculating zonal stats ... DONE", date())
 
   colnames(Zstat)[2:length(Zstat)] <- nlStats
   
@@ -379,19 +404,19 @@ ZonalPipe <- function (ctryCode, admLevel, ctryPoly, path.in.shp, path.in.r, pat
 fnAggRadGdal <- function(ctryCode, admLevel, ctryPoly, nlType, nlPeriod, nlStats=pkgOptions("nlStats"), gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
 {
   if(missing(ctryCode))
-    stop("Missing required parameter ctryCode")
+    stop(Sys.time(), ": Missing required parameter ctryCode")
   
   if(missing(nlPeriod))
-    stop("Missing required parameter nlPeriod")
+    stop(Sys.time(), ": Missing required parameter nlPeriod")
   
   if(!validCtryCodes(ctryCode))
-    stop("Invalid ctryCode: ", ctryCode)
+    stop(Sys.time(), ": Invalid ctryCode: ", ctryCode)
   
   if(!allValidNlPeriods(nlPeriods = nlPeriod, nlTypes = nlType))
-    stop("Invalid nlPeriod: ", nlPeriod, " for nlType: ", nlType)
+    stop(Sys.time(), ": Invalid nlPeriod: ", nlPeriod, " for nlType: ", nlType)
   
   if(!allValid(nlStats, validNlStats))
-    stop("Invalid stat(s) detected")
+    stop(Sys.time(), ": Invalid stat(s) detected")
   
   #source: http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/
   
@@ -438,7 +463,17 @@ fnAggRadGdal <- function(ctryCode, admLevel, ctryPoly, nlType, nlPeriod, nlStats
     paste0("GID_IDX")
   }
   
-  sumAvgRad <- ZonalPipe(ctryCode = ctryCode, admLevel = admLevel, ctryPoly = ctryPoly, path.in.shp = path.in.shp, path.in.r = path.in.r, path.out.r = path.out.r, path.out.shp = path.out.shp, zone.attribute = zone.attribute, nlStats=nlStats, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+  sumAvgRad <- ZonalPipe(ctryCode = ctryCode,
+                         admLevel = admLevel,
+                         ctryPoly = ctryPoly,
+                         path.in.shp = path.in.shp,
+                         path.in.r = path.in.r,
+                         path.out.r = path.out.r,
+                         path.out.shp = path.out.shp,
+                         zone.attribute = zone.attribute,
+                         nlStats = nlStats,
+                         gadmVersion = gadmVersion,
+                         custPolyPath = custPolyPath)
   
   ctryPolyData <- ctryPoly@data
   
@@ -504,22 +539,22 @@ fnAggRadGdal <- function(ctryCode, admLevel, ctryPoly, nlType, nlPeriod, nlStats
 fnAggRadRast <- function(ctryPoly, ctryRastCropped, nlType, nlStats, custPolyPath=NULL)
 {
   if(missing(ctryPoly))
-    stop("Missing required parameter ctryPoly")
+    stop(Sys.time(), ": Missing required parameter ctryPoly")
   
   if(missing(ctryRastCropped))
-    stop("Missing required parameter ctryRastCropped")
+    stop(Sys.time(), ": Missing required parameter ctryRastCropped")
   
   if ((class(ctryPoly) != "SpatialPolygons" && class(ctryPoly) != "SpatialPolygonsDataFrame" ) || is.null(ctryPoly))
-    stop("Invalid ctryPoly type: ", class(ctryPoly))
+    stop(Sys.time(), ": Invalid ctryPoly type: ", class(ctryPoly))
   
   if (class(ctryRastCropped) != "RasterLayer" || is.null(ctryRastCropped))
-    stop("Invalid ctryRastCropped type: ", class(ctryRastCropped))
+    stop(Sys.time(), ": Invalid ctryRastCropped type: ", class(ctryRastCropped))
   
   if(missing(nlType))
-    stop("Missing required parameter nlType")
+    stop(Sys.time(), ": Missing required parameter nlType")
   
   if(!allValid(nlStats, validNlStats))
-    stop("Invalid stat(s) detected")
+    stop(Sys.time(), ": Invalid stat(s) detected")
 
   cl <- snow::makeCluster(pkgOptions("numCores"))
   
@@ -540,14 +575,14 @@ fnAggRadRast <- function(ctryPoly, ctryRastCropped, nlType, nlStats, custPolyPat
                                   
                                   pid <- Sys.getpid()
                                   
-                                  message("PID:", pid, " Extracting data from polygon " , i, " ", base::date())
+                                  message(Sys.time(), ": PID:", pid, " Extracting data from polygon " , i)
                                   
                                   if(stringr::str_detect(nlType, "OLS"))
                                     dat <- masqOLS(ctryPoly, ctryRastCropped, i)
                                   else if(stringr::str_detect(nlType, "VIIRS"))
                                     dat <- masqVIIRS(ctryPoly, ctryRastCropped, i)
                                   
-                                  message("PID:", pid, " Calculating the NL stats of polygon ", i, " ", base::date())
+                                  message(Sys.time(), ": PID:", pid, " Calculating the NL stats of polygon ", i)
                                   
                                   #calculate and return the mean of all the pixels
                                   #data.frame(sum = sum(dat, na.rm=TRUE))
