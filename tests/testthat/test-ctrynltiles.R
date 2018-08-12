@@ -30,7 +30,7 @@ if(.runThisTest)
     for(nlPeriod in grep("2018", allNlPeriodsVIIRS, invert = T, value = T))
       for(tileNum in 1:6)
       {
-        message(nlPeriod, tileNum)
+        message(Sys.time(), ":", nlPeriod, tileNum)
         testthat::expect_match(Rnightlights:::getNlUrlVIIRS(nlPeriod, tileNum, "VIIRS.M"), "^https\\:\\/\\/.*.tgz$")
       }
   })
