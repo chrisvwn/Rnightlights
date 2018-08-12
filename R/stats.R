@@ -176,11 +176,11 @@ myZonal <- function (x, z, nlStats, digits = 0, na.rm = TRUE, ...)
   {
     if(nlStatColCounts[[nlStat]] > 1)
     {
-      message(Sys.time(), ": ", nlStat, " => Multi-column result detected")
+      message(Sys.time(), ": ", nlStat, " => Multi-column result detected. Merging")
       #if more than one col detected, get their names
       nlStatCols <- grep(nlStat, names(result), value = T)
       
-      #merge them row-wise into one col
+      #merge them row-wise into one character vector separated by comma
       result[[nlStat]] <- apply(result[, nlStatCols, with=F], 1, function(x) paste(x, collapse=","))
       
       #remove the separate cols
@@ -567,11 +567,11 @@ fnAggRadRast <- function(ctryPoly, ctryRastCropped, nlType, nlStats, custPolyPat
   #to avoid RCheck notes
   i <- NULL
   
-  sumAvgRad <- foreach::foreach(i=1:nrow(ctryPoly@data), 
-                                .combine=rbind,
-                                .export = c("masqOLS", "masqVIIRS", nlStats),
-                                .packages = c("raster"),
-                                .options.snow = list(progress=progress)) %dopar% {
+  result <- foreach::foreach(i=1:nrow(ctryPoly@data),
+                               .combine=rbind,
+                               .export = c("masqOLS", "masqVIIRS", nlStats),
+                               .packages = c("raster"),
+                               .options.snow = list(progress=progress)) %dopar% {
                                   
                                   pid <- Sys.getpid()
                                   
@@ -584,12 +584,30 @@ fnAggRadRast <- function(ctryPoly, ctryRastCropped, nlType, nlStats, custPolyPat
                                   
                                   message(Sys.time(), ": PID:", pid, " Calculating the NL stats of polygon ", i)
                                   
-                                  #calculate and return the mean of all the pixels
-                                  #data.frame(sum = sum(dat, na.rm=TRUE))
+                                  res <- data.frame(as.list(unlist(sapply(nlStats, FUN=function(nlStat) data.frame(nlStat = eval(parse(text=paste0(nlStat, "(dat, na.rm=TRUE)"))))))))
                                   
-                                  sumAvgRad <- data.frame(sapply(nlStats, FUN=function(nlStat) data.frame(nlStat = eval(parse(text=paste0(nlStat, "(dat, na.rm=TRUE)"))))))
+                                  #count cols with nlStat in them
+                                  nlStatColCounts <- sapply(nlStats, function(nlStat) length(grep(nlStat, names(res))))
                                   
-                                  stats::setNames(sumAvgRad, nlStats)
+                                  #collapse multi-value cols into one
+                                  for(nlStat in nlStats)
+                                  {
+                                    if(nlStatColCounts[[nlStat]] > 1)
+                                    {
+                                      message(Sys.time(), ": ", nlStat, " => Multi-column result detected. Merging")
+                                      
+                                      #if more than one col detected, get their names
+                                      nlStatCols <- grep(nlStat, names(res), value = T)
+                                      
+                                      #merge them row-wise into one character vector separated by comma
+                                      res[[nlStat]] <- paste(res[, c(nlStatCols)], collapse=",")
+                                      
+                                      #remove the separate cols
+                                      res[,nlStatCols] <- NULL
+                                    }
+                                  }
+                                  
+                                  stats::setNames(res, nlStats)
                                 }
   
   close(pb)
@@ -599,5 +617,5 @@ fnAggRadRast <- function(ctryPoly, ctryRastCropped, nlType, nlStats, custPolyPat
   
   gc()
   
-  return(sumAvgRad)
+  return(result)
 }

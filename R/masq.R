@@ -92,13 +92,14 @@ masqOLS <- function(shp, rast, i)
   
   #Raster extract
   outer <- raster::crop(rast, extent) #extract raster by polygon extent
-  #inner <- mask(outer,polygon) #keeps values from raster extract that are within polygon
+
   inner <- raster::rasterize(polygon, outer, mask=TRUE) #crops to polygon edge & converts to raster
   
   #Convert cropped raster into a vector
   #Specify coordinates
-  coords <- expand.grid(seq(extent@xmin,extent@xmax,(extent@xmax-extent@xmin)/(ncol(inner)-1)),
-                        seq(extent@ymin,extent@ymax,(extent@ymax-extent@ymin)/(nrow(inner)-1)))
+  #coords <- expand.grid(seq(extent@xmin,extent@xmax,(extent@xmax-extent@xmin)/(ncol(inner)-1)),
+  #                      seq(extent@ymin,extent@ymax,(extent@ymax-extent@ymin)/(nrow(inner)-1)))
+  
   #Convert raster into vector
   data <- as.vector(inner)
   
