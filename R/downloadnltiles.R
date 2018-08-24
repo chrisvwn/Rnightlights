@@ -82,6 +82,7 @@ downloadNlTilesVIIRS <- function(nlPeriod, tileNum, downloadMethod=pkgOptions("d
   {
     message(Sys.time(), ": Extracting ", ntLtsZipLocalNamePathVIIRS)
     
+    #for VIIRS.D 
     if(nlType == "VIIRS.D" && exists("ntLtsFileUrl"))
     {
       lenZipLclName <- nchar(ntLtsFileUrl)
@@ -107,7 +108,20 @@ downloadNlTilesVIIRS <- function(nlPeriod, tileNum, downloadMethod=pkgOptions("d
         return (-1)
       }
       
-      tgzAvgRadFilename <- tgzFileList[grep("svdnb.*.avg_rade9.*.tif$",tgzFileList, ignore.case = T)]
+      if(nlType == "VIIRS.Y")
+      {
+        configShortName <- pkgOptions("configName_VIIRS.Y")
+        
+        tgzAvgRadFilename <- tgzFileList[grep(paste0("svdnb.*.", configShortName, ".*.avg_rade9.*.tif$"),tgzFileList, ignore.case = T)]
+      } else
+      {
+        if(nlType == "VIIRS.D")
+          configShortName <- pkgOptions("configName_VIIRS.D")
+        else if(nlType == "VIIRS.M")
+          configShortName <- pkgOptions("configName_VIIRS.M")
+        
+        tgzAvgRadFilename <- tgzFileList[grep(paste0("svdnb.*.", configShortName ,".*.avg_rade9.*.tif$"),tgzFileList, ignore.case = T)]
+      }
       
       message(Sys.time(), ": Decompressing ", tgzAvgRadFilename)
       

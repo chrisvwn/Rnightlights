@@ -7,7 +7,8 @@
 pkgOptions(...)
 }
 \arguments{
-\item{...}{Option names to retrieve option values or \code{[key]=[value]} pairs to set options.}
+\item{...}{Option names to retrieve option values or \code{[key]=[value]}
+pairs to set options.}
 }
 \value{
 if an option name is supplied as a parameter this returns the 
@@ -19,7 +20,43 @@ Set or get options for the Rnightlights package
 \section{Supported options}{
 
 The following options are supported
-\itemize{
+\describe{
+ \item{\code{configName.VIIRS.D}}{(\code{character}) The regex to uniquely
+     identify the tile file to use out of the downloaded tile .tgz. The
+     version 1 monthly series is run globally using two different 
+     configurations.
+     
+     The first excludes any data impacted by stray light. The second
+     includes these data if the radiance vales have undergone the stray-
+     light correction procedure (Reference). These two configurations
+     are denoted in the filenames as "vcm" and "vcmsl" respectively.
+     The "vcmsl" version, that includes the stray-light corrected data,
+     will have more data coverage toward the poles, but will be of reduced
+     quality.
+     
+     It is up to the users to determine which set is best for their
+     applications. The annual versions are only made with the “vcm”
+     version, excluding any data impacted by stray light.}
+     
+ \item{\code{configName.VIIRS.M}}{(\code{character}) The regex to uniquely
+     identify the tile file to use out of the downloaded monthly .tgz
+     tile. Has the same options as configName.VIIRS.D}
+ 
+ \item{\code{configName.VIIRS.Y}}{(\code{character}) The regex to uniquely
+     identify the tile file to use out of the downloaded tile .tgz. The
+     annual products can have other values for the config shortname (Field 5).
+     They are:
+     \itemize{
+       \item vcm-orm (VIIRS Cloud Mask - Outlier Removed): This product
+         contains cloud-free average radiance values that have undergone
+         an outlier removal process to filter out fires and other ephemeral
+         lights.
+       \item vcm-orm-ntl (VIIRS Cloud Mask - Outlier Removed - Nighttime Lights):
+         This product contains the "vcm-orm" average, with background
+         (non-lights) set to zero.
+       \item vcm-ntl (VIIRS Cloud Mask - Nighttime Lights): This product
+         contains the "vcm" average, with background
+         (non-lights) set to zero.}}
  \item{\code{cropMaskMethod}}{(\code{character}) The method to use to 
      clip the nightlight raster tiles to the country boundaries }
  \item{\code{deleteTiles}}{(\code{character}) whether to delete tiles 
