@@ -234,9 +234,8 @@ dnldCtryPoly <- function(ctryCode=NULL, gadmVersion=pkgOptions("gadmVersion"), c
     #if the dir and zip dont exist download and unzip
     if (!existsPolyFnameZip(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath))
     {
-      #download
-      
-      #downloadMethod <- pkgOptions("downloadMethod")
+      #do not use aria. Seems GADM has issues with it
+      downloadMethod <- "auto"
 
       message(Sys.time(), ": Downloading ", fullPolyUrl)
       
