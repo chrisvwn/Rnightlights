@@ -105,7 +105,7 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
 #'      quality.
 #'      
 #'      It is up to the users to determine which set is best for their
-#'      applications. The annual versions are only made with the “vcm”
+#'      applications. The annual versions are only made with the "vcm"
 #'      version, excluding any data impacted by stray light.}
 #'      
 #'  \item{\code{configName.VIIRS.M}}{(\code{character}) The regex to uniquely
