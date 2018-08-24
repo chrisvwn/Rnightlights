@@ -35,7 +35,7 @@ The following options are supported
      quality.
      
      It is up to the users to determine which set is best for their
-     applications. The annual versions are only made with the “vcm”
+     applications. The annual versions are only made with the "vcm"
      version, excluding any data impacted by stray light.}
      
  \item{\code{configName.VIIRS.M}}{(\code{character}) The regex to uniquely
@@ -47,14 +47,14 @@ The following options are supported
      annual products can have other values for the config shortname (Field 5).
      They are:
      \itemize{
-       \item vcm-orm (VIIRS Cloud Mask - Outlier Removed): This product
+       \item vcm-orm \emph{(VIIRS Cloud Mask - Outlier Removed)}: This product
          contains cloud-free average radiance values that have undergone
          an outlier removal process to filter out fires and other ephemeral
          lights.
-       \item vcm-orm-ntl (VIIRS Cloud Mask - Outlier Removed - Nighttime Lights):
+       \item vcm-orm-ntl \emph{(VIIRS Cloud Mask - Outlier Removed - Nighttime Lights)}:
          This product contains the "vcm-orm" average, with background
          (non-lights) set to zero.
-       \item vcm-ntl (VIIRS Cloud Mask - Nighttime Lights): This product
+       \item vcm-ntl \emph{(VIIRS Cloud Mask - Nighttime Lights)}: This product
          contains the "vcm" average, with background
          (non-lights) set to zero.}}
  \item{\code{cropMaskMethod}}{(\code{character}) The method to use to 
