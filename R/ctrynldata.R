@@ -394,7 +394,7 @@ validCtryNlDataDF <- function(ctryNlDataDF)
   if(missing(ctryNlDataDF))
     stop(Sys.time(), ": Missing required parameter ctryNlDataDF")
   
-  if(class(ctryNlDataDF) == "data.frame" && !is.null(ctryNlDataDF) && names(ctryNlDataDF)[1]=="country" && any(grepl("area_sq_km", names(ctryNlDataDF))))
+  if(class(ctryNlDataDF) == "data.frame" && !is.null(ctryNlDataDF) && any(grepl("area_sq_km", names(ctryNlDataDF))))
     return(TRUE)
   else
     return(FALSE)
@@ -634,6 +634,16 @@ getCtryNlData <- function(ctryCode=NULL, admLevel, nlTypes, nlPeriods, nlStats=p
   if(!allValidNlPeriods(nlTypes = nlTypes, nlPeriods = nlPeriods))
     stop(Sys.time(), ": Invalid nlPeriods detected")
   
+  if(any(dupNlStats <- duplicated(nlStats)))
+  {
+    message(Sys.time(), ": duplicate nlStat(s) detected: ", nlStats[dupNlStats], ". Continuing with unique nlStats")
+    nlStats <- unique(nlStats)
+  }
+    
+  validStats <- validNlStats(nlStats)
+  if(!all(validStats))
+    stop(Sys.time(), ": Invalid nlStats detected ", as.character(nlStats[!validStats]))
+    
   #if(missing(ignoreMissing))
   #  ignoreMissing = TRUE
   
@@ -685,13 +695,18 @@ getCtryNlData <- function(ctryCode=NULL, admLevel, nlTypes, nlPeriods, nlStats=p
     
     a <- data.frame(do.call("rbind", a), stringsAsFactors = F)
     
-    if(length(nlStats) == 1)
-      nlPeriodStats <- data.frame(a, X3=nlStats, stringsAsFactors = F)
+    if(is.list(nlStats) && length(nlStats) > 1 && all(sapply(2:length(nlStats), function(i) !is.list(nlStats[[i]]) && (grepl("=", nlStats[i]) || length(names(nlStats[i])) > 0))))
+      nlStats <- list(nlStats)
+    
+    nlStatNames <- sapply(nlStats, function(x) x[[1]])
+    
+    if(length(nlStatNames) == 1)
+      nlPeriodStats <- data.frame(a, X3=nlStatNames, stringsAsFactors = F)
     else
       nlPeriodStats <- data.frame(apply(X = a,
                                         MARGIN = 2,
-                                        FUN = function(x) rep(x, length(nlStats))),
-                                  X3=as.vector(sapply(nlStats, rep, nrow(a))),
+                                        FUN = function(x) rep(x, length(nlStatNames))),
+                                  X3=as.vector(sapply(nlStatNames, rep, nrow(a))),
                                   stringsAsFactors = F)
     
     #nlPeriodStats <- nlPeriodStats[order(nlPeriodStats$X1, nlPeriodStats$X2),]
