@@ -234,7 +234,7 @@ dnldCtryPoly <- function(ctryCode=NULL, gadmVersion=pkgOptions("gadmVersion"), c
     #if the dir and zip dont exist download and unzip
     if (!existsPolyFnameZip(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath))
     {
-      #do not use aria. Seems GADM has issues with it
+      #do not use aria. Seems GADM has issues with it. Use auto
       downloadMethod <- "auto"
 
       message(Sys.time(), ": Downloading ", fullPolyUrl)
@@ -528,11 +528,11 @@ getCtryPolyUrl <- function(ctryCode=NULL, gadmVersion=pkgOptions("gadmVersion"),
   
   if(is.null(custPolyPath))
   {
-    #Sample url: http://biogeo.ucdavis.edu/data/gadm2.8/shp/AFG_adm_shp.zip
+    #Sample url: https://biogeo.ucdavis.edu/data/gadm2.8/shp/AFG_adm_shp.zip
     ctryPolyUrl <- if(gadmVersion == "2.8")
-      paste0("http://biogeo.ucdavis.edu/data/gadm2.8/shp/", ctryCode, "_adm_shp.zip")
+      paste0("https://biogeo.ucdavis.edu/data/gadm2.8/shp/", ctryCode, "_adm_shp.zip")
     else if(gadmVersion == "3.6")
-      paste0("http://biogeo.ucdavis.edu/data/gadm3.6/shp/gadm36_", ctryCode, "_shp.zip")
+      paste0("https://biogeo.ucdavis.edu/data/gadm3.6/shp/gadm36_", ctryCode, "_shp.zip")
     else
       stop(Sys.time(), ": Invalid gadmVersion")
   }else
