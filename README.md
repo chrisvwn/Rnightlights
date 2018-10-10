@@ -12,22 +12,57 @@ R package Rnightlights is available on CRAN and can be installed in R as:
 
 ```
 install.packages("Rnightlights")
+
 ```
 
 To install the development version run:
 
-````
+```
 devtools::install_github("chrisvwn/Rnightlights")
-````
+
+```
+
+NOTE: On Linux the following software pre-requisites are required:
+
+* libcurl
+  * deb: libcurl4-openssl-dev (Debian, Ubuntu, etc)
+  * rpm: libcurl-devel (Fedora, CentOS, RHEL)
+  * csw: libcurl_dev (Solaris)
+ 
+* openssl
+  * deb: libssl-dev (Debian, Ubuntu, etc)
+  * rpm: openssl-devel (Fedora, CentOS, RHEL)
+  * csw: libssl_dev (Solaris)
+  * brew: openssl@1.1 (Mac OSX)
+ 
+* gdal >= 1.11.4
+  * deb: gdal-dev (Debian, Ubuntu, etc) (deb: libgdal-dev)
+  * rpm: gdal-devel (Fedora, CentOS, RHEL)
+  * csw: gdal_dev (Solaris)
+
+* libxml-2.0
+  * deb: libxml2-dev (Debian, Ubuntu, etc)
+  * rpm: libxml2-devel (Fedora, CentOS, RHEL)
+  * csw: libxml2_dev (Solaris)
+
+* aria2 (Optional) For faster tile downloads
 
 ## Performance enhancements
 Some performance enhancements are available to speed up processing speeds and they fall into 2 classes:
 
-a. **Parallel processing**: The most straightforward way to speed up processing is by increasing the number of CPU cores used to calculate the zonal statistics. By default only one CPU core is used. This option is available out of the box and is enabled by setting the `numCores` package option e.g. to process in parallel across 4 CPU cores run `pkgOptions(extractMethod="rast", numCores=4)` before processing. Note numCores is only used when `pkgOptions(extractMethod="rast")` which is the default.
+a. **Parallel processing**: The most straightforward way to speed up processing is by increasing the number of CPU cores used to calculate the zonal statistics. By default only one CPU core is used. This option is available out of the box and is enabled by setting the `numCores` package option e.g. to process in parallel across 4 CPU cores run:
+
+    `pkgOptions(extractMethod="rast", numCores=4)`
+
+    before processing. Note numCores is only used when:
+
+    `pkgOptions(extractMethod="rast")`
+
+    which is the default.
 
 b. **GDAL**: The GDAL tools provide tools that are often much faster than the usual processing workflow. For example, zonal statistics can be calculated much faster using GDAL than looping over sub-polygons even with a number of CPUs in parallel. GDAL tools are provided by the `rgdal` and `gdalUtils` packages, however, they require the GDAL software to be installed in the operating system. GDAL can be enabled at 2 stages:
-    i)  when cropping rasters by setting `pkgOptions(cropMaskMethod="gdal"")` and
-    ii) when calculating zonal stats by setting `pkgOptions(extractMethod='gdal')`
+    i)  when cropping rasters by setting `pkgOptions(cropMaskMethod="gdal")` and
+    ii) when calculating zonal stats by setting `pkgOptions(extractMethod="gdal")`
 
 ### Example
 
@@ -60,14 +95,14 @@ library(reshape2)
 #CPU cores to use in parallel
 #pkgOptions(extractMethod = "rast", numCores=4)
 
-# ctry <- "KEN" #replace to run for any other country
+ctry <- "KEN" #replace to run for any other country
 
 #download and process monthly VIIRS stats at the highest admin level
 highestAdmLevelStats <- getCtryNlData(ctryCode = ctry, 
                                      admLevel = "highest",
                                      nlType = "VIIRS.M", 
                                      nlPeriods = nlRange("201401", "201412"), 
-                                     nlStats = "sum",
+                                     nlStats = list("sum",na.rm=TRUE),
                                      ignoreMissing=FALSE)
 
 #Optionally plot the data
@@ -105,80 +140,19 @@ ggplotly(g)
 
 ```
 
-**b) In Rnightlights versions pre-0.2.0:**
+**Process multiple countries at once**
 
-```{r}
-#install.packages(“Rnightlights”)
-#install.packages("reshape2")
-#install.packages("lubridate")
-#install.packages("ggplot2")
-#install.packages("plotly")
+`processNlData` is the function to call to process multiple countries or admLevels which `getCtryNlData` cannot do. The other difference is that processNlData does not return any value - instead all processed data is cached and can then be retrieved using multiple calls to `getCtryNlData`. For example to process various admLevels in East Africa you could run:
 
-library(Rnightlights)
-library(reshape2)
-library(lubridate)
-
-ctry <- "KEN" #replace to do for any other country
-
-#(Optional performance enhancement if you have aria2c and gdal installed)
-#pkgOptions(downloadMethod = "aria", cropMaskMethod = "gdal", extractMethod = "gdal", deleteTiles = TRUE)
-
-#Optional performance enhancement. If extractMethod="rast" you can specify the number of
-#CPU cores to use in parallel
-#pkgOptions(extractMethod = "rast", numCores=4)
-
-#download and process monthly VIIRS stats at the lowest admin level
-lowestAdmLevelStats <- getCtryNlData(ctryCode = ctry, 
-                                     nlType = "VIIRS", 
-                                     nlPeriods = nlRange("201401", "201412"), 
-                                     nlStats = "sum",
-                                     ignoreMissing=FALSE)
-                                     
-#melt the stats into key-value format
-lowestAdmLevelStatsMelted <- melt(lowestAdmLevelStats, 
-                                  id.vars = grep("NL_", names(lowestAdmLevelStats), 
-                                                 invert=TRUE), 
-                                  variable.name = "nlPeriod", 
-                                  value.name = "radiancesum")
-
-#reformat the period titles into semitime periods
-lowestAdmLevelStatsMelted$nlPeriod <- substr(lowestAdmLevelStatsMelted$nlPeriod, 10, 15)
-
-#aggregate the data to 2nd country admin level
-highestAdmLevelStatsAgg <- setNames(aggregate(lowestAdmLevelStatsMelted$radiancesum, 
-                                              by=list(lowestAdmLevelStatsMelted[[2]], 
-                                                      lowestAdmLevelStatsMelted$nlPeriod), 
-                                              FUN=sum, na.rm=T), 
-                                    c(names(lowestAdmLevelStatsMelted)[2], "nlperiod", "sumradiancesums"))
-
-#format period as date
-highestAdmLevelStatsAgg$nlperiod <- ymd(paste0(substr(highestAdmLevelStatsAgg$nlperiod, 1,4), 
-                                               "-",substr(highestAdmLevelStatsAgg$nlperiod, 5,6), "-01"))
-
-#Optionally plot the data
-
-library(ggplot2)
-library(plotly)
-
-#plot 2nd admin level sums for the year
-g <- ggplot(data = highestAdmLevelStatsAgg, 
-            aes(x=nlperiod, y=sumradiancesums, 
-                color=highestAdmLevelStatsAgg[[1]])) +
-  scale_x_date(date_breaks = "1 month", date_labels = "%Y-%m")+
-  geom_line()+geom_point() + labs(color = names(highestAdmLevelStatsAgg)[1]) + 
-  xlab("Month") + 
-  ylab("Sum of Radiances") +
-  ggtitle(paste0("Sum of radiances for ", ctry))
-
-print(g)
-
-#quick conversion to interactive map with plotly
-ggplotly(g)
 ```
+processNlData(ctryCodes = list("KEN","TZA","UGA"), admLevels = list(list("county","constituency","ward"),list("adm0","adm1"), "adm1"), nlTypes = "OLS.Y", nlPeriods = "2013", nlStats = list("sum","na.rm=T"))
+```
+
+Note the matching ctryCodes and admLevels. Also note the `nlStats` parameter now can pass arguments to the functions and *DOES NOT* default to `na.rm=TRUE`.
 
 **Browse the cached data with the internal Shiny app**
 
 ```
-exploreData()
+exploreData() #currently under construction
 
 ```

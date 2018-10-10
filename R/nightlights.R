@@ -1,27 +1,27 @@
 #TODO:
-#+ gzip all outputrasters and extract/delete tifs as required :V2
-#+ delete the 2nd tif in the tiles (avg_rad_...). :V2
-#+ keep tiles gzipped until required. extract/delete as needed: V2
+#+ gzip all outputrasters and extract/delete tifs as required :V3
+#+ delete the 2nd tif in the tiles (avg_rad_...). :V3
+#+ keep tiles gzipped until required. extract/delete as needed: V3
 #+ modularize everything, processNlData especially: DONE
 #+ give functions better names more descriptive: DONE
 #+ validation of inputs, error handling: PARTIALLY DONE
 #+ give temp files unique names to avoid problems in case of parallelization: DONE
 #+ settings and default settings list/DF: DONE
 #+ optimize download of tiles: PARTIALLY DONE aria2
-#+     Check available methods and try in prioritized order : V2
-#+     Retry number of times, resume downloads
+#+     Check available methods and try in prioritized order : shelved
+#+     Retry number of times, resume downloads: retry-shelved, resume-aria
 #+ zone files functions: DONE
-#+ logging
-#+ debug mode
+#+ logging: Not yet
+#+ debug mode: combined with logging
 #+ do not export internal functions?: DONE
 #+ remove dependency on rworldmap?: Shelved
-#+ aggregating by date e.g. quarterly, semi-annually, annually :V2
+#+ aggregating by date e.g. quarterly, semi-annually, annually :V3
 #+ verify treatment of ATA i.e. single adm level countries: DONE
 #+ logic of getCtryPolyAdmLevelNames esp lvlEngName assignment needs scrutiny: DONE
 #+ OLS : DONE
-#+ store data in RDS format instead of CSV(?): V2
-#+ Name all parameters in function calls to future proof code
-#+ Save shapefiles as RDS for quicker access?:
+#+ store data in RDS/json format instead of CSV(?): V3
+#+ Name all parameters in function calls to future proof code: partial
+#+ Save shapefiles as RDS for quicker access?: DONE
 
 #Notes: gdalwarp is not used for cropping because the crop_to_cutline option causes a shift in the cell locations which then affects the stats extracted. A gdal-based crop to extent would be highly desirable for performance reasons though so seeking other gdal-based workarounds
 
@@ -144,7 +144,10 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, nlStats=pkgOp
   if(missing(admLevel))
     admLevel <- getCtryShpLowestLyrNames(ctryCodes=ctryCode, gadmVersion=gadmVersion, custPolyPath=custPolyPath)
   
-  message(Sys.time(), ": processNLCountry: ", paste(ctryCode, admLevel, nlType, nlPeriod, sep=" "))
+  if(is.list(nlStats) && length(nlStats) > 1 && all(sapply(2:length(nlStats), function(i) !is.list(nlStats[[i]]) && (grepl("=", nlStats[i]) || length(names(nlStats[i])) > 0))))
+    nlStats <- list(nlStats)
+  
+  message(Sys.time(), ": **processNLCountry: ", paste(ctryCode, admLevel, nlType, nlPeriod, sep=" "))
 
   wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
   
@@ -154,11 +157,11 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, nlStats=pkgOp
   {
     message(Sys.time(), ": Data file found: ", getCtryNlDataFnamePath(ctryCode = ctryCode, admLevel = admLevel, gadmVersion = gadmVersion, custPolyPath = custPolyPath))
     
-    existStats <- sapply(nlStats, function(nlStat) existsCtryNlData(ctryCode = ctryCode, admLevel = admLevel, nlTypes = nlType, nlPeriods = nlPeriod, nlStats = nlStat, gadmVersion = gadmVersion, custPolyPath = custPolyPath))
+    existStats <- sapply(nlStats, function(nlStat) existsCtryNlData(ctryCode = ctryCode, admLevel = admLevel, nlTypes = nlType, nlPeriods = nlPeriod, nlStats = nlStat[[1]], gadmVersion = gadmVersion, custPolyPath = custPolyPath))
     
     if(all(existStats))
     {
-      message(Sys.time(), ": All stats exist for ", paste(ctryCode, admLevel, nlPeriod, sep=" "), ". Skipping")
+      message(Sys.time(), ": **All stats exist for ", paste(ctryCode, admLevel, nlPeriod, sep=" "), ". Skipping")
 
       return(-1)
     }
@@ -364,12 +367,14 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, nlStats=pkgOp
   else if (extractMethod == "gdal")
     sumAvgRad <- fnAggRadGdal(ctryCode=ctryCode, admLevel=admLevel, ctryPoly=ctryPoly, nlType=nlType, nlPeriod=nlPeriod, nlStats=nlStats, gadmVersion=gadmVersion, custPolyPath = custPolyPath)
   
-  for(nlStat in nlStats)
-    ctryNlDataDF <- insertNlDataCol(ctryNlDataDF = ctryNlDataDF, dataCol = sumAvgRad[,nlStat], statType = nlStat, nlPeriod = nlPeriod, nlType = nlType)
+  nlStatNames <- sapply(nlStats, function(x) x[[1]])
+  
+  for(nlStatName in nlStatNames)
+    ctryNlDataDF <- insertNlDataCol(ctryNlDataDF = ctryNlDataDF, dataCol = sumAvgRad[,nlStatName], statType = nlStatName, nlPeriod = nlPeriod, nlType = nlType)
   
   message(Sys.time(), ": DONE processing ", ctryCode, " ", nlPeriod)
   
-  message(Sys.time(), ": COMPLETE. Writing data to disk")
+  message(Sys.time(), ": **COMPLETE. Writing data to disk")
   
   #Write the country data dataframe to disk
   saveCtryNlData(ctryNlDataDF = ctryNlDataDF, ctryCode = ctryCode, admLevel = admLevel, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
@@ -776,12 +781,12 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
         #Check if all stats exist for the ctryCode
         if (all(existAdmLvlStats))
         {
-           message (ctryCode, ": All stats exist")
+           message (Sys.time(), ": **", ctryCode, ": All stats exist")
          
            next
         }
         
-        message(Sys.time(), ctryCode, ": Stats missing. Adding tiles")
+        message(Sys.time(), ": ", ctryCode, ": Stats missing. Adding tiles")
         
         #get the list of tiles required for the ctryCode
         ctryTiles <- getCtryTileList(ctryCodes = ctryCode, nlType = nlType)
@@ -792,7 +797,7 @@ processNlData <- function (ctryCodes, admLevels, nlTypes, nlPeriods, nlStats=pkg
         #if all the unique tiles have been listed no need to proceed checking
         if (length(tileList) == nrow(nlTiles))
         {
-          message ("All tiles have been listed. No need to check other country tiles")
+          message (Sys.time(), ": All tiles have been listed. No need to check other country tiles")
           
           break
         }

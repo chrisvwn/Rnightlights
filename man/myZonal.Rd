@@ -4,16 +4,21 @@
 \alias{myZonal}
 \title{Calculate zonal statistics. Used internally}
 \usage{
-myZonal(x, z, nlStats, digits = 0, na.rm = TRUE, ...)
+myZonal(rast, zone, nlStats, digits = 0, retVal = NULL, na.rm = TRUE, ...)
 }
 \arguments{
-\item{x}{the country raster}
+\item{rast}{the country raster}
 
-\item{z}{the zonal country polygon layer}
+\item{zone}{the zonal country polygon layer}
 
 \item{nlStats}{a character list of statistics to calculate}
 
 \item{digits}{round off to how many decimals}
+
+\item{retVal}{Whether to return the raster data as a vector, or 
+data.frame with spatial context NULL returns a vector of all
+values, colrowval returns a data.frame with row, col and raster
+value while lonlatval returns a data.frame with lon,lat and val.}
 
 \item{na.rm}{how to handle NAs}
 

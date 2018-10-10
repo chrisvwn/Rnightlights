@@ -20,7 +20,7 @@ if(.runThisTest)
   for (i in 1:length(ctryPoly@polygons))
   {
     temp$name <- as.character(ctryPoly@data$NAME_2[i])
-    temp$sum <- sum(Rnightlights:::masqOLS(ctryPoly, ctryRaster, i), na.rm=T)
+    temp$sum <- sum(Rnightlights:::masqOLS(ctryPoly, ctryRaster, i)$vals, na.rm=T)
     admSumMasqOLS <- rbind(admSumMasqOLS, temp$sum)
   }
   
@@ -36,7 +36,7 @@ if(.runThisTest)
   for (i in 1:length(ctryPoly@polygons))
   {
     temp$name <- as.character(ctryPoly@data$NAME_2[i])
-    temp$sum <- sum(Rnightlights:::masqVIIRS(ctryPoly, ctryRaster, i), na.rm=T)
+    temp$sum <- sum(Rnightlights:::masqVIIRS(ctryPoly, ctryRaster, i)$vals, na.rm=T)
     admSumMasqVIIRS <- rbind(admSumMasqVIIRS, temp$sum)
   }
   

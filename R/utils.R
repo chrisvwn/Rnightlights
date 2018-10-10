@@ -38,6 +38,18 @@ allValid <- function(testData, testFun, ...)
   return(all(valid))
 }
 
+get_free_ram <- function(){
+  if(Sys.info()[["sysname"]] == "Windows"){
+    x <- system2("wmic", args =  "OS get FreePhysicalMemory /Value", stdout = TRUE)
+    x <- x[grepl("FreePhysicalMemory", x)]
+    x <- gsub("FreePhysicalMemory=", "", x, fixed = TRUE)
+    x <- gsub("\r", "", x, fixed = TRUE)
+    as.integer(x)
+  } else {
+    stop("Only supported on Windows OS")
+  }
+}
+
 ######################## nlInit ###################################
 
 #' Initialize some important variables and create directory structure

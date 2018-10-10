@@ -23,16 +23,23 @@ validNlStats <- function(nlStats)
   if(missing(nlStats))
     stop(Sys.time(), ": Missing required parameter nlStats")
   
-  if(!is.character(nlStats) || is.null(nlStats) || is.na(nlStats) || nlStats == "")
+  if((!is.character(nlStats) && !is.list(nlStats)) || is.null(nlStats) || is.na(nlStats) || nlStats == "")
     stop(Sys.time(), ": Invalid nlStats")
+  
+  if(is.list(nlStats) && length(nlStats) > 1 && all(sapply(2:length(nlStats), function(i) !is.list(nlStats[[i]]) && (grepl("=", nlStats[i]) || length(names(nlStats[i])) > 0))))
+    nlStats <- list(nlStats)
   
   matchedFuns <- sapply(nlStats, function(nlStat)
     tryCatch(
     {
-      matched <- !is.null(match.fun(nlStat))
+      if(is.list(nlStat) && all(sapply(2:length(nlStat), function(i) grepl("=", nlStat[i]) || length(names(nlStat[i])) > 0)))
+        matched <- is.character(nlStat[[1]]) && !is.null(match.fun(nlStat[[1]]))
+      else
+        matched <- is.character(nlStat) && !is.null(match.fun(nlStat))
     }, error = function(err)
     {
-      message(paste0("Invalid nlStat: ", nlStat))
+      #sep when a=b without a name may cause fn(=param=arg...)
+      message(Sys.time(), ": ", paste0("Invalid nlStat: ", gsub("\\(=|,=|funArgs=","\\(", paste0(as.character(nlStat[[1]]), "(", paste(names(nlStat[-1]), nlStat[-1], sep = "=", collapse=",") ,")"))))
       matched <- FALSE
       return(matched)
     }
@@ -48,13 +55,18 @@ validNlStats <- function(nlStats)
 #' Calculate zonal statistics. Used internally by zonalpipe. Modified from 
 #'     \url{http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/}
 #'
-#' @param x the country raster
+#' @param rast the country raster
 #'
-#' @param z the zonal country polygon layer
+#' @param zone the zonal country polygon layer
 #'
 #' @param nlStats a character list of statistics to calculate
 #'
 #' @param digits round off to how many decimals
+#' 
+#' @param retVal Whether to return the raster data as a vector, or 
+#'     data.frame with spatial context NULL returns a vector of all
+#'     values, colrowval returns a data.frame with row, col and raster
+#'     value while lonlatval returns a data.frame with lon,lat and val.
 #'
 #' @param na.rm how to handle NAs
 #'
@@ -63,30 +75,66 @@ validNlStats <- function(nlStats)
 #' @return numeric value result of the given nlStat function
 #' 
 #' @import data.table
-myZonal <- function (x, z, nlStats, digits = 0, na.rm = TRUE, ...)
+myZonal <- function (rast, zone, nlStats, digits = 0, retVal=NULL, na.rm = TRUE, ...)
 {
   options(fftempdir=getNlDir("dirNlTemp"), fffinalizer="delete")
   
-  #create the text for the functions
-  fun <- paste0(sapply(nlStats, function(nlStat) paste0(nlStat,"=", nlStat, "(x, na.rm = TRUE)")), collapse = ", ")
-
-  #create the aggregation function
-  funs <- paste0("dta[, as.list(unlist(lapply(.SD, function(x) list(", fun, ")))), by=zones]")
+  options(stringsAsFactors = FALSE)
+  
+  #retVal <- "colrowval"
   
   vals <- NULL
   
   zones <- NULL
   
+  #create the text for the functions
+  fun <- sapply(nlStats,
+                       function(nlStat)
+                       {
+                         #remove preceding = from "(=" or ",="
+                         if(length(nlStat) > 1)
+                           nlStatParams <- gsub("(\\(\\s*)=|(,\\s*)=", "\\1\\2", paste0(", ", paste(names(nlStat[-1]),nlStat[-1], sep="=", collapse=",")))
+                         else
+                           nlStatParams <- NULL
+                         
+                         nlStat <- nlStat[[1]]
+                         
+                         #paste0(nlStat,"=", nlStat, "(x, na.rm = TRUE)")
+                         nlStatArgs <- formals(nlStat)
+                         
+                         retVal <- if(all(sapply(c("col","row"), "%in%",names(nlStatArgs))))
+                           "colrowval"
+                         else if(all(sapply(c("lon","lat"), "%in%",names(nlStatArgs))))
+                           "lonlatval"
+                         else
+                           NULL
+                         
+                         fnTxt <- if(is.null(retVal))
+                           paste0(nlStat, "(vals", nlStatParams, ")")
+                         else if(retVal == "colrowval")
+                           paste0(nlStat, "(col=cols, row=rows, val=vals", nlStatParams, ")")
+                         else if(retVal == "lonlatval")
+                           paste0(nlStat, "(lon=lons, lat=lats, val=vals", nlStatParams, ")") 
+                        })
+
+  funNames <- gsub("\\(.*\\)", "", fun)
+  
+  #create the aggregation function
+  #funs <- paste0("dta[, as.list(unlist(lapply(.SD, function(dta) list(", paste(fun, collapse=","), ")))), by=zones]")
+  funs <- paste0("dta[, as.list(unlist(stats::setNames(lapply(fun, function(fn) eval(parse(text=fn))), funNames))), by=zones]")
+  
   message(Sys.time(), ": Reading in raster data")
 
   #the number of columns in the raster/zone file which are identical in size
-  nc <- base::ncol(x)
+  nc <- base::ncol(rast)
   
   #get the block size recommendation
-  tr <- raster::blockSize(x)
+  tr <- raster::blockSize(rast)
   
   #init the progress bar
   pb <- utils::txtProgressBar(min=0, max=tr$n, style=3)
+  
+  rowVals <- colVals <- lonVals <- latVals <- NULL
   
   #for each block
   for (i in 1:tr$n)
@@ -95,11 +143,15 @@ myZonal <- function (x, z, nlStats, digits = 0, na.rm = TRUE, ...)
     
     end <- start + (tr$nrows[i] * nc) - 1
     
-    rastVals <- raster::getValues(x, row=tr$row[i], nrows=tr$nrows[i])
-    #for(j in tr$row[i]:(tr$row[i]+tr$nrows[i]-1)) rowNums <- c(rowNums, rep(j,x@ncols))
-    #for(j in tr$row[i]:(tr$row[i]+tr$nrows[i]-1)) colNums <- c(colNums, 1:x@ncols)
-    zoneVals <- raster::getValues(z, row=tr$row[i], nrows=tr$nrows[i])
-   
+    rastVals <- raster::getValuesBlock(rast, row=tr$row[i], nrows=tr$nrows[i])
+    zoneVals <- raster::getValuesBlock(zone, row=tr$row[i], nrows=tr$nrows[i])
+
+    colrowVals <- stats::setNames(expand.grid(tr$row[i]:(tr$row[i]+tr$nrows[i]-1), 1:rast@ncols), c("cols","rows"))
+
+    extent <- raster::extent(rast)
+    lonlatVals <- stats::setNames(expand.grid(seq(extent@xmin,extent@xmax,(extent@xmax-extent@xmin)/(rast@ncols-1)),
+                          seq(extent@ymin,extent@ymax,(extent@ymax-extent@ymin)/(tr$nrows[i]-1))), c("lons","lats"))
+    
     #convert negative values to NA 
     rastVals[rastVals < 0] <- NA
     
@@ -110,21 +162,32 @@ myZonal <- function (x, z, nlStats, digits = 0, na.rm = TRUE, ...)
     #remove zone 0 since in large rasters it can be pretty
     #large and may not fit in memory thus causing calculations to fail
     zoneVals <- zoneVals[-idxZone0]
-    #rowNums <- rowNums[-idxZone0]
-    #colNums <- colNums[-idxZone0]
     rastVals <- rastVals[-idxZone0]
     
+    colrowVals <- colrowVals[-idxZone0,]
+    lonlatVals <- lonlatVals[-idxZone0,]
+
     #for first block init the ff to the given filename
     if (i == 1)
     {
       vals <- ff::ff(initdata = rastVals, finalizer = "delete", overwrite = T)
       zones <- ff::ff(initdata = zoneVals, finalizer = "delete", overwrite = T)
+      
+      cols <- ff::ff(initdata = colrowVals$cols, finalizer = "delete", overwrite = T)
+      rows <- ff::ff(initdata = colrowVals$rows, finalizer = "delete", overwrite = T)
+      lons <- ff::ff(initdata = lonlatVals$lons, finalizer = "delete", overwrite = T)
+      lats <- ff::ff(initdata = lonlatVals$lats, finalizer = "delete", overwrite = T)
     } 
     else 
     {
       #otherwise append
       vals <- ffbase::ffappend(vals, rastVals, adjustvmode = T)
       zones <- ffbase::ffappend(zones, zoneVals, adjustvmode = T)
+
+      cols <- ffbase::ffappend(cols, colrowVals$cols, adjustvmode = T)
+      rows <- ffbase::ffappend(rows, colrowVals$rows, adjustvmode = T)
+      lons <- ffbase::ffappend(lons, lonlatVals$lons, adjustvmode = T)
+      lats <- ffbase::ffappend(lats, lonlatVals$lats, adjustvmode = T)
     }
     
     #upddate progress bar
@@ -134,12 +197,13 @@ myZonal <- function (x, z, nlStats, digits = 0, na.rm = TRUE, ...)
   close(pb)
   
   #merge the zone and raster ffvectors into an ffdf
-  rDT <- ff::ffdf(zones, vals)
+  rDT <- ff::ffdf(zones, cols, rows, vals, lons, lats)
 
   message(Sys.time(), ": Calculating nlStats ")
   
-  if(length(unique(rDT$zones) == 1))
+  if(length(unique(rDT$zones)) == 1)
   {
+    #no longer required. fixed bug in ffdfdply when zone was length 1
     dta <- data.table::as.data.table(rDT)
     
     result <- eval(parse(text = funs))
@@ -154,7 +218,7 @@ myZonal <- function (x, z, nlStats, digits = 0, na.rm = TRUE, ...)
   result <- ffbase::ffdfdply(x=rDT,
                              split=as.character(zones),
                              trace=TRUE,
-                             BATCHBYTES = 80.85*2^20,
+                             BATCHBYTES = 80.85*2^20, #try approx 1% of RAM
                              FUN = function(dta){
                                ## This happens in RAM - containing **several** split 
                                #elements so here we can use data.table which works 
@@ -165,33 +229,38 @@ myZonal <- function (x, z, nlStats, digits = 0, na.rm = TRUE, ...)
                                result <- eval(parse(text = funs))
                                
                                as.data.frame(result)
+                               
                              })
   }
   
+  result <- as.data.table(result)
+  
   #count cols with nlStat in them
-  nlStatColCounts <- sapply(nlStats, function(nlStat) length(grep(nlStat, names(result))))
+  nlStatColCounts <- sapply(funNames, function(funName) length(grep(paste0("^", funName,"\\.*"), names(result))))
   
   #collapse multi-value cols into one
-  for(nlStat in nlStats)
+  for(funName in funNames)
   {
-    if(nlStatColCounts[[nlStat]] > 1)
+    if(nlStatColCounts[[funName]] > 1)
     {
-      message(Sys.time(), ": ", nlStat, " => Multi-column result detected. Merging")
+      message(Sys.time(), ": ", funName, " => Multi-column result detected. Merging")
       #if more than one col detected, get their names
-      nlStatCols <- grep(nlStat, names(result), value = T)
+      nlStatCols <- grep(funName, names(result), value = T)
       
       #merge them row-wise into one character vector separated by comma
-      result[[nlStat]] <- apply(result[, nlStatCols, with=F], 1, function(x) paste(x, collapse=","))
+      result[[funName]] <- apply(result[, nlStatCols, with=F], 1, function(x) paste(x, collapse=","))
       
       #remove the separate cols
       result[,c(nlStatCols) := NULL]
+    }else
+    {
+      nlStatCols <- grep(funName, names(result), value = T)
+      
+      names(result)[which(names(result)==nlStatCols)] <- funName
     }
   }
   
-  #name the columns
-  result <- stats::setNames(result, c("z", nlStats))
-
-  resultDF <- as.data.frame(result)
+  resultDF <- as.data.frame(result[,c("zones",funNames), with=F])
   
   ff::delete(rDT, result)
   rm(rDT, result)
@@ -346,12 +415,12 @@ ZonalPipe <- function (ctryCode, admLevel, ctryPoly, path.in.shp, path.in.r, pat
   # 2/ Zonal Stat using myZonal function
   zone<-raster::raster(path.out.r)
   
-  message(Sys.time(), ": Calculating zonal stats ...", date())
+  message(Sys.time(), ": Calculating zonal stats ...")
   Zstat<-data.frame(myZonal(r, zone, nlStats))
   
-  message(Sys.time(), ": Calculating zonal stats ... DONE", date())
+  message(Sys.time(), ": Calculating zonal stats ... DONE")
 
-  colnames(Zstat)[2:length(Zstat)] <- nlStats
+  colnames(Zstat)[2:length(Zstat)] <- sapply(nlStats, function(x) x[[1]])
   
   return(Zstat)
   
@@ -484,13 +553,13 @@ fnAggRadGdal <- function(ctryCode, admLevel, ctryPoly, nlType, nlPeriod, nlStats
   #if there is only the country adm level i.e. no lower adm levels than the country adm level then we only have 1 row each but IDs may not match as seen with ATA. treat differently
   #since we do not have IDs to merge by, we simply cbind the columns and return column 2
 
-  if (grepl("ID_0",lyrIDCol))
+  if (grepl("^ID_0$",lyrIDCol))
   {
     sumAvgRad <- cbind(ctryPolyData$ID_0, sumAvgRad[sumAvgRad$z!=0, ])
   }
   else
   {
-    sumAvgRad <- merge(ctryPolyData, sumAvgRad, by.x=lyrIDCol, by.y="z", all.x=T, sort=T)
+    sumAvgRad <- merge(ctryPolyData, sumAvgRad, by.x=lyrIDCol, by.y="zones", all.x=T, sort=T)
   }
   
   return(sumAvgRad)
@@ -556,6 +625,8 @@ fnAggRadRast <- function(ctryPoly, ctryRastCropped, nlType, nlStats, custPolyPat
   if(!allValid(nlStats, validNlStats))
     stop(Sys.time(), ": Invalid stat(s) detected")
 
+  options(stringsAsFactors = FALSE)
+  
   cl <- snow::makeCluster(pkgOptions("numCores"))
   
   doSNOW::registerDoSNOW(cl = cl)
@@ -567,48 +638,90 @@ fnAggRadRast <- function(ctryPoly, ctryRastCropped, nlType, nlStats, custPolyPat
   #to avoid RCheck notes
   i <- NULL
   
+  nlStatNames <- sapply(nlStats, function(x) x[[1]])
+  
   result <- foreach::foreach(i=1:nrow(ctryPoly@data),
-                               .combine=rbind,
-                               .export = c("masqOLS", "masqVIIRS", nlStats),
-                               .packages = c("raster"),
-                               .options.snow = list(progress=progress)) %dopar% {
-                                  
+                              .combine=rbind,
+                              .export = c("masqOLS", "masqVIIRS", nlStatNames),
+                              .packages = c("raster"),
+                              .options.snow = list(progress=progress)) %dopar% {
+  #for(i in 1:nrow(ctryPoly@data)){
+                                
+                                  options(stringsAsFactors = FALSE)
+                                
                                   pid <- Sys.getpid()
                                   
                                   message(Sys.time(), ": PID:", pid, " Extracting data from polygon " , i)
                                   
                                   if(stringr::str_detect(nlType, "OLS"))
-                                    dat <- masqOLS(ctryPoly, ctryRastCropped, i)
+                                    dta <- masqOLS(ctryPoly, ctryRastCropped, i)
                                   else if(stringr::str_detect(nlType, "VIIRS"))
-                                    dat <- masqVIIRS(ctryPoly, ctryRastCropped, i)
+                                    dta <- masqVIIRS(ctryPoly, ctryRastCropped, i)
                                   
                                   message(Sys.time(), ": PID:", pid, " Calculating the NL stats of polygon ", i)
                                   
-                                  res <- data.frame(as.list(unlist(sapply(nlStats, FUN=function(nlStat) data.frame(nlStat = eval(parse(text=paste0(nlStat, "(dat, na.rm=TRUE)"))))))))
-                                  
-                                  #count cols with nlStat in them
-                                  nlStatColCounts <- sapply(nlStats, function(nlStat) length(grep(nlStat, names(res))))
-                                  
-                                  #collapse multi-value cols into one
-                                  for(nlStat in nlStats)
-                                  {
-                                    if(nlStatColCounts[[nlStat]] > 1)
-                                    {
-                                      message(Sys.time(), ": ", nlStat, " => Multi-column result detected. Merging")
-                                      
-                                      #if more than one col detected, get their names
-                                      nlStatCols <- grep(nlStat, names(res), value = T)
-                                      
-                                      #merge them row-wise into one character vector separated by comma
-                                      res[[nlStat]] <- paste(res[, c(nlStatCols)], collapse=",")
-                                      
-                                      #remove the separate cols
-                                      res[,nlStatCols] <- NULL
-                                    }
-                                  }
-                                  
-                                  stats::setNames(res, nlStats)
+                                  result <- data.frame(
+                                        lapply(nlStats,
+                                               FUN=function(nlStat)
+                                               {
+                                                 if(length(nlStat) > 1)
+                                                   nlStatParams <- gsub("(\\(\\s*)=|(,\\s*)=", "\\1\\2", paste0(", ", paste(names(nlStat[-1]),nlStat[-1], sep="=", collapse=",")))
+                                                 else
+                                                   nlStatParams <- NULL
+                                                 
+                                                 nlStat = nlStat[[1]]
+                                                 
+                                                 nlStatArgs <- formals(nlStat)
+                                                 
+                                                 retVal <- if(all(sapply(c("col","row"), "%in%",names(nlStatArgs))))
+                                                   "colrowval"
+                                                 else if(all(sapply(c("lon","lat"), "%in%",names(nlStatArgs))))
+                                                   "lonlatval"
+                                                 else
+                                                   NULL
+
+                                                 fnTxt <- if(is.null(retVal))
+                                                   paste0(nlStat, "(dta$vals", nlStatParams, ")")
+                                                 else if(retVal == "colrowval")
+                                                   paste0(nlStat, "(col=dta$cols, row=dta$rows, val=dta$vals", nlStatParams, ")")
+                                                 else if(retVal == "lonlatval")
+                                                   paste0(nlStat, "(lon=dta$lons, lat=dta$lats, val=dta$vals", nlStatParams, ")")
+                                                 #browser()
+                                                 fnTxt <- paste0("data.frame('", nlStat, "' = matrix(", fnTxt, ", nrow=1))")
+                                                 eval(parse(text=fnTxt))
+                                               }
+                                               )
+                                        )
                                 }
+
+  #count cols with nlStat in them
+  nlStatColCounts <- sapply(nlStatNames, function(nlStat) length(grep(paste0("^",nlStat,"\\.*"), names(result))))
+  
+  #collapse multi-value cols into one
+  for(nlStatName in nlStatNames)
+  {
+    if(nlStatColCounts[[nlStatName]] > 1)
+    {
+      message(Sys.time(), ": ", nlStatName, " => Multi-column result detected. Merging")
+      
+      #if more than one col detected, get their names
+      nlStatCols <- grep(nlStatName, names(result), value = T)
+
+      #merge them row-wise into one character vector separated by comma
+      result[[nlStatName]] <- apply(result[, nlStatCols], 1, function(x) paste(x, collapse=","))
+      
+      #remove the separate cols
+      result[,nlStatCols] <- NULL
+    }else
+    {
+      nlStatCols <- grep(nlStatName, names(result), value = T)
+      
+      names(result)[which(names(result)==nlStatCols)] <- nlStatName
+    }
+  }
+  
+  #change the col order to the order of nlStats
+  result <- result[, nlStatNames]
   
   close(pb)
   snow::stopCluster(cl)
@@ -617,5 +730,5 @@ fnAggRadRast <- function(ctryPoly, ctryRastCropped, nlType, nlStats, custPolyPat
   
   gc()
   
-  return(result)
+  return(stats::setNames(data.frame(result), nlStatNames))
 }

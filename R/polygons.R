@@ -322,7 +322,7 @@ dnldCtryPoly <- function(ctryCode=NULL, gadmVersion=pkgOptions("gadmVersion"), c
   }
   else
   {
-    message(Sys.time(), ": Polygon dir for ", ctryCode, " already exists")
+    message(Sys.time(), ": Polygon dir for ", paste(ctryCode, ifelse(is.null(custPolyPath), gadmVersion, basename(custPolyPath)), sep = ":"), " already exists")
     
     if(!file.exists(getPolyFnameRDS(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)))
     {
@@ -794,7 +794,7 @@ getCtryPolyAdmLevelNames <- function(ctryCode=NULL, lowestAdmLevel, gadmVersion=
   {
     for (lyrNum in 0:layerNum)
     {
-      lyrPoly <- readCtryPolyAdmLayer(ctryCode = ctryCode, admLevel = as.character(getCtryShpLyrNames(ctryCode, lyrNum, gadmVersion = gadmVersion, custPolyPath = custPolyPath)), custPolyPath = custPolyPath)
+      lyrPoly <- readCtryPolyAdmLayer(ctryCode = ctryCode, admLevel = as.character(getCtryShpLyrNames(ctryCode, lyrNum, gadmVersion = gadmVersion, custPolyPath = custPolyPath)), gadmVersion = gadmVersion, custPolyPath = custPolyPath)
       
       if(lyrNum > 0)
       {
@@ -1369,12 +1369,10 @@ ctryShpLyrName2Num <- function(ctryCode=NULL, layerName, gadmVersion = pkgOption
   allLyrNames <- rgdal::ogrListLayers(dsn = getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath))
   
   #if gadm layers are listed out of order sort them
-  #for custpolypath remove the index prefix e.g. 1_
+  #custPolyPaths will have been named in order
   if(is.null(custPolyPath))
     allLyrNames <- sort(allLyrNames)
-  #else
-  #  allLyrNames <- gsub("^\\d+_", "", allLyrNames)
-  
+
   return(which(allLyrNames == layerName)-1)
 }
 

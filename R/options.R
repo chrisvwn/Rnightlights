@@ -40,7 +40,7 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   extractMethod = "rast",
 
   #the gadm polygons to use
-  gadmVersion = "2.8",
+  gadmVersion = "3.6",
   
   #gdalCacheMax Speeds up gdal_rasterize calculation of stats in function ZonalPipe with more cache (advice: max 1/3 of your total RAM) see: http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/
   gdalCacheMax = 1024,

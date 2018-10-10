@@ -6,7 +6,7 @@ getCtryNlDataSTP <- function()
 {
   testCtryCode <- "STP"
   testAdmLevel <- "STP_adm0"
-  testDataFile <- Rnightlights:::getCtryNlDataFname(ctryCode = testCtryCode, admLevel = testAdmLevel)
+  testDataFile <- Rnightlights:::getCtryNlDataFname(ctryCode = testCtryCode, admLevel = testAdmLevel, gadmVersion = "2.8")
   
   print(testDataFile)
   
@@ -19,7 +19,7 @@ getCtryNlDataSTP <- function()
   
   pkgOptions(deleteTiles=TRUE)
   
-  stpRast <<- getCtryNlData(ctryCode = testCtryCode, nlType = "OLS", nlPeriods = "1992", nlStats = c("mean", "sum"), ignoreMissing=FALSE)
+  stpRast <<- getCtryNlData(ctryCode = testCtryCode, nlTypes = "OLS.Y", nlPeriods = "1992", nlStats = list(list("mean","na.rm=T"), list("sum","na.rm=T")), ignoreMissing=FALSE)
   
   gdalUtils::gdal_chooseInstallation()
   
@@ -32,6 +32,6 @@ getCtryNlDataSTP <- function()
     
     pkgOptions(cropMaskMethod="gdal", extractMethod="gdal")
     
-    stpGdal <<- getCtryNlData(ctryCode = testCtryCode, nlType = "VIIRS", nlPeriods = "201401", nlStats = c("mean", "sum"), ignoreMissing=FALSE)
+    stpGdal <<- getCtryNlData(ctryCode = testCtryCode, nlTypes = "VIIRS.M", nlPeriods = "201401", nlStats = list(list("mean",na.rm=T), list("sum",na.rm=T)), ignoreMissing=FALSE)
   }
 }

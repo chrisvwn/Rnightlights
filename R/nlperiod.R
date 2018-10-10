@@ -141,7 +141,10 @@ nlRange <- function(startNlPeriod, endNlPeriod, nlType)
     for(x in getAllNlTypes())
     {
       if(unlist(suppressMessages(validNlPeriods(nlPeriods = startNlPeriod, nlTypes = x))) && unlist(suppressMessages(validNlPeriods(nlPeriods = endNlPeriod, nlTypes = x))))
+      {
+        message(Sys.time(), ": NlRange autodetected nlType: ", x)
         nlType <- x
+      }
     }
     
     if(is.null(nlType))

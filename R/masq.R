@@ -10,6 +10,11 @@
 #' @param ctryRast the clipped country raster
 #'
 #' @param idx the index of the polygon in the country polygon layer (shp)
+#' 
+#' @param retVal Whether to return the raster data as a vector, or 
+#'     data.frame with spatial context NULL returns a vector of all
+#'     values, colrowval returns a data.frame with row, col and raster
+#'     value while lonlatval returns a data.frame with lon,lat and val.
 #'
 #' @return numeric vector of radiances
 #'
@@ -23,7 +28,7 @@
 #' sumPolygon1 <- sum(masqVIIRS(ctryPoly, ctryRaster, 1), na.rm=T)
 #' }
 #'
-masqVIIRS <- function(ctryPoly, ctryRast, idx)
+masqVIIRS <- function(ctryPoly, ctryRast, idx, retVal)
 {
   #based on masq function from https://commercedataservice.github.io/tutorial_viirs_part1/
   #slightly modified to use faster masking method by converting the raster to vector
@@ -41,15 +46,19 @@ masqVIIRS <- function(ctryPoly, ctryRast, idx)
   
   #Convert cropped raster into a vector
   #Specify coordinates
-  #coords <- expand.grid(seq(extent@xmin,extent@xmax,(extent@xmax-extent@xmin)/(ncol(inner)-1)),
-  #                      seq(extent@ymin,extent@ymax,(extent@ymax-extent@ymin)/(nrow(inner)-1)))
+  lonlats <- expand.grid(seq(extent@xmin,extent@xmax,(extent@xmax-extent@xmin)/(ncol(inner)-1)),
+                        seq(extent@ymin,extent@ymax,(extent@ymax-extent@ymin)/(nrow(inner)-1)))
   
-  #Convert raster into vector
-  data <- as.vector(inner)
+  colrows <- expand.grid(1:ncol(inner), 1:nrow(inner))
+
+  #Convert raster into vector  
+  vals <- as.vector(inner)
   
   #data <- data[!is.na(data)] #keep non-NA values only ... shall this affect mask values?
   #data[is.na(data)] <- 0
-  data[data < 0] <- NA #any negative values are either recording problems or error values as per: ... Negative values would distort most calculations.
+  vals[vals < 0] <- NA #any negative values are either recording problems or error values as per: ... Negative values would distort most calculations.
+  
+  data <- stats::setNames(data.frame(colrows,lonlats,vals), c("cols","rows","lons","lats","vals"))
   
   return(data)
 }
@@ -65,6 +74,11 @@ masqVIIRS <- function(ctryPoly, ctryRast, idx)
 #' @param rast the clipped country raster
 #'
 #' @param i the index of the polygon in the country polygon layer (shp)
+#' 
+#' @param retVal Whether to return the raster data as a vector, or 
+#'     data.frame with spatial context NULL returns a vector of all
+#'     values, colrowval returns a data.frame with row, col and raster
+#'     value while lonlatval returns a data.frame with lon,lat and val.
 #'
 #' @return numeric vector of radiances
 #'
@@ -83,8 +97,10 @@ masqVIIRS <- function(ctryPoly, ctryRast, idx)
 #' }
 #' }
 #'
-masqOLS <- function(shp, rast, i)
+masqOLS <- function(shp, rast, i, retVal)
 {
+  retVal <- "colrowval"
+  
   #based on masq function from https://commercedataservice.github.io/tutorial_viirs_part1/
   #Extract one polygon based on index value i
   polygon <- shp[i,] #extract one polygon
@@ -95,23 +111,30 @@ masqOLS <- function(shp, rast, i)
 
   inner <- raster::rasterize(polygon, outer, mask=TRUE) #crops to polygon edge & converts to raster
   
-  #Convert cropped raster into a vector
-  #Specify coordinates
-  #coords <- expand.grid(seq(extent@xmin,extent@xmax,(extent@xmax-extent@xmin)/(ncol(inner)-1)),
-  #                      seq(extent@ymin,extent@ymax,(extent@ymax-extent@ymin)/(nrow(inner)-1)))
+  rowVals <- NULL
+  colVals <- NULL
   
-  #Convert raster into vector
-  data <- as.vector(inner)
+  #Convert cropped raster into a vector
+  colrows <- expand.grid(1:ncol(inner), 1:nrow(inner))
+  
+  #Specify coordinates
+  lonlats <- expand.grid(seq(extent@xmin,extent@xmax,(extent@xmax-extent@xmin)/(ncol(inner)-1)),
+                        seq(extent@ymin,extent@ymax,(extent@ymax-extent@ymin)/(nrow(inner)-1)))
+  
+  vals <- as.vector(inner)
   
   ##THIS SECTION NEEDS WORK. confirm error and NA values and handling of the same
   #keep non-NA values only?
   #data <- data[!is.na(data)]
   
   #in DMSP-OLS 255 == NA
-  data[which(data == 255)] <- NA
-  
+  vals[which(vals == 255)] <- NA
+
   #non-negative values are errors replace with 0?
-  data[data < 0] <- 0
+  vals[vals < 0] <- 0
   
+  #Convert raster into vector
+  data <- stats::setNames(data.frame(colrows,lonlats,vals), c("cols","rows","lons","lats","vals"))
+
   return(data)
 }
