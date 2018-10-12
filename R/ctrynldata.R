@@ -295,20 +295,18 @@ deleteNlDataCol <- function (ctryCode=NULL, admLevel, nlType, nlPeriod, statType
   if(missing(statType))
     stop(Sys.time(), ": Missing required parameter statType")
   
-  ctryNlDataDF <- getCtryNlData(ctryCode = ctryCode,
-                                admLevel = getCtryShpLowestLyrNames(ctryCodes = ctryCode,
-                                                                    gadmVersion = gadmVersion,
-                                                                    custPolyPath = custPolyPath),
+  ctryNlDataDF <- suppressMessages(getCtryNlData(ctryCode = ctryCode,
+                                admLevel = admLevel,
                                 nlTypes = nlType,
                                 nlPeriods = getAllNlPeriods(nlTypes = nlType), 
                                 ignoreMissing = TRUE,
                                 gadmVersion = gadmVersion,
-                                custPolyPath = custPolyPath)
+                                custPolyPath = custPolyPath))
   
   #read in all column names in the dataframe
   cols <- names(ctryNlDataDF)
   
-  colName <- paste0("NL", nlType, toupper(statType), collapse = "_")
+  colName <- paste("NL", nlType, nlPeriod, toupper(statType), sep = "_")
   
   #get only the named nightlight data column(s)
   nlDataColIdx <- grep(colName, cols)
@@ -319,7 +317,7 @@ deleteNlDataCol <- function (ctryCode=NULL, admLevel, nlType, nlPeriod, statType
   #write back the dataframe with the new column order
   ctryNlDataDF <- ctryNlDataDF[ , -c(nlDataColIdx)]
   
-  saveCtryNlData(ctryNlDataDF = ctryNlDataDF, ctryCode = ctryCode, admLevel = admLevel, gadmVersion = gadmVersion)
+  saveCtryNlData(ctryNlDataDF = ctryNlDataDF, ctryCode = ctryCode, admLevel = searchAdmLevel(ctryCodes = ctryCode,admLevelNames = admLevel,gadmVersion = gadmVersion, custPolyPath = custPolyPath), gadmVersion = gadmVersion, custPolyPath = custPolyPath)
   
   return(TRUE)
 }
@@ -666,8 +664,8 @@ getCtryNlData <- function(ctryCode=NULL, admLevel, nlTypes, nlPeriods, nlStats=p
     if(length(ctryCode) > 1 || length(admLevel) > 1)
       stop(Sys.time(), ": getCtryNlData can only process 1 ctryCode & 1 admLevel at a time")
     
-    if(!validCtryCodes(ctryCode))
-      stop(Sys.time(), ": Invalid ctryCode", ctryCode)
+    #if(!validCtryCodes(ctryCode))
+    #  stop(Sys.time(), ": Invalid ctryCode", ctryCode)
     
     if(grepl("country", admLevel))
       admLevel <- getCtryShpLyrNames(ctryCodes = ctryCode, lyrNums = 0, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
@@ -1153,19 +1151,23 @@ listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlTypes=NULL, nlPerio
     #grab only the NL cols
     nlCtryHdr <- grep("^NL", ctryHdr, value = T)
     
-    #split the NL colnames into their components e.g. "NL_OLS_2012_MEAN"
+    #split the NL colnames into their components e.g. "NL_OLS.Y_2012_MEAN"
     #= "NL"+nlType+nlPeriod+stat
     nlCtryHdr <- reshape2::colsplit(nlCtryHdr, "_", c("V1", "V2","V3","V4"))
     
-    #aggregate (paste) the colnames into a single row with stats for each unique 
-    #nlType+nlPeriod converted to a single field
-    nlCtryHdr <- stats::aggregate(V4 ~ V1 + V2 + V3, data=nlCtryHdr, FUN=paste, collapse=",")
-    
-    #add a ctryCode column
-    nlCtryHdr <- cbind(rep(ctryCode, nrow(nlCtryHdr)), rep(admLevel, nrow(nlCtryHdr)), rep(polySrc, nrow(nlCtryHdr)), rep(polyVer, nrow(nlCtryHdr)), nlCtryHdr)
-    
-    #combine into one table
-    dataList <- rbind(dataList, nlCtryHdr)
+    #only add if there are stats cols
+    if(nrow(nlCtryHdr) > 0)
+    {
+      #aggregate (paste) the colnames into a single row with stats for each unique 
+      #nlType+nlPeriod converted to a single field
+      nlCtryHdr <- stats::aggregate(V4 ~ V1 + V2 + V3, data=nlCtryHdr, FUN=paste, collapse=",")
+      
+      #add a ctryCode column
+      nlCtryHdr <- cbind(rep(ctryCode, nrow(nlCtryHdr)), rep(admLevel, nrow(nlCtryHdr)), rep(polySrc, nrow(nlCtryHdr)), rep(polyVer, nrow(nlCtryHdr)), nlCtryHdr)
+      
+      #combine into one table
+      dataList <- rbind(dataList, nlCtryHdr)
+    }
   }
   
   if(is.null(dataList))
