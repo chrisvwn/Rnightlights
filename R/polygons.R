@@ -444,7 +444,7 @@ createCtryStruct <- function(ctryCode=NULL, gadmVersion=pkgOptions("gadmVersion"
   
   if(!exists(ctryStructFnamePath))
   {
-    ctryNlDataDF <- createCtryNlDataDF(ctryCode = ctryCode, admLevel = getCtryShpLowestLyrNames(ctryCodes = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath), custPolyPath = custPolyPath)
+    ctryNlDataDF <- createCtryNlDataDF(ctryCode = ctryCode, admLevel = getCtryShpLowestLyrNames(ctryCodes = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath), gadmVersion = gadmVersion, custPolyPath = custPolyPath)
     
     utils::write.table(x = ctryNlDataDF, file = ctryStructFnamePath, row.names = F, sep = ",")
   }
@@ -1010,7 +1010,7 @@ searchAdmLevel <- function(ctryCodes=NULL, admLevelNames, dnldPoly=TRUE, downloa
       else if(admLevelName == "all")
         getCtryShpAllAdmLvls(ctryCodes = ctryCodes[[cCodeIdx]], gadmVersion = gadmVersion, custPolyPath = custPolyPath)
       
-      if(!is.null(ctryShpLyrNames))
+      if(length(ctryShpLyrNames) > 0)
         return(unlist(ctryShpLyrNames))
       
       #if 0 or adm0 take the last digit as the layer num
