@@ -1276,11 +1276,11 @@ listCtryNlRasters <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, poly
   if(length(rasterList) == 0)
     return(NULL)
   
-  tifName <- substring(rasterList, regexpr("_[CUST|GADM].*\\.tif$", rasterList))
+  tifName <- substring(rasterList, regexpr("_(CUST|GADM).*\\.tif$", rasterList))
   
   tifName <- gsub("_|\\.tif", "", tifName)
   
-  rasterList <- gsub("_[CUST|GADM].*\\.tif$", "", rasterList)
+  rasterList <- gsub("_(CUST|GADM).*\\.tif$", "", rasterList)
   
   rasterList <- strsplit(gsub(".tif", "", rasterList), "_")
   
