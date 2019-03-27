@@ -352,6 +352,61 @@ dnldCtryPoly <- function(ctryCode=NULL, gadmVersion=pkgOptions("gadmVersion"), c
   return (!is.null(result))
 }
 
+######################## deleteCtryPoly ###################################
+
+#' Download a country's polygon shapefile from \url{http://gadm.org}
+#'
+#' Download a country's polygon shapefile from \url{http://gadm.org}
+#' 
+#' @param ctryCode The ISO3 ctryCode of the country polygon to download
+#' 
+#' @param gadmVersion The GADM version to use
+#' 
+#' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
+#'
+#' @return TRUE/FALSE Success/Failure of the download
+#'
+#' @examples
+#' \dontrun{
+#' Rnightlights:::deleteCtryPoly("KEN")
+#' }
+#'
+deleteCtryPoly <- function(ctryCode=NULL, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL, downloadMethod=pkgOptions("downloadMethod"))
+{
+  if(is.null(ctryCode) && is.null(custPolyPath))
+    stop(Sys.time(), ": Missing required parameter. One of ctryCode/custPolyPath required")
+  
+  if(!is.null(ctryCode) && !validCtryCodes(ctryCode))
+    stop(Sys.time(), ": Invalid ISO3 ctryCode: ", ctryCode)
+  
+  if(existsPolyFnamePath(ctryCode = ctryCode,gadmVersion = gadmVersion, custPolyPath = custPolyPath))
+  {
+    polyPath <- getPolyFnameZip(ctryCode = ctryCode,gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+    
+    message(Sys.time(), ": Found ", polyPath, ". Deleting")
+    
+    unlink(x = polyPath, recursive = T, force = T)
+  }
+  
+  if(existsPolyFnameZip(ctryCode = ctryCode,gadmVersion = gadmVersion, custPolyPath = custPolyPath))
+  {
+    shpPath <- getPolyFnameZip(ctryCode = ctryCode,gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+    
+    message(Sys.time(), ": Found ", polyPath, ". Deleting")
+    
+    unlink(x = polyPath, recursive = T, force = T)
+  }
+  
+  if(existsPolyFnameRDS(ctryCode = ctryCode,gadmVersion = gadmVersion, custPolyPath = custPolyPath))  
+  {
+    shpPath <- getPolyFnameRDS(ctryCode = ctryCode,gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+    
+    message(Sys.time(), ": Found ", rdsPath, ". Deleting")
+    
+    unlink(x = rdsPath, recursive = T, force = T)
+  }
+}
+
 ######################## getCtryStructFname ###################################
 
 #' Construct the name for the country struct file
@@ -604,6 +659,36 @@ existsPolyFnameZip <- function(ctryCode=NULL, gadmVersion=pkgOptions("gadmVersio
     stop(Sys.time(), ": Invalid ctryCode(s) detected ")
   
   return(file.exists(getPolyFnameZip(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)))
+}
+
+######################## existsPolyFnameRDS ###################################
+
+#' Check if the decompressed country polygon has been stored as RDS
+#'
+#' Check if the decompressed country polygon has been stored as RDS
+#'
+#' @param ctryCode The ctryCode to process
+#' 
+#' @param gadmVersion The GADM version to use
+#' 
+#' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
+#' 
+#' @return TRUE/FALSE
+#'
+#' @examples
+#' Rnightlights:::existsPolyFnameRDS("KEN")
+#'  #returns TRUE/FALSE
+#'
+existsPolyFnameRDS <- function(ctryCode=NULL, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
+{
+  if(is.null(ctryCode) && is.null(custPolyPath))
+    stop(Sys.time(), ": Missing required parameter ctryCode")
+  
+  if(!is.null(ctryCode) && !allValidCtryCodes(ctryCodes = ctryCode))
+    stop(Sys.time(), ": Invalid ctryCode(s) detected ")
+  
+  #for polygons look for shapefile dir
+  return(file.exists(getPolyFnameRDS(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)))
 }
 
 ######################## getCtryShpLyrName ###################################
