@@ -88,11 +88,13 @@ nlCleanup <- function()
 {
   #remove any global vars we created in .onLoad
   #suppressWarnings(rm(map, shpTopLyrName, wgs84, nlTiles, tilesSpPolysDFs))
-  
+ 
+  message("Cleaning up the environment")
+   
   #the destructor
   
   #del temp files used in this session in the nlTempDir
-  unlink(list.files(getNlDir("dirNlTemp")), recursive = T, force = T)
+  unlink(list.files(getNlDir("dirNlTemp"), full.names = TRUE), recursive = TRUE, force = TRUE)
   
   #del temp dataPath directory if it was created
   #if(getNlDataPath() == tempdir())
