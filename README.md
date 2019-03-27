@@ -47,23 +47,6 @@ NOTE: On Linux the following software pre-requisites are required:
 
 * aria2 (Optional) For faster tile downloads
 
-## Performance enhancements
-Some performance enhancements are available to speed up processing speeds and they fall into 2 classes:
-
-a. **Parallel processing**: The most straightforward way to speed up processing is by increasing the number of CPU cores used to calculate the zonal statistics. By default only one CPU core is used. This option is available out of the box and is enabled by setting the `numCores` package option e.g. to process in parallel across 4 CPU cores run:
-
-    `pkgOptions(extractMethod="rast", numCores=4)`
-
-    before processing. Note numCores is only used when:
-
-    `pkgOptions(extractMethod="rast")`
-
-    which is the default.
-
-b. **GDAL**: The GDAL tools provide tools that are often much faster than the usual processing workflow. For example, zonal statistics can be calculated much faster using GDAL than looping over sub-polygons even with a number of CPUs in parallel. GDAL tools are provided by the `rgdal` and `gdalUtils` packages, however, they require the GDAL software to be installed in the operating system. GDAL can be enabled at 2 stages:
-    i)  when cropping rasters by setting `pkgOptions(cropMaskMethod="gdal")` and
-    ii) when calculating zonal stats by setting `pkgOptions(extractMethod="gdal")`
-
 ### Example
 
 An example to process VIIRS monthly nightlights for Kenya for the year 2014 from the
@@ -82,7 +65,6 @@ An example to process VIIRS monthly nightlights for Kenya for the year 2014 from
 #install.packages("lubridate")
 #install.packages("reshape2")
 #install.packages("ggplot2")
-#install.packages("plotly")
 
 library(Rnightlights)
 library(lubridate)
@@ -101,7 +83,7 @@ ctry <- "KEN" #replace to run for any other country
 highestAdmLevelStats <- getCtryNlData(ctryCode = ctry, 
                                      admLevel = "highest",
                                      nlType = "VIIRS.M", 
-                                     nlPeriods = nlRange("201401", "201412"), 
+                                     nlPeriods = nlRange("201401", "201412","VIIRS.M"), 
                                      nlStats = list("sum",na.rm=TRUE),
                                      ignoreMissing=FALSE)
 
@@ -123,7 +105,7 @@ highestAdmLevelStats$nlPeriod <- substr(highestAdmLevelStats$nlPeriod, 12, 17)
 highestAdmLevelStats$nlPeriod <- ymd(paste0(substr(highestAdmLevelStats$nlPeriod, 1,4), 
                                                "-",substr(highestAdmLevelStats$nlPeriod, 5,6), "-01"))
 
-#plot 2nd admin level sums for the year
+#plot admin level sums for the year
 g <- ggplot(data = highestAdmLevelStats, 
             aes(x=nlPeriod, y=radiancesum, 
                 color=highestAdmLevelStats[[2]])) +
@@ -135,11 +117,24 @@ g <- ggplot(data = highestAdmLevelStats,
 
 print(g)
 
-#quick conversion to interactive map with plotly
-ggplotly(g)
-
 ```
+## Performance enhancements
+Some performance enhancements are available to speed up processing speeds and they fall into 2 classes:
 
+a. **Parallel processing**: The most straightforward way to speed up processing is by increasing the number of CPU cores used to calculate the zonal statistics. By default only one CPU core is used. This option is available out of the box and is enabled by setting the `numCores` package option e.g. to process in parallel across 4 CPU cores run:
+
+    `pkgOptions(extractMethod="rast", numCores=4)`
+
+    before processing. Note numCores is only used when:
+
+    `pkgOptions(extractMethod="rast")`
+
+    which is the default.
+
+b. **GDAL**: The GDAL tools provide tools that are often much faster than the usual processing workflow. For example, zonal statistics can be calculated much faster using GDAL than looping over sub-polygons even with a number of CPUs in parallel. GDAL tools are provided by the `rgdal` and `gdalUtils` packages, however, they require the GDAL software to be installed in the operating system. GDAL can be enabled at 2 stages:
+    i)  when cropping rasters by setting `pkgOptions(cropMaskMethod="gdal")` and
+    ii) when calculating zonal stats by setting `pkgOptions(extractMethod="gdal")`
+    
 **Process multiple countries at once**
 
 `processNlData` is the function to call to process multiple countries or admLevels which `getCtryNlData` cannot do. The other difference is that processNlData does not return any value - instead all processed data is cached and can then be retrieved using multiple calls to `getCtryNlData`. For example to process various admLevels in East Africa you could run:
