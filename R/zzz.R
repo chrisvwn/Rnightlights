@@ -1,6 +1,10 @@
 .onLoad <- function(libname, pkgname)
 {
-
+  reg.finalizer(e = getNamespace(pkgname), f = function(envir) {
+    message("[invoking registered finalizer]")
+    
+    nlCleanup()
+    }, onexit=TRUE)
 }
 
 .onAttach <- function(libname, pkgname)
@@ -23,7 +27,7 @@
   upgradeRnightlights()
 }
 
-.onDetach <- function(libname)
+.onUnload <- function(libname)
 {
   map <- NULL
   shpTopLyrName <- NULL
@@ -35,7 +39,8 @@
   suppressWarnings(rm(map, shpTopLyrName, wgs84, nlTiles, tilesSpPolysDFs))
   
   #cleanup by removing any global vars created etc
-  nlCleanup();
+  nlCleanup()
+  
   compiler::enableJIT(0)
 }
 
