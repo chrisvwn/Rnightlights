@@ -208,10 +208,12 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, nlStats=pkgOp
                                          gadmVersion=gadmVersion,
                                          custPolyPath = custPolyPath)
   }
+
+  message(Sys.time(), ": Begin processing ", nlPeriod)
   
   if(!file.exists(getCtryRasterOutputFnamePath(ctryCode = ctryCode, nlType = nlType, gadmVersion = gadmVersion, nlPeriod = nlPeriod, custPolyPath = custPolyPath)))
   {
-    message(Sys.time(), ": Begin processing ", nlPeriod)
+    message(Sys.time(), ": Country output raster not found. Creating")
     
     message(Sys.time(), ": Reading in the raster tiles " )
     
@@ -334,6 +336,8 @@ processNLCountry <- function(ctryCode, admLevel, nlType, nlPeriod, nlStats=pkgOp
   else
   {
     rastFilename <- getCtryRasterOutputFnamePath(ctryCode = ctryCode, nlType = nlType, nlPeriod = nlPeriod, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+    
+    message(Sys.time(), ": ", rastFilename, " already exists")
     
     ctryRastCropped <- raster::raster(x = rastFilename)
     
