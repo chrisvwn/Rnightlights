@@ -262,42 +262,14 @@ processNLCountry <- function(ctryCode,
     
     for (tile in tileList)
     {
-      if(grepl(pattern = "OLS", x = nlType))
-      {
-        nlUrlsOLS <- getNlUrlOLS(nlPeriod)
-        
-        if(length(nlUrlsOLS) > 1)
-        {
-          message(Sys.time(), ": Multiple tiles detected")
-          message(Sys.time(), ": Reading in Tifs")
-        }
-        
-        ntLtsTifList <- lapply(1:length(nlUrlsOLS), function(i){
-          #get the zip and tif local names
-          ntLtsZipLocalNameOLS <- getNlTileZipLclNameOLS(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
-          ntLtsZipLocalNamePathOLS <- getNlTileZipLclNamePath(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
-          ntLtsTifLocalNamePathOLS <- getNlTileTifLclNamePath(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
-
-          ntLtsZipLocalNameOLS <- gsub(pattern = "(\\.tar)", paste0("_", i, "\\1"), ntLtsZipLocalNameOLS)
-          ntLtsZipLocalNamePathOLS <- gsub(pattern = "(\\.tar)", paste0("_", i, "\\1"), ntLtsZipLocalNamePathOLS)
-          ntLtsTifLocalNamePathOLS <- gsub(pattern = "(\\.tif)", paste0("_", i, "\\1"), ntLtsTifLocalNamePathOLS)
-
-
-          raster::raster(ntLtsTifLocalNamePathOLS)
-        })
-        
-        rastTile <- raster::stack(unlist(ntLtsTifList))
-        
-      } else
-      {
-        rastFilename <- getNlTileTifLclNamePath(nlType = nlType,
-                                                configName = configName,
-                                                nlPeriod = nlPeriod,
-                                                tileNum = tileName2Idx(tileName = tile,
-                                                                       nlType = nlType))
-        
-        rastTile <- raster::raster(x = rastFilename)
-      }
+      rastFilename <- getNlTileTifLclNamePath(nlType = nlType,
+                                              configName = configName,
+                                              nlPeriod = nlPeriod,
+                                              tileNum = tileName2Idx(tileName = tile,
+                                                                     nlType = nlType))
+      
+      rastTile <- raster::raster(x = rastFilename)
+      
       raster::projection(rastTile) <- sp::CRS(projargs = wgs84)
       
       ctryPolyAdm0 <- sp::spTransform(ctryPolyAdm0, sp::CRS(wgs84))
@@ -307,15 +279,6 @@ processNLCountry <- function(ctryCode,
       #extTempCrop <- crop(rastTile, ctryExtent)
       
       tempCrop <- raster::crop(x = rastTile, y = ctryPolyAdm0, progress='text')
-      
-      if(inherits(tempCrop, "RasterBrick"))
-      {
-        names(tempCrop)[1:2] <- c('x', 'y')
-        tempCrop$fun <- mean
-        tempCrop$na.rm <- TRUE
-        
-        tempCrop <- do.call(mosaic, tempCrop)
-      }
       
       if(is.null(ctryRastCropped))
       {
@@ -449,14 +412,14 @@ processNLCountry <- function(ctryCode,
                                    gadmPolyType = gadmPolyType,
                                    custPolyPath = custPolyPath)
   
-  if(extractMethod == "rast")
+  if (extractMethod == "rast")
     sumAvgRad <- fnAggRadRast(ctryPoly=ctryPoly,
                               ctryRastCropped=ctryRastCropped,
                               nlType=nlType,
                               configName=configName,
                               nlStats=nlStats,
                               custPolyPath = custPolyPath)
-  else if(extractMethod == "gdal")
+  else if (extractMethod == "gdal")
     sumAvgRad <- fnAggRadGdal(ctryCode=ctryCode,
                               admLevel=admLevel,
                               ctryPoly=ctryPoly,
@@ -467,8 +430,6 @@ processNLCountry <- function(ctryCode,
                               gadmVersion=gadmVersion,
                               gadmPolyType = gadmPolyType,
                               custPolyPath = custPolyPath)
-  else 
-    stop("Unknown extractMethod '", extractMethod, "'")
   
   nlStatNames <- sapply(nlStats, function(x) x[[1]])
   
@@ -969,7 +930,7 @@ processNlData <- function (ctryCodes,
                                             allExistsCtryNlData(ctryCodes = ctryCode,
                                                                 admLevels = admLevel,
                                                                 nlTypes = nlType,
-                                                                configNames = configName,
+                                                                configNames = configNames,
                                                                 nlPeriods = nlPeriod,
                                                                 nlStats = nlStats,
                                                                 gadmVersion = gadmVersion,

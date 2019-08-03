@@ -204,131 +204,175 @@ downloadNlTilesOLS <- function(nlPeriod,
   if(!allValidNlPeriods(nlPeriods = nlPeriod, nlTypes = nlType))
     stop(Sys.time(), ": Invalid nlPeriod: ", nlPeriod)
   
-  rsltDnld <- NA
+  rsltDnld <- 0
   
   nlUrlsOLS <- getNlUrlOLS(nlPeriod)
   
   if(length(nlUrlsOLS) > 1)
     message("Multiple tiles found for ", nlPeriod, ". Download and merge commencing.")
   
-  for(i in 1:length(nlUrlsOLS))
-  {
-    #get the zip and tif local names
-    ntLtsZipLocalNameOLS <- getNlTileZipLclNameOLS(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
-    ntLtsZipLocalNamePathOLS <- getNlTileZipLclNamePath(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
-    ntLtsTifLocalNamePathOLS <- getNlTileTifLclNamePath(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
-    
-    ntLtsZipLocalNameOLS <- gsub(pattern = "(\\.tar)", paste0("_", i, "\\1"), ntLtsZipLocalNameOLS)
-    ntLtsZipLocalNamePathOLS <- gsub(pattern = "(\\.tar)", paste0("_", i, "\\1"), ntLtsZipLocalNamePathOLS)
-    ntLtsTifLocalNamePathOLS <- gsub(pattern = "(\\.tif)", paste0("_", i, "\\1"), ntLtsTifLocalNamePathOLS)
-    
-    #if (!file.exists(ntLtsZipLocalNameVIIRS) && !file.exists(ntLtsTifLocalNameVIIRS))
-    if(!file.exists(ntLtsTifLocalNamePathOLS))
-    {
-      if(!file.exists(ntLtsZipLocalNamePathOLS))
-      {
-        #get the first only to cater for Where multiple tiles exist 
-        ntLtsFileUrl <- nlUrlsOLS[i]
-        
-        ntLtsFileUrl <- gsub("\n", "", ntLtsFileUrl)
-        
-        validDnldMethods <- c(c("auto", "curl", "libcurl", "wget", "aria"))
-        
-        if(!(downloadMethod %in% validDnldMethods))
-          downloadMethod <- "auto"
-        
-        message(Sys.time(), ": Downloading ", ntLtsFileUrl)
-        
-        if(downloadMethod %in% c("auto", "curl", "libcurl", "wget"))
-          rsltDnld <- utils::download.file(ntLtsFileUrl, ntLtsZipLocalNamePathOLS, mode = "wb", method = downloadMethod, extra = "-c")
-        else if(downloadMethod == "aria")
-          #downloads to path relative to -d if specified else local dir
-          rsltDnld <- system(paste0("aria2c -c -x2 --show-console-readout=false --summary-interval=10 ",
-                                    ntLtsFileUrl,
-                                    " -d ",
-                                    getNlDir("dirNlTiles"),
-                                    " -o ", ntLtsZipLocalNameOLS))
-      } else
-      {
-        rsltDnld <- 0
-      }
-    }
-    else
-    {
-      #if the file is found we can return positive? Probably not unless there's an overwrite option
-      #for our purposes return true
-      message(Sys.time(), "File exists, set Overwrite = TRUE to overwrite")
-      
-      rsltDnld <- 0
-    }
+  ntLtsZipLocalNameOLS <- getNlTileZipLclNameOLS(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
+  ntLtsZipLocalNamePathOLS <- getNlTileZipLclNamePath(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
+  ntLtsTifLocalNamePathOLS <- getNlTileTifLclNamePath(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
   
-    
-    if(rsltDnld == 0)
+  if(!file.exists(ntLtsTifLocalNamePathOLS))
+  {
+    for(i in 1:length(nlUrlsOLS))
     {
-      message(Sys.time(), "Extracting ", ntLtsZipLocalNamePathOLS)
+      rsltDnld <- NA
       
-      tileNum <- "dummyTileNum"
+      #get the zip and tif local names
+      ntLtsZipLocalNameOLS <- getNlTileZipLclNameOLS(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
+      ntLtsZipLocalNamePathOLS <- getNlTileZipLclNamePath(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
+      ntLtsTifLocalNamePathOLS <- getNlTileTifLclNamePath(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
+      
+      ntLtsZipLocalNameOLS <- gsub(pattern = "(\\.tar)", paste0("_", i, "\\1"), ntLtsZipLocalNameOLS)
+      ntLtsZipLocalNamePathOLS <- gsub(pattern = "(\\.tar)", paste0("_", i, "\\1"), ntLtsZipLocalNamePathOLS)
+      ntLtsTifLocalNamePathOLS <- gsub(pattern = "(\\.tif)", paste0("_", i, "\\1"), ntLtsTifLocalNamePathOLS)
       
       if(!file.exists(ntLtsTifLocalNamePathOLS))
       {
-        message(Sys.time(), ": Getting list of files in ", ntLtsZipLocalNamePathOLS)
-        
-        #get a list of files in the tar archive
-        tarFileList <- utils::untar(ntLtsZipLocalNamePathOLS, list = TRUE, tar="internal")
-        
-        #get the nightlight data filename
-        #https://ngdc.noaa.gov/eog/gcv4_readme.txt
-        #F1?YYYY_v4b_cf_cvg.tif: Cloud-free coverages tally 
-        #F1?YYYY_v4b_avg_vis.tif: Raw avg_vis
-        #F1?YYYY_v4b_stable_lights.avg_vis.tif: The cleaned up avg_vis 
-        
-        tgzFile <- tarFileList[grep(paste0(".*\\.", configName, ".*\\.tif\\.gz$"), tarFileList, ignore.case = T)]
-        
-        #extract the nightlight data file
-        utils::untar(tarfile = ntLtsZipLocalNamePathOLS, files = tgzFile, exdir = getNlDir("dirNlTiles"), tar = "internal")
-        
-        #the tif has the same name as the compressed file without the .gz
-        tifFile <- stringr::str_replace(tgzFile, ".gz", "")
-        
-        message(Sys.time(), ": Decompressing ", tgzFile, " ", date())
-        
-        R.utils::gunzip(file.path(getNlDir("dirNlTiles"), tgzFile), ntLtsTifLocalNamePathOLS)
-        
-        #unlink(ntLtsZipLocalNamePathOLS, force = TRUE)
+        if(!file.exists(ntLtsZipLocalNamePathOLS))
+        {
+          #get the first only to cater for Where multiple tiles exist 
+          ntLtsFileUrl <- nlUrlsOLS[i]
+          
+          ntLtsFileUrl <- gsub("\n", "", ntLtsFileUrl)
+          
+          validDnldMethods <- c(c("auto", "curl", "libcurl", "wget", "aria"))
+          
+          if(!(downloadMethod %in% validDnldMethods))
+            downloadMethod <- "auto"
+          
+          message(Sys.time(), ": Downloading ", ntLtsFileUrl)
+          
+          if(downloadMethod %in% c("auto", "curl", "libcurl", "wget"))
+            rsltDnld <- utils::download.file(ntLtsFileUrl, ntLtsZipLocalNamePathOLS, mode = "wb", method = downloadMethod, extra = "-c")
+          else if(downloadMethod == "aria")
+            #downloads to path relative to -d if specified else local dir
+            rsltDnld <- system(paste0("aria2c -c -x2 --show-console-readout=false --summary-interval=10 ",
+                                      ntLtsFileUrl,
+                                      " -d ",
+                                      getNlDir("dirNlTiles"),
+                                      " -o ", ntLtsZipLocalNameOLS))
+        } else
+        {
+          rsltDnld <- 0
+        }
       }
       else
       {
-        message(Sys.time(), ": TIF file found")
+        #if the file is found we can return positive? Probably not unless there's an overwrite option
+        #for our purposes return true
+        message(Sys.time(), "File exists, set Overwrite = TRUE to overwrite")
+        
+        rsltDnld <- 0
+      }
+    
+      
+      if(rsltDnld == 0)
+      {
+        message(Sys.time(), ": Extracting ", ntLtsZipLocalNamePathOLS)
+        
+        tileNum <- "dummyTileNum"
+        
+        if(!file.exists(ntLtsTifLocalNamePathOLS))
+        {
+          message(Sys.time(), ": Getting list of files in ", ntLtsZipLocalNamePathOLS)
+          
+          #get a list of files in the tar archive
+          tarFileList <- utils::untar(ntLtsZipLocalNamePathOLS, list = TRUE, tar="internal")
+          
+          #get the nightlight data filename
+          #https://ngdc.noaa.gov/eog/gcv4_readme.txt
+          #F1?YYYY_v4b_cf_cvg.tif: Cloud-free coverages tally 
+          #F1?YYYY_v4b_avg_vis.tif: Raw avg_vis
+          #F1?YYYY_v4b_stable_lights.avg_vis.tif: The cleaned up avg_vis 
+          
+          tgzFile <- tarFileList[grep(paste0(".*\\.", configName, ".*\\.tif\\.gz$"), tarFileList, ignore.case = T)]
+          
+          #extract the nightlight data file
+          utils::untar(tarfile = ntLtsZipLocalNamePathOLS, files = tgzFile, exdir = getNlDir("dirNlTiles"), tar = "internal")
+          
+          #the tif has the same name as the compressed file without the .gz
+          tifFile <- stringr::str_replace(tgzFile, ".gz", "")
+          
+          message(Sys.time(), ": Decompressing ", tgzFile, " ", date())
+          
+          R.utils::gunzip(file.path(getNlDir("dirNlTiles"), tgzFile), ntLtsTifLocalNamePathOLS)
+          
+          #unlink(ntLtsZipLocalNamePathOLS, force = TRUE)
+        }
+        else
+        {
+          message(Sys.time(), ": TIF file found")
+        }
       }
     }
-  }
+    
+    if(length(nlUrlsOLS) > 1)
+    {
+      message("Reading in Tifs")
+      
+      if(!exists("wgs84"))
+        wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
   
-  # if(length(nlUrlsOLS) > 1)
-  # {
-  #   message("Reading in Tifs")
-  # 
-  #   ntLtsTifList <- lapply(1:length(nlUrlsOLS), function(i){
-  #     #get the zip and tif local names
-  #     ntLtsZipLocalNameOLS <- getNlTileZipLclNameOLS(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
-  #     ntLtsZipLocalNamePathOLS <- getNlTileZipLclNamePath(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
-  #     ntLtsTifLocalNamePathOLS <- getNlTileTifLclNamePath(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
-  #     
-  #     ntLtsZipLocalNameOLS <- gsub(pattern = "(\\.tar)", paste0("_", i, "\\1"), ntLtsZipLocalNameOLS)
-  #     ntLtsZipLocalNamePathOLS <- gsub(pattern = "(\\.tar)", paste0("_", i, "\\1"), ntLtsZipLocalNamePathOLS)
-  #     ntLtsTifLocalNamePathOLS <- gsub(pattern = "(\\.tif)", paste0("_", i, "\\1"), ntLtsTifLocalNamePathOLS)
-  #     
-  # 
-  #     raster::raster(ntLtsTifLocalNamePathOLS)
-  #   })
-  # 
-  #   message("Merging Tifs")
-  # 
-  #   rasterMerged <- raster::overlay(x = ntLtsTifList[1], y = ntLtsTifList[2], fun = mean)
-  # 
-  #   message("Saving merged Tif")
-  # 
-  #   raster::writeRaster(x = ctryRastCropped, filename = ntLtsTifLocalNamePathOLS, progress="text")
-  # }
+      ntLtsTifLocalNameOLS <- getNlTileTifLclNameOLS(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
+  
+      ntLtsTifLocalNamePathOLS <- getNlTileTifLclNamePath(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
+      
+      ntLtsTifList <- sapply(1:length(nlUrlsOLS), function(i){
+        #get the zip and tif local names
+        
+        ntLtsTifLocalNamePathOLS <- gsub(pattern = "(\\.tif)", paste0("_", i, "\\1"), ntLtsTifLocalNamePathOLS)
+      })
+  
+      message("Merging Tifs")
+      
+      r <- raster::raster(ntLtsTifList[1])
+      
+      #get the extent and change to minx, miny, maxx, maxy order for use
+      #in gdal_rasterize. Explanation below
+      ext<-raster::extent(r)
+      ext<-paste(ext[1], ext[3], ext[2], ext[4])
+      
+      #get the resolution of the raster. will be used in gdal_rasterize
+      #for target resolution which should be the same as the source resolution.
+      #Specifying makes it run faster (?)
+      res<-paste(raster::res(r)[1], raster::res(r)[2])
+  
+      rm(r)
+      
+      outputFileVrt <-  gsub(".tif", ".vrt", ntLtsTifLocalNameOLS)
+      
+      outputFileVrt <- file.path(getNlDir("dirNlTemp"), outputFileVrt)
+      
+      if (file.exists(outputFileVrt))
+        file.remove(outputFileVrt)
+      
+      message(Sys.time(), ": gdalwarp masking to VRT ",base::date())
+      
+      gdalUtils::gdalbuildvrt(gdalfile = ntLtsTifList,
+                          output.vrt = outputFileVrt,
+                          te = as.character(ext),
+                          tr = as.character(res),
+                          tap = TRUE,
+                          a_srs = wgs84,
+                          multi = TRUE,
+                          wm = pkgOptions("gdalCacheMax"),
+                          wo = paste0("NUM_THREADS=", pkgOptions("numCores")))
+      
+      message(Sys.time(), ": gdal_translate converting VRT to TIFF ")
+      gdalUtils::gdal_translate(#co = "LZW",
+                                src_dataset = outputFileVrt,
+                                dst_dataset = ntLtsTifLocalNamePathOLS)
+      
+      message(Sys.time(), ": Deleting the component rasters ")
+      
+      file.remove(ntLtsTifList)
+      file.remove(outputFileVrt)
+    }
+  }
   
   return (rsltDnld == 0)
 }
