@@ -4,9 +4,14 @@
 \alias{getNlTileZipLclNameOLS}
 \title{The name with which to save the OLS tile locally}
 \usage{
-getNlTileZipLclNameOLS(nlPeriod)
+getNlTileZipLclNameOLS(nlType = "OLS.Y",
+  configName = pkgOptions(paste0("configName_", nlType)), nlPeriod)
 }
 \arguments{
+\item{nlType}{The particular VIIRS type e.g. VIIRS.D for daily VIIRS}
+
+\item{configName}{character the type of raster being processed}
+
 \item{nlPeriod}{The year of the OLS tile}
 }
 \value{

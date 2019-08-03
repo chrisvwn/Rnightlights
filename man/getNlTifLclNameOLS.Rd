@@ -4,9 +4,14 @@
 \alias{getNlTifLclNameOLS}
 \title{Constructs the filename used to save/access the decompressed OLS .tif file}
 \usage{
-getNlTifLclNameOLS(nlPeriod)
+getNlTifLclNameOLS(nlType, configName = pkgOptions(paste0("configName_",
+  nlType)), nlPeriod)
 }
 \arguments{
+\item{nlType}{The particular VIIRS type e.g. VIIRS.D for daily VIIRS}
+
+\item{configName}{character the type of raster being processed}
+
 \item{nlPeriod}{the nlPeriod in which the tile was created}
 }
 \value{
@@ -19,7 +24,7 @@ Constructs the filename used to save/access the decompressed OLS .tif file
 #using default dirNlTiles
 \dontrun{
 Rnightlights:::getNlTifLclNameOLS("2004")
- #returns "OLS_2004.tif"
+ #returns "OLS.Y_2004.tif"
  }
 
 }

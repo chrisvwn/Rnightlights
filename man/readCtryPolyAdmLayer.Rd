@@ -6,7 +6,7 @@
 \usage{
 readCtryPolyAdmLayer(ctryCode = NULL, admLevel, polyType = "rds",
   dnldPoly = TRUE, gadmVersion = pkgOptions("gadmVersion"),
-  custPolyPath = NULL)
+  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCode}{\code{character} The ctryCode of the country of interest}

@@ -302,7 +302,18 @@ myZonal <- function (rast, zone, nlStats, digits = 0, retVal=NULL, na.rm = TRUE,
 #' 
 #' @return TRUE/FALSE
 #'
-ZonalPipe <- function (ctryCode, admLevel, ctryPoly, path.in.shp, path.in.r, path.out.r, path.out.shp, zone.attribute, nlStats, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
+ZonalPipe <- function (ctryCode,
+                       admLevel,
+                       ctryPoly,
+                       path.in.shp,
+                       path.in.r,
+                       path.out.r,
+                       path.out.shp,
+                       zone.attribute,
+                       nlStats,
+                       gadmVersion=pkgOptions("gadmVersion"),
+                       gadmPolyType=pkgOptions("gadmPolyType"),
+                       custPolyPath=NULL)
 {
   #Source: http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/
   #path.in.shp: Shapefile with zone (INPUT)
@@ -470,7 +481,16 @@ ZonalPipe <- function (ctryCode, admLevel, ctryPoly, path.in.shp, path.in.r, pat
 #'     nlType="VIIRS.M", nlPeriod="201401", nlStats=c("sum","mean"))
 #' }
 #'
-fnAggRadGdal <- function(ctryCode, admLevel, ctryPoly, nlType, nlPeriod, nlStats=pkgOptions("nlStats"), gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
+fnAggRadGdal <- function(ctryCode,
+                         admLevel,
+                         ctryPoly,
+                         nlType,
+                         configName,
+                         nlPeriod,
+                         nlStats=pkgOptions("nlStats"),
+                         gadmVersion=pkgOptions("gadmVersion"),
+                         gadmPolyType=pkgOptions("gadmPolyType"),
+                         custPolyPath=NULL)
 {
   if(missing(ctryCode))
     stop(Sys.time(), ": Missing required parameter ctryCode")
@@ -489,9 +509,18 @@ fnAggRadGdal <- function(ctryCode, admLevel, ctryPoly, nlType, nlPeriod, nlStats
   
   #source: http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/
   
-  path.in.shp<- getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+  path.in.shp<- getPolyFnamePath(ctryCode = ctryCode,
+                                 gadmVersion = gadmVersion,
+                                 gadmPolyType = gadmPolyType,
+                                 custPolyPath = custPolyPath)
   
-  path.in.r<- getCtryRasterOutputFnamePath(ctryCode = ctryCode, nlType = nlType, nlPeriod = nlPeriod, gadmVersion = gadmVersion, custPolyPath = custPolyPath) #or path.in.r<-list.files("/home/, pattern=".tif$")
+  path.in.r<- getCtryRasterOutputFnamePath(ctryCode = ctryCode,
+                                           nlType = nlType,
+                                           configName = configName,
+                                           nlPeriod = nlPeriod,
+                                           gadmVersion = gadmVersion,
+                                           gadmPolyType = gadmPolyType,
+                                           custPolyPath = custPolyPath) #or path.in.r<-list.files("/home/, pattern=".tif$")
   
   if(stringr::str_detect(nlType, "VIIRS"))
     nlTp <- "VIIRS"
@@ -499,14 +528,20 @@ fnAggRadGdal <- function(ctryCode, admLevel, ctryPoly, nlType, nlPeriod, nlStats
     nlTp <- "OLS"
   
   if(is.null(custPolyPath))
-    path.out.r<- file.path(getNlDir("dirZonals"), paste0(admLevel, "_zone_", nlTp, "_", gadmVersion, ".tif"))
+    path.out.r<- file.path(getNlDir("dirZonals"), paste0(admLevel, "_zone_",
+                                                         nlTp, "_",
+                                                         "GADM-", gadmVersion, "-",toupper(gadmPolyType),
+                                                         ".tif"))
   else
-    path.out.r<- file.path(getNlDir("dirZonals"), paste0(admLevel, "_zone_", nlTp, ".tif"))
+    path.out.r<- file.path(getNlDir("dirZonals"), paste0(admLevel, "_zone_", nlTp, "SHPZIP.tif"))
   
   if(is.null(custPolyPath))
-    path.out.shp <- file.path(getNlDir("dirZonals"), paste0(admLevel, "_zone_", nlTp, "_", gadmVersion, ".shp"))
+    path.out.shp <- file.path(getNlDir("dirZonals"), paste0(admLevel, "_zone_",
+                                                            nlTp, "_",
+                                                            "GADM-", gadmVersion,
+                                                            ".shp"))
   else
-    path.out.shp <- file.path(getNlDir("dirZonals"), paste0(admLevel, "_zone_", nlTp, ".shp"))
+    path.out.shp <- file.path(getNlDir("dirZonals"), paste0(admLevel, "_zone_", nlTp, "SHPZIP.shp"))
   
   zone.attribute <- if(is.null(custPolyPath))
   {
@@ -542,6 +577,7 @@ fnAggRadGdal <- function(ctryCode, admLevel, ctryPoly, nlType, nlPeriod, nlStats
                          zone.attribute = zone.attribute,
                          nlStats = nlStats,
                          gadmVersion = gadmVersion,
+                         gadmPolyType = gadmPolyType,
                          custPolyPath = custPolyPath)
   
   ctryPolyData <- ctryPoly@data
@@ -605,7 +641,7 @@ fnAggRadGdal <- function(ctryCode, admLevel, ctryPoly, nlType, nlPeriod, nlStats
 #'     ctryRastCropped=ctryRastCropped, nlType="VIIRS.M", nlStats=c("sum","mean"))
 #' }
 #' @importFrom foreach %dopar%
-fnAggRadRast <- function(ctryPoly, ctryRastCropped, nlType, nlStats, custPolyPath=NULL)
+fnAggRadRast <- function(ctryPoly, ctryRastCropped, nlType, configName, nlStats, custPolyPath=NULL)
 {
   if(missing(ctryPoly))
     stop(Sys.time(), ": Missing required parameter ctryPoly")
@@ -642,10 +678,10 @@ fnAggRadRast <- function(ctryPoly, ctryRastCropped, nlType, nlStats, custPolyPat
   
   result <- foreach::foreach(i=1:nrow(ctryPoly@data),
                               .combine=rbind,
-                              .export = c("masqOLS", "masqVIIRS", nlStatNames),
+                              .export = c("masqOLS", "masqVIIRS", "nlStatNames", "configName"),
                               .packages = c("raster"),
                               .options.snow = list(progress=progress)) %dopar% {
-  #for(i in 1:nrow(ctryPoly@data)){
+  # for(i in 1:nrow(ctryPoly@data)){
                                 
                                   options(stringsAsFactors = FALSE)
                                 
@@ -654,9 +690,9 @@ fnAggRadRast <- function(ctryPoly, ctryRastCropped, nlType, nlStats, custPolyPat
                                   message(Sys.time(), ": PID:", pid, " Extracting data from polygon " , i)
                                   
                                   if(stringr::str_detect(nlType, "OLS"))
-                                    dta <- masqOLS(ctryPoly, ctryRastCropped, i)
+                                    dta <- masqOLS(shp = ctryPoly, rast = ctryRastCropped, i = i, configName = configName)
                                   else if(stringr::str_detect(nlType, "VIIRS"))
-                                    dta <- masqVIIRS(ctryPoly, ctryRastCropped, i)
+                                    dta <- masqVIIRS(ctryPoly = ctryPoly, ctryRast = ctryRastCropped, idx = i, configName = configName)
                                   
                                   message(Sys.time(), ": PID:", pid, " Calculating the NL stats of polygon ", i)
                                   

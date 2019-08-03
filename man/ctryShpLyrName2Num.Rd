@@ -5,7 +5,8 @@
 \title{Get the integer number of the layer.}
 \usage{
 ctryShpLyrName2Num(ctryCode = NULL, layerName,
-  gadmVersion = pkgOptions("gadmVersion"), custPolyPath = NULL)
+  gadmVersion = pkgOptions("gadmVersion"),
+  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCode}{The ctryCode to process}

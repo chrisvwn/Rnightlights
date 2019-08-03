@@ -4,10 +4,14 @@
 \alias{getNlTileZipLclNamePath}
 \title{Constructs the full path used to save/access the compressed downloaded tile}
 \usage{
-getNlTileZipLclNamePath(nlType, nlPeriod, tileNum)
+getNlTileZipLclNamePath(nlType,
+  configName = pkgOptions(paste0("configName_", nlType)), nlPeriod,
+  tileNum)
 }
 \arguments{
 \item{nlType}{the nlType of interest}
+
+\item{configName}{character the type of raster being processed}
 
 \item{nlPeriod}{the nlPeriod in which the tile was created}
 

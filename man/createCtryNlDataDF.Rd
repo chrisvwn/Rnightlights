@@ -6,7 +6,8 @@
     data read from the polygon}
 \usage{
 createCtryNlDataDF(ctryCode = NULL, admLevel,
-  gadmVersion = pkgOptions("gadmVersion"), custPolyPath = NULL)
+  gadmVersion = pkgOptions("gadmVersion"),
+  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCode}{the ISO3 code of the country}

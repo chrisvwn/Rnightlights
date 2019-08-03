@@ -6,7 +6,8 @@
 \usage{
 getCtryNlData(ctryCode = NULL, admLevel, nlTypes, nlPeriods,
   nlStats = pkgOptions("nlStats"), ignoreMissing = NULL,
-  gadmVersion = pkgOptions("gadmVersion"), custPolyPath = NULL,
+  gadmVersion = pkgOptions("gadmVersion"),
+  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL,
   downloadMethod = pkgOptions("downloadMethod"),
   cropMaskMethod = pkgOptions("cropMaskMethod"),
   extractMethod = pkgOptions("extractMethod"), source = "local", ...)

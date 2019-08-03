@@ -5,7 +5,8 @@
 \title{Download VIIRS nightlight tile}
 \usage{
 downloadNlTilesVIIRS(nlPeriod, tileNum,
-  downloadMethod = pkgOptions("downloadMethod"), nlType)
+  downloadMethod = pkgOptions("downloadMethod"), nlType,
+  configName = pkgOptions(paste0("configName_", nlType)))
 }
 \arguments{
 \item{nlPeriod}{the nlPeriod of the tile to download}

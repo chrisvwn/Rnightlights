@@ -5,7 +5,8 @@
 \title{List available cropped country rasters}
 \usage{
 listCtryNlRasters(ctryCodes = NULL, nlPeriods = NULL, nlTypes = NULL,
-  polySrcs = NULL, polyVers = NULL, nlStats = NULL, source = "local")
+  polySrcs = NULL, polyVers = NULL, nlStats = NULL,
+  source = "local")
 }
 \arguments{
 \item{ctryCodes}{A character vector of ctryCodes to filter by}

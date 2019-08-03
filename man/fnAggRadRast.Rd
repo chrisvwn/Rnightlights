@@ -4,7 +4,8 @@
 \alias{fnAggRadRast}
 \title{Calculate statistics on a nightlight raster that fall within a polygon}
 \usage{
-fnAggRadRast(ctryPoly, ctryRastCropped, nlType, nlStats, custPolyPath = NULL)
+fnAggRadRast(ctryPoly, ctryRastCropped, nlType, configName, nlStats,
+  custPolyPath = NULL)
 }
 \arguments{
 \item{ctryPoly}{The polygon of the admin level/region of interest. In general is a country polygon

@@ -5,7 +5,8 @@
 \title{Get the list of admin level names in a polygon shapefile}
 \usage{
 getCtryPolyAdmLevelNames(ctryCode = NULL, lowestAdmLevel,
-  gadmVersion = pkgOptions("gadmVersion"), custPolyPath = NULL)
+  gadmVersion = pkgOptions("gadmVersion"),
+  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCode}{\code{character} The ctryCode of the country of interest}

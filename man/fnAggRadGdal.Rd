@@ -4,9 +4,10 @@
 \alias{fnAggRadGdal}
 \title{Calculate zonal statistics using GDAL}
 \usage{
-fnAggRadGdal(ctryCode, admLevel, ctryPoly, nlType, nlPeriod,
-  nlStats = pkgOptions("nlStats"), gadmVersion = pkgOptions("gadmVersion"),
-  custPolyPath = NULL)
+fnAggRadGdal(ctryCode, admLevel, ctryPoly, nlType, configName, nlPeriod,
+  nlStats = pkgOptions("nlStats"),
+  gadmVersion = pkgOptions("gadmVersion"),
+  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCode}{character string the ISO3 country code to be processed}

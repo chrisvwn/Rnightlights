@@ -180,7 +180,10 @@ shiny::shinyServer(function(input, output, session){
       
       custPolyPath <- if(polySrc == "CUST") polyVer else NULL
       
-      admLevelNames <- Rnightlights:::getCtryStructAdmLevelNames(ctryCode = countries, gadmVersion = polyVer, custPolyPath = custPolyPath)
+      admLevelNames <- Rnightlights:::getCtryStructAdmLevelNames(ctryCode = countries,
+                                                                 gadmVersion = polyVer,
+                                                                 gadmPolyType = gadmPolyType,
+                                                                 custPolyPath = custPolyPath)
       
       admLevelNames
     })
@@ -201,7 +204,10 @@ shiny::shinyServer(function(input, output, session){
       
       custPolyPath <- if(polySrc == "CUST") polyVer else NULL
       
-      ctryStructFile <- Rnightlights:::getCtryStructFnamePath(ctryCode = countries, gadmVersion = polyVer, custPolyPath = custPolyPath)
+      ctryStructFile <- Rnightlights:::getCtryStructFnamePath(ctryCode = countries,
+                                                              gadmVersion = polyVer,
+                                                              gadmPolyType = gadmPolyType,
+                                                              custPolyPath = custPolyPath)
       
       if(!file.exists(ctryStructFile))
         return()
@@ -213,7 +219,11 @@ shiny::shinyServer(function(input, output, session){
       colClasses[-grep("area_sq_km|NL_", colClasses)] <- "character"
       colClasses[grep("area_sq_km|NL_", colClasses)] <- "NULL"
       
-      data <- data.table::fread(Rnightlights:::getCtryStructFnamePath(ctryCode = countries, gadmVersion = polyVer, custPolyPath = custPolyPath), colClasses = colClasses, header = T)
+      data <- data.table::fread(Rnightlights:::getCtryStructFnamePath(ctryCode = countries,
+                                                                      gadmVersion = polyVer,
+                                                                      gadmPolyType = gadmPolyType,
+                                                                      custPolyPath = custPolyPath),
+                                colClasses = colClasses, header = T)
     })
   
   ######################## reactive ctryNlTypes ###################################
@@ -273,7 +283,11 @@ shiny::shinyServer(function(input, output, session){
     {
       admLevel <- selectedAdmLevel()
       
-      ctryNlDataFile <- Rnightlights::getCtryNlDataFnamePath(ctryCode = countries, admLevel = admLevel, gadmVersion = polyVer, custPoly = custPolyPath)
+      ctryNlDataFile <- Rnightlights::getCtryNlDataFnamePath(ctryCode = countries,
+                                                             admLevel = admLevel,
+                                                             gadmVersion = polyVer,
+                                                             gadmPolyType = gadmPolyType,
+                                                             custPoly = custPolyPath)
       
       if(file.exists(ctryNlDataFile))
         hdrs <- data.table::fread(ctryNlDataFile, nrows = 1, header = T)
@@ -290,7 +304,11 @@ shiny::shinyServer(function(input, output, session){
       {
         admLevel <- paste0(ctryCode, "_adm0")
         
-        ctryNlDataFile <- Rnightlights::getCtryNlDataFnamePath(ctryCode = ctryCode, admLevel = admLevel, gadmVersion = polyVer, custPolyPath = custPolyPath)
+        ctryNlDataFile <- Rnightlights::getCtryNlDataFnamePath(ctryCode = ctryCode,
+                                                               admLevel = admLevel,
+                                                               gadmVersion = polyVer,
+                                                               gadmPolyType = gadmPolyType,
+                                                               custPolyPath = custPolyPath)
         
         if(file.exists(ctryNlDataFile))
           hdrs <- data.table::fread(ctryNlDataFile, nrows = 1, header = T)
@@ -339,11 +357,18 @@ shiny::shinyServer(function(input, output, session){
     
     if (length(countries) == 1)
     {
-      admLevel <- unlist(Rnightlights:::getCtryShpAllAdmLvls(ctryCodes = countries, gadmVersion = polyVer, custPolyPath = custPolyPath))[2]
+      admLevel <- unlist(Rnightlights:::getCtryShpAllAdmLvls(ctryCodes = countries,
+                                                             gadmVersion = polyVer,
+                                                             gadmPolyType = gadmPolyType,
+                                                             custPolyPath = custPolyPath))[2]
       
       if(input$strict)
       {
-        ctryNlDataFile <- Rnightlights::getCtryNlDataFnamePath(ctryCode = countries, admLevel = admLevel, gadmVersion = polyVer, custPolyPath = custPolyPath)
+        ctryNlDataFile <- Rnightlights::getCtryNlDataFnamePath(ctryCode = countries,
+                                                               admLevel = admLevel,
+                                                               gadmVersion = polyVer,
+                                                               gadmPolyType = gadmPolyType,
+                                                               custPolyPath = custPolyPath)
         
         if(file.exists(ctryNlDataFile))
           ctryData <- data.table::fread(ctryNlDataFile)
@@ -364,7 +389,11 @@ shiny::shinyServer(function(input, output, session){
         admLevel <- paste0(ctryCode, "_adm0")
         #print(ctryCode)
         
-        ctryNlDataFile <- Rnightlights::getCtryNlDataFnamePath(ctryCode = ctryCode, admLevel = admLevel, gadmVersion = polyVer, custPolyPath = custPolyPath)
+        ctryNlDataFile <- Rnightlights::getCtryNlDataFnamePath(ctryCode = ctryCode,
+                                                               admLevel = admLevel,
+                                                               gadmVersion = polyVer,
+                                                               gadmPolyType = gadmPolyType,
+                                                               custPolyPath = custPolyPath)
         
         if(file.exists(ctryNlDataFile))
           temp <- data.table::fread(ctryNlDataFile)
@@ -423,24 +452,44 @@ shiny::shinyServer(function(input, output, session){
       {
         lyrNum <- which(unlist(ctryAdmLevels()) == shiny::isolate(input$admLevel))-1
         
-        admLevel <- unlist(Rnightlights:::getCtryShpLyrNames(ctryCodes = countries, lyrNums = lyrNum, gadmVersion = polyVer, custPolyPath = custPolyPath))
+        admLevel <- unlist(Rnightlights:::getCtryShpLyrNames(ctryCodes = countries,
+                                                             lyrNums = lyrNum,
+                                                             gadmVersion = polyVer,
+                                                             gadmPolyType = gadmPolyType,
+                                                             custPolyPath = custPolyPath))
         
         if(input$strict)
         {
-          ctryNlDataFile <- Rnightlights::getCtryNlDataFnamePath(ctryCode = countries, admLevel = admLevel, gadmVersion = polyVer, custPolyPath = custPolyPath)
+          ctryNlDataFile <- Rnightlights::getCtryNlDataFnamePath(ctryCode = countries,
+                                                                 admLevel = admLevel,
+                                                                 gadmVersion = polyVer,
+                                                                 gadmPolyType = gadmPolyType,
+                                                                 custPolyPath = custPolyPath)
           
           if(file.exists(ctryNlDataFile))
             ctryData <- data.table::fread(ctryNlDataFile)
         }
         else
         {
-          lyrNum <- Rnightlights:::ctryShpLyrName2Num(Rnightlights:::getCtryShpLowestLyrNames(ctryCodes = countries, gadmVersion = polyVer, custPolyPath = custPolyPath))
+          lyrNum <- Rnightlights:::ctryShpLyrName2Num(
+            Rnightlights:::getCtryShpLowestLyrNames(ctryCodes = countries,
+                                                    gadmVersion = polyVer,
+                                                    gadmPolyType = gadmPolyType,
+                                                    custPolyPath = custPolyPath))
           
           while(lyrNum > 0 && is.null(ctryData))
           {
-            admLevel <- Rnightlights:::getCtryShpLyrNames(ctryCodes = countries, lyrNums = lyrNum, gadmVersion = polyVer, custPolyPath = custPolyPath)
+            admLevel <- Rnightlights:::getCtryShpLyrNames(ctryCodes = countries,
+                                                          lyrNums = lyrNum,
+                                                          gadmVersion = polyVer,
+                                                          gadmPolyType = gadmPolyType,
+                                                          custPolyPath = custPolyPath)
             
-            ctryNlDataFile <- Rnightlights::getCtryNlDataFnamePath(ctryCode = countries, admLevel = admLevel, gadmVersion = polyVer, custPolyPath = custPolyPath)
+            ctryNlDataFile <- Rnightlights::getCtryNlDataFnamePath(ctryCode = countries,
+                                                                   admLevel = admLevel,
+                                                                   gadmVersion = polyVer,
+                                                                   gadmPolyType = gadmPolyType,
+                                                                   custPolyPath = custPolyPath)
         
             if(file.exists(ctryNlDataFile))
               ctryData <- data.table::fread(ctryNlDataFile)
@@ -456,7 +505,11 @@ shiny::shinyServer(function(input, output, session){
           admLevel <- paste0(ctryCode, "_adm0")
           #print(ctryCode)
           
-          ctryNlDataFile <- Rnightlights::getCtryNlDataFnamePath(ctryCode = ctryCode, admLevel = admLevel, gadmVersion = polyVer, custPolyPath = custPolyPath)
+          ctryNlDataFile <- Rnightlights::getCtryNlDataFnamePath(ctryCode = ctryCode,
+                                                                 admLevel = admLevel,
+                                                                 gadmVersion = polyVer,
+                                                                 gadmPolyType = gadmPolyType,
+                                                                 custPolyPath = custPolyPath)
           
           if(file.exists(ctryNlDataFile))
             temp <- data.table::fread(ctryNlDataFile)
@@ -737,7 +790,17 @@ shiny::shinyServer(function(input, output, session){
       if(input$strict)
       admLevels <- unlist(sapply(1:length(admLevels), function(admLevel)
       {
-        ctryNlDataFile <- Rnightlights::getCtryNlDataFnamePath(ctryCode = countries, admLevel = Rnightlights:::getCtryShpLyrNames(ctryCode = countries, lyrNums = admLevel-1, gadmVersion = polyVer, custPolyPath = custPolyPath), gadmVersion = polyVer, custPolyPath = custPolyPath)
+        ctryNlDataFile <- 
+          Rnightlights::getCtryNlDataFnamePath(ctryCode = countries,
+                                               admLevel = Rnightlights:::getCtryShpLyrNames(
+                                                 ctryCode = countries,
+                                                 lyrNums = admLevel-1,
+                                                 gadmVersion = polyVer,
+                                                 gadmPolyType = gadmPolyType,
+                                                 custPolyPath = custPolyPath),
+                                               gadmVersion = polyVer,
+                                               gadmPolyType = gadmPolyType,
+                                               custPolyPath = custPolyPath)
         
         if(file.exists(ctryNlDataFile))
           return(admLevels[admLevel])
@@ -1954,7 +2017,10 @@ shiny::shinyServer(function(input, output, session){
         #print(paste0("admlvlNums:", admLvlNums))
   
         #get the selected admLevel and convert to lyrnum
-        ctryAdmLevels <- Rnightlights:::getCtryStructAdmLevelNames(ctryCode = country, gadmVersion = polyVer, custPolyPath = NULL)
+        ctryAdmLevels <- Rnightlights:::getCtryStructAdmLevelNames(ctryCode = country,
+                                                                   gadmVersion = polyVer,
+                                                                   gadmPolyType = gadmPolyType,
+                                                                   custPolyPath = NULL)
   
         #ctryAdmLevels <- unlist(ctryAdmLevels[which(countries == country)])
         if(!is.null(admLevel) || admLevel == "country")

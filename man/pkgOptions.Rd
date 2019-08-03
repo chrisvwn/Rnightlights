@@ -21,7 +21,7 @@ Set or get options for the Rnightlights package
 
 The following options are supported
 \describe{
- \item{\code{configName.VIIRS.D}}{(\code{character}) The regex to uniquely
+ \item{\code{configName_VIIRS.D}}{(\code{character}) The regex to uniquely
      identify the tile file to use out of the downloaded tile .tgz. The
      version 1 monthly series is run globally using two different 
      configurations.
@@ -38,11 +38,11 @@ The following options are supported
      applications. The annual versions are only made with the "vcm"
      version, excluding any data impacted by stray light.}
      
- \item{\code{configName.VIIRS.M}}{(\code{character}) The regex to uniquely
+ \item{\code{configName_VIIRS.M}}{(\code{character}) The regex to uniquely
      identify the tile file to use out of the downloaded monthly .tgz
      tile. Has the same options as configName.VIIRS.D}
  
- \item{\code{configName.VIIRS.Y}}{(\code{character}) The regex to uniquely
+ \item{\code{configName_VIIRS.Y}}{(\code{character}) The regex to uniquely
      identify the tile file to use out of the downloaded tile .tgz. The
      annual products can have other values for the config shortname (Field 5).
      They are:

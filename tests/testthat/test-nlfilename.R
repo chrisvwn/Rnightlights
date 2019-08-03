@@ -14,7 +14,10 @@ test_that("nlfilenames are correct", {
   
   expect_equal(Rnightlights:::getNlTileTifLclNameOLS("1992"), "NL_TILE_OLS.Y_1992_00N180W.tif")
   
-  expect_equal(Rnightlights:::getCtryNlDataFname(ctryCode = "KEN", admLevel = "KEN_adm0", gadmVersion = "2.8"), "NL_DATA_KEN_ADM0_GADM-2.8.csv")
+  expect_equal(Rnightlights:::getCtryNlDataFname(ctryCode = "KEN",
+                                                 admLevel = "KEN_adm0",
+                                                 gadmVersion = "2.8"),
+               "NL_DATA_KEN_ADM0_GADM-2.8.csv")
   
   expect_equal(Rnightlights:::getPolyFname("KEN", gadmVersion = "2.8"),"SHP_KEN_GADM-2.8")
   

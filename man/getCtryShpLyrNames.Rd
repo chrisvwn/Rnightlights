@@ -5,7 +5,8 @@
 \title{Get the standard names of polygon layers in a country}
 \usage{
 getCtryShpLyrNames(ctryCodes = NULL, lyrNums, dnldPoly,
-  gadmVersion = pkgOptions("gadmVersion"), custPolyPath = NULL)
+  gadmVersion = pkgOptions("gadmVersion"), gadmPolyType = gadmPolyType,
+  custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCodes}{the ISO3 codes for the countries}

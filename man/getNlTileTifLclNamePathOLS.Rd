@@ -4,9 +4,15 @@
 \alias{getNlTileTifLclNamePathOLS}
 \title{Constructs the full path used to save/access the decompressed OLS .tif file}
 \usage{
-getNlTileTifLclNamePathOLS(nlPeriod, tileNum)
+getNlTileTifLclNamePathOLS(nlType = "OLS.Y",
+  configName = pkgOptions(paste0("configName_", nlType)), nlPeriod,
+  tileNum)
 }
 \arguments{
+\item{nlType}{The particular VIIRS type e.g. VIIRS.D for daily VIIRS}
+
+\item{configName}{character the type of raster being processed}
+
 \item{nlPeriod}{the year in which the tile was created}
 
 \item{tileNum}{ignored}

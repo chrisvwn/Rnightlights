@@ -161,3 +161,78 @@ getNlUrlVIIRS <- function(nlPeriod, tileNum, nlType)
 
   return (ntLtsPageUrl)
 }
+
+######################## getNlUrlOLS ###################################
+
+#' Function to return the url of the OLS tile to download
+#'
+#' Function to return the url of the OLS tile to download given the year
+#'
+#' @param nlPeriod The nlPeriod of the tile for which to return the tile download URL
+#'
+#' @return character string Url of the OLS tile file
+#'
+#' @examples
+#' \dontrun{
+#' tileUrl <- Rnightlights:::getNlUrlOLS("1999")
+#' }
+#'
+getNlUrl <- function(nlPeriod)
+{
+  nlPeriod <- as.character(nlPeriod)
+  
+  #Function to return the url of the file to download given the year, month, and nlTile index
+  #nlTile is a global list
+  
+  ntLtsBaseUrl <- "https://www.ngdc.noaa.gov"
+  
+  #the page that lists all available nightlight files
+  ntLtsPageHtml <- "https://www.ngdc.noaa.gov/eog/dmsp/downloadV4composites.html"
+  
+  #the local name of the file once downloaded
+  ntLtsPageLocalName <- file.path(getNlDir("dirNlTemp"), "ntltspageols.html")
+  
+  #if the file does not exist or is older than a day download it afresh
+  #not working. download.file does not seem to update mtime
+  if (!file.exists(ntLtsPageLocalName) || (lubridate::date(lubridate::now()) - lubridate::date(file.mtime(ntLtsPageLocalName)) > lubridate::as.difftime(lubridate::period("1 day"))))
+  {
+    utils::download.file(url = ntLtsPageHtml, destfile = ntLtsPageLocalName, method = "auto", extra = "-N")
+  } else
+  {
+    message(Sys.time(), ": ", paste0(ntLtsPageHtml, " already downloaded."))
+  }
+  
+  #read in the html page
+  ntLtsPage <- xml2::read_html(ntLtsPageLocalName)
+  
+  ntLtsPage <- rvest::html_nodes(ntLtsPage, "table tr td a")
+  
+  #search for a line containing the patterns that make the files unique
+  #sample url: https://www.ngdc.noaa.gov/eog/data/web_data/v4composites/F101992.v4.tar
+  #create the pattern
+  ntLtsPageRgxp <- paste0("F.*.", nlPeriod,".*.tar")
+  
+  #search for the pattern in the page
+  ntLtsPageHtml <- ntLtsPage[grep(pattern = ntLtsPageRgxp, x=ntLtsPage)]
+  
+  #split the output on quotes since this url is of the form ...<a href="URL"download> ...
+  #the url is in the second position
+  ntLtsPageUrl <- rvest::html_attr(ntLtsPageHtml,name = "href")
+  
+  #remove newlines and returns
+  ntLtsPageUrl <- gsub("\n", "", ntLtsPageUrl)
+  ntLtsPageUrl <- gsub("\r", "", ntLtsPageUrl)
+  
+  #concat the relative urls with the base url to form the full url
+  ntLtsPageUrl <- unlist(lapply(ntLtsPageUrl, FUN=function(x) paste0(ntLtsBaseUrl, x)))
+  
+  #****NOTE: temp for testing using local download. ****
+  #****create fixed url to local webserver          ****
+  #
+  #fname <- stringr::str_extract(ntLtsPageUrl, "SVDNB.*.tgz")
+  #ntLtsPageUrl <- paste0("http://localhost/", fname)
+  #
+  #****DELETE/COMMENT OUT WHEN DONE                 ****
+  
+  return (ntLtsPageUrl)
+}

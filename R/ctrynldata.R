@@ -24,7 +24,11 @@
 #' }
 #' 
 #'
-createCtryNlDataDF <- function(ctryCode=NULL, admLevel, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
+createCtryNlDataDF <- function(ctryCode=NULL,
+                               admLevel,
+                               gadmVersion=pkgOptions("gadmVersion"),
+                               gadmPolyType=pkgOptions("gadmPolyType"),
+                               custPolyPath=NULL)
 {
   if(is.null(ctryCode) && is.null(custPolyPath))
     stop(Sys.time(), ": Missing required parameter ctryCode")
@@ -33,11 +37,18 @@ createCtryNlDataDF <- function(ctryCode=NULL, admLevel, gadmVersion=pkgOptions("
     stop(Sys.time(), ": Invalid ctryCode(s) detected ")
   
   if(missing(admLevel))
-    admLevel=getCtryShpLowestLyrNames(ctryCodes = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+    admLevel=getCtryShpLowestLyrNames(ctryCodes = ctryCode,
+                                      gadmVersion = gadmVersion,
+                                      gadmPolyType = gadmPolyType,
+                                      custPolyPath = custPolyPath)
   
   wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
   
-  ctryPoly <- readCtryPolyAdmLayer(ctryCode = ctryCode, admLevel = admLevel, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+  ctryPoly <- readCtryPolyAdmLayer(ctryCode = ctryCode,
+                                   admLevel = admLevel,
+                                   gadmVersion = gadmVersion,
+                                   gadmPolyType = gadmPolyType,
+                                   custPolyPath = custPolyPath)
   
   if(is.null(ctryPoly))
     stop(Sys.time(), ": Could not read admLevel '", admLevel, "' from given polygon")
@@ -47,7 +58,11 @@ createCtryNlDataDF <- function(ctryCode=NULL, admLevel, gadmVersion=pkgOptions("
   raster::projection(ctryPoly) <- sp::CRS(wgs84)
   
   #get the list of admin levels in the polygon shapefile
-  ctryPolyAdmLevels <- getCtryPolyAdmLevelNames(ctryCode = ctryCode, lowestAdmLevel = admLevel, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+  ctryPolyAdmLevels <- getCtryPolyAdmLevelNames(ctryCode = ctryCode,
+                                                lowestAdmLevel = admLevel,
+                                                gadmVersion = gadmVersion,
+                                                gadmPolyType = gadmPolyType,
+                                                custPolyPath = custPolyPath)
   
   #convert to lower case for consistency
   ctryPolyAdmLevels <- tolower(ctryPolyAdmLevels)
@@ -98,7 +113,10 @@ createCtryNlDataDF <- function(ctryCode=NULL, admLevel, gadmVersion=pkgOptions("
   } else
   {
     #custpolyPath
-    polyFnamePath <- getPolyFnamePath(ctryCode = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+    polyFnamePath <- getPolyFnamePath(ctryCode = ctryCode,
+                                      gadmVersion = gadmVersion,
+                                      gadmPolyType = gadmPolyType,
+                                      custPolyPath = custPolyPath)
     
     lyrNames <- rgdal::ogrListLayers(polyFnamePath)
     
@@ -152,7 +170,11 @@ createCtryNlDataDF <- function(ctryCode=NULL, admLevel, gadmVersion=pkgOptions("
     
     polyColNames <- polyColNames[1:nLyrs]
     
-    ctryPoly <- readCtryPolyAdmLayer(ctryCode = ctryCode, admLevel = admLevel, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+    ctryPoly <- readCtryPolyAdmLayer(ctryCode = ctryCode,
+                                     admLevel = admLevel,
+                                     gadmVersion = gadmVersion,
+                                     gadmPolyType = gadmPolyType,
+                                     custPolyPath = custPolyPath)
     
     ctryNlDataDF <- as.data.frame(ctryPoly@data[, polyColNames], stringsAsFactors=F)
     
@@ -199,7 +221,7 @@ createCtryNlDataDF <- function(ctryCode=NULL, admLevel, gadmVersion=pkgOptions("
 #'     dataCol, "mean", "2012", "OLS.Y")
 #'     }
 #'
-insertNlDataCol <- function (ctryNlDataDF, dataCol, statType, nlPeriod, nlType)
+insertNlDataCol <- function (ctryNlDataDF, dataCol, statType, nlPeriod, nlType, configName)
 {
   if(missing(ctryNlDataDF))
     stop(Sys.time(), ": Missing required parameter ctryNlDataDF")
@@ -221,7 +243,7 @@ insertNlDataCol <- function (ctryNlDataDF, dataCol, statType, nlPeriod, nlType)
   ctryNlDataDF <- cbind(ctryNlDataDF, dataCol)
   
   #name the new column which is currently last with the yearmonth of the data
-  names(ctryNlDataDF)[ncol(ctryNlDataDF)] <- getCtryNlDataColName(nlPeriod = nlPeriod, nlStat = statType, nlType = nlType)
+  names(ctryNlDataDF)[ncol(ctryNlDataDF)] <- getCtryNlDataColName(nlPeriod = nlPeriod, nlStat = statType, nlType = nlType, configName = configName)
   
   #re-arrange the columns
   #read in all column names in the dataframe afresh
@@ -278,7 +300,14 @@ insertNlDataCol <- function (ctryNlDataDF, dataCol, statType, nlPeriod, nlType)
 #'     }
 #'
 #' @export
-deleteNlDataCol <- function (ctryCode=NULL, admLevel, nlType, nlPeriod, statType, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
+deleteNlDataCol <- function (ctryCode=NULL,
+                             admLevel,
+                             nlType,
+                             nlPeriod,
+                             statType,
+                             gadmVersion=pkgOptions("gadmVersion"),
+                             gadmPolyType=pkgOptions("gadmPolyType"),
+                             custPolyPath=NULL)
 {
   if(is.null(ctryCode) && is.null(custPolyPath))
     stop(Sys.time(), ": Missing required parameter ctryCode")
@@ -301,6 +330,7 @@ deleteNlDataCol <- function (ctryCode=NULL, admLevel, nlType, nlPeriod, statType
                                 nlPeriods = getAllNlPeriods(nlTypes = nlType), 
                                 ignoreMissing = TRUE,
                                 gadmVersion = gadmVersion,
+                                gadmPolyType = gadmPolyType,
                                 custPolyPath = custPolyPath))
   
   #read in all column names in the dataframe
@@ -317,7 +347,16 @@ deleteNlDataCol <- function (ctryCode=NULL, admLevel, nlType, nlPeriod, statType
   #write back the dataframe with the new column order
   ctryNlDataDF <- ctryNlDataDF[ , -c(nlDataColIdx)]
   
-  saveCtryNlData(ctryNlDataDF = ctryNlDataDF, ctryCode = ctryCode, admLevel = searchAdmLevel(ctryCodes = ctryCode,admLevelNames = admLevel,gadmVersion = gadmVersion, custPolyPath = custPolyPath), gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+  saveCtryNlData(ctryNlDataDF = ctryNlDataDF,
+                 ctryCode = ctryCode,
+                 admLevel = searchAdmLevel(ctryCodes = ctryCode,
+                                           admLevelNames = admLevel,
+                                           gadmVersion = gadmVersion,
+                                           gadmPolyType = gadmPolyType,
+                                           custPolyPath = custPolyPath),
+                 gadmVersion = gadmVersion,
+                 gadmPolyType = gadmPolyType,
+                 custPolyPath = custPolyPath)
   
   return(TRUE)
 }
@@ -348,7 +387,12 @@ deleteNlDataCol <- function (ctryCode=NULL, admLevel, nlType, nlPeriod, statType
 #' Rnightlights:::saveCtryNlData(ctryNlDataDF, ctryCode)
 #' }
 #'
-saveCtryNlData <- function(ctryNlDataDF, ctryCode=NULL, admLevel, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
+saveCtryNlData <- function(ctryNlDataDF,
+                           ctryCode=NULL,
+                           admLevel,
+                           gadmVersion=pkgOptions("gadmVersion"),
+                           gadmPolyType=pkgOptions("gadmPolyType"),
+                           custPolyPath=NULL)
 {
   if(missing(ctryNlDataDF))
     stop(Sys.time(), ": Missing required parameter ctryNlDataDF")
@@ -368,7 +412,14 @@ saveCtryNlData <- function(ctryNlDataDF, ctryCode=NULL, admLevel, gadmVersion=pk
   if(!validCtryNlDataDF(ctryNlDataDF))
     stop(Sys.time(), ": Invalid country dataframe")
   
-  utils::write.table(x = ctryNlDataDF, file = getCtryNlDataFnamePath(ctryCode = ctryCode, admLevel = admLevel, gadmVersion = gadmVersion, custPolyPath = custPolyPath), row.names = F, sep = ",")
+  utils::write.table(x = ctryNlDataDF,
+                     file = getCtryNlDataFnamePath(ctryCode = ctryCode,
+                                                   admLevel = admLevel,
+                                                   gadmVersion = gadmVersion,
+                                                   gadmPolyType = gadmPolyType,
+                                                   custPolyPath = custPolyPath),
+                     row.names = F,
+                     sep = ",")
 }
 
 ######################## validCtryNlDataDF ###################################
@@ -423,7 +474,11 @@ validCtryNlDataDF <- function(ctryNlDataDF)
 #' Rnightlights:::getCtryNlDataFname(ctryCode, admLevel)
 #' #returns string of name of the ctry data file
 #'
-getCtryNlDataFname <- function(ctryCode=NULL, admLevel, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
+getCtryNlDataFname <- function(ctryCode=NULL,
+                               admLevel,
+                               gadmVersion=pkgOptions("gadmVersion"),
+                               gadmPolyType=pkgOptions("gadmPolyType"),
+                               custPolyPath=NULL)
 {
   if(is.null(ctryCode) && is.null(custPolyPath))
     stop(Sys.time(), ": Missing required parameter ctryCode")
@@ -448,7 +503,7 @@ getCtryNlDataFname <- function(ctryCode=NULL, admLevel, gadmVersion=pkgOptions("
   else
     lyrName <- admLevel
   
-  polyVer <- ifelse(is.null(custPolyPath), paste0("GADM-", gadmVersion), paste0("CUST-", basename(custPolyPath)))
+  polyVer <- ifelse(is.null(custPolyPath), paste0("GADM-", gadmVersion, "-", toupper(gadmPolyType)), paste0("CUST-", basename(custPolyPath)))
   
   fName <- paste0(paste("NL", "DATA", toupper(ctryCode), toupper(lyrName), polyVer, sep="_"), ".csv")
   
@@ -482,7 +537,11 @@ getCtryNlDataFname <- function(ctryCode=NULL, admLevel, gadmVersion=pkgOptions("
 #'
 #' #@export only due to exploreData() shiny app
 #' @export
-getCtryNlDataFnamePath <- function(ctryCode=NULL, admLevel, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
+getCtryNlDataFnamePath <- function(ctryCode=NULL,
+                                   admLevel,
+                                   gadmVersion=pkgOptions("gadmVersion"),
+                                   gadmPolyType=pkgOptions("gadmPolyType"),
+                                   custPolyPath=NULL)
 {
   if(is.null(ctryCode) && is.null(custPolyPath))
     stop(Sys.time(), ": Missing required parameter ctryCode")
@@ -496,7 +555,12 @@ getCtryNlDataFnamePath <- function(ctryCode=NULL, admLevel, gadmVersion=pkgOptio
   if(is.null(custPolyPath) && !validCtryCodes(ctryCode))
     stop(Sys.time(), ": Invalid ctryCode: ", ctryCode)
   
-  return (file.path(getNlDir(dirName = "dirNlData"), getCtryNlDataFname(ctryCode = ctryCode, admLevel = admLevel, gadmVersion = gadmVersion, custPolyPath = custPolyPath)))
+  return (file.path(getNlDir(dirName = "dirNlData"),
+                    getCtryNlDataFname(ctryCode = ctryCode,
+                                       admLevel = admLevel,
+                                       gadmVersion = gadmVersion,
+                                       gadmPolyType = gadmPolyType,
+                                       custPolyPath = custPolyPath)))
 }
 
 ######################## getCtryNlData ###################################
@@ -615,7 +679,19 @@ getCtryNlDataFnamePath <- function(ctryCode=NULL, admLevel, gadmVersion=pkgOptio
 #'     }
 #'  
 #' @export
-getCtryNlData <- function(ctryCode=NULL, admLevel, nlTypes, nlPeriods, nlStats=pkgOptions("nlStats"), ignoreMissing=NULL, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL, downloadMethod=pkgOptions("downloadMethod"), cropMaskMethod=pkgOptions("cropMaskMethod"), extractMethod=pkgOptions("extractMethod"), source="local", ...)
+getCtryNlData <- function(ctryCode=NULL,
+                          admLevel,
+                          nlTypes,
+                          configNames,
+                          nlPeriods, 
+                          nlStats=pkgOptions("nlStats"), ignoreMissing=NULL, 
+                          gadmVersion=pkgOptions("gadmVersion"),
+                          gadmPolyType=pkgOptions("gadmPolyType"),
+                          custPolyPath=NULL,
+                          downloadMethod=pkgOptions("downloadMethod"),
+                          cropMaskMethod=pkgOptions("cropMaskMethod"),
+                          extractMethod=pkgOptions("extractMethod"),
+                          source="local", ...)
 {
   if(source != "local")
     stop(Sys.time(), ": Non-local sources not currently supported. \n
@@ -632,6 +708,8 @@ getCtryNlData <- function(ctryCode=NULL, admLevel, nlTypes, nlPeriods, nlStats=p
   
   if(missing(nlTypes))
     stop(Sys.time(), ": Missing required parameter nlTypes")
+  
+  configNames <- sapply(nlTypes, function(x) pkgOptions(paste("configName_", x, sep="")))
   
   #if both nlPeriods and ignoreMissing are not supplied we cannot deduce
   #the nlPeriods. Error and stop
@@ -668,16 +746,35 @@ getCtryNlData <- function(ctryCode=NULL, admLevel, nlTypes, nlPeriods, nlStats=p
     #  stop(Sys.time(), ": Invalid ctryCode", ctryCode)
     
     if(grepl("country", admLevel))
-      admLevel <- getCtryShpLyrNames(ctryCodes = ctryCode, lyrNums = 0, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+      admLevel <- getCtryShpLyrNames(ctryCodes = ctryCode,
+                                     lyrNums = 0,
+                                     gadmVersion = gadmVersion,
+                                     gadmPolyType = gadmPolyType,
+                                     custPolyPath = custPolyPath)
     else if(admLevel %in% c("bottom", "lowest"))
-      admLevel <- getCtryShpLowestLyrNames(ctryCodes = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+      admLevel <- getCtryShpLowestLyrNames(ctryCodes = ctryCode,
+                                           gadmVersion = gadmVersion,
+                                           gadmPolyType = gadmPolyType,
+                                           custPolyPath = custPolyPath)
     else if(admLevel %in% c("top","highest"))
-      admLevel <- getCtryShpLyrNames(ctryCodes = ctryCode, lyrNums = 1, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+      admLevel <- getCtryShpLyrNames(ctryCodes = ctryCode,
+                                     lyrNums = 1,
+                                     gadmVersion = gadmVersion,
+                                     gadmPolyType = gadmPolyType,
+                                     custPolyPath = custPolyPath)
     else if(admLevel=="all")
-      admLevel <- getCtryShpAllAdmLvls(ctryCodes = ctryCode, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+      admLevel <- getCtryShpAllAdmLvls(ctryCodes = ctryCode,
+                                       gadmVersion = gadmVersion,
+                                       gadmPolyType = gadmPolyType,
+                                       custPolyPath = custPolyPath)
     else
     {
-      tmpAdmLevel <- searchAdmLevel(ctryCodes = ctryCode, admLevelNames = admLevel, downloadMethod = downloadMethod, gadmVersion = gadmVersion, custPolyPath = custPolyPath)
+      tmpAdmLevel <- searchAdmLevel(ctryCodes = ctryCode,
+                                    admLevelNames = admLevel,
+                                    downloadMethod = downloadMethod,
+                                    gadmVersion = gadmVersion,
+                                    gadmPolyType = gadmPolyType,
+                                    custPolyPath = custPolyPath)
       
       admLevel <- ifelse(is.na(tmpAdmLevel), admLevel, tmpAdmLevel)
     }
@@ -692,11 +789,19 @@ getCtryNlData <- function(ctryCode=NULL, admLevel, nlTypes, nlPeriods, nlStats=p
         admLevel <- paste(ctryCode, paste0("adm", admLevel), sep="_")
     }
     
-    if(!allValidCtryAdmLvls(ctryCode = ctryCode, admLevels = admLevel, gadmVersion = gadmVersion, custPolyPath = custPolyPath))
+    if(!allValidCtryAdmLvls(ctryCode = ctryCode,
+                            admLevels = admLevel,
+                            gadmVersion = gadmVersion,
+                            gadmPolyType = gadmPolyType,
+                            custPolyPath = custPolyPath))
       stop(Sys.time(), ": Invalid admLevels detected")
     
     if(!is.null(ignoreMissing))
-      if(ignoreMissing && !existsCtryNlDataFile(ctryCode = ctryCode, admLevel = admLevel, gadmVersion = gadmVersion, custPolyPath = custPolyPath))
+      if(ignoreMissing && !existsCtryNlDataFile(ctryCode = ctryCode,
+                                                admLevel = admLevel,
+                                                gadmVersion = gadmVersion,
+                                                gadmPolyType = gadmPolyType,
+                                                custPolyPath = custPolyPath))
         stop(Sys.time(), ": No data exists for ", ctryCode, ". Set IgnoreMissing=FALSE to download and process")
     
     if (!missing(nlPeriods)) #if nlPeriods is provided process else return all ctry data
@@ -730,9 +835,11 @@ getCtryNlData <- function(ctryCode=NULL, admLevel, nlTypes, nlPeriods, nlStats=p
                                   FUN = function(x) existsCtryNlData(ctryCode = ctryCode,
                                                                      admLevel = admLevel,
                                                                      nlTypes =  x[1],
+                                                                     configNames = configNames,
                                                                      nlPeriods = x[2],
                                                                      nlStats = as.character(x[3]),
                                                                      gadmVersion = gadmVersion,
+                                                                     gadmPolyType = gadmPolyType, 
                                                                      custPolyPath = custPolyPath))
       
       missingData <- paste0(apply(X = nlPeriodStats[!existnlPeriodStats,],
@@ -760,9 +867,11 @@ getCtryNlData <- function(ctryCode=NULL, admLevel, nlTypes, nlPeriods, nlStats=p
           processNlData(ctryCodes = ctryCode,
                         admLevels = admLevel,
                         nlTypes = nlTypes,
+                        configNames= configNames,
                         nlPeriods = nlPeriods,
                         nlStats = nlStats,
                         gadmVersion = gadmVersion,
+                        gadmPolyType = gadmPolyType,
                         custPolyPath = custPolyPath,
                         downloadMethod = downloadMethod,
                         cropMaskMethod = cropMaskMethod,
@@ -783,18 +892,31 @@ getCtryNlData <- function(ctryCode=NULL, admLevel, nlTypes, nlPeriods, nlStats=p
       }
       
       #if all nlPeriodStats exist  get the data
-      ctryData <- as.data.frame(data.table::fread(getCtryNlDataFnamePath(ctryCode = ctryCode, admLevel = admLevel, gadmVersion = gadmVersion, custPolyPath = custPolyPath)))
+      ctryData <- as.data.frame(
+        data.table::fread(
+          getCtryNlDataFnamePath(ctryCode = ctryCode,
+                                 admLevel = admLevel,
+                                 gadmVersion = gadmVersion,
+                                 gadmPolyType = gadmPolyType,
+                                 custPolyPath = custPolyPath)))
     }
     else
     {
       #else if missing nlPeriods
       #if !missing(stats) return only given stats
       #else return the whole data frame
-      if(existsCtryNlDataFile(ctryCode = ctryCode, admLevel = admLevel, gadmVersion = gadmVersion, custPolyPath=custPolyPath))
-        ctryData <- as.data.frame(data.table::fread(getCtryNlDataFnamePath(ctryCode = ctryCode,
-                                                                           admLevel = admLevel,
-                                                                           gadmVersion = gadmVersion,
-                                                                           custPolyPath = custPolyPath)))
+      if(existsCtryNlDataFile(ctryCode = ctryCode,
+                              admLevel = admLevel,
+                              gadmVersion = gadmVersion,
+                              gadmPolyType = gadmPolyType,
+                              custPolyPath=custPolyPath))
+        ctryData <- as.data.frame(
+          data.table::fread(
+            getCtryNlDataFnamePath(ctryCode = ctryCode,
+                                   admLevel = admLevel,
+                                   gadmVersion = gadmVersion,
+                                   gadmPolyType = gadmPolyType,
+                                   custPolyPath = custPolyPath)))
       else
       {
         message(Sys.time(), ": Data for ", ctryCode, " does not exist. Set IgnoreMissing=FALSE to download and process")
@@ -830,9 +952,11 @@ getCtryNlData <- function(ctryCode=NULL, admLevel, nlTypes, nlPeriods, nlStats=p
                                       existsCtryNlData(ctryCode = ctryCode,
                                                        admLevel = admLevel,
                                                        nlTypes = x[1],
+                                                       configNames = configNames,
                                                        nlPeriods = x[2],
                                                        nlStats = x[3],
                                                        gadmVersion = gadmVersion,
+                                                       gadmPolyType = gadmPolyType,
                                                        custPolyPath = custPolyPath)})
       else if (stringr::str_detect(nlTypes, "OLS"))
         existnlPeriodStats <- apply(X = nlPeriodStats,
@@ -842,16 +966,22 @@ getCtryNlData <- function(ctryCode=NULL, admLevel, nlTypes, nlPeriods, nlStats=p
                                       existsCtryNlData(ctryCode = ctryCode,
                                                        admLevel = admLevel,
                                                        nlTypes = x[1],
+                                                       configNames = configNames,
                                                        nlPeriods = x[2],
                                                        nlStats = x[3],
                                                        gadmVersion = gadmVersion,
+                                                       gadmPolyType = gadmPolyType,
                                                        custPolyPath = custPolyPath)
                                     })
       
       #if they all exist get the list of column names
       if(all(existnlPeriodStats))
       {
-        existingCols <- apply(nlPeriodStats[existnlPeriodStats,], 1, function(x) getCtryNlDataColName(nlPeriod = x[2], nlType = x[1], nlStat = x[3]))
+        existingCols <- apply(nlPeriodStats[existnlPeriodStats,],
+                              1,
+                              function(x) getCtryNlDataColName(nlPeriod = x[2],
+                                                               nlType = x[1],
+                                                               nlStat = x[3]))
         
         message(Sys.time(), ": All stats exist")
       }
@@ -909,7 +1039,7 @@ getCtryNlData <- function(ctryCode=NULL, admLevel, nlTypes, nlPeriods, nlStats=p
 #' 
 #' Rnightlights:::getCtryNlDataColName("201612", "sum", nlType="VIIRS.M")
 #'   
-getCtryNlDataColName <- function(nlPeriod, nlStat, nlType)
+getCtryNlDataColName <- function(nlPeriod, nlStat, nlType, configName)
 {
   if(missing(nlPeriod))
     stop(Sys.time(), ": Missing required parameter nlPeriod")
@@ -920,13 +1050,16 @@ getCtryNlDataColName <- function(nlPeriod, nlStat, nlType)
   if(missing(nlType))
     stop(Sys.time(), ": Missing required parameter nlType")
   
+  if(missing(configName))
+    configName = pkgOptions(paste0("configName_", nlType))
+  
   if(!allValidNlPeriods(nlPeriods = nlPeriod, nlTypes = nlType))
     stop(Sys.time(), ": Invalid nlPeriod: ", nlPeriod, " for nlType: ", nlType)
   
   if (!allValid(nlStat, validNlStats))
     stop(Sys.time(), ": Invalid/unsupported nlStat detected")
   
-  colName <- paste0("NL_", nlType, "_")
+  colName <- paste0("NL_", nlType, "_", toupper(configName), "_")
   
   colName <- paste0(colName, sapply(nlPeriod, function(x) paste0(x, "_", toupper(nlStat))))
   
@@ -960,7 +1093,11 @@ getCtryNlDataColName <- function(nlPeriod, nlStat, nlType)
 #'     ifelse(Rnightlights:::existsCtryNlDataFile(ctryCode, admLevel), 
 #'         " FOUND", " NOT FOUND"))
 #'
-existsCtryNlDataFile <- function(ctryCode=NULL, admLevel, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
+existsCtryNlDataFile <- function(ctryCode=NULL,
+                                 admLevel,
+                                 gadmVersion=pkgOptions("gadmVersion"),
+                                 gadmPolyType=pkgOptions("gadmPolyType"),
+                                 custPolyPath=NULL)
 {
   if(is.null(ctryCode) && is.null(custPolyPath))
     stop(Sys.time(), ": Missing required parameter ctryCode")
@@ -972,7 +1109,11 @@ existsCtryNlDataFile <- function(ctryCode=NULL, admLevel, gadmVersion=pkgOptions
     stop(Sys.time(), ": Missing required parameter admLevel")
   
   #for polygons look for shapefile dir
-  return(file.exists(getCtryNlDataFnamePath(ctryCode = ctryCode, admLevel = admLevel, gadmVersion = gadmVersion, custPolyPath = custPolyPath)))
+  return(file.exists(getCtryNlDataFnamePath(ctryCode = ctryCode,
+                                            admLevel = admLevel,
+                                            gadmVersion = gadmVersion,
+                                            gadmPolyType = gadmPolyType,
+                                            custPolyPath = custPolyPath)))
 }
 
 ######################## existsCtryNlData ###################################
@@ -1002,7 +1143,15 @@ existsCtryNlDataFile <- function(ctryCode=NULL, admLevel, gadmVersion=pkgOptions
 #' @examples
 #' Rnightlights:::existsCtryNlData("KEN", "KEN_adm0", "VIIRS.M","201401", "sum")
 #'
-existsCtryNlData <- function(ctryCode=NULL, admLevel, nlTypes, nlPeriods, nlStats, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
+existsCtryNlData <- function(ctryCode=NULL,
+                             admLevel,
+                             nlTypes,
+                             configNames,
+                             nlPeriods,
+                             nlStats,
+                             gadmVersion=pkgOptions("gadmVersion"),
+                             gadmPolyType=pkgOptions("gadmPolyType"),
+                             custPolyPath=NULL)
 {
   if(is.null(ctryCode) && is.null(custPolyPath))
     stop(Sys.time(), ": Missing required parameter ctryCode")
@@ -1034,26 +1183,68 @@ existsCtryNlData <- function(ctryCode=NULL, admLevel, nlTypes, nlPeriods, nlStat
   if(!all(validNlStats(nlStats)))
     stop(Sys.time(), ": Invalid nlStat: ", nlStats)
   
-  if (existsCtryNlDataFile(ctryCode = ctryCode, admLevel = admLevel, gadmVersion = gadmVersion, custPolyPath = custPolyPath))
-    dta <- utils::read.csv(getCtryNlDataFnamePath(ctryCode = ctryCode, admLevel = admLevel, gadmVersion = gadmVersion, custPolyPath = custPolyPath), nrow=1, header=TRUE)
+  if (existsCtryNlDataFile(ctryCode = ctryCode,
+                           admLevel = admLevel,
+                           gadmVersion = gadmVersion,
+                           gadmPolyType = gadmPolyType,
+                           custPolyPath = custPolyPath))
+    dta <- utils::read.csv(
+      getCtryNlDataFnamePath(ctryCode = ctryCode,
+                             admLevel = admLevel,
+                             gadmVersion = gadmVersion,
+                             gadmPolyType = gadmPolyType,
+                             custPolyPath = custPolyPath),
+      nrow=1, header=TRUE)
   else
     dta <- NULL
   
   hdrs <- names(dta)
   
-  searchCols <- paste("NL", nlTypes, nlPeriods, toupper(nlStats), sep="_")
+  searchCols <- paste("NL", toupper(nlTypes), toupper(configNames), toupper(nlPeriods), toupper(nlStats), sep="_")
   
   return(unlist(lapply(searchCols, function(x) length(grep(pattern = x, x = hdrs, ignore.case = T))>0)))
 }
 
-allExistsCtryNlData <- function(ctryCodes, admLevels, nlTypes, nlPeriods, nlStats, gadmVersion=pkgOptions("gadmVersion"), custPolyPath=NULL)
+######################## allExistsCtryNlData ###################################
+
+#' Checks if all data is available
+#'
+#' Checks if all data is available
+#'  
+#' @param ctryCodes  \code{character} vector of ctryCodes to filter by
+#' 
+#' @param admLevels A character vector of admLevels to filter by
+#' 
+#' @param nlTypes A character vector of nlTypes to filter by
+#' 
+#' @param nlPeriods A character vector of nlPeriods to filter by 
+#' 
+#' @param nlStats The stats to filter by
+#' 
+#' @param gadmVersion The GADM version to use
+#' 
+#' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
+#' 
+#' @return TRUE/FALSE
+#'
+allExistsCtryNlData <- function(ctryCodes,
+                                admLevels,
+                                nlTypes,
+                                configNames,
+                                nlPeriods,
+                                nlStats,
+                                gadmVersion=pkgOptions("gadmVersion"),
+                                gadmPolyType = pkgOptions("gadmPolyType"),
+                                custPolyPath=NULL)
 {
   all(unlist(existsCtryNlData(ctryCode = ctryCodes,
                               admLevel = admLevels,
                               nlPeriods = nlPeriods,
                               nlTypes = nlTypes,
+                              configNames = configNames,
                               nlStats = nlStats,
                               gadmVersion = gadmVersion,
+                              gadmPolyType = gadmPolyType,
                               custPolyPath = custPolyPath)))
 }
 

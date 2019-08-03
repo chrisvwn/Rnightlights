@@ -4,14 +4,18 @@
 \alias{getNlTileTifLclNameVIIRS}
 \title{Constructs the filename of the decompressed VIIRS .tif file}
 \usage{
-getNlTileTifLclNameVIIRS(nlPeriod, tileNum, nlType)
+getNlTileTifLclNameVIIRS(nlType,
+  configName = pkgOptions(paste0("configName_", nlType)), nlPeriod,
+  tileNum)
 }
 \arguments{
+\item{nlType}{character string the nlType}
+
+\item{configName}{character the type of raster being processed}
+
 \item{nlPeriod}{the nlPeriod in which the tile was created}
 
 \item{tileNum}{the index of the tile as given in nlTileIndex}
-
-\item{nlType}{character string the nlType}
 }
 \value{
 a character vector filename of the .tif VIIRS tile

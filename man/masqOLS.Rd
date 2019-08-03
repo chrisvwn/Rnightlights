@@ -4,7 +4,7 @@
 \alias{masqOLS}
 \title{Extract raster pixel values within the boundaries of a polygon}
 \usage{
-masqOLS(shp, rast, i, retVal)
+masqOLS(shp, rast, configName, i, retVal)
 }
 \arguments{
 \item{shp}{the country Polygon layer as SpatialPolygon}

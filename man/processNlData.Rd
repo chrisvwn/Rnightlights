@@ -4,9 +4,10 @@
 \alias{processNlData}
 \title{Downloads nightlight tiles and country polygons and calls the function to process them}
 \usage{
-processNlData(ctryCodes, admLevels, nlTypes, nlPeriods,
+processNlData(ctryCodes, admLevels, nlTypes, configName, nlPeriods,
   nlStats = pkgOptions("nlStats"), custPolyPath = NULL,
   gadmVersion = pkgOptions("gadmVersion"),
+  gadmPolyType = pkgOptions("gadmPolyType"),
   downloadMethod = pkgOptions("downloadMethod"),
   cropMaskMethod = pkgOptions("cropMaskMethod"),
   extractMethod = pkgOptions("extractMethod"))

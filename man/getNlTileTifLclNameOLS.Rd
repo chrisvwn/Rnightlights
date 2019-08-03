@@ -4,9 +4,14 @@
 \alias{getNlTileTifLclNameOLS}
 \title{Constructs the filename of the decompressed OLS .tif file}
 \usage{
-getNlTileTifLclNameOLS(nlPeriod)
+getNlTileTifLclNameOLS(nlType = "OLS.Y",
+  configName = pkgOptions(paste0("configName_", nlType)), nlPeriod)
 }
 \arguments{
+\item{nlType}{character string the nlType}
+
+\item{configName}{character the type of raster being processed}
+
 \item{nlPeriod}{the nlPeriod in which the tile was created}
 }
 \value{

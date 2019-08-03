@@ -6,7 +6,8 @@
 \usage{
 ZonalPipe(ctryCode, admLevel, ctryPoly, path.in.shp, path.in.r, path.out.r,
   path.out.shp, zone.attribute, nlStats,
-  gadmVersion = pkgOptions("gadmVersion"), custPolyPath = NULL)
+  gadmVersion = pkgOptions("gadmVersion"),
+  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCode}{the ctryCode of interest}

@@ -364,7 +364,8 @@ setNlDataPath <- function(dataPath)
     createNlDataDirs()
   }
   
-  getNlDataPath()
+  #getNlDataPath()
+  invisible(existingPath)
 } # setNlDataPath()
 
 ######################## getNlDataPath ###################################
@@ -431,7 +432,10 @@ getNlDataPath <- function()
 #'     directory or a previously used data path. It will only delete if it
 #'     has the default folder structure of a root data path.
 #'
-#' @param dataPath The path to the root folder to be deleted
+#' @param dataPath \code{character} The path to the root folder to be deleted
+#' 
+#' @param confirm \code{logical} Used when in non-interactive mode. If missing or FALSE
+#'     the operation will be aborted.
 #'     
 #' @return None
 #'
@@ -440,18 +444,27 @@ getNlDataPath <- function()
 #'   Rnightlights:::removeDataPath(getNlDataPath())
 #'   }
 #'     
-removeDataPath <- function(dataPath = file.path(getNlDataPath(), ".Rnightlights"))
+removeDataPath <- function(dataPath = file.path(getNlDataPath(), ".Rnightlights"), confirm=FALSE)
 {
   if(basename(dataPath) != ".Rnightlights")
     stop(Sys.time(), ": You must specify the full path including .Rnightlights")
   
-  menuPrompt <- paste0("You are about to remove the Rnightlights data folder in \n", dataPath, ". Do you want to continue?")
-  
-  response <- utils::menu(choices = c("Yes", "no"), graphics = F, title = menuPrompt)
+  if(interactive())
+  {
+    menuPrompt <- paste0("You are about to remove the Rnightlights data folder in \n", dataPath, ". Do you want to continue?")
+    
+    response <- utils::menu(choices = c("Yes", "no"), graphics = F, title = menuPrompt)
+  }else
+  {
+    response <- 0
+    
+    if(confirm)
+      response <- 1
+  }
   
   if(response == "1")
   {
-    #file.remove(dataPath)
+    unlink(dataPath, recursive = T, force = T)
     message(Sys.time(), ": Removed dataPath")
   }
   else if(response == "2")

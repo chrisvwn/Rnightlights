@@ -5,7 +5,8 @@
 \title{Construct the name of the country data file.}
 \usage{
 getCtryNlDataFname(ctryCode = NULL, admLevel,
-  gadmVersion = pkgOptions("gadmVersion"), custPolyPath = NULL)
+  gadmVersion = pkgOptions("gadmVersion"),
+  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCode}{The ctryCode of interest}

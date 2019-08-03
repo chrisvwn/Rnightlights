@@ -1,3 +1,19 @@
+getAllNlConfigNames <- function(nlType)
+{
+  switch(nlType,
+         "OLS.Y" = c("cf_cvg", "avg_vis", "stable_lights"),
+         "VIIRS.D" = c("vcmcfg", "vcmsl"),
+         "VIIRS.M" = c("vcmcfg", "vcmsl"),
+         "VIIRS.Y" = c("vcm-orm", "vcm-orm-ntl", "vcm-ntl")
+  )
+}
+
+
+validNlConfigName <- function(configName, nlType)
+{
+  configName %in% getAllNlConfigNames(nlType)
+}
+
 ######################## downloadNlTiles ###################################
 
 #' Download the listed tiles for a given nlType in a given nlPeriod
@@ -149,7 +165,7 @@ getNlTiles <- function(nlType)
   #6 nightlight tiles named by top-left geo coordinate numbered from left-right & top-bottom
   #creates columns as strings. createSpPolysDF converts relevant columns to numeric
   nlTiles <- data.frame(
-    id=c(1,2,3,4,5,6,7),
+    id=c(1,1,2,3,4,5,6),
           type=c("OLS","VIIRS","VIIRS","VIIRS","VIIRS","VIIRS","VIIRS"),
           name=c("DUMMY", "75N180W", "75N060W", "75N060E", "00N180W", "00N060W", "00N060E"),
           minx=c(-1, -180, -60, 60, -180, -60, 60), maxx=c(-1, -60, 60, 180, -60, 60, 180),
@@ -660,7 +676,7 @@ tileIdx2Name <- function(tileNum, nlType)
   nlType <- toupper(nlType)
   
   #return (nlTiles[tileNum, "name"])
-  return(nlTiles[tileNum, "name"])
+  return(nlTiles[as.numeric(tileNum), "name"])
 }
 
 ######################## tilesPolygonIntersectVIIRS ###################################

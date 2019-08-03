@@ -4,8 +4,9 @@
 \alias{existsCtryPoly}
 \title{Checks if a country polygon exists}
 \usage{
-existsCtryPoly(ctryCode = NULL, gadmVersion = pkgOptions("gadmVersion"),
-  custPolyPath = NULL)
+existsCtryPoly(ctryCode = NULL,
+  gadmVersion = pkgOptions("gadmVersion"),
+  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCode}{\code{character} The ctryCode of the country of interest}

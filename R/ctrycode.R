@@ -22,9 +22,12 @@ ctryNameToCode <- function(ctryNames)
 {
   ADMIN <- NULL #to avoid global variable note in CRAN
 
+  if(!exists("map"))
+    map <- rworldmap::getMap()
+  
   if(missing(ctryNames))
   {
-    ctryList <- rworldmap::getMap()@data[,c("ADMIN", "ISO3")]
+    ctryList <- map@data[,c("ADMIN", "ISO3")]
 
     ctryList$ISO3 <- as.character(ctryList$ISO3)
     ctryList$ADMIN <- as.character(ctryList$ADMIN)
@@ -42,7 +45,7 @@ ctryNameToCode <- function(ctryNames)
   if(any(hasNonAlpha))
     stop(Sys.time(), ": Invalid ctryNames detected: ", paste0(ctryNames[hasNonAlpha], sep=","))
   
-  ctryList <- rworldmap::getMap()@data[,c("ISO3", "ADMIN")]
+  ctryList <- map@data[,c("ISO3", "ADMIN")]
   
   idx <- unlist(sapply(ctryNames, function(ctryName)
     {
@@ -103,9 +106,12 @@ ctryCodeToName <- function(ctryCodes)
 {
   ISO3 <- NULL #to avoid global variable note in CRAN
   
+  if(!exists("map"))
+    map <- rworldmap::getMap()
+  
   if(missing(ctryCodes))
   {
-    ctryList <- rworldmap::getMap()@data[,c("ISO3", "ADMIN")]
+    ctryList <- map@data[,c("ISO3", "ADMIN")]
 
     ctryList$ISO3 <- as.character(ctryList$ISO3)
     ctryList$ADMIN <- as.character(ctryList$ADMIN)
@@ -118,7 +124,7 @@ ctryCodeToName <- function(ctryCodes)
   #if (class(ctryCodes) != "character" || is.null(ctryCodes) || is.na(ctryCodes) || ctryCodes =="" || ctryCodes == " ")
    # stop(Sys.time(), ": Invalid ctryCode: ", ctryCodes)
   
-  ctryList <- rworldmap::getMap()@data[,c("ISO3", "ADMIN")]
+  ctryList <- map@data[,c("ISO3", "ADMIN")]
 
   idx <- sapply(ctryCodes, function(ctryCode)
   {
@@ -327,7 +333,8 @@ getAllNlCtryCodes <- function(omit="none")
   
   #rworldmap has more country codes in countryRegions$ISO3 than in the map itself
   #select ctryCodes from the map data itself
-  map <- rworldmap::getMap()
+  if(!exists("map"))
+    map <- rworldmap::getMap()
 
   #get the list of country codes from the rworldmap
   ctryCodes <- as.character(map@data$ISO3)

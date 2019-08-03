@@ -4,8 +4,10 @@
 \alias{getCtryRasterOutputFname}
 \title{Constructs the name of the output raster}
 \usage{
-getCtryRasterOutputFname(ctryCode, nlType, nlPeriod,
-  gadmVersion = pkgOptions("gadmVersion"), custPolyPath = NULL)
+getCtryRasterOutputFname(ctryCode, nlType,
+  configName = pkgOptions(paste0("configName_", nlType)), nlPeriod,
+  gadmVersion = pkgOptions("gadmVersion"),
+  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCode}{the ctryCode of interest}

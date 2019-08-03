@@ -6,7 +6,8 @@
 \usage{
 searchAdmLevel(ctryCodes = NULL, admLevelNames, dnldPoly = TRUE,
   downloadMethod = pkgOptions("downloadMethod"),
-  gadmVersion = pkgOptions("gadmVersion"), custPolyPath = NULL)
+  gadmVersion = pkgOptions("gadmVersion"),
+  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCodes}{\code{character} The ctryCodes of the country of interest}

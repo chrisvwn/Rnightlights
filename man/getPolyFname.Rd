@@ -6,7 +6,7 @@
     http://gadm.org without the path}
 \usage{
 getPolyFname(ctryCode = NULL, gadmVersion = pkgOptions("gadmVersion"),
-  custPolyPath = NULL)
+  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCode}{character the ISO3 code of the country}

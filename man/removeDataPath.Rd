@@ -4,10 +4,14 @@
 \alias{removeDataPath}
 \title{Deletes a root data path all sub-directories}
 \usage{
-removeDataPath(dataPath = file.path(getNlDataPath(), ".Rnightlights"))
+removeDataPath(dataPath = file.path(getNlDataPath(), ".Rnightlights"),
+  confirm = FALSE)
 }
 \arguments{
-\item{dataPath}{The path to the root folder to be deleted}
+\item{dataPath}{\code{character} The path to the root folder to be deleted}
+
+\item{confirm}{\code{logical} Used when in non-interactive mode. If missing or FALSE
+the operation will be aborted.}
 }
 \value{
 None

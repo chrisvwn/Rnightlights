@@ -4,7 +4,7 @@
 \alias{masqVIIRS}
 \title{extract data from a raster using one polygon in a multipolygon}
 \usage{
-masqVIIRS(ctryPoly, ctryRast, idx, retVal)
+masqVIIRS(ctryPoly, ctryRast, configName, idx, retVal)
 }
 \arguments{
 \item{ctryPoly}{the country Polygon layer as SpatialPolygon}

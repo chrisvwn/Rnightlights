@@ -2,8 +2,12 @@
 
 RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   #Specify the regex to uniquely identify the tile file
-  #to extract from the download tile tar.gz
-  #more info at: https://ngdc.noaa.gov/eog/viirs/download_dnb_composites.html
+  #to extract from the download tile compressed file
+  
+  #for OLS: more info at: https://ngdc.noaa.gov/eog/gcv4_readme.txt
+  configName_OLS.Y = "stable_lights",
+  
+  #for VIIRS: more info at: https://ngdc.noaa.gov/eog/viirs/download_dnb_composites.html
   configName_VIIRS.D = "vcmcfg",
   
   configName_VIIRS.M = "vcmcfg",
@@ -42,6 +46,17 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   #the gadm polygons to use
   gadmVersion = "3.6",
   
+  #the polygon type to download from GADM
+  #essentially the options on the gadm site that we support
+  #we support:
+  #shpZip: shapefile folder zip (default),
+  #spRds: R spatial polygons for R (sp package) in Rds format
+  #we list but do not yet support:
+  #gpkgZip: Geopackage zip
+  #kmlZip: kml zip
+  #sfRds: simple features for R (sf package) in Rds format
+  gadmPolyType = "shpZip",
+  
   #gdalCacheMax Speeds up gdal_rasterize calculation of stats in function ZonalPipe with more cache (advice: max 1/3 of your total RAM) see: http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/
   gdalCacheMax = 1024,
 
@@ -55,9 +70,14 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   
   ntLtsIndexUrlVIIRS.D = "https://ngdc.noaa.gov/eog/viirs/download_ut_mos_tile_iframe.html",
   
-  ntLtsIndexUrlVIIRS.M = "https://www.ngdc.noaa.gov/eog/viirs/download_dnb_composites_iframe.html",
+  #updated: 20190731
+  ntLtsIndexUrlVIIRS.M_OLD = "https://www.ngdc.noaa.gov/eog/viirs/download_dnb_composites_iframe.html",
   
-  ntLtsIndexUrlVIIRS.Y = "https://www.ngdc.noaa.gov/eog/viirs/download_dnb_composites_iframe.html",
+  ntLtsIndexUrlVIIRS.Y_OLD = "https://www.ngdc.noaa.gov/eog/viirs/download_dnb_composites_iframe.html",
+  
+  ntLtsIndexUrlVIIRS.M = "https://eogdata.mines.edu/download_dnb_composites_iframe.html",
+  
+  ntLtsIndexUrlVIIRS.Y = "https://eogdata.mines.edu/download_dnb_composites_iframe.html",
 
   numCores = 2,
   
@@ -65,18 +85,24 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   #and want to exclude a few
   omitCountries = "missing",
   
+  #should we apply gas flare removal to the rasters before calculating
+  #nlStats. The default is TRUE
+  removeGasFlares = TRUE,
+  
   #Change the temp dir to use e.g. if the system temp dir does not have enough space
   #Not used yet
   tmpDir = raster::tmpDir(),
 
   .allowed = list(
+    configName_OLS.Y = settings::inlist("cf_cvg", "avg_vis", "stable_lights"),
     configName_VIIRS.D = settings::inlist("vcmcfg", "vcmsl"),
     configName_VIIRS.M = settings::inlist("vcmcfg", "vcmsl"),
     configName_VIIRS.Y = settings::inlist("vcm-orm", "vcm-orm-ntl", "vcm-ntl"),
-    cropMaskMethod = settings::inlist("gdal","rast"),
+    cropMaskMethod = settings::inlist("gdal", "rast"),
     extractMethod = settings::inlist("gdal", "rast"),
     downloadMethod = settings::inlist("aria", "auto", "curl", "libcurl", "wget"),
     gadmVersion = settings::inlist("2.8", "3.6"),
+    gadmPolyType = settings::inlist("gpkgZip", "kmlZip", "shpZip", "sfRds", "spRds"),
     omitCountries = settings::inlist("error", "missing", "long", "all", "none")
   )
 )
@@ -91,7 +117,7 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
 #' @section Supported options:
 #' The following options are supported
 #' \describe{
-#'  \item{\code{configName.VIIRS.D}}{(\code{character}) The regex to uniquely
+#'  \item{\code{configName_VIIRS.D}}{(\code{character}) The regex to uniquely
 #'      identify the tile file to use out of the downloaded tile .tgz. The
 #'      version 1 monthly series is run globally using two different 
 #'      configurations.
@@ -108,11 +134,11 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
 #'      applications. The annual versions are only made with the "vcm"
 #'      version, excluding any data impacted by stray light.}
 #'      
-#'  \item{\code{configName.VIIRS.M}}{(\code{character}) The regex to uniquely
+#'  \item{\code{configName_VIIRS.M}}{(\code{character}) The regex to uniquely
 #'      identify the tile file to use out of the downloaded monthly .tgz
 #'      tile. Has the same options as configName.VIIRS.D}
 #'  
-#'  \item{\code{configName.VIIRS.Y}}{(\code{character}) The regex to uniquely
+#'  \item{\code{configName_VIIRS.Y}}{(\code{character}) The regex to uniquely
 #'      identify the tile file to use out of the downloaded tile .tgz. The
 #'      annual products can have other values for the config shortname (Field 5).
 #'      They are:

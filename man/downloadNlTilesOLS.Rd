@@ -4,7 +4,9 @@
 \alias{downloadNlTilesOLS}
 \title{Download OLS nightlight tile}
 \usage{
-downloadNlTilesOLS(nlPeriod, downloadMethod = pkgOptions("downloadMethod"))
+downloadNlTilesOLS(nlPeriod,
+  downloadMethod = pkgOptions("downloadMethod"), nlType = "OLS.Y",
+  configName = pkgOptions(paste0("configName_", nlType)))
 }
 \arguments{
 \item{nlPeriod}{the nlPeriod of the tile}

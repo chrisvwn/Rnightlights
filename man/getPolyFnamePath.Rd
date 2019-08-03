@@ -4,8 +4,9 @@
 \alias{getPolyFnamePath}
 \title{Get the path of the unzipped polygon directory downloaded from GADM.ORG}
 \usage{
-getPolyFnamePath(ctryCode = NULL, gadmVersion = pkgOptions("gadmVersion"),
-  custPolyPath = NULL)
+getPolyFnamePath(ctryCode = NULL,
+  gadmVersion = pkgOptions("gadmVersion"),
+  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCode}{character the ISO3 code of the country}

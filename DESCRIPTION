@@ -1,6 +1,6 @@
 Package: Rnightlights
-Version: 0.2.3
-Date: 2018-10-11
+Version: 0.2.4
+Date: 2019-07-19
 Title: Satellite Nightlight Data Extraction
 Description: Extracts raster and zonal statistics
     from satellite nightlight rasters downloaded from the United States 
@@ -15,6 +15,8 @@ Description: Extracts raster and zonal statistics
     graphing, mapping and clustering regional data.
 Authors@R: c(person(given="Christopher", family="Njuguna", role=c("aut", "cre", "cph"), email="chris.njuguna@gmail.com"))
 License: GPL-3
+ByteCompile: true
+Encoding: UTF-8
 Imports:
     cleangeo,
     compiler,
@@ -58,6 +60,6 @@ SystemRequirements:
     curl,
     gdal,
     wget
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.1
 BugReports: https://github.com/chrisvwn/Rnightlights/issues
 URL: https://github.com/chrisvwn/Rnightlights

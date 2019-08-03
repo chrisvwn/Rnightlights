@@ -4,8 +4,9 @@
 \alias{getPolyFnameZip}
 \title{Get the filename of the polygon zip file as downloaded from \url{http://GADM.ORG}}
 \usage{
-getPolyFnameZip(ctryCode = NULL, gadmVersion = pkgOptions("gadmVersion"),
-  custPolyPath = NULL)
+getPolyFnameZip(ctryCode = NULL,
+  gadmVersion = pkgOptions("gadmVersion"),
+  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCode}{character the ISO3 code of the country}

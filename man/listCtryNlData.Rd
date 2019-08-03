@@ -5,8 +5,8 @@
 \title{List available data}
 \usage{
 listCtryNlData(ctryCodes = NULL, admLevels = NULL, nlTypes = NULL,
-  nlPeriods = NULL, polySrcs = NULL, polyVers = NULL, nlStats = NULL,
-  source = "local")
+  nlPeriods = NULL, polySrcs = NULL, polyVers = NULL,
+  nlStats = NULL, source = "local")
 }
 \arguments{
 \item{ctryCodes}{\code{character} vector of ctryCodes to filter by}
