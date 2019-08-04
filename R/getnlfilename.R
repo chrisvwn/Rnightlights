@@ -52,7 +52,7 @@ getNlTileZipLclNamePath <- function(nlType, configName=pkgOptions(paste0("config
   if(stringr::str_detect(nlType, "OLS"))
     return (file.path(getNlDir("dirNlTiles"), getNlTileZipLclNameOLS(nlType = nlType, configName = configName, nlPeriod = nlPeriod)))
   else if(stringr::str_detect(nlType, "VIIRS"))
-    return (file.path(getNlDir("dirNlTiles"), getNlTileZipLclNameVIIRS(nlType = nlType, configName = configName, nlPeriod = nlPeriod, tileNum = tileNum, nlType)))
+    return (file.path(getNlDir("dirNlTiles"), getNlTileZipLclNameVIIRS(nlType = nlType, configName = configName, nlPeriod = nlPeriod, tileNum = tileNum)))
 }
 
 ######################## getNlTileZipLclNameVIIRS ###################################
@@ -99,6 +99,8 @@ getNlTileZipLclNameVIIRS <- function(nlType, configName = pkgOptions(paste0("con
   
   if(!allValidNlPeriods(nlPeriod, nlType))
     stop(Sys.time(), ": Invalid nlPeriod: ", nlPeriod)
+  
+  configName <- toupper(configName)
   
   return (paste0("NL_TILE_", nlType, "_", configName, "_", nlPeriod, "_", tileIdx2Name(tileNum, nlType), ".tgz"))
 }
@@ -205,6 +207,8 @@ getNlTileTifLclNameVIIRS <- function(nlType, configName = pkgOptions(paste0("con
   if(!validNlTileNumVIIRS(tileNum, nlType))
     stop(Sys.time(), ": Invalid tileNum: ", tileNum)
 
+  configName <- toupper(configName)
+  
   return (paste0("NL_TILE_", nlType, "_", configName, "_", nlPeriod, "_", tileIdx2Name(tileNum, nlType), ".tif"))
 }
 
@@ -239,6 +243,8 @@ getNlTileTifLclNameOLS <- function(nlType="OLS.Y", configName=pkgOptions(paste0(
   
   if(!allValidNlPeriods(nlPeriod, nlType))
     stop(Sys.time(), ": Invalid nlPeriod: ", nlPeriod)
+  
+  configName <- toupper(configName)
   
   return (paste0("NL_TILE_", nlType, "_", configName, "_", nlPeriod, "_00N180W.tif"))
 }
@@ -372,6 +378,8 @@ getNlTileZipLclNameOLS <- function(nlType = "OLS.Y", configName=pkgOptions(paste
   if(!validNlConfigName(configName, nlType))
     stop(Sys.time(), ": Invalid configName")
   
+  configName <- toupper(configName)
+  
   return (paste0("NL_TILE_", nlType, "_", configName, "_", nlPeriod, "_00N180W.tar"))
 }
 
@@ -412,6 +420,8 @@ getNlTifLclNameOLS <- function(nlType, configName = pkgOptions(paste0("configNam
   
   if(!allValidNlPeriods(nlPeriod, nlType))
     stop(Sys.time(), ": Invalid nlPeriod")
+  
+  configName <- toupper(configName)
   
   return (paste0("NL_TILE_", nlType, "_", configName, "_", nlPeriod, ".tif"))
 }
