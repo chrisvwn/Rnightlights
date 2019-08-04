@@ -14,9 +14,13 @@ getCtryRasterOutputFname(ctryCode, nlType,
 
 \item{nlType}{the nlType of interest}
 
+\item{configName}{character the type of raster being processed}
+
 \item{nlPeriod}{the nlPeriod of interest}
 
 \item{gadmVersion}{The GADM version to use}
+
+\item{gadmPolyType}{The format of polygons to download from GADM}
 
 \item{custPolyPath}{The path to a custom polygon as an alternative
 to using GADM polygons}
@@ -30,6 +34,6 @@ Constructs the name of the output raster
 }
 \examples{
 
-Rnightlights:::getCtryRasterOutputFname("KEN","VIIRS.M", "201412")
+Rnightlights:::getCtryRasterOutputFname(ctryCode = "KEN", nlType = "VIIRS.M", nlPeriod = "201412")
 
 }

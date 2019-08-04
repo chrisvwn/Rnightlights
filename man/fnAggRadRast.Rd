@@ -16,6 +16,8 @@ cropped to the country outline}
 
 \item{nlType}{Character vector The nlType to process}
 
+\item{configName}{character the type of raster being processed}
+
 \item{nlStats}{The statistics to calculate}
 
 \item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}

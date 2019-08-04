@@ -4,7 +4,8 @@
 \alias{processNLCountry}
 \title{Processes nightlights for an individual country in a particular nlPeriod}
 \usage{
-processNLCountry(ctryCode, admLevel, nlType, nlPeriod,
+processNLCountry(ctryCode, admLevel, nlType,
+  configName = pkgOptions(paste0("configName_", nlType)), nlPeriod,
   nlStats = pkgOptions("nlStats"),
   downloadMethod = pkgOptions("downloadMethod"),
   cropMaskMethod = pkgOptions("cropMaskMethod"),
@@ -20,6 +21,8 @@ ctryCode at which to calculate stats}
 
 \item{nlType}{\code{character} The nlType of interest}
 
+\item{configName}{character the type of raster being processed}
+
 \item{nlPeriod}{\code{character} The nlPeriod of interest}
 
 \item{nlStats}{the statistics to calculate. If not provided will calculate 
@@ -34,6 +37,8 @@ gdal-based functions to crop and mask the country rasters}
 gdal-based functions to crop and mask the country rasters}
 
 \item{gadmVersion}{The GADM version to use}
+
+\item{gadmPolyType}{The format of polygons to download from GADM}
 
 \item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
 }

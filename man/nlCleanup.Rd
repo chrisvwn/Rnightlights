@@ -4,7 +4,12 @@
 \alias{nlCleanup}
 \title{Clean up the environment after processing (Not yet implemented)}
 \usage{
-nlCleanup()
+nlCleanup(temp = TRUE, tileCache = FALSE)
+}
+\arguments{
+\item{temp}{boolean should the temp folder be cleared?}
+
+\item{tileCache}{boolean should unnecessary tiles be cleared?}
 }
 \description{
 Clean up the environment after processing (Not yet implemented)

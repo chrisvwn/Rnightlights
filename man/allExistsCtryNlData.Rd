@@ -4,8 +4,8 @@
 \alias{allExistsCtryNlData}
 \title{Checks if all data is available}
 \usage{
-allExistsCtryNlData(ctryCodes, admLevels, nlTypes, nlPeriods, nlStats,
-  gadmVersion = pkgOptions("gadmVersion"),
+allExistsCtryNlData(ctryCodes, admLevels, nlTypes, configNames, nlPeriods,
+  nlStats, gadmVersion = pkgOptions("gadmVersion"),
   gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
 }
 \arguments{
@@ -15,11 +15,15 @@ allExistsCtryNlData(ctryCodes, admLevels, nlTypes, nlPeriods, nlStats,
 
 \item{nlTypes}{A character vector of nlTypes to filter by}
 
+\item{configNames}{character the type of raster being processed}
+
 \item{nlPeriods}{A character vector of nlPeriods to filter by}
 
 \item{nlStats}{The stats to filter by}
 
 \item{gadmVersion}{The GADM version to use}
+
+\item{gadmPolyType}{The format of polygons to download from GADM}
 
 \item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
 }

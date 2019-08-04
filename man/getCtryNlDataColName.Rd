@@ -12,6 +12,8 @@ getCtryNlDataColName(nlPeriod, nlStat, nlType, configName)
 \item{nlStat}{character vector The stat to be stored in the column}
 
 \item{nlType}{character vector The type of nightlight}
+
+\item{configName}{character the type of raster being processed}
 }
 \value{
 character string

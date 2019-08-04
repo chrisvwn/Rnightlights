@@ -5,8 +5,8 @@
 \title{List available cropped country rasters}
 \usage{
 listCtryNlRasters(ctryCodes = NULL, nlPeriods = NULL, nlTypes = NULL,
-  polySrcs = NULL, polyVers = NULL, nlStats = NULL,
-  source = "local")
+  configNames = NULL, polySrcs = NULL, polyVers = NULL,
+  nlStats = NULL, source = "local")
 }
 \arguments{
 \item{ctryCodes}{A character vector of ctryCodes to filter by}
@@ -14,6 +14,8 @@ listCtryNlRasters(ctryCodes = NULL, nlPeriods = NULL, nlTypes = NULL,
 \item{nlPeriods}{A character vector of nlPeriods to filter by}
 
 \item{nlTypes}{A character vector of nlTypes to filter by}
+
+\item{configNames}{character the type of rasters to filter by}
 
 \item{polySrcs}{The source of polygons e.g. GADM or CUST to filter by}
 

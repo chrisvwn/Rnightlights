@@ -19,11 +19,15 @@ the \code{ctryPoly} given but no checks are made currently.}
 
 \item{nlType}{the nlType of interest}
 
+\item{configName}{character the type of raster being processed}
+
 \item{nlPeriod}{character string the nlPeriod to be processed}
 
 \item{nlStats}{character vector The stats to calculate}
 
 \item{gadmVersion}{The GADM version to use}
+
+\item{gadmPolyType}{The format of polygons to download from GADM}
 
 \item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
 }

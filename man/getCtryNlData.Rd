@@ -10,7 +10,8 @@ getCtryNlData(ctryCode = NULL, admLevel, nlTypes, nlPeriods,
   gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL,
   downloadMethod = pkgOptions("downloadMethod"),
   cropMaskMethod = pkgOptions("cropMaskMethod"),
-  extractMethod = pkgOptions("extractMethod"), source = "local", ...)
+  extractMethod = pkgOptions("extractMethod"), configNames,
+  source = "local", ...)
 }
 \arguments{
 \item{ctryCode}{the ISO3 code of the country. Only 1 country can be 
@@ -41,6 +42,8 @@ found in the data file.
 
 \item{gadmVersion}{The GADM version to use}
 
+\item{gadmPolyType}{The format of polygons to download from GADM}
+
 \item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
 
 \item{downloadMethod}{The method used to download polygons}
@@ -49,6 +52,8 @@ found in the data file.
 
 \item{extractMethod}{The method used to extract data and perform calculations
 on the satellite raster}
+
+\item{configNames}{character the types of raster being processed}
 
 \item{source}{"local" or "remote" Whether to download and process the
 data locally or to download the pre-processed data from a remote 

@@ -4,7 +4,7 @@
 \alias{masqVIIRS}
 \title{extract data from a raster using one polygon in a multipolygon}
 \usage{
-masqVIIRS(ctryPoly, ctryRast, configName, idx, retVal)
+masqVIIRS(ctryPoly, ctryRast, idx, retVal = "colrowval", configName)
 }
 \arguments{
 \item{ctryPoly}{the country Polygon layer as SpatialPolygon}
@@ -17,6 +17,8 @@ masqVIIRS(ctryPoly, ctryRast, configName, idx, retVal)
 data.frame with spatial context NULL returns a vector of all
 values, colrowval returns a data.frame with row, col and raster
 value while lonlatval returns a data.frame with lon,lat and val.}
+
+\item{configName}{character the type of raster being processed}
 }
 \value{
 numeric vector of radiances

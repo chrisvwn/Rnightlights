@@ -4,7 +4,7 @@
 \alias{processNlData}
 \title{Downloads nightlight tiles and country polygons and calls the function to process them}
 \usage{
-processNlData(ctryCodes, admLevels, nlTypes, configName, nlPeriods,
+processNlData(ctryCodes, admLevels, nlTypes, configNames, nlPeriods,
   nlStats = pkgOptions("nlStats"), custPolyPath = NULL,
   gadmVersion = pkgOptions("gadmVersion"),
   gadmPolyType = pkgOptions("gadmPolyType"),
@@ -20,6 +20,8 @@ which to calculate stats}
 
 \item{nlTypes}{the types of nightlights to process}
 
+\item{configNames}{character the types of raster being processed}
+
 \item{nlPeriods}{the nlPeriods of interest}
 
 \item{nlStats}{the statistics to calculate. If not provided will calculate
@@ -28,6 +30,8 @@ the stats specified in \code{pkgOptions("nlStats")}}
 \item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
 
 \item{gadmVersion}{The GADM version to use}
+
+\item{gadmPolyType}{The format of polygons to download from GADM}
 
 \item{downloadMethod}{The method used to download rasters and polygons}
 

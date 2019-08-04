@@ -13,9 +13,13 @@ getCtryRasterOutputFnamePath(ctryCode, nlType, configName, nlPeriod,
 
 \item{nlType}{the nlType of interest}
 
+\item{configName}{character the type of raster being processed}
+
 \item{nlPeriod}{the nlPeriod of interest}
 
 \item{gadmVersion}{The GADM version to use}
+
+\item{gadmPolyType}{The format of polygons to download from GADM}
 
 \item{custPolyPath}{The path to a custom polygon as an alternative
 to using GADM polygons}

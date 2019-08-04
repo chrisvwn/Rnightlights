@@ -4,8 +4,8 @@
 \alias{existsCtryNlData}
 \title{Check if VIIRS nightlight stats exist locally}
 \usage{
-existsCtryNlData(ctryCode = NULL, admLevel, nlTypes, nlPeriods, nlStats,
-  gadmVersion = pkgOptions("gadmVersion"),
+existsCtryNlData(ctryCode = NULL, admLevel, nlTypes, configNames,
+  nlPeriods, nlStats, gadmVersion = pkgOptions("gadmVersion"),
   gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
 }
 \arguments{
@@ -15,11 +15,15 @@ existsCtryNlData(ctryCode = NULL, admLevel, nlTypes, nlPeriods, nlStats,
 
 \item{nlTypes}{character The nlTypes}
 
+\item{configNames}{character the types of raster being processed}
+
 \item{nlPeriods}{character The nlPeriods}
 
 \item{nlStats}{character The nlStats to check for}
 
 \item{gadmVersion}{The GADM version to use}
+
+\item{gadmPolyType}{The format of polygons to download from GADM}
 
 \item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
 }
@@ -32,6 +36,7 @@ Check if VIIRS nightlight data for the country exists in the country
     file exists.
 }
 \examples{
-Rnightlights:::existsCtryNlData("KEN", "KEN_adm0", "VIIRS.M","201401", "sum")
+Rnightlights:::existsCtryNlData(ctryCode = "KEN", admLevel = "KEN_adm0", 
+    nlTypes = "VIIRS.M", configNames = "stable_lights", nlPeriods = "201401", nlStats = "sum")
 
 }

@@ -16,6 +16,8 @@ downloadNlTilesVIIRS(nlPeriod, tileNum,
 \item{downloadMethod}{The method to use for download.}
 
 \item{nlType}{A character string of nlType}
+
+\item{configName}{character the type of raster being processed}
 }
 \value{
 TRUE/FALSE Whether the download was successful

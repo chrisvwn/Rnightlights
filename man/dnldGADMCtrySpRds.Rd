@@ -13,9 +13,9 @@ dnldGADMCtrySpRds(ctryCode, gadmVersion = pkgOptions("gadmVersion"),
 
 \item{gadmVersion}{The GADM version to use}
 
-\item{downloadMethod}{The method used to download polygons}
+\item{gadmPolyType}{The format of polygons to download from GADM}
 
-\item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
+\item{downloadMethod}{The method used to download polygons}
 }
 \value{
 TRUE/FALSE Success/Failure of the download

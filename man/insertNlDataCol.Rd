@@ -4,7 +4,8 @@
 \alias{insertNlDataCol}
 \title{Insert an aggregate nightlight data column in a country nightlights dataframe}
 \usage{
-insertNlDataCol(ctryNlDataDF, dataCol, statType, nlPeriod, nlType)
+insertNlDataCol(ctryNlDataDF, dataCol, statType, nlPeriod, nlType,
+  configName)
 }
 \arguments{
 \item{ctryNlDataDF}{dataframe with the country data to save}
@@ -16,6 +17,8 @@ insertNlDataCol(ctryNlDataDF, dataCol, statType, nlPeriod, nlType)
 \item{nlPeriod}{the nlPeriod that the dataCol belongs to}
 
 \item{nlType}{the type of nightlight data}
+
+\item{configName}{character the type of raster being processed}
 }
 \value{
 the updated dataframe
