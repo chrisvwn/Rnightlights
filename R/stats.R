@@ -23,7 +23,7 @@ validNlStats <- function(nlStats)
   if(missing(nlStats))
     stop(Sys.time(), ": Missing required parameter nlStats")
   
-  if((!is.character(nlStats) && !is.list(nlStats)) || is.null(nlStats) || is.na(nlStats) || nlStats == "")
+  if((!is.character(nlStats) && !is.list(nlStats)) || length(nlStats) == 0)
     stop(Sys.time(), ": Invalid nlStats")
   
   if(is.list(nlStats) && length(nlStats) > 1 && all(sapply(2:length(nlStats), function(i) !is.list(nlStats[[i]]) && (grepl("=", nlStats[i]) || length(names(nlStats[i])) > 0))))

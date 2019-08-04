@@ -1417,30 +1417,30 @@ listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlTypes=NULL, nlPerio
   
   #filters
   #filter by ctryCode if supplied
-  if(!is.null(ctryCodes) && ctryCodes != "")
+  if(length(ctryCodes) > 0)
     dataList <- dataList[which(dataList[,"ctryCode"] %in% ctryCodes),]
   
-  if(!is.null(admLevels) && admLevels != "")
+  if(length(admLevels) > 0)
     dataList <- dataList[which(dataList[,"admLevel"] %in% admLevels),]
   
   #filter by nlType if supplied
-  if(!is.null(nlTypes) && nlTypes != "")
+  if(length(nlTypes) > 0)
     dataList <- dataList[which(dataList[,"nlType"] %in% nlTypes),]
   
   #filter by nlPeriod if supplied
-  if(!is.null(nlPeriods))
+  if(length(nlPeriods) > 0)
     dataList <- dataList[which(dataList[,"nlPeriod"] %in% nlPeriods),]
   
   #filter by polySrc if supplied
-  if(!is.null(polySrcs) && polySrcs != "")
+  if(length(polySrcs) > 0)
     dataList <- dataList[which(dataList[,"polySrc"] %in% polySrcs),]
   
   #filter by polyVer if supplied
-  if(!is.null(polyVers) && polyVers != "")
+  if(length(polyVers) > 0)
     dataList <- dataList[which(dataList[,"polyVer"] %in% polyVers),]
   
   #filter by polyVer if supplied
-  if(!is.null(nlStats))
+  if(length(nlStats) > 0)
     dataList <- dataList[unique(unlist(sapply(nlStats, function(nlStat) grep(nlStat, dataList[,"nlStats"], ignore.case = T)))),]
   
   #Reorder the columns
@@ -1517,7 +1517,7 @@ listCtryNlRasters <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, conf
   
   lens <- sapply(stringr::str_extract_all(rasterList, "_"), length)
   
-  rasterList[lens == 5] <- stringi::stri_replace_last_fixed(rasterList[lens == 5], '_', '-')
+  rasterList[lens == 5] <- gsub("(.*_.*_.*_.*)_(.*)","\\1-\\2", rasterList[lens == 5])
   
   rasterList <- strsplit(gsub(".tif", "", rasterList), "_")
   
@@ -1533,19 +1533,19 @@ listCtryNlRasters <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, conf
   
   #filters
   #filter by ctryCode if supplied
-  if(!is.null(ctryCodes))
+  if(length(ctryCodes) > 0)
     rasterList <- rasterList[which(rasterList[,"ctryCode"] %in% ctryCodes),]
   
   #filter by nlType if supplied
-  if(!is.null(nlTypes))
+  if(length(nlTypes) > 0)
     rasterList <- rasterList[which(rasterList[,"nlType"] %in% nlTypes),]
   
   #filter by configName if supplied
-  if(!is.null(configNames))
+  if(length(configNames) > 0)
     rasterList <- rasterList[which(rasterList[,"configName"] %in% configNames),]
   
   #filter by nlPeriod if supplied
-  if(!is.null(nlPeriods))
+  if(length(nlPeriods) > 0)
     rasterList <- rasterList[which(rasterList[,"nlPeriod"] %in% nlPeriods),]
   
   #Reorder the columns
@@ -1617,7 +1617,7 @@ listNlTiles <- function(nlTypes=NULL, configNames=NULL, nlPeriods=NULL, tileName
 
   lens <- sapply(stringr::str_extract_all(rasterList, "_"), length)
   
-  rasterList[lens == 6] <- gsub("(.*_.*_.*)_(.*_.*_.*)","\\1-\\2", rasterList[lens ==6]) #stringi::replstri_replace_last_fixed(rasterList[lens == 5], '_', '-')
+  rasterList[lens == 6] <- gsub("(.*_.*_.*)_(.*_.*_.*)","\\1-\\2", rasterList[lens ==6])
   
   rasterList <- strsplit(gsub("TILE_|.tif", "", rasterList), "_")
   

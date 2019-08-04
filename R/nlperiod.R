@@ -53,18 +53,20 @@ validNlPeriods <- function(nlPeriods, nlTypes)
   
   nlTypes <- unlist(nlTypes)
   
-  validPeriods <- stats::setNames(lapply(1:length(nlTypes), function(i){
-    nlT <- nlTypes[i]
-    nlPs <- unlist(nlPeriods[i])
-    allNlPeriods <- unlist(getAllNlPeriods(nlT))
-    
-    valid <- stats::setNames(nlPs %in% allNlPeriods, nlPs)
-    
-    if(!all(valid))
-      message(Sys.time(), "Invalid nlPeriods:: ", nlT,":",paste0(nlPs[!valid], sep=","))
-    return(valid)
-    }), nlTypes)
+  # validPeriods <- stats::setNames(lapply(1:length(nlTypes), function(i){
+  #   nlT <- nlTypes[i]
+  #   nlPs <- unlist(nlPeriods[i])
+  #   allNlPeriods <- unlist(getAllNlPeriods(nlT))
+  #   
+  #   valid <- stats::setNames(nlPs %in% allNlPeriods, nlPs)
+  #   
+  #   if(!all(valid))
+  #     message(Sys.time(), "Invalid nlPeriods:: ", nlT,":",paste0(nlPs[!valid], sep=","))
+  #   return(valid)
+  #   }), nlTypes)
 
+  validPeriods <- stats::setNames(nlPeriods %in% unlist(getAllNlPeriods(nlTypes)), nlPeriods)
+  
   return(validPeriods)
 }
 

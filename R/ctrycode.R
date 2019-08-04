@@ -254,7 +254,7 @@ validCtryCodes <- function(ctryCodes)
     stop(Sys.time(), ": Missing required parameter ctryCode")
   
   #if the format is invalid return FALSE no need to return an error
-  if (!is.character(ctryCodes) || is.null(ctryCodes) || is.na(ctryCodes) || ctryCodes =="")
+  if (length(ctryCodes) == 0)
     return(FALSE)
   
   return(toupper(ctryCodes) %in% toupper(getAllNlCtryCodes()))
