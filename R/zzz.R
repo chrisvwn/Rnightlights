@@ -7,16 +7,17 @@ Image and data processing by NOAA's National Geophysical Data Center
 Maps distributed by GADM
 (https://gadm.org)"
   
-  printCredits(credits)
+  #printCredits(credits)
 }
 
 ######################## .onAttach ###################################
 
-#' Set global variables in .onAttach since we want the package to be
-#'     usable without active loading via library(Rnightlights)
-#'
 .onAttach <- function(libname, pkgname)
 {
+  # Set global variables in .onAttach since we want the package to be
+  #     usable without active loading via library(Rnightlights)
+  #
+  
   #Setup the data path, possibly by prompting the user. if not found
   if(is.null(getNlDataPath()))
     setupDataPath()
@@ -59,19 +60,17 @@ Maps distributed by GADM
 
 ######################## .Last.lib ###################################
 
-#' Clean up the environment
-#'
-#' Clean up the environment and delete temp files when the package is
-#'     detached.
-#'     
-#'     Use .Last.lib rather than .onDetach or .onUnload which may not be run
-#'     at the end of the session. And rather than reg.finalizer which is
-#'     called when gc() runs which we do not want to happen for nlCleanup()
-#'     especially since we do call gc() in some instances.
-#'
 #' @export
 .Last.lib <- function(libpath)
 {
+  # Clean up the environment and delete temp files when the package is
+  #     detached.
+  #    
+  #     Use .Last.lib rather than .onDetach or .onUnload which may not be run
+  #     at the end of the session. And rather than reg.finalizer which is
+  #     called when gc() runs which we do not want to happen for nlCleanup()
+  #     especially since we do call gc() in some instances.
+
   map <- NULL
   shpTopLyrName <- NULL
   wgs84 <- NULL
