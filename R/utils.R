@@ -56,6 +56,10 @@ get_free_ram <- function(){
 #'
 #' Clean up the environment after processing (Not yet implemented)
 #'
+#' @param temp boolean should the temp folder be cleared?
+#' 
+#' @param tileCache boolean should unnecessary tiles be cleared?
+#' 
 #' @return NULL
 #'
 #' @examples

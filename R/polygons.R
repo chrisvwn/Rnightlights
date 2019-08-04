@@ -123,6 +123,8 @@ orderCustPolyLayers <- function(ctryCode, custPolyPath=NULL)
 #' 
 #' @param gadmVersion The GADM version to use
 #' 
+#' @param gadmPolyType The format of polygons to download from GADM
+#' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #'
 #' @return None
@@ -222,7 +224,7 @@ addCtryPolyIdx <- function(ctryCode,
 #' 
 #' @param gadmVersion The GADM version to use
 #' 
-#' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
+#' @param gadmPolyType The format of polygons to download from GADM
 #' 
 #' @param downloadMethod The method used to download polygons
 #'
@@ -332,7 +334,7 @@ dnldGADMCtryShpZip <- function(ctryCode,
 #' 
 #' @param gadmVersion The GADM version to use
 #' 
-#' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
+#' @param gadmPolyType The format of polygons to download from GADM
 #' 
 #' @param downloadMethod The method used to download polygons
 #'
@@ -742,6 +744,8 @@ dnldCtryPoly <- function(ctryCode=NULL,
 #' 
 #' @param gadmVersion The GADM version to use
 #' 
+#' @param gadmPolyType The format of polygons to download from GADM
+#' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
 #' @param downloadMethod The method used to download polygons
@@ -821,6 +825,8 @@ deleteCtryPoly <- function(ctryCode=NULL,
 #' 
 #' @param gadmVersion The GADM version to use
 #' 
+#' @param gadmPolyType The format of polygons to download from GADM
+#' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
 #' @return character string The filename
@@ -865,6 +871,8 @@ getCtryStructFname <- function(ctryCode=NULL,
 #' 
 #' @param gadmVersion The GADM version to use
 #' 
+#' @param gadmPolyType The format of polygons to download from GADM
+#' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
 #' @return character string The file path
@@ -899,6 +907,8 @@ getCtryStructFnamePath <- function(ctryCode=NULL,
 #' @param ctryCode The ISO3 ctryCode of the country
 #' 
 #' @param gadmVersion The GADM version to use
+#' 
+#' @param gadmPolyType The format of polygons to use from GADM
 #' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
@@ -949,6 +959,8 @@ createCtryStruct <- function(ctryCode=NULL,
 #' @param ctryCode The ISO3 ctryCode of the country structure to read
 #' 
 #' @param gadmVersion The GADM version to use
+#' 
+#' @param gadmPolyType The format of polygons to download from GADM
 #' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
@@ -1007,6 +1019,8 @@ readCtryStruct <- function(ctryCode=NULL,
 #' 
 #' @param gadmVersion The GADM version to use
 #' 
+#' @param gadmPolyType The format of polygons to download from GADM
+#' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
 #' @return Character string url of the zipped ESRI shapefile for the ctryCode
@@ -1055,6 +1069,8 @@ getCtryPolyUrl <- function(ctryCode=NULL,
 #' 
 #' @param gadmVersion The GADM version to use
 #' 
+#' @param gadmPolyType The format of polygons to download from GADM
+#' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
 #' @return TRUE/FALSE
@@ -1064,9 +1080,9 @@ getCtryPolyUrl <- function(ctryCode=NULL,
 #'  #returns TRUE/FALSE
 #'
 existsPolyFnamePath <- function(ctryCode=NULL,
-                                gadmVersion=pkgOptions("gadmVersion"),
-                                gadmPolyType = gadmPolyType,
-                                custPolyPath=NULL)
+                                gadmVersion = pkgOptions("gadmVersion"),
+                                gadmPolyType = pkgOptions("gadmPolyType"),
+                                custPolyPath = NULL)
 {
   if(is.null(ctryCode) && is.null(custPolyPath))
     stop(Sys.time(), ": Missing required parameter ctryCode")
@@ -1091,6 +1107,8 @@ existsPolyFnamePath <- function(ctryCode=NULL,
 #' 
 #' @param gadmVersion The GADM version to use
 #' 
+#' @param gadmPolyType The format of polygons to download from GADM
+#' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
 #' @return TRUE/FALSE
@@ -1101,7 +1119,7 @@ existsPolyFnamePath <- function(ctryCode=NULL,
 #'
 existsPolyFnameZip <- function(ctryCode=NULL,
                                gadmVersion=pkgOptions("gadmVersion"),
-                               gadmPolyType = gadmPolyType,
+                               gadmPolyType = pkgOptions("gadmPolyType"),
                                custPolyPath=NULL)
 {
   # if(missing(ctryCode))
@@ -1129,6 +1147,8 @@ existsPolyFnameZip <- function(ctryCode=NULL,
 #' 
 #' @param gadmVersion The GADM version to use
 #' 
+#' @param gadmPolyType The format of polygons to download from GADM
+#' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
 #' @return TRUE/FALSE
@@ -1139,7 +1159,7 @@ existsPolyFnameZip <- function(ctryCode=NULL,
 #'
 existsPolyFnameRDS <- function(ctryCode=NULL,
                                gadmVersion=pkgOptions("gadmVersion"),
-                               gadmPolyType = gadmPolyType,
+                               gadmPolyType = pkgOptions("gadmPolyType"),
                                custPolyPath=NULL)
 {
   if(is.null(ctryCode) && is.null(custPolyPath))
@@ -1176,6 +1196,8 @@ existsPolyFnameRDS <- function(ctryCode=NULL,
 #'
 #' @param gadmVersion The GADM version to use
 #' 
+#' @param gadmPolyType The format of polygons to download from GADM
+#' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
 #' @return Character layer name
@@ -1193,7 +1215,7 @@ getCtryShpLyrNames <- function(ctryCodes=NULL,
                                lyrNums,
                                dnldPoly,
                                gadmVersion=pkgOptions("gadmVersion"),
-                               gadmPolyType = gadmPolyType,
+                               gadmPolyType = pkgOptions("gadmPolyType"),
                                custPolyPath=NULL)
 {
   #if(missing(ctryCodes))
@@ -1267,13 +1289,15 @@ getCtryShpLyrNames <- function(ctryCodes=NULL,
 #' 
 #' @param gadmVersion The GADM version to use
 #' 
+#' @param gadmPolyType The format of polygons to download from GADM
+#' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
 #' @return character string The name of the lowest admin level
 #'
 getCtryShpLowestLyrNames <- function(ctryCodes=NULL,
                                      gadmVersion=pkgOptions("gadmVersion"),
-                                     gadmPolyType = gadmPolyType,
+                                     gadmPolyType = pkgOptions("gadmPolyType"),
                                      custPolyPath=NULL)
 {
   if(is.null(ctryCodes) && is.null(custPolyPath))
@@ -1332,6 +1356,8 @@ getCtryShpLowestLyrNames <- function(ctryCodes=NULL,
 #' @param lowestAdmLevel \code{integer} The lowest admin level number to return
 #'
 #' @param gadmVersion The GADM version to use
+#' 
+#' @param gadmPolyType The format of polygons to download from GADM
 #' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
@@ -1452,6 +1478,8 @@ getCtryPolyAdmLevelNames <- function(ctryCode=NULL,
 #' 
 #' @param gadmVersion The GADM version to use
 #' 
+#' @param gadmPolyType The format of polygons to download from GADM
+#' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
 #' @return character vector of admin level names
@@ -1560,6 +1588,8 @@ getCtryStructAdmLevelNames <- function(ctryCode=NULL,
 #' @param downloadMethod The method used to download polygons
 #' 
 #' @param gadmVersion The GADM version to use
+#' 
+#' @param gadmPolyType The format of polygons to download from GADM
 #' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
@@ -1697,6 +1727,8 @@ searchAdmLevel <- function(ctryCodes=NULL,
 #' 
 #' @param gadmVersion The GADM version to use
 #' 
+#' @param gadmPolyType The format of polygons to download from GADM
+#' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
 #' @return \code{logical} whether inputted admLevels are valid
@@ -1755,6 +1787,8 @@ validCtryAdmLvls <- function(ctryCode=NULL,
 #' 
 #' @param gadmVersion The GADM version to use
 #' 
+#' @param gadmPolyType The format of polygons to download from GADM
+#' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
 #' @return \code{logical} whether inputted admLevels are valid
@@ -1788,6 +1822,8 @@ allValidCtryAdmLvls <- function(ctryCode=NULL,
 #' @param ctryCode \code{character} The ctryCode of the country of interest
 #' 
 #' @param gadmVersion The GADM version to use
+#' 
+#' @param gadmPolyType The format of polygons to download from GADM
 #' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
@@ -1823,6 +1859,8 @@ existsCtryPoly <- function(ctryCode=NULL,
 #' @param ctryCodes \code{character} The ctryCode of the country of interest
 #' 
 #' @param gadmVersion The GADM version to use
+#' 
+#' @param gadmPolyType The format of polygons to download from GADM
 #' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #'
@@ -1884,6 +1922,8 @@ getCtryShpAllAdmLvls <- function(ctryCodes=NULL,
 #' 
 #' @param gadmVersion The GADM version to use
 #' 
+#' @param gadmPolyType The format of polygons to download from GADM
+#' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
 #' @return character name of shapefile directory
@@ -1936,6 +1976,8 @@ getPolyFname <- function(ctryCode=NULL,
 #' 
 #' @param gadmVersion The GADM version to use
 #' 
+#' @param gadmPolyType The format of polygons to download from GADM
+#' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
 #' @return character path to polygon shapefile directory
@@ -1978,6 +2020,8 @@ getPolyFnamePath <- function(ctryCode=NULL,
 #' 
 #' @param gadmVersion The GADM version to use
 #' 
+#' @param gadmPolyType The format of polygons to download from GADM
+#' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
 #' @return character path to zip
@@ -2016,6 +2060,8 @@ getPolyFnameZip <- function(ctryCode=NULL,
 #' 
 #' @param gadmVersion The GADM version to use
 #' 
+#' @param gadmPolyType The format of polygons to download from GADM
+#' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
 #' @return character path to zip
@@ -2040,7 +2086,7 @@ getPolyFnameRDS <- function(ctryCode=NULL,
                                        gadmVersion = gadmVersion,
                                        gadmPolyType = gadmPolyType,
                                        custPolyPath = custPolyPath),
-                      ".RDS")
+                      ".rds")
   
   return (polyFname)
 }
@@ -2059,6 +2105,8 @@ getPolyFnameRDS <- function(ctryCode=NULL,
 #' @param layerName - the name of the polygon layer
 #' 
 #' @param gadmVersion The GADM version to use
+#' 
+#' @param gadmPolyType The format of polygons to download from GADM
 #' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
@@ -2119,6 +2167,8 @@ ctryShpLyrName2Num <- function(ctryCode=NULL,
 #'     should we download it?
 #'     
 #' @param gadmVersion The GADM version to use
+#' 
+#' @param gadmPolyType The format of polygons to download from GADM
 #' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 

@@ -15,6 +15,8 @@
 #'     data.frame with spatial context NULL returns a vector of all
 #'     values, colrowval returns a data.frame with row, col and raster
 #'     value while lonlatval returns a data.frame with lon,lat and val.
+#'     
+#' @param configName character the type of raster being processed
 #'
 #' @return numeric vector of radiances
 #'
@@ -28,7 +30,7 @@
 #' sumPolygon1 <- sum(masqVIIRS(ctryPoly, ctryRaster, 1), na.rm=T)
 #' }
 #'
-masqVIIRS <- function(ctryPoly, ctryRast, idx, retVal, configName)
+masqVIIRS <- function(ctryPoly, ctryRast, idx, retVal="colrowval", configName)
 {
   #based on masq function from https://commercedataservice.github.io/tutorial_viirs_part1/
   #slightly modified to use faster masking method by converting the raster to vector
@@ -79,6 +81,8 @@ masqVIIRS <- function(ctryPoly, ctryRast, idx, retVal, configName)
 #'     data.frame with spatial context NULL returns a vector of all
 #'     values, colrowval returns a data.frame with row, col and raster
 #'     value while lonlatval returns a data.frame with lon,lat and val.
+#'     
+#' @param configName character the type of raster being processed
 #'
 #' @return numeric vector of radiances
 #'
@@ -97,10 +101,8 @@ masqVIIRS <- function(ctryPoly, ctryRast, idx, retVal, configName)
 #' }
 #' }
 #'
-masqOLS <- function(shp, rast, i, retVal, configName)
+masqOLS <- function(shp, rast, i, retVal="colrowval", configName)
 {
-  retVal <- "colrowval"
-  
   #based on masq function from https://commercedataservice.github.io/tutorial_viirs_part1/
   #Extract one polygon based on index value i
   polygon <- shp[i,] #extract one polygon

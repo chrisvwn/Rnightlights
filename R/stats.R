@@ -298,6 +298,8 @@ myZonal <- function (rast, zone, nlStats, digits = 0, retVal=NULL, na.rm = TRUE,
 #' 
 #' @param gadmVersion The GADM version to use
 #' 
+#' @param gadmPolyType The format of polygons to download from GADM
+#' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
 #' @return TRUE/FALSE
@@ -459,12 +461,16 @@ ZonalPipe <- function (ctryCode,
 #' @param ctryPoly Polygon the loaded country polygon layer
 #' 
 #' @param nlType the nlType of interest
+#' 
+#' @param configName character the type of raster being processed
 #'
 #' @param nlPeriod character string the nlPeriod to be processed
 #' 
 #' @param nlStats character vector The stats to calculate
 #' 
 #' @param gadmVersion The GADM version to use
+#' 
+#' @param gadmPolyType The format of polygons to download from GADM
 #' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
@@ -619,6 +625,8 @@ fnAggRadGdal <- function(ctryCode,
 #'     cropped to the country outline
 #'     
 #' @param nlType Character vector The nlType to process
+#' 
+#' @param configName character the type of raster being processed
 #' 
 #' @param nlStats The statistics to calculate
 #' 

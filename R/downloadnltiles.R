@@ -11,6 +11,8 @@
 #' @param downloadMethod The method to use for download.
 #' 
 #' @param nlType A character string of nlType
+#' 
+#' @param configName character the type of raster being processed
 #'
 #' @return TRUE/FALSE Whether the download was successful
 #'
@@ -184,6 +186,10 @@ downloadNlTilesVIIRS <- function(nlPeriod,
 #' @param nlPeriod the nlPeriod of the tile
 #'
 #' @param downloadMethod The method to use for download.
+#' 
+#' @param nlType A character string of nlType
+#' 
+#' @param configName character the type of raster being processed
 #'
 #' @return TRUE/FALSE Whether the download was successful
 #'

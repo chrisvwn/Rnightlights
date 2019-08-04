@@ -13,6 +13,8 @@
 #' 
 #' @param gadmVersion The GADM version to use
 #' 
+#' @param gadmPolyType The format of polygons to download from GADM
+#' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
 #' @return dataframe with the country admin level data
@@ -206,6 +208,8 @@ createCtryNlDataDF <- function(ctryCode=NULL,
 #' @param nlPeriod the nlPeriod that the dataCol belongs to
 #' 
 #' @param nlType the type of nightlight data
+#' 
+#' @param configName character the type of raster being processed
 #'
 #' @return the updated dataframe
 #'
@@ -284,6 +288,8 @@ insertNlDataCol <- function (ctryNlDataDF, dataCol, statType, nlPeriod, nlType, 
 #' @param statType the stat which produced the dataCol vector
 #' 
 #' @param gadmVersion The GADM version to use
+#' 
+#' @param gadmPolyType The format of polygons to download from GADM
 #' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
@@ -377,6 +383,8 @@ deleteNlDataCol <- function (ctryCode=NULL,
 #' 
 #' @param gadmVersion The GADM version to use
 #' 
+#' @param gadmPolyType The format of polygons to download from GADM
+#' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
 #' @return None
@@ -464,6 +472,8 @@ validCtryNlDataDF <- function(ctryNlDataDF)
 #' 
 #' @param gadmVersion The GADM version to use
 #' 
+#' @param gadmPolyType The format of polygons to download from GADM
+#' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
 #' @return Character filename of the country data file
@@ -525,6 +535,8 @@ getCtryNlDataFname <- function(ctryCode=NULL,
 #' @param admLevel \code{character string} The admin level of interest
 #' 
 #' @param gadmVersion The GADM version to use
+#' 
+#' @param gadmPolyType The format of polygons to download from GADM
 #' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
@@ -615,6 +627,8 @@ getCtryNlDataFnamePath <- function(ctryCode=NULL,
 #' 
 #' @param gadmVersion The GADM version to use
 #' 
+#' @param gadmPolyType The format of polygons to download from GADM
+#' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
 #' @param downloadMethod The method used to download polygons
@@ -623,10 +637,13 @@ getCtryNlDataFnamePath <- function(ctryCode=NULL,
 #' 
 #' @param extractMethod The method used to extract data and perform calculations
 #'     on the satellite raster
+#'     
+#' @param configNames character the types of raster being processed
 #' 
 #' @param source "local" or "remote" Whether to download and process the
 #'     data locally or to download the pre-processed data from a remote 
 #'     source/repo
+#'     
 #'
 #' @param ... other arguments
 #'     
@@ -682,7 +699,6 @@ getCtryNlDataFnamePath <- function(ctryCode=NULL,
 getCtryNlData <- function(ctryCode=NULL,
                           admLevel,
                           nlTypes,
-                          configNames,
                           nlPeriods, 
                           nlStats=pkgOptions("nlStats"), ignoreMissing=NULL, 
                           gadmVersion=pkgOptions("gadmVersion"),
@@ -691,6 +707,7 @@ getCtryNlData <- function(ctryCode=NULL,
                           downloadMethod=pkgOptions("downloadMethod"),
                           cropMaskMethod=pkgOptions("cropMaskMethod"),
                           extractMethod=pkgOptions("extractMethod"),
+                          configNames,
                           source="local", ...)
 {
   if(source != "local")
@@ -709,7 +726,10 @@ getCtryNlData <- function(ctryCode=NULL,
   if(missing(nlTypes))
     stop(Sys.time(), ": Missing required parameter nlTypes")
   
-  configNames <- sapply(nlTypes, function(x) pkgOptions(paste("configName_", x, sep="")))
+  if(missing(configNames))
+    configNames <- sapply(paste0("configName_", nlTypes), pkgOptions)
+  
+  configNames <- toupper(configNames)
   
   #if both nlPeriods and ignoreMissing are not supplied we cannot deduce
   #the nlPeriods. Error and stop
@@ -867,7 +887,7 @@ getCtryNlData <- function(ctryCode=NULL,
           processNlData(ctryCodes = ctryCode,
                         admLevels = admLevel,
                         nlTypes = nlTypes,
-                        configNames= configNames,
+                        configNames = configNames,
                         nlPeriods = nlPeriods,
                         nlStats = nlStats,
                         gadmVersion = gadmVersion,
@@ -1032,6 +1052,8 @@ getCtryNlData <- function(ctryCode=NULL,
 #' @param nlStat character vector The stat to be stored in the column
 #' 
 #' @param nlType character vector The type of nightlight
+#' 
+#' @param configName character the type of raster being processed
 #'
 #' @return character string
 #'
@@ -1082,6 +1104,8 @@ getCtryNlDataColName <- function(nlPeriod, nlStat, nlType, configName)
 #' 
 #' @param gadmVersion The GADM version to use
 #' 
+#' @param gadmPolyType The format of polygons to download from GADM
+#' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #'
 #' @return TRUE/FALSE
@@ -1129,6 +1153,8 @@ existsCtryNlDataFile <- function(ctryCode=NULL,
 #' @param admLevel character string The country admin level of interest
 #' 
 #' @param nlTypes character The nlTypes
+#' 
+#' @param configNames character the types of raster being processed
 #'
 #' @param nlPeriods character The nlPeriods
 #' 
@@ -1136,13 +1162,16 @@ existsCtryNlDataFile <- function(ctryCode=NULL,
 #' 
 #' @param gadmVersion The GADM version to use
 #' 
+#' @param gadmPolyType The format of polygons to download from GADM
+#' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
 #' @return TRUE/FALSE
 #'
 #' @examples
-#' Rnightlights:::existsCtryNlData("KEN", "KEN_adm0", "VIIRS.M","201401", "sum")
-#'
+#' Rnightlights:::existsCtryNlData(ctryCode = "KEN", admLevel = "KEN_adm0", 
+#'     nlTypes = "VIIRS.M", configNames = "stable_lights", nlPeriods = "201401", nlStats = "sum")
+#' 
 existsCtryNlData <- function(ctryCode=NULL,
                              admLevel,
                              nlTypes,
@@ -1170,6 +1199,9 @@ existsCtryNlData <- function(ctryCode=NULL,
   
   if(missing(nlTypes))
     stop(Sys.time(), ": Missing required parameter nlTypes")
+  
+  if(missing(configNames))
+    configNames <- sapply(paste0("configName_", nlTypes), pkgOptions)
   
   if(length(ctryCode) > 1 || length(admLevel) > 1)
     stop(Sys.time(), ": Only 1 ctryCode and admLevel can be checked at a time")
@@ -1217,11 +1249,15 @@ existsCtryNlData <- function(ctryCode=NULL,
 #' 
 #' @param nlTypes A character vector of nlTypes to filter by
 #' 
+#' @param configNames character the type of raster being processed
+#' 
 #' @param nlPeriods A character vector of nlPeriods to filter by 
 #' 
 #' @param nlStats The stats to filter by
 #' 
 #' @param gadmVersion The GADM version to use
+#' 
+#' @param gadmPolyType The format of polygons to download from GADM
 #' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
@@ -1237,6 +1273,9 @@ allExistsCtryNlData <- function(ctryCodes,
                                 gadmPolyType = pkgOptions("gadmPolyType"),
                                 custPolyPath=NULL)
 {
+  if(missing(configNames))
+    configNames <- sapply(paste0("configName_", nlTypes), pkgOptions)
+  
   all(unlist(existsCtryNlData(ctryCode = ctryCodes,
                               admLevel = admLevels,
                               nlPeriods = nlPeriods,
@@ -1425,6 +1464,8 @@ listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlTypes=NULL, nlPerio
 #' 
 #' @param nlTypes A character vector of nlTypes to filter by
 #' 
+#' @param configNames character the type of rasters to filter by
+#' 
 #' @param nlPeriods A character vector of nlPeriods to filter by
 #' 
 #' @param polySrcs The source of polygons e.g. GADM or CUST to filter by
@@ -1452,17 +1493,18 @@ listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlTypes=NULL, nlPerio
 #' listCtryNlRasters(ctryCodes = c("KEN","RWA"), nlPeriods = c("2012", "2013"), nlTypes = "OLS.Y")
 #'
 #' @export
-listCtryNlRasters <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, polySrcs=NULL, polyVers=NULL, nlStats=NULL, source="local")
+listCtryNlRasters <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, configNames=NULL, polySrcs=NULL, polyVers=NULL, nlStats=NULL, source="local")
 {
   #appease CRAN note for global variables
   rastType <- NULL
   ctryCode <- NULL
   nlType <- NULL
+  configName <- NULL
   nlPeriod <- NULL
   polySrc <- NULL
   
   #get a list of country data files present
-  rasterList <- list.files(path = getNlDir(dirName = "dirRasterOutput"), pattern = "^NL_.*(GADM|CUST).*\\.tif$")
+  rasterList <- list.files(path = getNlDir(dirName = "dirRasterOutput"), pattern = "^NL_.*(GADM|CUST)-.*[A-Z]+\\.tif$")
   
   if(length(rasterList) == 0)
     return(NULL)
@@ -1473,17 +1515,21 @@ listCtryNlRasters <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, poly
   
   rasterList <- gsub("_(CUST|GADM).*\\.tif$", "", rasterList)
   
+  lens <- sapply(stringr::str_extract_all(rasterList, "_"), length)
+  
+  rasterList[lens == 5] <- stringi::stri_replace_last_fixed(rasterList[lens == 5], '_', '-')
+  
   rasterList <- strsplit(gsub(".tif", "", rasterList), "_")
   
   rasterList <- t(unlist(sapply(rasterList, rbind)))
-  
+
   #convert into a dataframe with numbered rownames
   rasterList <- as.data.frame(rasterList)
   
   rasterList <- cbind(rasterList, tifName)
   
   #label the columns
-  names(rasterList) <- c("rastType", "ctryCode", "nlType", "nlPeriod", "polySrc")
+  names(rasterList) <- c("rastType", "ctryCode", "nlType", "nlPeriod", "configName", "polySrc")
   
   #filters
   #filter by ctryCode if supplied
@@ -1494,12 +1540,16 @@ listCtryNlRasters <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, poly
   if(!is.null(nlTypes))
     rasterList <- rasterList[which(rasterList[,"nlType"] %in% nlTypes),]
   
+  #filter by configName if supplied
+  if(!is.null(configNames))
+    rasterList <- rasterList[which(rasterList[,"configName"] %in% configNames),]
+  
   #filter by nlPeriod if supplied
   if(!is.null(nlPeriods))
     rasterList <- rasterList[which(rasterList[,"nlPeriod"] %in% nlPeriods),]
   
   #Reorder the columns
-  rasterList <- dplyr::select(rasterList, rastType, ctryCode, nlType, nlPeriod, polySrc)
+  rasterList <- dplyr::select(rasterList, rastType, ctryCode, nlType, configName, nlPeriod, polySrc)
   
   #only return dataList if we have records esp. after filtering else return NULL
   if(nrow(rasterList) > 0)
@@ -1516,6 +1566,8 @@ listCtryNlRasters <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, poly
 #'     cached in the local tiles folder
 #'
 #' @param nlTypes A character vector of nlTypes to filter by
+#' 
+#' @param configNames character the type of rasters to filter by
 #' 
 #' @param nlPeriods A character vector of nlPeriods to filter by
 #' 
@@ -1541,11 +1593,12 @@ listCtryNlRasters <- function(ctryCodes=NULL, nlPeriods=NULL, nlTypes=NULL, poly
 #' listNlTiles(nlTypes = "OLS.Y", nlPeriods = c("2012", "2013"))
 #'
 #' @export
-listNlTiles <- function(nlTypes=NULL, nlPeriods=NULL, tileName=NULL, source="local")
+listNlTiles <- function(nlTypes=NULL, configNames=NULL, nlPeriods=NULL, tileName=NULL, source="local")
 {
   #appease CRAN note for global variables
   dataType <- NULL
   nlType <- NULL
+  configName <- NULL
   nlPeriod <- NULL
   tileName <- NULL
   
@@ -1557,10 +1610,14 @@ listNlTiles <- function(nlTypes=NULL, nlPeriods=NULL, tileName=NULL, source="loc
   }
   
   #get a list of country data files present
-  rasterList <- list.files(path = getNlDir(dirName = "dirNlTiles"), pattern = "^NL_TILE_.*\\..*\\.tif$")
+  rasterList <- list.files(path = getNlDir(dirName = "dirNlTiles"), pattern = "^NL_TILE_[A-Z]{3,5}\\.[D|M|Y]_.*(_.*)*_\\d{4,6}_\\d{2,3}[N|S]\\d{2,3}[E|W]\\.tif$")
   
   if(length(rasterList) == 0)
     return(NULL)
+
+  lens <- sapply(stringr::str_extract_all(rasterList, "_"), length)
+  
+  rasterList[lens == 6] <- gsub("(.*_.*_.*)_(.*_.*_.*)","\\1-\\2", rasterList[lens ==6]) #stringi::replstri_replace_last_fixed(rasterList[lens == 5], '_', '-')
   
   rasterList <- strsplit(gsub("TILE_|.tif", "", rasterList), "_")
   
@@ -1570,12 +1627,16 @@ listNlTiles <- function(nlTypes=NULL, nlPeriods=NULL, tileName=NULL, source="loc
   rasterList <- as.data.frame(rasterList)
   
   #label the columns
-  names(rasterList) <- c("dataType", "nlType", "nlPeriod", "tileName")
+  names(rasterList) <- c("dataType", "nlType", "configName", "nlPeriod", "tileName")
   
   #filters
   #filter by nlType if supplied
   if(!is.null(nlTypes))
     rasterList <- rasterList[which(rasterList[,"nlType"] %in% nlTypes),]
+  
+  #filter by nlType if supplied
+  if(!is.null(configNames))
+    rasterList <- rasterList[which(rasterList[,"configName"] %in% configNames),]
   
   #filter by nlPeriod if supplied
   if(!is.null(nlPeriods))
@@ -1586,7 +1647,7 @@ listNlTiles <- function(nlTypes=NULL, nlPeriods=NULL, tileName=NULL, source="loc
     rasterList <- rasterList[which(rasterList[,"tileName"] %in% tileName),]
   
   #Reorder the columns
-  rasterList <- dplyr::select(rasterList, dataType, nlType, nlPeriod, tileName)
+  rasterList <- dplyr::select(rasterList, dataType, nlType, configName, nlPeriod, tileName)
   
   #only return list if we have records esp. after filtering else return NULL
   if(nrow(rasterList) > 0)

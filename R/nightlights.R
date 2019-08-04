@@ -93,6 +93,8 @@
 #'     ctryCode at which to calculate stats
 #'
 #' @param nlType \code{character} The nlType of interest
+#' 
+#' @param configName character the type of raster being processed
 #'
 #' @param nlPeriod \code{character} The nlPeriod of interest
 #' 
@@ -108,6 +110,8 @@
 #'     gdal-based functions to crop and mask the country rasters
 #' 
 #' @param gadmVersion The GADM version to use
+#' 
+#' @param gadmPolyType The format of polygons to download from GADM
 #' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #'
@@ -469,10 +473,14 @@ processNLCountry <- function(ctryCode,
 #' @param ctryCode the ctryCode of interest
 #' 
 #' @param nlType the nlType of interest
+#' 
+#' @param configName character the type of raster being processed
 #'
 #' @param nlPeriod the nlPeriod of interest
 #' 
 #' @param gadmVersion The GADM version to use
+#' 
+#' @param gadmPolyType The format of polygons to download from GADM
 #' 
 #' @param custPolyPath The path to a custom polygon as an alternative
 #'     to using GADM polygons
@@ -482,7 +490,7 @@ processNLCountry <- function(ctryCode,
 #'
 #' @examples
 #' 
-#' Rnightlights:::getCtryRasterOutputFname("KEN","VIIRS.M", "201412")
+#' Rnightlights:::getCtryRasterOutputFname(ctryCode = "KEN", nlType = "VIIRS.M", nlPeriod = "201412")
 #'
 getCtryRasterOutputFname <- function(ctryCode,
                                      nlType,
@@ -533,10 +541,14 @@ getCtryRasterOutputFname <- function(ctryCode,
 #' @param ctryCode the ctryCode of interest
 #' 
 #' @param nlType the nlType of interest
+#' 
+#' @param configName character the type of raster being processed
 #'
 #' @param nlPeriod the nlPeriod of interest
 #' 
 #' @param gadmVersion The GADM version to use
+#' 
+#' @param gadmPolyType The format of polygons to download from GADM
 #'  
 #' @param custPolyPath The path to a custom polygon as an alternative
 #'     to using GADM polygons
@@ -618,12 +630,16 @@ getCtryRasterOutputFnamePath <- function(ctryCode,
 #'
 #' @param nlTypes the types of nightlights to process
 #' 
+#' @param configNames character the types of raster being processed
+#' 
 #' @param nlPeriods the nlPeriods of interest
 #' 
 #' @param nlStats the statistics to calculate. If not provided will calculate
 #'     the stats specified in \code{pkgOptions("nlStats")}
 #'
 #' @param gadmVersion The GADM version to use
+#' 
+#' @param gadmPolyType The format of polygons to download from GADM
 #' 
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #' 
