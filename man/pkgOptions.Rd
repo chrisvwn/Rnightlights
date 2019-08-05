@@ -24,16 +24,20 @@ The following options are supported
  \item{\code{configName_VIIRS.D}}{(\code{character}) The regex to uniquely
      identify the tile file to use out of the downloaded tile .tgz. The
      version 1 monthly series is run globally using two different 
-     configurations.
+     configurations:
+     \itemize{
+         \item vcmcfg \emph{(Stray Light Removed)}: Excludes any
+         data impacted by stray light.
      
-     The first excludes any data impacted by stray light. The second
-     includes these data if the radiance vales have undergone the stray-
-     light correction procedure (Reference). These two configurations
-     are denoted in the filenames as "vcm" and "vcmsl" respectively.
+         \item vcmsl \emph{(Stray Light Corrected)}: includes data
+          impacted by stray light if the radiance values have undergone the stray-
+         light correction procedure.
+     }
+     
      The "vcmsl" version, that includes the stray-light corrected data,
      will have more data coverage toward the poles, but will be of reduced
      quality.
-     
+         
      It is up to the users to determine which set is best for their
      applications. The annual versions are only made with the "vcm"
      version, excluding any data impacted by stray light.}
