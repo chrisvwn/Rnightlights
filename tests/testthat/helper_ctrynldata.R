@@ -15,7 +15,7 @@ getCtryNlDataSTP <- function()
   print(file.exists(testDataFile))
   
   #stpOrig <- utils::read.csv(testDataFile, header = T, stringsAsFactors = F)
-  stpOrig <<- as.data.frame(data.table::fread(testDataFile))
+  stpOrig <<- as.data.frame(data.table::fread(input = testDataFile, encoding = "UTF-8"))
   
   pkgReset()
   
