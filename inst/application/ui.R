@@ -88,6 +88,8 @@ alignCenter <- function(el) {
                  
                  shiny::uiOutput(outputId = "polyVer"),
                  
+                 shiny::uiOutput(outputId = "polyType"),
+                 
                  shiny::uiOutput(outputId = "btnGo"),
 
                  shiny::uiOutput(outputId = "intraCountry"),
@@ -128,7 +130,7 @@ alignCenter <- function(el) {
       shinydashboard::dashboardBody(
         shinydashboard::tabBox(width = 12,
           shiny::tabPanel(title = "plots",
-                   plotly::plotlyOutput(outputId = "plotNightLights"),
+                   shiny::plotOutput(outputId = "plotNightLights"),
                    
                    shiny::uiOutput("sliderNlPeriodRange")
           ),
