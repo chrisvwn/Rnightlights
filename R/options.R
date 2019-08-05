@@ -57,12 +57,15 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   #sfRds: simple features for R (sf package) in Rds format
   gadmPolyType = "shpZip",
   
-  #gdalCacheMax Speeds up gdal_rasterize calculation of stats in function ZonalPipe with more cache (advice: max 1/3 of your total RAM) see: http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/
+  #gdalCacheMax Speeds up gdal_rasterize calculation of stats in function
+  #ZonalPipe with more cache (advice: max 1/3 of your total RAM)
+  #ref: http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/
   gdalCacheMax = 1024,
 
-  #stats to calculate in processNlData. Can be added to if the function exists
-  #i.e. if not a standard function can be created in workspace
-  nlStats = c("sum", "mean"),
+  #default stats to calculate in processNlData. Can be added to if the
+  #function exists i.e. if not a standard function can be created in workspace
+  #used if nlStats is not supplied to getCtryNlData et al.
+  nlStats = list(list("sum", "na.rm=T"), list("mean", "na.rm=TRUE")),
   
   #urls for raster tile listings. In theory, can be used to override the 
   #url if it is changed while the package is being updated
@@ -70,7 +73,7 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   
   ntLtsIndexUrlVIIRS.D = "https://ngdc.noaa.gov/eog/viirs/download_ut_mos_tile_iframe.html",
   
-  #updated: 20190731
+  #updated: 20190731. Data at old site stopped 15th July, 2019
   ntLtsIndexUrlVIIRS.M_OLD = "https://www.ngdc.noaa.gov/eog/viirs/download_dnb_composites_iframe.html",
   
   ntLtsIndexUrlVIIRS.Y_OLD = "https://www.ngdc.noaa.gov/eog/viirs/download_dnb_composites_iframe.html",
@@ -120,16 +123,20 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
 #'  \item{\code{configName_VIIRS.D}}{(\code{character}) The regex to uniquely
 #'      identify the tile file to use out of the downloaded tile .tgz. The
 #'      version 1 monthly series is run globally using two different 
-#'      configurations.
+#'      configurations:
+#'      \itemize{
+#'          \item vcmcfg \emph{(Stray Light Removed)}: Excludes any
+#'          data impacted by stray light.
 #'      
-#'      The first excludes any data impacted by stray light. The second
-#'      includes these data if the radiance vales have undergone the stray-
-#'      light correction procedure (Reference). These two configurations
-#'      are denoted in the filenames as "vcm" and "vcmsl" respectively.
+#'          \item vcmsl \emph{(Stray Light Corrected)}: includes data
+#'           impacted by stray light if the radiance values have undergone the stray-
+#'          light correction procedure.
+#'      }
+#'      
 #'      The "vcmsl" version, that includes the stray-light corrected data,
 #'      will have more data coverage toward the poles, but will be of reduced
 #'      quality.
-#'      
+#'          
 #'      It is up to the users to determine which set is best for their
 #'      applications. The annual versions are only made with the "vcm"
 #'      version, excluding any data impacted by stray light.}
