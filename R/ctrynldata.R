@@ -124,7 +124,8 @@ createCtryNlDataDF <- function(ctryCode=NULL,
     
     polyColNames <- sapply(lyrNames, function(lyrName) 
     {
-      ctryPoly <- rgdal::readOGR(dsn = polyFnamePath, layer = lyrName)
+      ctryPoly <- rgdal::readOGR(dsn = polyFnamePath, layer = lyrName,
+                                 encoding = "UTF-8", use_iconv = TRUE)
       
       colNames <- names(ctryPoly@data)
       
@@ -918,7 +919,8 @@ getCtryNlData <- function(ctryCode=NULL,
                                  admLevel = admLevel,
                                  gadmVersion = gadmVersion,
                                  gadmPolyType = gadmPolyType,
-                                 custPolyPath = custPolyPath)))
+                                 custPolyPath = custPolyPath),
+          encoding = "UTF-8"))
     }
     else
     {
@@ -936,7 +938,8 @@ getCtryNlData <- function(ctryCode=NULL,
                                    admLevel = admLevel,
                                    gadmVersion = gadmVersion,
                                    gadmPolyType = gadmPolyType,
-                                   custPolyPath = custPolyPath)))
+                                   custPolyPath = custPolyPath),
+            encoding = "UTF-8"))
       else
       {
         message(Sys.time(), ": Data for ", ctryCode, " does not exist. Set IgnoreMissing=FALSE to download and process")
@@ -1300,11 +1303,15 @@ allExistsCtryNlData <- function(ctryCodes,
 #' 
 #' @param nlTypes A character vector of nlTypes to filter by
 #' 
+#' @param configNames character the type of rasters to filter by
+#' 
 #' @param nlPeriods A character vector of nlPeriods to filter by 
 #' 
 #' @param polySrcs The source of polygons e.g. GADM or CUST to filter by
 #' 
 #' @param polyVers The version of the polygon source to filter by
+#' 
+#' @param polyTypes The format of polygons to download from GADM
 #' 
 #' @param nlStats The stats to filter by
 #' 
@@ -1327,15 +1334,17 @@ allExistsCtryNlData <- function(ctryCodes,
 #' listCtryNlData(ctryCodes = c("KEN","RWA"), nlPeriods = c("2012", "2013"), nlTypes = "OLS.Y")
 #'
 #' @export
-listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlTypes=NULL, nlPeriods=NULL, polySrcs=NULL, polyVers=NULL, nlStats=NULL, source="local")
+listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlTypes=NULL, configNames=NULL, nlPeriods=NULL, polySrcs=NULL, polyVers=NULL, polyTypes=NULL, nlStats=NULL, source="local")
 {
   dataList <- NULL
   dataType <- NULL #appease CRAN note for global variables
   nlType <- NULL #appease CRAN note for global variables
+  configName <- NULL
+  polyType <- NULL
   nlPeriod <- NULL #appease CRAN note for global variables
   
   #get a list of country data files present
-  countries <- list.files(path = getNlDir(dirName = "dirNlData"), pattern = "^NL_DATA_.*(GADM|CUST).*\\.csv$")
+  countries <- list.files(path = getNlDir(dirName = "dirNlData"), pattern = "^NL_DATA_.*(GADM|CUST)-\\d\\.\\d-.*\\.csv$")
   
   #for each country filename
   for (ctry in countries)
@@ -1354,8 +1363,11 @@ listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlTypes=NULL, nlPerio
       polySrc <- polyPart[1]
       
       polyVer <- polyPart[2]
+      
+      polyType <- polyPart[3]
     } else
     {
+      #custom polygons
       #prefix
       prefix <- "NL_DATA_"
       
@@ -1373,27 +1385,35 @@ listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlTypes=NULL, nlPerio
       polySrc <- polyPart[1]
       
       polyVer <- polyPart[2]
+      
+      polyType <- polyPart[3]
     }
     
     #read in the header row
-    ctryHdr <- data.table::fread(input = file.path(getNlDir(dirName = "dirNlData"), ctry), header = F, nrows = 1)
+    ctryHdr <- data.table::fread(input = file.path(getNlDir(dirName = "dirNlData"),
+                                                   ctry),
+                                 header = F, nrows = 1, encoding = "UTF-8")
     
     #grab only the NL cols
     nlCtryHdr <- grep("^NL", ctryHdr, value = T)
     
+    lens <- sapply(stringr::str_extract_all(nlCtryHdr, "_"), length)
+    
+    nlCtryHdr[lens == 5] <- gsub("(.*_.*_.*)_(.*_.*_.*)","\\1-\\2", nlCtryHdr[lens == 5])
+    
     #split the NL colnames into their components e.g. "NL_OLS.Y_2012_MEAN"
     #= "NL"+nlType+nlPeriod+stat
-    nlCtryHdr <- reshape2::colsplit(nlCtryHdr, "_", c("V1", "V2","V3","V4"))
+    nlCtryHdr <- reshape2::colsplit(nlCtryHdr, "_", c("V1", "V2","V3","V4", "V5"))
     
     #only add if there are stats cols
     if(nrow(nlCtryHdr) > 0)
     {
       #aggregate (paste) the colnames into a single row with stats for each unique 
       #nlType+nlPeriod converted to a single field
-      nlCtryHdr <- stats::aggregate(V4 ~ V1 + V2 + V3, data=nlCtryHdr, FUN=paste, collapse=",")
+      nlCtryHdr <- stats::aggregate(V5 ~ V1 + V2 + V3 + V4, data=nlCtryHdr, FUN=paste, collapse=",")
       
       #add a ctryCode column
-      nlCtryHdr <- cbind(rep(ctryCode, nrow(nlCtryHdr)), rep(admLevel, nrow(nlCtryHdr)), rep(polySrc, nrow(nlCtryHdr)), rep(polyVer, nrow(nlCtryHdr)), nlCtryHdr)
+      nlCtryHdr <- cbind(rep(ctryCode, nrow(nlCtryHdr)), rep(admLevel, nrow(nlCtryHdr)), rep(polySrc, nrow(nlCtryHdr)), rep(polyVer, nrow(nlCtryHdr)), rep(polyType, nrow(nlCtryHdr)), nlCtryHdr)
       
       #combine into one table
       dataList <- rbind(dataList, nlCtryHdr)
@@ -1407,13 +1427,14 @@ listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlTypes=NULL, nlPerio
   dataList <- data.frame(dataList, row.names = 1:nrow(dataList), stringsAsFactors=F)
   
   #label the columns
-  names(dataList) <- c("ctryCode", "admLevel", "polySrc", "polyVer", "dataType", "nlType", "nlPeriod", "nlStats")
+  names(dataList) <- c("ctryCode", "admLevel", "polySrc", "polyVer", "polyType", "dataType", "nlType", "configName", "nlPeriod", "nlStats")
   
   dataList$ctryCode <- as.character(dataList$ctryCode)
   dataList$admLevel <- as.character(dataList$admLevel)
   dataList$nlPeriod <- as.character(dataList$nlPeriod)
   dataList$polySrc <- as.character(dataList$polySrc)
   dataList$polyVer <- as.character(dataList$polyVer)
+  dataList$polyType <- as.character(dataList$polyType)
   
   #filters
   #filter by ctryCode if supplied
@@ -1444,7 +1465,7 @@ listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlTypes=NULL, nlPerio
     dataList <- dataList[unique(unlist(sapply(nlStats, function(nlStat) grep(nlStat, dataList[,"nlStats"], ignore.case = T)))),]
   
   #Reorder the columns
-  dataList <- dplyr::select(dataList, dataType, ctryCode, admLevel, nlType, nlPeriod, polySrc, polyVer, dplyr::contains("stat"))
+  dataList <- dplyr::select(dataList, dataType, ctryCode, admLevel, nlType, configName, nlPeriod, polySrc, polyVer, polyType, dplyr::contains("stat"))
   
   #only return dataList if we have records esp. after filtering else return NULL
   if(nrow(dataList) > 0)

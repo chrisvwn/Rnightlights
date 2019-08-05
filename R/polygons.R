@@ -97,7 +97,11 @@ orderCustPolyLayers <- function(ctryCode, custPolyPath=NULL)
   
   ctryPolyNRows <- sapply(lyrNames, function(lyrName)
   {
-    ctryPoly <- rgdal::readOGR(dsn = getPolyFnamePath(ctryCode = ctryCode, custPolyPath = custPolyPath), layer = lyrName)
+    ctryPoly <- rgdal::readOGR(dsn = getPolyFnamePath(ctryCode = ctryCode,
+                                                      custPolyPath = custPolyPath),
+                               layer = lyrName,
+                               encoding = "UTF-8",
+                               use_iconv = TRUE)
     
     return(nrow(ctryPoly@data))
   })
@@ -152,7 +156,9 @@ addCtryPolyIdx <- function(ctryCode,
                                                         gadmVersion = gadmVersion,
                                                         gadmPolyType = gadmPolyType,
                                                         custPolyPath = custPolyPath),
-                                 layer = admLevel)
+                                 layer = admLevel,
+                                 encoding = "UTF-8",
+                                 use_iconv = TRUE)
       
       #Create an integer col in the shapefile with unique GIDs
         message(Sys.time(), ": Creating integer zone attribute col for polygon")
@@ -184,7 +190,9 @@ addCtryPolyIdx <- function(ctryCode,
                                                         gadmVersion = gadmVersion,
                                                         gadmPolyType = gadmPolyType,
                                                         custPolyPath = custPolyPath),
-                                 layer = admLevel)
+                                 layer = admLevel,
+                                 encoding = "UTF-8",
+                                 use_iconv = TRUE)
       
       lowestIDCol <- paste0("GID_", stringr::str_extract(admLevel, "\\d+$"), "_IDX")
       
@@ -650,7 +658,9 @@ dnldCtryPoly <- function(ctryCode=NULL,
                                                  gadmVersion = gadmVersion,
                                                  gadmPolyType = gadmPolyType,
                                                  custPolyPath = custPolyPath),
-                          layer = lvl)}))
+                          layer = lvl,
+                          encoding = "UTF-8",
+                          use_iconv = TRUE)}))
       
       message(Sys.time(), ": Saving admLevel polygons as RDS")
       saveRDS(object = listCtryPolys,
@@ -845,7 +855,7 @@ getCtryStructFname <- function(ctryCode=NULL,
   if(!is.null(ctryCode) && !allValidCtryCodes(ctryCodes = ctryCode))
     stop(Sys.time(), ": Invalid ctryCode(s) detected ")
   
-  if(gadmPolyType == "shpZip")
+  if(toupper(gadmPolyType) == toupper("shpZip"))
   {
     fName <- if(is.null(custPolyPath))
                 paste0("NL_STRUCT_", ctryCode, "_GADM-", gadmVersion, "-SHPZIP.csv")
@@ -853,7 +863,7 @@ getCtryStructFname <- function(ctryCode=NULL,
                 paste0("NL_STRUCT_",
                        ifelse(is.null(ctryCode), "", paste0(ctryCode, "_")),
                        "CUST-", basename(custPolyPath), "SHPZIP.csv")
-  } else if(gadmVersion == "spRds")
+  } else if(toupper(gadmVersion) == toupper("spRds"))
   {
     fName <- paste0("NL_STRUCT_", ctryCode, "_GADM-", gadmVersion, "SPRDS.csv")
   }
@@ -946,7 +956,7 @@ createCtryStruct <- function(ctryCode=NULL,
                                        gadmPolyType = gadmPolyType,
                                        custPolyPath = custPolyPath)
     
-    utils::write.table(x = ctryNlDataDF, file = ctryStructFnamePath, row.names = F, sep = ",")
+    utils::write.table(x = ctryNlDataDF, file = ctryStructFnamePath, row.names = F, sep = ",", fileEncoding = "UTF-8")
   }
 }
 
@@ -991,7 +1001,7 @@ readCtryStruct <- function(ctryCode=NULL,
   
   if(file.exists(ctryStructFnamePath))
   {
-    nlCtryStruct <- data.table::fread(input = ctryStructFnamePath)
+    nlCtryStruct <- data.table::fread(input = ctryStructFnamePath, encoding = "UTF-8")
   } else
   {
     createCtryStruct(ctryCode = ctryCode,
@@ -999,7 +1009,7 @@ readCtryStruct <- function(ctryCode=NULL,
                      gadmPolyType = gadmPolyType,
                      custPolyPath = custPolyPath)
     
-    nlCtryStruct <- data.table::fread(input = ctryStructFnamePath)
+    nlCtryStruct <- data.table::fread(input = ctryStructFnamePath, encoding = "UTF-8")
   }
   
   return(nlCtryStruct)
@@ -2269,7 +2279,7 @@ readCtryPolyAdmLayer <- function(ctryCode=NULL,
     
     if(dir.exists(shpPath))
     {
-      ctryPoly <- rgdal::readOGR(dsn = shpPath, layer = admLevel)
+      ctryPoly <- rgdal::readOGR(dsn = shpPath, layer = admLevel, encoding = "UTF-8", use_iconv = TRUE)
     }
     else
     {
