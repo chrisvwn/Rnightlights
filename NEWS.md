@@ -1,6 +1,86 @@
 # Rnightlights: Nightlights for R
 
 ### ChangeLog
+#### v0.2.4
+##### *Bug Fixes*
+This version does not fix any bugs. Only a workaround for a missing layer in at least one shapefile is introduced by adding a parameter *gadmPolyType*. More on that in the *New features* section below.
+
+##### *New features*
+This version introduces a few new features:
+
+- **`gadmPolyType`** is added as a parameter to give the option to allow the download one of the various formats of polygon available on GADM i.e.:
+
+    + gpkgZip (gpkg zip),
+    + kmlZip (KML zip),
+    + shpZip (ESRI shapefile zip),
+    + spRDS (spatial polygons saved to RDS),
+    + sfRds (simple features saved to RDS)
+
+  Only shpZip and spRds are currently implemented. Previously only shapefile zips were possible and this change was necessitated by [issue #22](https://github.com/chrisvwn/Rnightlights/issues/22) where a missing polygon layer was detected in the shpZip for Indonesia (IDN). The spRds offering was not affected by this problem. So in a sense this is a workaround.
+
+- **`configName`** is added as a parameter to getCtryNlData allowing one to select which raster to use out of the available rasters per nlType. They provide the rasters with different pre-processing applied to them. See https://ngdc.noaa.gov/eog/viirs/download_dnb_composites.html and https://ngdc.noaa.gov/eog/gcv4_readme.txt for details.
+    They are:
+    
+  + `configName_VIIRS.D`: The regex to uniquely identify the tile file to use out
+      of the downloaded tile .tgz. The version 1 monthly series is run globally
+      using two different configurations:
+
+        + vcmcfg: excludes any data impacted by stray light.
+        + vcmsl: includes these data if the radiance values have undergone the 
+          stray-light correction procedure and will have more data coverage toward
+          the poles, but will be of reduced quality.
+
+  + `configName_VIIRS.M`: The regex to uniquely
+      identify the tile file to use out of the downloaded monthly .tgz
+      tile. 
+
+        + Has the same options as configName.VIIRS.D
+  
+  + `configName_VIIRS.Y`: The regex to uniquely identify the tile file to
+      use out of the downloaded tile .tgz. The annual products can have
+      other values for the config shortname (Field 5). They are:
+
+        + vcm-orm (VIIRS Cloud Mask - Outlier Removed): This product
+            contains cloud-free average radiance values that have undergone
+            an outlier removal process to filter out fires and other ephemeral
+            lights.
+        + vcm-orm-ntl (VIIRS Cloud Mask - Outlier Removed - Nighttime Lights):
+            This product contains the "vcm-orm" average, with background 
+            (non-lights) set to zero.
+        + vcm-ntl (VIIRS Cloud Mask - Nighttime Lights): This product contains
+            the "vcm" average, with background (non-lights) set to zero.
+          
+  + `configName_OLS.Y`: The annual versions are only made with the "vcm"
+  version, excluding any data impacted by stray light.
+      The options for OLS.Y are:
+
+        + cf_cvg (Cloud-free coverages): This product tallies the total 
+            number of observations that went into each 30 arc second grid cell. This
+            image can be used to identify areas with low numbers of observations
+            where the quality is reduced. In some years there are areas with zero
+            cloud-free observations in certain locations.
+
+        + avg_vis (Raw avg_vis): contains the average of the 
+            visible band digital number values with no further filtering. Data
+            values range from 0-63. Areas with zero cloud-free observations are
+            represented by the value 255.
+
+        + stable_lights (cleaned up avg_vis): contains the lights from cities,
+            towns, and other sites with persistent lighting, including gas flares. 
+            Ephemeral events, such as fires have been discarded. Then the background
+            noise was identified and replaced with values of zero. Data values
+            range from 1-63. Areas with zero cloud-free observations are represented
+            by the value 255.
+
+##### *Bugs *
+- A bug in `getCtryNlData` caused `admLevel=country` to error out [issue #10](https://github.com/chrisvwn/Rnightlights/issues/10). This is fixed.
+- A possible change in the download policy of GADM causes `downloadMethod=aria` to fail for polygon downloads. This version forces polygon downloads to use normal download methods.
+- A bug was found in the extraction of `VIIRS.Y` raster tiles [issue #12](https://github.com/chrisvwn/Rnightlights/issues/12). This was fixed.
+- A change in GADM downloads that only allows https connections is made.
+
+##### *New features*
+- This version introduces the possibility to have `nlStat` functions return multi-value outputs. Prior to this each function could only return a scalar per (sub-)polygon/zone.
+
 #### v0.2.3
 This version fixes some bugs and sees the advent of a few new features:
 
