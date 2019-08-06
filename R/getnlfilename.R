@@ -268,7 +268,7 @@ getNlTileTifLclNameOLS <- function(nlType="OLS.Y", configName=pkgOptions(paste0(
 #' @examples
 #' #using default dirNlTiles
 #' \dontrun{
-#' Rnightlights:::getNlTileTifLclNamePathVIIRS("201401", 1)
+#' Rnightlights:::getNlTileTifLclNamePathVIIRS(nlType = "VIIRS.M", nlPeriod = "201401", tileNum = "1")
 #'  #returns "/dataPath/tiles/VIIRS_2014_01_75N180W.tif"
 #'  }
 #'
@@ -295,7 +295,7 @@ getNlTileTifLclNamePathVIIRS <- function(nlType = "VIIRS.M", configName=pkgOptio
   if(!validNlTileNumVIIRS(tileNum, nlType))
     stop(Sys.time(), ": Invalid tileNum: ", tileNum)
   
-  return (file.path(getNlDir("dirNlTiles"), getNlTileTifLclNameVIIRS(nlPeriod, tileNum, nlType)))
+  return (file.path(getNlDir("dirNlTiles"), getNlTileTifLclNameVIIRS(nlType = nlType, nlPeriod = nlPeriod, tileNum = tileNum)))
 }
 
 ######################## getNlTileTifLclNamePathOLS ###################################

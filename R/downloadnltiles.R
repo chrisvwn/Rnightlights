@@ -80,10 +80,10 @@ downloadNlTilesVIIRS <- function(nlPeriod,
                                        extra = "-c")
     else if(downloadMethod == "aria")
       #downloads to path relative to -d if specified else local dir
-      rsltDnld <- system(command = paste0("aria2c -c -x2 --show-console-readout=false --summary-interval=10 ",
+      rsltDnld <- system(command = paste0("aria2c -c -x", pkgOptions("numParDnldConns"), " --show-console-readout=false --summary-interval=10 ",
                                           ntLtsFileUrl,
                                           " -d ", getNlDir("dirNlTiles"),
-                                          " -o ", getNlTileZipLclNameVIIRS(nlType = nlPeriod,
+                                          " -o ", getNlTileZipLclNameVIIRS(nlType = nlType,
                                                                            configName = configName,
                                                                            nlPeriod = nlPeriod,
                                                                            tileNum = tileNum)))
@@ -112,7 +112,7 @@ downloadNlTilesVIIRS <- function(nlPeriod,
         file.rename(from = ntLtsZipLocalNamePathVIIRS, to = ntLtsTifLocalNamePathVIIRS)
       }
     }
-    else if(!file.exists(getNlTileTifLclNamePathVIIRS(nlPeriod, tileNum, nlType)))
+    else if(!file.exists(getNlTileTifLclNamePathVIIRS(nlPeriod = nlPeriod, tileNum = tileNum, nlType = nlType)))
     {
       message(Sys.time(), ": Getting list of files in ", ntLtsZipLocalNamePathVIIRS)
       
@@ -215,7 +215,31 @@ downloadNlTilesOLS <- function(nlPeriod,
   nlUrlsOLS <- getNlUrlOLS(nlPeriod)
   
   if(length(nlUrlsOLS) > 1)
-    message("Multiple tiles found for ", nlPeriod, ". Download and merge commencing.")
+  {
+    message(Sys.time(), ": Multiple tiles found for ", nlType, ":", nlPeriod)
+    
+    mergeStrategy <- pkgOptions("multiTileStrategy")
+    
+    if(mergeStrategy == "first")
+    {
+      message(Sys.time(), ": MultiTile Strategy: Selecting tile: ", mergeStrategy)
+      nlUrlsOLS <- nlUrlsOLS[1]
+    } else if(mergeStrategy == "last")
+    {
+      message(Sys.time(), ": MultiTile Strategy: Selecting tile: ", mergeStrategy)
+      
+      nlUrlsOLS <- nlUrlsOLS[length(nlUrlsOLS)]
+    } else if(is.integer(mergeStrategy))
+    {
+      message(Sys.time(), ": MultiTile Strategy: Selecting tile(s): ", mergeStrategy)
+      nlUrlsOLS <- nlUrlsOLS[mergeStrategy]
+    } else if(pkgOptions("multiTileStrategy") == "merge")
+    {
+      message(Sys.time(), ": MultiTile Strategy: Selecting all tiles: ", mergeStrategy) 
+    }
+  }
+   
+  message(Sys.time(), "Commencing download")
   
   ntLtsZipLocalNameOLS <- getNlTileZipLclNameOLS(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
   ntLtsZipLocalNamePathOLS <- getNlTileZipLclNamePath(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
@@ -228,17 +252,17 @@ downloadNlTilesOLS <- function(nlPeriod,
       rsltDnld <- NA
       
       #get the zip and tif local names
-      ntLtsZipLocalNameOLS <- getNlTileZipLclNameOLS(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
-      ntLtsZipLocalNamePathOLS <- getNlTileZipLclNamePath(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
-      ntLtsTifLocalNamePathOLS <- getNlTileTifLclNamePath(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
+      ntLtsZipLocalNameOLSTemp <- getNlTileZipLclNameOLS(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
+      ntLtsZipLocalNamePathOLSTemp <- getNlTileZipLclNamePath(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
+      ntLtsTifLocalNamePathOLSTemp <- getNlTileTifLclNamePath(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
       
-      ntLtsZipLocalNameOLS <- gsub(pattern = "(\\.tar)", paste0("_", i, "\\1"), ntLtsZipLocalNameOLS)
-      ntLtsZipLocalNamePathOLS <- gsub(pattern = "(\\.tar)", paste0("_", i, "\\1"), ntLtsZipLocalNamePathOLS)
-      ntLtsTifLocalNamePathOLS <- gsub(pattern = "(\\.tif)", paste0("_", i, "\\1"), ntLtsTifLocalNamePathOLS)
+      ntLtsZipLocalNameOLSTemp <- gsub(pattern = "(\\.tar)", paste0("_", i, "\\1"), ntLtsZipLocalNameOLSTemp)
+      ntLtsZipLocalNamePathOLSTemp <- gsub(pattern = "(\\.tar)", paste0("_", i, "\\1"), ntLtsZipLocalNamePathOLSTemp)
+      ntLtsTifLocalNamePathOLSTemp <- gsub(pattern = "(\\.tif)", paste0("_", i, "\\1"), ntLtsTifLocalNamePathOLSTemp)
       
-      if(!file.exists(ntLtsTifLocalNamePathOLS))
+      if(!file.exists(ntLtsTifLocalNamePathOLSTemp))
       {
-        if(!file.exists(ntLtsZipLocalNamePathOLS))
+        if(!file.exists(ntLtsZipLocalNamePathOLSTemp))
         {
           #get the first only to cater for Where multiple tiles exist 
           ntLtsFileUrl <- nlUrlsOLS[i]
@@ -253,14 +277,14 @@ downloadNlTilesOLS <- function(nlPeriod,
           message(Sys.time(), ": Downloading ", ntLtsFileUrl)
           
           if(downloadMethod %in% c("auto", "curl", "libcurl", "wget"))
-            rsltDnld <- utils::download.file(ntLtsFileUrl, ntLtsZipLocalNamePathOLS, mode = "wb", method = downloadMethod, extra = "-c")
+            rsltDnld <- utils::download.file(ntLtsFileUrl, ntLtsZipLocalNamePathOLSTemp, mode = "wb", method = downloadMethod, extra = "-c")
           else if(downloadMethod == "aria")
             #downloads to path relative to -d if specified else local dir
-            rsltDnld <- system(paste0("aria2c -c -x2 --show-console-readout=false --summary-interval=10 ",
+            rsltDnld <- system(paste0("aria2c -c -x", pkgOptions("numParDnldConns"), " --show-console-readout=false --summary-interval=10 ",
                                       ntLtsFileUrl,
                                       " -d ",
                                       getNlDir("dirNlTiles"),
-                                      " -o ", ntLtsZipLocalNameOLS))
+                                      " -o ", ntLtsZipLocalNameOLSTemp))
         } else
         {
           rsltDnld <- 0
@@ -278,16 +302,16 @@ downloadNlTilesOLS <- function(nlPeriod,
       
       if(rsltDnld == 0)
       {
-        message(Sys.time(), ": Extracting ", ntLtsZipLocalNamePathOLS)
+        message(Sys.time(), ": Extracting ", ntLtsZipLocalNamePathOLSTemp)
         
         tileNum <- "dummyTileNum"
         
         if(!file.exists(ntLtsTifLocalNamePathOLS))
         {
-          message(Sys.time(), ": Getting list of files in ", ntLtsZipLocalNamePathOLS)
+          message(Sys.time(), ": Getting list of files in ", ntLtsZipLocalNamePathOLSTemp)
           
           #get a list of files in the tar archive
-          tarFileList <- utils::untar(ntLtsZipLocalNamePathOLS, list = TRUE, tar="internal")
+          tarFileList <- utils::untar(ntLtsZipLocalNamePathOLSTemp, list = TRUE, tar="internal")
           
           #get the nightlight data filename
           #https://ngdc.noaa.gov/eog/gcv4_readme.txt
@@ -298,7 +322,7 @@ downloadNlTilesOLS <- function(nlPeriod,
           tgzFile <- tarFileList[grep(paste0(".*\\.", configName, ".*\\.tif\\.gz$"), tarFileList, ignore.case = T)]
           
           #extract the nightlight data file
-          utils::untar(tarfile = ntLtsZipLocalNamePathOLS, files = tgzFile, exdir = getNlDir("dirNlTiles"), tar = "internal")
+          utils::untar(tarfile = ntLtsZipLocalNamePathOLSTemp, files = tgzFile, exdir = getNlDir("dirNlTiles"), tar = "internal")
           
           #the tif has the same name as the compressed file without the .gz
           tifFile <- stringr::str_replace(tgzFile, ".gz", "")
@@ -318,7 +342,7 @@ downloadNlTilesOLS <- function(nlPeriod,
     
     if(length(nlUrlsOLS) > 1)
     {
-      message("Reading in Tifs")
+      message("Processing multiple tiles into one")
       
       if(!exists("wgs84"))
         wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
