@@ -1,17 +1,60 @@
+######################## getAllNlConfigNames ###################################
+
+#' Generate a list of all possible configNames for a given nlType
+#'
+#' Generate a list of all possible configNames for a given nlType
+#'
+#' @param nlType if present show only configNames matching the nlType
+#'
+#' @examples
+#' getAllNlConfigNames("OLS.Y")
+#'  #returns '"cf_cvg", "avg_vis", "stable_lights"'
+
+#' @export
 getAllNlConfigNames <- function(nlType)
 {
-  switch(nlType,
-         "OLS.Y" = c("cf_cvg", "avg_vis", "stable_lights"),
-         "VIIRS.D" = c("vcmcfg", "vcmsl"),
-         "VIIRS.M" = c("vcmcfg", "vcmsl"),
-         "VIIRS.Y" = c("vcm-orm", "vcm-orm-ntl", "vcm-ntl")
-  )
+  allConfigNames <- list(
+    "OLS.Y" = c("cf_cvg", "avg_vis", "stable_lights"),
+    "VIIRS.D" = c("vcmcfg", "vcmsl"),
+    "VIIRS.M" = c("vcmcfg", "vcmsl"),
+    "VIIRS.Y" = c("vcm-orm", "vcm-orm-ntl", "vcm-ntl"))
+  
+  if(missing(nlType))
+    return(allConfigNames)
+  
+  sapply(nlType, function(x)
+  {
+    pos <- grep(pattern = paste0("^",x,"$"), x = names(allConfigNames))
+    
+    if(length(pos) == 0)
+      return(NA)
+    
+    allConfigNames[pos]
+  }, USE.NAMES = F)
 }
 
+######################## validNlConfigName ###################################
 
+#' Check if a configName is valid for a given nlType
+#'
+#' Check if a configName is valid for a given nlType
+#' 
+#' @param configName the raster in use
+#'
+#' @param nlType types of nightlight to check
+#'
+#' @return logical a vector of logical values
+#'
+#' @examples
+#' Rnightlights:::validNlConfigName("VCMCFG", "OLS.Y")
+#'  #returns FALSE
+#'  
+#' Rnightlights:::validNlConfigName("VCMCFG", "VIIRS.M")
+#'  #returns TRUE
+#'
 validNlConfigName <- function(configName, nlType)
 {
-  configName %in% getAllNlConfigNames(nlType)
+  toupper(configName) %in% toupper(unlist(getAllNlConfigNames(nlType)))
 }
 
 ######################## downloadNlTiles ###################################
