@@ -1,6 +1,6 @@
 #TODO:
-#+ gzip all outputrasters and extract/delete tifs as required :V3
-#+ delete the 2nd tif in the tiles (avg_rad_...). :V3
+#+ gzip all outputrasters and extract/delete tifs as required/alt compress :V3
+#+ delete the 2nd tif in the tiles (avg_rad_...). :Cancelled
 #+ keep tiles gzipped until required. extract/delete as needed: V3
 #+ modularize everything, processNlData especially: DONE
 #+ give functions better names more descriptive: DONE
@@ -19,11 +19,14 @@
 #+ verify treatment of ATA i.e. single adm level countries: DONE
 #+ logic of getCtryPolyAdmLevelNames esp lvlEngName assignment needs scrutiny: DONE
 #+ OLS : DONE
-#+ store data in RDS/json format instead of CSV(?): V3
-#+ Name all parameters in function calls to future proof code: partial
+#+ store data in RDS/json format instead of CSV(?): Required?
+#+ Name all parameters in function calls to future proof code: 90%
 #+ Save shapefiles as RDS for quicker access?: DONE
 
-#Notes: gdalwarp is not used for cropping because the crop_to_cutline option causes a shift in the cell locations which then affects the stats extracted. A gdal-based crop to extent would be highly desirable for performance reasons though so seeking other gdal-based workarounds
+#Notes: gdalwarp is not used for cropping because the crop_to_cutline option
+#causes a shift in the cell locations which then affects the stats extracted.
+#A gdal-based crop to extent would be highly desirable for performance reasons
+#though so seeking other gdal-based workarounds
 
 # if (!require("pacman")) install.packages('pacman', repos='http://cran.r-project.org')
 #
