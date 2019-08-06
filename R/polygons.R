@@ -556,7 +556,7 @@ dnldCtryPoly <- function(ctryCode=NULL,
                                            mode = "wb",
                                            extra = "-c")
         else if (downloadMethod == "aria")
-          rsltDnld <- system(paste0("aria2c -c -x2 --show-console-readout=false --summary-interval=10 ", fullPolyUrl,
+          rsltDnld <- system(paste0("aria2c -c -x", pkgOptions("numParDnldConns"), " --show-console-readout=false --summary-interval=10 ", fullPolyUrl,
                                     " -d ", getNlDir("dirPolygon"),
                                     " -o ", basename(getPolyFnameZip(ctryCode = ctryCode,
                                                                      gadmVersion = gadmVersion,
