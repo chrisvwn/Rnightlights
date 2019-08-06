@@ -732,6 +732,9 @@ getCtryNlData <- function(ctryCode=NULL,
   
   configNames <- toupper(configNames)
   
+  if(any(!validNlConfigName(configNames)))
+    stop("Invalid configName(s) supplied")
+  
   #if both nlPeriods and ignoreMissing are not supplied we cannot deduce
   #the nlPeriods. Error and stop
   if(missing(nlPeriods) && missing(ignoreMissing))
