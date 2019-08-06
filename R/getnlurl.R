@@ -187,7 +187,7 @@ getNlUrl <- function(nlPeriod)
   ntLtsBaseUrl <- "https://www.ngdc.noaa.gov"
   
   #the page that lists all available nightlight files
-  ntLtsPageHtml <- "https://www.ngdc.noaa.gov/eog/dmsp/downloadV4composites.html"
+  ntLtsPageHtml <- pkgOptions("ntLtsIndexUrlOLS.Y")
   
   #the local name of the file once downloaded
   ntLtsPageLocalName <- file.path(getNlDir("dirNlTemp"), "ntltspageols.html")
