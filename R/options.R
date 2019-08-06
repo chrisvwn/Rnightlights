@@ -62,14 +62,26 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   #ref: http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/
   gdalCacheMax = 1024,
 
+  #if multiTileStrategy is set to merge where tiles are merged
+  #before processing set the function to merge with. The function
+  #is sent to gdal
+  multiTileMergeFun = "mean",
+  
+  #how should we handle a situation where we have multiple tiles
+  #for the same nlPeriod? Possible options:
+  #  + first - use only the first tile
+  #  + last  - use only the last tile
+  #  + merge - 
+  multiTileStrategy = "first",
+  
   #default stats to calculate in processNlData. Can be added to if the
   #function exists i.e. if not a standard function can be created in workspace
   #used if nlStats is not supplied to getCtryNlData et al.
   nlStats = list(list("sum", "na.rm=T"), list("mean", "na.rm=TRUE")),
   
   #urls for raster tile listings. In theory, can be used to override the 
-  #url if it is changed while the package is being updated
-  ntLtsIndexUrlOLS = "https://www.ngdc.noaa.gov/eog/data/web_data/v4composites/",
+  #url if it is changed and before the package is updated
+  ntLtsIndexUrlOLS.Y = "https://www.ngdc.noaa.gov/eog/dmsp/downloadV4composites.html",
   
   ntLtsIndexUrlVIIRS.D = "https://ngdc.noaa.gov/eog/viirs/download_ut_mos_tile_iframe.html",
   
@@ -82,7 +94,12 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   
   ntLtsIndexUrlVIIRS.Y = "https://eogdata.mines.edu/download_dnb_composites_iframe.html",
 
+  #the number of cores to use for parallel processing
   numCores = 2,
+  
+  #the number of parallel connections to make per download
+  #used by aria to possibly speed up downloads. 
+  numParDnldConns = 2,
   
   #countries to not process. useful if many countries being processed
   #and want to exclude a few
@@ -106,6 +123,7 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
     downloadMethod = settings::inlist("aria", "auto", "curl", "libcurl", "wget"),
     gadmVersion = settings::inlist("2.8", "3.6"),
     gadmPolyType = settings::inlist("gpkgZip", "kmlZip", "shpZip", "sfRds", "spRds"),
+    multiTileStrategy = settings::inlist("first","last", "merge"),
     omitCountries = settings::inlist("error", "missing", "long", "all", "none")
   )
 )
