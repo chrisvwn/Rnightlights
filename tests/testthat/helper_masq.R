@@ -11,7 +11,7 @@ if(.runThisTest)
   
   ctryPoly <- ctryPoly[[2]]
   
-  ctryRaster <- raster::raster("STP_OLS_1992.tif")
+  ctryRaster <- raster::raster("NL_STP_OLS.Y_1992_STABLE_LIGHTS_GADM-3.6-SHPZIP.tif")
   
   temp <- NULL
   
@@ -20,14 +20,14 @@ if(.runThisTest)
   for (i in 1:length(ctryPoly@polygons))
   {
     temp$name <- as.character(ctryPoly@data$NAME_2[i])
-    temp$sum <- sum(Rnightlights:::masqOLS(ctryPoly, ctryRaster, i)$vals, na.rm=T)
+    temp$sum <- sum(Rnightlights:::masqOLS(shp = ctryPoly, rast = ctryRaster, i = i, configName = pkgOptions(paste0("configName_","OLS.Y")))$vals, na.rm=T)
     admSumMasqOLS <- rbind(admSumMasqOLS, temp$sum)
   }
   
   admSumMasqOLS <- sum(admSumMasqOLS)
   
   #prepare masqVIIRS
-  ctryRaster <- raster::raster("STP_VIIRS_201401.tif")
+  ctryRaster <- raster::raster("NL_STP_VIIRS.M_201401_VCMCFG_GADM-3.6-SHPZIP.tif")
   
   temp <- NULL
   
