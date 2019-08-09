@@ -31,7 +31,10 @@ Maps distributed by GADM
   #it globally the first time we need it
   map <- rworldmap::getMap()
   
-  map <- cleangeo::clgeo_Clean(map)
+  #capture cleangeo progressbar output
+  out <- utils::capture.output(map <- cleangeo::clgeo_Clean(map))
+  
+  rm(out)
   
   #still needed?
   shpTopLyrName <- "adm0"
