@@ -6,9 +6,10 @@ getCtryNlDataSTP <- function()
 {
   testCtryCode <<- "STP"
   testAdmLevel <<- "STP_adm2"
+  testGadmVer <<- "2.8"
   testDataFile <- Rnightlights:::getCtryNlDataFname(ctryCode = testCtryCode,
                                                     admLevel = testAdmLevel,
-                                                    gadmVersion = "2.8")
+                                                    gadmVersion = testGadmVer)
   
   print(testDataFile)
   
@@ -17,11 +18,15 @@ getCtryNlDataSTP <- function()
   #stpOrig <- utils::read.csv(testDataFile, header = T, stringsAsFactors = F)
   stpOrig <<- as.data.frame(data.table::fread(input = testDataFile, encoding = "UTF-8"))
   
+  stpOrigOLS.Y <<- stpOrig[, -grep("VIIRS", names(stpOrig))]
+  
+  stpOrigVIIRS.M <<- stpOrig[, -grep("OLS", names(stpOrig))]
+  
   pkgReset()
   
   pkgOptions(deleteTiles=FALSE)
   
-  stpRast <<- getCtryNlData(ctryCode = testCtryCode, admLevel = "lowest", nlTypes = "OLS.Y", nlPeriods = "1992", nlStats = list(list("mean","na.rm=T"), list("sum","na.rm=T")), ignoreMissing=FALSE)
+  stpRast <<- getCtryNlData(ctryCode = testCtryCode, admLevel = "lowest", nlTypes = "OLS.Y", nlPeriods = "1992", gadmVersion = testGadmVer, nlStats = c("sum", "mean"), ignoreMissing=FALSE)
   
   gdalUtils::gdal_chooseInstallation()
   
@@ -34,6 +39,6 @@ getCtryNlDataSTP <- function()
     
     pkgOptions(cropMaskMethod="gdal", extractMethod="gdal")
     
-    stpGdal <<- getCtryNlData(ctryCode = testCtryCode, admLevel = "lowest", nlTypes = "VIIRS.M", nlPeriods = "201401", nlStats = list(list("mean",na.rm=T), list("sum",na.rm=T)), ignoreMissing=FALSE)
+    stpGdal <<- getCtryNlData(ctryCode = testCtryCode, admLevel = "lowest", nlTypes = "VIIRS.M", gadmVersion = testGadmVer, nlPeriods = "201401", nlStats = c("sum", "mean"), ignoreMissing=FALSE)
   }
 }

@@ -11,7 +11,7 @@ if(.runThisTest)
   
   ctryPoly <- ctryPoly[[2]]
   
-  ctryRaster <- raster::raster("NL_STP_OLS.Y_1992_STABLE_LIGHTS_GADM-3.6-SHPZIP.tif")
+  ctryRaster <- raster::raster("NL_STP_OLS.Y_1992_STABLE_LIGHTS_GADM-2.8-SHPZIP.tif")
   
   temp <- NULL
   
@@ -27,7 +27,7 @@ if(.runThisTest)
   admSumMasqOLS <- sum(admSumMasqOLS)
   
   #prepare masqVIIRS
-  ctryRaster <- raster::raster("NL_STP_VIIRS.M_201401_VCMCFG_GADM-3.6-SHPZIP.tif")
+  ctryRaster <- raster::raster("NL_STP_VIIRS.M_201401_VCMCFG_GADM-2.8-SHPZIP.tif")
   
   temp <- NULL
   

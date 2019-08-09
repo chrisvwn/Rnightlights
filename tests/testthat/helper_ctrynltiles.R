@@ -26,7 +26,7 @@ if(.runThisTest)
     !as.logical(download.file(url = indexUrl, destfile = tempfile()))
   }
   
-  noaaIndexUrlIsAvailableVIIRS <- function(indexUrl=pkgOptions("ntLtsIndexUrlVIIRS"))
+  noaaIndexUrlIsAvailableVIIRS <- function(indexUrl=pkgOptions("ntLtsIndexUrlVIIRS.M"))
   {
     !as.logical(download.file(url = indexUrl, destfile = tempfile()))
   }

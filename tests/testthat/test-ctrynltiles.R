@@ -26,6 +26,9 @@ if(.runThisTest)
     
     allNlPeriodsVIIRS <- unlist(Rnightlights::getAllNlPeriods("VIIRS.M"))
     
+    #recently been delays so don't check the last 2 months
+    allNlPeriodsVIIRS <- allNlPeriodsVIIRS[-c((length(allNlPeriodsVIIRS)-2):length(allNlPeriodsVIIRS))]
+    
     #Check only up to 201712 as 201801 missing for some reason. Investigating ...
     for(nlPeriod in grep("2018", allNlPeriodsVIIRS, invert = T, value = T))
       for(tileNum in 1:6)
