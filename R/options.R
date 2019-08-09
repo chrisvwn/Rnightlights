@@ -202,7 +202,7 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
 #'      extract data from the rasters }
 #'  \item{\code{gdalCacheMax}}{(\code{character}) The maximum memory gdal 
 #'      should use in gdal_rasterize }
-#'  \item{\code{ntLtsIndexUrlOLS}}{(\code{character}) The url with the OLS 
+#'  \item{\code{ntLtsIndexUrlOLS.Y}}{(\code{character}) The url with the OLS 
 #'      tile index }
 #'  \item{\code{ntLtsIndexUrlVIIRS}}{(\code{character}) The url with the 
 #'      VIIRS tile index }
