@@ -38,16 +38,46 @@ allValid <- function(testData, testFun, ...)
   return(all(valid))
 }
 
-get_free_ram <- function(){
-  if(Sys.info()[["sysname"]] == "Windows"){
+getFreeRAM <- function()
+{
+  if(Sys.info()[["sysname"]] == "Windows")
+  {
     x <- system2("wmic", args =  "OS get FreePhysicalMemory /Value", stdout = TRUE)
     x <- x[grepl("FreePhysicalMemory", x)]
     x <- gsub("FreePhysicalMemory=", "", x, fixed = TRUE)
-    x <- gsub("\r", "", x, fixed = TRUE)
-    as.integer(x)
-  } else {
-    stop("Only supported on Windows OS")
+    freeMem <- gsub("\r", "", x, fixed = TRUE)
+    
+    freeMem <- as.integer(freeMem)
+    
+  } else if(Sys.info()[["sysname"]] == "macOS")
+  {
+    freeBlocks <- system2("vm_stat | grep free | awk '{ print $3 }' | sed 's/\\.//'", stdout = TRUE)
+    speculativeBlocks <- system2("vm_stat | grep speculative | awk '{ print $3 }' | sed 's/\\.//'")
+    freeMem <- (freeBlocks + speculativeBlocks)*4096
+    
+    freeMem <- as.integer(freeMem)
+    
+  } else if(Sys.info()[["sysname"]] == "Linux")
+  {
+    x <- system2('free', stdout = TRUE)
+    
+    x <- strsplit(x, "\\s+")
+    
+    freeCol <- grep("free", unlist(x[1]), fixed = T)
+    cacheCol <- grep("buff", unlist(x[1]), fixed = T)
+    
+    free <- unlist(x[2])[freeCol]
+    cache <- unlist(x[2])[cacheCol]
+    
+    freeMem <- as.integer(free) + as.integer(cache)
+  } else
+  {
+    message("Cannot determine free RAM on your OS. Defaulting to conservative 1GB")
+    
+    freeMem <- 1048576
   }
+  
+  return(freeMem)
 }
 
 ######################## nlCleanup ###################################
