@@ -21,7 +21,7 @@ if(.runThisTest)
     !as.logical(system(paste("ping -n -c 1 ", dnldSite)))
   }
   
-  noaaIndexUrlIsAvailableOLS <- function(indexUrl=pkgOptions("ntLtsIndexUrlOLS"))
+  noaaIndexUrlIsAvailableOLS <- function(indexUrl=pkgOptions("ntLtsIndexUrlOLS.Y"))
   {
     !as.logical(download.file(pkgOptions("ntLtsIndexUrlOLS"), tempfile()))
   }

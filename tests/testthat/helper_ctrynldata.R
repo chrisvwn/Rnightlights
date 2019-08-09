@@ -21,7 +21,7 @@ getCtryNlDataSTP <- function()
   
   pkgOptions(deleteTiles=FALSE)
   
-  stpRast <<- getCtryNlData(ctryCode = testCtryCode, nlTypes = "OLS.Y", nlPeriods = "1993", nlStats = list(list("mean","na.rm=T"), list("sum","na.rm=T")), ignoreMissing=FALSE)
+  stpRast <<- getCtryNlData(ctryCode = testCtryCode, admLevel = "lowest", nlTypes = "OLS.Y", nlPeriods = "1992", nlStats = list(list("mean","na.rm=T"), list("sum","na.rm=T")), ignoreMissing=FALSE)
   
   gdalUtils::gdal_chooseInstallation()
   
