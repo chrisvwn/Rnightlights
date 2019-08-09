@@ -85,7 +85,13 @@ upgradeRnightlights <- function()
     upgradeLog <- data.frame("idx"=NULL, "operation"=NULL, "params"=NULL)
     
     if(is.null(pkgVersion) || pkgVersion == "")
+    {
+      #This should never happen. But if it does we choose to ignore the issue,
+      #and skip the upgrade
+      message("Could not determine the installed Rnightlights version. Skipping upgrade")
+      
       return(0)
+    }
     
     dataVersionFile <- file.path(Rnightlights::getNlDir("dirNlDataPath"), "data-version.txt")
     
@@ -105,7 +111,9 @@ upgradeRnightlights <- function()
       }
     } else
     {
-      dataVersion <- "0.1.0" #assume a pre-0.2.0 folder to force trying all upgrades
+      #if the data version isnt found
+      #assume a pre-0.2.0 folder to force all upgrades
+      dataVersion <- "0.1.0"
     }
     
     #ver 0.2.0 is the first version employing upgrade
@@ -278,18 +286,17 @@ upgradeRnightlights <- function()
             Some of your old data may not be accessible from the upgraded package
             but can be accessed directly from the Rnightlights data folder. 
             Please open an issue on the package github page if you encounter
-            any issues. Continuing")
+            any issues. Continuing ...")
     
     return(FALSE)
   },finally = {
     #mark as upgraded
-    cat(pkgVersion, file = file.path(paste0(Rnightlights::getNlDir("dirNlData"), "/../data-version.txt")))
+    cat(pkgVersion, file = file.path(Rnightlights::getNlDir("dirNlDataPath"), "data-version.txt"))
     if(nrow(upgradeLog) > 0)
     {
-      con = file(file.path(paste0(Rnightlights::getNlDir("dirNlData"), "/../upgrade-",pkgVersion,".log")))
+      con = file(file.path(Rnightlights::getNlDir("dirNlDataPath"), paste0("upgrade-",pkgVersion,".log")))
       writeLines(upgradeLog, con)
       close(con)
     }
-  }
-  )
+  })
 }

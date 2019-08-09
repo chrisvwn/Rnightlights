@@ -297,7 +297,7 @@ setNlDataPath <- function(dataPath)
       if(path.expand(existingPath) == path.expand("~"))
       {
         #remove the datapath.rda from the new path
-        if(dataPath != "~")
+        if(path.expand(dataPath) != path.expand("~"))
           if(file.exists(file.path(dataPath, dataDirName, "datapath.rda")))
             file.remove(file.path(dataPath, dataDirName, "datapath.rda"))
         
@@ -359,6 +359,11 @@ setNlDataPath <- function(dataPath)
   {
     # Add a README.txt file, if missing.
     addREADME(to=file.path(dataPath, dataDirName))
+    
+    #add data-version.txt if a new install
+    #also prevents upgrade from running first time
+    if(!isMove && !file.exists(file.path(dataPath,dataDirName,"data-version.txt")))
+      setDataVersion(path=file.path(dataPath, dataDirName), version = as.character(utils::packageVersion("Rnightlights")))
     
     #create the package dirs
     createNlDataDirs()
@@ -502,6 +507,32 @@ addREADME <- function(to=getNlDataPath())
     file.copy(pathnameS, pathnameD)
   }
 } # addREADME()
+
+######################## addREADME ###################################
+
+#' Add README file to the root data path
+#'
+#' Add README file to the root data path
+#'
+#' @param to The folder to add the README file to
+#'     
+#' @return None
+#'
+#' @examples
+#'   \dontrun{
+#'   Rnightlights:::addREADME()
+#'   }
+#'     
+setDataVersion <- function(path=getNlDataPath(), version)
+{
+  # Add a data-version.txt to dataPath (to show the data directory version)
+  filename <- "data-version.txt"
+  
+  pathnameD <- file.path(path, filename)
+  
+  cat(version, file = pathnameD)
+    
+} # setDataVersion()
 
 ######################## createNlDataDirs ###################################
 
