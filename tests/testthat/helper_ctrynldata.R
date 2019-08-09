@@ -5,7 +5,7 @@ library(data.table)
 getCtryNlDataSTP <- function()
 {
   testCtryCode <<- "STP"
-  testAdmLevel <<- "STP_adm0"
+  testAdmLevel <<- "STP_adm2"
   testDataFile <- Rnightlights:::getCtryNlDataFname(ctryCode = testCtryCode,
                                                     admLevel = testAdmLevel,
                                                     gadmVersion = "2.8")

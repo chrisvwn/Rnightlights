@@ -23,11 +23,11 @@ if(.runThisTest)
   
   noaaIndexUrlIsAvailableOLS <- function(indexUrl=pkgOptions("ntLtsIndexUrlOLS.Y"))
   {
-    !as.logical(download.file(pkgOptions("ntLtsIndexUrlOLS"), tempfile()))
+    !as.logical(download.file(url = indexUrl, destfile = tempfile()))
   }
   
   noaaIndexUrlIsAvailableVIIRS <- function(indexUrl=pkgOptions("ntLtsIndexUrlVIIRS"))
   {
-    !as.logical(download.file(pkgOptions("ntLtsIndexUrlOLS"), tempfile()))
+    !as.logical(download.file(url = indexUrl, destfile = tempfile()))
   }
 }
