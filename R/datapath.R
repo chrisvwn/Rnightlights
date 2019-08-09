@@ -318,8 +318,9 @@ setNlDataPath <- function(dataPath)
           file.remove(file.path(dataPath, dataDirName, "_RNIGHTLIGHTS_SAFE_TO_DELETE"))
         
         #remove the copied datapath.rda if it exists. Usually if the datapath is moving from the default location i.e. home dir
-        if(dataPath != "~")
-          file.remove(file.path(dataPath, dataDirName, "datapath.rda"))
+        if(path.expand(dataPath) != path.expand("~"))
+          if(file.exists(file.path(dataPath, dataDirName, "datapath.rda")))
+            file.remove(file.path(dataPath, dataDirName, "datapath.rda"))
         
         message(Sys.time(), ": Move of datapath from ", existingPath, " to ", dataPath, " complete.")
         message(Sys.time(), ": You may now delete ", file.path(existingPath, dataDirName))
