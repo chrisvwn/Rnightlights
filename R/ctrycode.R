@@ -22,8 +22,7 @@ ctryNameToCode <- function(ctryNames)
 {
   ADMIN <- NULL #to avoid global variable note in CRAN
 
-  if(!exists("map"))
-    map <- rworldmap::getMap()
+  map <- getWorldMap()
   
   if(missing(ctryNames))
   {
@@ -106,8 +105,7 @@ ctryCodeToName <- function(ctryCodes)
 {
   ISO3 <- NULL #to avoid global variable note in CRAN
   
-  if(!exists("map"))
-    map <- rworldmap::getMap()
+  map <- getWorldMap()
   
   if(missing(ctryCodes))
   {
@@ -333,8 +331,7 @@ getAllNlCtryCodes <- function(omit="none")
   
   #rworldmap has more country codes in countryRegions$ISO3 than in the map itself
   #select ctryCodes from the map data itself
-  if(!exists("map"))
-    map <- rworldmap::getMap()
+  map <- getWorldMap()
 
   #get the list of country codes from the rworldmap
   ctryCodes <- as.character(map@data$ISO3)

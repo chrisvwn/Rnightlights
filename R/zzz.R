@@ -10,6 +10,35 @@ Maps distributed by GADM
   #printCredits(credits)
 }
 
+getWorldMap <- function()
+{
+  if(!exists(".RnightlightsEnv"))
+    .RnightlightsEnv <- new.env(parent = emptyenv())
+  
+  if(!exists(x = "map", envir = .RnightlightsEnv))
+  {
+    #world map and clean it
+    #may take a sec or two so let's do it once
+    #clean now (2019) shows a progressbar which is not ideal
+    #we may move this back into the main code and maybe instantiate
+    #it globally the first time we need it
+    map <- rworldmap::getMap()
+    
+    #capture cleangeo progressbar output
+    out <- utils::capture.output(map <- cleangeo::clgeo_Clean(map))
+    
+    rm(out)
+    
+    assign(x = "map", value = map, envir = .RnightlightsEnv)
+    
+  }
+  
+  get(x = "map", envir = .RnightlightsEnv)
+}
+
+.RnightlightsEnv <- new.env(parent = emptyenv())
+
+
 ######################## .onAttach ###################################
 
 .onAttach <- function(libname, pkgname)
@@ -23,18 +52,7 @@ Maps distributed by GADM
     setupDataPath()
   
   #global constants
-  
-  #world map and clean it
-  #may take a sec or two so let's do it once
-  #clean now (2019) shows a progressbar which is not ideal
-  #we may move this back into the main code and maybe instantiate
-  #it globally the first time we need it
-  map <- rworldmap::getMap()
-  
-  #capture cleangeo progressbar output
-  out <- utils::capture.output(map <- cleangeo::clgeo_Clean(map))
-  
-  rm(out)
+  map <- getWorldMap()
   
   #still needed?
   shpTopLyrName <- "adm0"
