@@ -328,14 +328,7 @@ plotCtryWithTilesVIIRS <- function(ctry)
   wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
   
   #if the map variable does not exist
-  if(!exists("map"))
-  {
-    #get the map from the rworldmap package
-    map <- rworldmap::getMap()
-    
-    #some rworldmap polygons have problems. Rectify them to allow plotting without errors
-    map <- cleangeo::clgeo_Clean(map)
-  }
+  map <- getWorldMap()
   
   #if the tiles spatial polygons dataframe does not exist create it
   if(!exists("tilesSpPolysDFs"))
@@ -502,12 +495,7 @@ mapCtryPolyToTilesVIIRS <- function(ctryCodes="all", omitCountries=pkgOptions("o
   }
   
   #if the rworldmap::getMap() hasn't been loaded, load it
-  if (!exists("map"))
-  {
-    map <- rworldmap::getMap()
-    
-    map <- cleangeo::clgeo_Clean(sp = map)
-  }
+  map <- getWorldMap()
   
   wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
   
@@ -583,11 +571,7 @@ getTilesCtryIntersectVIIRS <- function(ctryCode)
 
   ctryISO3 <- ctryCode
  
-  if(!exists("map"))
-  {
-    map <- rworldmap::getMap()
-    map <- cleangeo::clgeo_Clean(map)
-  }
+  map <- getWorldMap()
   
   wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
   
