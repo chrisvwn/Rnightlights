@@ -24,9 +24,9 @@ getCtryNlDataSTP <- function()
   
   pkgReset()
   
-  pkgOptions(deleteTiles=FALSE)
+  pkgOptions(deleteTiles=TRUE)
   
-  stpRast <<- getCtryNlData(ctryCode = testCtryCode, admLevel = "lowest", nlTypes = "OLS.Y", nlPeriods = "1992", gadmVersion = testGadmVer, nlStats = c("sum", "mean"), ignoreMissing=FALSE)
+  stpRastOLS.Y <<- Rnightlights::getCtryNlData(ctryCode = testCtryCode, admLevel = "lowest", nlTypes = "OLS.Y", nlPeriods = "1992", gadmVersion = testGadmVer, nlStats = c("sum", "mean"), ignoreMissing=FALSE)
   
   gdalUtils::gdal_chooseInstallation()
   
@@ -35,10 +35,10 @@ getCtryNlDataSTP <- function()
   if(gdalPath != "")
   {
     if(system("aria2c -h", ignore.stdout = T, ignore.stderr = T) == 0)
-      pkgOptions(downloadMethod="aria")
+      Rnightlights::pkgOptions(downloadMethod="aria")
     
-    pkgOptions(cropMaskMethod="gdal", extractMethod="gdal")
+    Rnightlights::pkgOptions(cropMaskMethod="gdal", extractMethod="gdal")
     
-    stpGdal <<- getCtryNlData(ctryCode = testCtryCode, admLevel = "lowest", nlTypes = "VIIRS.M", gadmVersion = testGadmVer, nlPeriods = "201401", nlStats = c("sum", "mean"), ignoreMissing=FALSE)
+    stpGdalVIIRS.M <<- Rnightlights::getCtryNlData(ctryCode = testCtryCode, admLevel = "lowest", nlTypes = "VIIRS.M", gadmVersion = testGadmVer, nlPeriods = "201401", nlStats = c("sum", "mean"), ignoreMissing=FALSE)
   }
 }

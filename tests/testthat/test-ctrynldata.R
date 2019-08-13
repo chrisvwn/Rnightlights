@@ -10,6 +10,8 @@ if(.runThisTest)
 {
   skip_if_not(internetAvailable(), "Internet not available")
   
+  skip_on_cran()
+  skip_on_travis()
   getCtryNlDataSTP()
   
   test_that("ctrynldata is extracting and calculating correctly", {
@@ -28,8 +30,11 @@ if(.runThisTest)
     skip_on_cran()
     skip_on_travis()
     skip_if_not(exists("stpGdal"), "GDAL test not run. GDAL likely not installed. Skipping")
-    expect_equal(stpGdal, stpOrigVIIRS.M)
+    expect_equal(stpGdalVIIRS.M, stpOrigVIIRS.M)
   })
+  
+  #drop the temp dataPath and revert to the main installation if it exists
+  nlCleanup()
   
   detach("package:Rnightlights", unload = T)
   

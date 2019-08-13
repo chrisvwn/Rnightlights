@@ -34,12 +34,9 @@ test_that("datapaths work", {
   #should have changed to tempdir2
   expect_equal(Rnightlights:::setupDataPath(tempPath2), tempPath2)
 
-  #reload library to restore the data path to the permanent path
-  detach("package:Rnightlights", unload = T, character.only = T)
-  
-  library(Rnightlights)
+  Rnightlights:::setupDataPath(currPath)
   
   #should have restored to the currPath
-  expect_equal(gsub("/.Rnightlights","", Rnightlights::getNlDir("dirNlDataPath")), currPath)
+  expect_equal(gsub("/.Rnightlights", "", Rnightlights::getNlDir("dirNlDataPath")), currPath)
 })
   

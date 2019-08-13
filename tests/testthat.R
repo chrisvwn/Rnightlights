@@ -10,4 +10,23 @@ if (length(strsplit(packageDescription("Rnightlights")$Version, "\\.")[[1]]) > 3
   }
 }
 
+setup({
+  #set the dataPath to tempdir() to ensure a clean environment for tests
+  #thus forcing polygon and tile downloads and fresh raster
+  #clipping and data extraction
+  currDir <<- getNlDataPath()
+  
+  tempDir <<- path.expand(file.path("~", basename(tempdir())))
+  
+  dir.create(tempDir)
+  
+  Rnightlights:::setNlDataPath(tempDir)
+})
+
 test_check("Rnightlights")
+
+teardown({
+  Rnightlights:::setNlDataPath(currDir)
+  
+  unlink(tempDir, recursive = T, force = TRUE)
+})
