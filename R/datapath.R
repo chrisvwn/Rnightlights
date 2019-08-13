@@ -240,7 +240,13 @@ setNlDataPath <- function(dataPath)
     dirCreate <- file.path(dataPath, dataDirName)
     
     successCreate <- tryCatch({
-      dir.create(dirCreate)
+      if(!dir.exists(dirCreate))
+        dir.create(dirCreate)
+      else
+      {
+        message(dirCreate, " already exists")
+        NA
+      }
     }, error=function(err)
     {
       message(Sys.time(), ": Error: ", err)
@@ -251,12 +257,18 @@ setNlDataPath <- function(dataPath)
       return(FALSE)
     })
     
-    if(!successCreate)
+    if(!is.na(successCreate) && !successCreate)
       message(Sys.time(), ": Unable to create directory ", dirCreate)
     else
     {
-      message(Sys.time(), ": Data directory created ", path.expand(dirCreate))
-      message(Sys.time(), ": Rnightlights may require 3GB+. Run setupDataPath() to change the location")
+      if(is.na(successCreate))
+      {
+        
+      } else
+      {
+        message(Sys.time(), ": Data directory created ", path.expand(dirCreate))
+        message(Sys.time(), ": Rnightlights may require 3GB+. Run setupDataPath() to change the location")
+      }
     }
   }
   else
@@ -265,7 +277,7 @@ setNlDataPath <- function(dataPath)
   #If we are here we have created a new directory
   #If dataPath not the tempdir(), Make sure the homePath exists and persist the dataPath
   #~/.Rnightlights Must always exist even if it does not hold the data
-  if(dataPath != tempdir() && !exists(file.path(homePath)))
+  if(dataPath != tempdir() && !dir.exists(file.path(homePath)))
     if(dir.exists(file.path(homePath)) || dir.create(file.path(homePath)))
       if(!isMove) #only change the path if not a move since move may fail
         saveRDS(path.expand(dataPath), file.path(homePath, "datapath.rda"))
@@ -398,7 +410,10 @@ getNlDataPath <- function()
   dataPathFile = "datapath.rda"
   
   if(dir.exists(file.path(tempdir(), dirName)))
-    return(file.path(tempdir()))
+  {
+    if(!file.exists(file.path(tempdir(), dirName, "_RNIGHTLIGHTS_SAFE_TO_DELETE")))
+      return(file.path(tempdir()))
+  }
   
   if (dir.exists(file.path(homePath, dirName)))
   {
