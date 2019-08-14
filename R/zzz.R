@@ -13,7 +13,7 @@ Maps distributed by GADM
 getWorldMap <- function()
 {
   if(!exists(".RnightlightsEnv"))
-    .RnightlightsEnv <- new.env(parent = emptyenv())
+    .RnightlightsEnv <<- new.env(parent = emptyenv())
   
   if(!exists(x = "map", envir = .RnightlightsEnv))
   {
@@ -30,7 +30,6 @@ getWorldMap <- function()
     rm(out)
     
     assign(x = "map", value = map, envir = .RnightlightsEnv)
-    
   }
   
   get(x = "map", envir = .RnightlightsEnv)
@@ -52,7 +51,7 @@ getWorldMap <- function()
     setupDataPath()
   
   #global constants
-  map <- getWorldMap()
+  #map <- getWorldMap()
   
   #still needed?
   shpTopLyrName <- "adm0"
@@ -76,7 +75,7 @@ getWorldMap <- function()
 
 .onDetach <- function(libpath)
 {
-  
+  suppressWarnings(rm(.RnightlightsEnv))
 }
 
 ######################## .Last.lib ###################################
