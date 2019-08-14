@@ -13,14 +13,16 @@
 #' tileUrl <- Rnightlights:::getNlUrlOLS("1999")
 #' }
 #'
-getNlUrlOLS <- function(nlPeriod)
+getNlUrlOLS <- function(nlPeriod, configName=pkgOptions("configName_OLS.Y"))
 {
   nlPeriod <- as.character(nlPeriod)
   
-  #Function to return the url of the file to download given the year, month, and nlTile index
-  #nlTile is a global list
+  configName <- toupper(configName)
   
   ntLtsBaseUrl <- "https://www.ngdc.noaa.gov"
+  
+  #Function to return the url of the file to download given the year, month, and nlTile index
+  #nlTile is a global list
   
   #the page that lists all available nightlight files
   ntLtsPageHtml <- "https://www.ngdc.noaa.gov/eog/dmsp/downloadV4composites.html"
@@ -45,7 +47,14 @@ getNlUrlOLS <- function(nlPeriod)
   #search for a line containing the patterns that make the files unique
   #sample url: https://www.ngdc.noaa.gov/eog/data/web_data/v4composites/F101992.v4.tar
   #create the pattern
-  ntLtsPageRgxp <- paste0("F.*.", nlPeriod,".*.tar")
+  ntLtsPageRgxp <- if(configName %in% toupper(c("cf_cvg", "avg_vis", "stable_lights")))
+  {
+    paste0("F.*.", nlPeriod,".*.tar")
+  }
+  else if(configName %in% toupper(c("pct_lights", "avg_lights_x_pct")))
+  {
+    paste0("F.*.", nlPeriod,".*avg_lights_x_pct.tgz")
+  }
   
   #search for the pattern in the page
   ntLtsPageHtml <- ntLtsPage[grep(pattern = ntLtsPageRgxp, x=ntLtsPage)]
@@ -162,15 +171,15 @@ getNlUrlVIIRS <- function(nlPeriod, tileNum, nlType)
   return (ntLtsPageUrl)
 }
 
-######################## getNlUrlOLS ###################################
+######################## getNlUrl ###################################
 
-#' Function to return the url of the OLS tile to download
+#' Function to return the url of the tile to download
 #'
-#' Function to return the url of the OLS tile to download given the year
+#' Function to return the url of the tile to download given the year
 #'
 #' @param nlPeriod The nlPeriod of the tile for which to return the tile download URL
 #'
-#' @return character string Url of the OLS tile file
+#' @return character string Url of the tile file
 #'
 #' @examples
 #' \dontrun{

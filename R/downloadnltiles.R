@@ -212,7 +212,7 @@ downloadNlTilesOLS <- function(nlPeriod,
   
   rsltDnld <- 0
   
-  nlUrlsOLS <- getNlUrlOLS(nlPeriod)
+  nlUrlsOLS <- getNlUrlOLS(nlPeriod, configName)
   
   if(length(nlUrlsOLS) > 1)
   {
@@ -239,7 +239,7 @@ downloadNlTilesOLS <- function(nlPeriod,
     }
   }
    
-  message(Sys.time(), "Commencing download")
+  message(Sys.time(), ": Commencing download")
   
   ntLtsZipLocalNameOLS <- getNlTileZipLclNameOLS(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
   ntLtsZipLocalNamePathOLS <- getNlTileZipLclNamePath(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
@@ -315,23 +315,38 @@ downloadNlTilesOLS <- function(nlPeriod,
           
           #get the nightlight data filename
           #https://ngdc.noaa.gov/eog/gcv4_readme.txt
-          #F1?YYYY_v4b_cf_cvg.tif: Cloud-free coverages tally 
-          #F1?YYYY_v4b_avg_vis.tif: Raw avg_vis
-          #F1?YYYY_v4b_stable_lights.avg_vis.tif: The cleaned up avg_vis 
+          #F1?YYYY.v4[b|c]_cf_cvg.tif: Cloud-free coverages tally 
+          #F1?YYYY.v4[b|c]_avg_vis.tif: Raw avg_vis
+          #F1?YYYY.v4[b|c]_stable_lights.avg_vis.tif: The cleaned up avg_vis 
+          #F1?YYYY.v4[b|c]_stable_lights.lights_pct.tif
+          #F1?YYYY.v4[b|c]_avg_lights_x_pct.tif
           
-          tgzFile <- tarFileList[grep(paste0(".*\\.", configName, ".*\\.tif\\.gz$"), tarFileList, ignore.case = T)]
+          tgzFile <- tarFileList[grep(paste0(".*\\.", configName, ".*\\.tif(\\.gz)*$"), tarFileList, ignore.case = T)]
           
-          #extract the nightlight data file
-          utils::untar(tarfile = ntLtsZipLocalNamePathOLSTemp, files = tgzFile, exdir = getNlDir("dirNlTiles"), tar = "internal")
+          if(configName %in% toupper(c("cf_cvg", "avg_vis", "stable_lights")))
+          {
+            #extract the nightlight gz data file
+            utils::untar(tarfile = ntLtsZipLocalNamePathOLSTemp, files = tgzFile, exdir = getNlDir("dirNlTiles"), tar = "internal")
           
-          #the tif has the same name as the compressed file without the .gz
-          tifFile <- stringr::str_replace(tgzFile, ".gz", "")
+            #the tif has the same name as the compressed file without the .gz
+            tifFile <- stringr::str_replace(tgzFile, ".gz", "")
+            
+            #lights_pct and avg_lights_x_pct are not compressed
+            
+            message(Sys.time(), ": Decompressing ", tgzFile)
+            
+            R.utils::gunzip(file.path(getNlDir("dirNlTiles"), tgzFile), ntLtsTifLocalNamePathOLS)
           
-          message(Sys.time(), ": Decompressing ", tgzFile, " ", date())
-          
-          R.utils::gunzip(file.path(getNlDir("dirNlTiles"), tgzFile), ntLtsTifLocalNamePathOLS)
-          
-          #unlink(ntLtsZipLocalNamePathOLS, force = TRUE)
+            #unlink(ntLtsZipLocalNamePathOLS, force = TRUE)
+          } else if(configName %in% toupper(c("pct_lights", "avg_lights_x_pct")))
+          {
+            message(Sys.time(), ": Decompressing ", tgzFile, " and renaming to ", ntLtsTifLocalNamePathOLS)
+            
+            #the tifs are not compressed so extract directly and rename
+            utils::untar(tarfile = ntLtsZipLocalNamePathOLSTemp, files = tgzFile, exdir = getNlDir("dirNlTiles"), tar = "internal")
+            
+            file.rename(file.path(getNlDir("dirNlTiles"), tgzFile), ntLtsTifLocalNamePathOLS)
+          }
         }
         else
         {
@@ -380,7 +395,7 @@ downloadNlTilesOLS <- function(nlPeriod,
       if (file.exists(outputFileVrt))
         file.remove(outputFileVrt)
       
-      message(Sys.time(), ": gdalwarp masking to VRT ",base::date())
+      message(Sys.time(), ": gdalwarp masking to VRT")
       
       gdalUtils::gdalbuildvrt(gdalfile = ntLtsTifList,
                           output.vrt = outputFileVrt,

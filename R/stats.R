@@ -365,7 +365,7 @@ ZonalPipe <- function (ctryCode,
   
   if (!file.exists(path.out.r))
   {
-    message(Sys.time(), ": Zonal file ", path.out.r, " doesn't exist. Creating", date())
+    message(Sys.time(), ": Zonal file ", path.out.r, " doesn't exist. Creating ... ")
     
     #get the extent and change to minx, miny, maxx, maxy order for use
     #in gdal_rasterize. Explanation below

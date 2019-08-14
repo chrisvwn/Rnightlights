@@ -14,7 +14,7 @@
 getAllNlConfigNames <- function(nlType)
 {
   allConfigNames <- list(
-    "OLS.Y" = c("cf_cvg", "avg_vis", "stable_lights"),
+    "OLS.Y" = c("cf_cvg", "avg_vis", "stable_lights", "pct_lights", "avg_lights_x_pct"),
     "VIIRS.D" = c("vcmcfg", "vcmsl"),
     "VIIRS.M" = c("vcmcfg", "vcmsl"),
     "VIIRS.Y" = c("vcm-orm", "vcm-orm-ntl", "vcm-ntl"))
@@ -92,7 +92,7 @@ validNlConfigName <- function(configName, nlType)
 #' 
 #' #returns TRUE if the download was successful or tile is cached locally
 #'
-downloadNlTiles <- function(nlType, nlPeriod, tileList)
+downloadNlTiles <- function(nlType, configName=pkgOptions(paste0("configName_", nlType)), nlPeriod, tileList)
 {
   if(missing(nlType))
     stop(Sys.time(), ": Missing required parameter nlType")
@@ -116,7 +116,10 @@ downloadNlTiles <- function(nlType, nlPeriod, tileList)
   
   #ensure we have all required tiles
   if(stringr::str_detect(nlType, "OLS"))
-    success <- success && downloadNlTilesOLS(nlPeriod)
+    success <- success && downloadNlTilesOLS(nlPeriod = nlPeriod,
+                                             downloadMethod = pkgOptions("downloadMethod"),
+                                             nlType = nlType,
+                                             configName = configName)
   else if(stringr::str_detect(nlType, "VIIRS"))
     for (tile in tileList)
     {
@@ -125,7 +128,7 @@ downloadNlTiles <- function(nlType, nlPeriod, tileList)
       message(Sys.time(), ": Downloading tile: ", paste0(nlPeriod, nlTile))
       
       #download tile
-      success <- success && downloadNlTilesVIIRS(nlPeriod, nlTile, nlType = nlType)
+      success <- success && downloadNlTilesVIIRS(nlPeriod = nlPeriod, tileNum = nlTile, nlType = nlType, configName = configName)
     }
   
   return (success)

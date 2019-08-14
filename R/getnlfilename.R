@@ -372,15 +372,23 @@ getNlTileZipLclNameOLS <- function(nlType = "OLS.Y", configName=pkgOptions(paste
   if(!grepl("OLS", nlType))
     stop(Sys.time(), ": This function is for the OLS family only")
   
-  if(!allValidNlPeriods(nlPeriod, nlType))
+  if(!allValidNlPeriods(nlPeriod, "OLS.Y"))
     stop(Sys.time(), ": Invalid nlPeriod")
   
-  if(!validNlConfigName(configName, nlType))
+  if(!validNlConfigName(configName, "OLS.Y"))
     stop(Sys.time(), ": Invalid configName")
   
   configName <- toupper(configName)
   
-  return (paste0("NL_TILE_", nlType, "_", configName, "_", nlPeriod, "_00N180W.tar"))
+  fileExt <- if(configName %in% toupper(c("cf_cvg", "avg_vis", "stable_lights")))
+  {
+    ".tar"
+  } else if(configName %in% toupper(c("pct_lights", "avg_lights_x_pct")))
+  {
+    ".tgz"
+  }
+  
+  return (paste0("NL_TILE_", nlType, "_", configName, "_", nlPeriod, "_00N180W", fileExt))
 }
 
 ######################## getNlTifLclNameOLS ###################################

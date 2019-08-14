@@ -348,7 +348,7 @@ processNLCountry <- function(ctryCode,
       if (file.exists(output_file_vrt))
         file.remove(output_file_vrt)
       
-      message(Sys.time(), ": gdalwarp masking to VRT ",base::date())
+      message(Sys.time(), ": gdalwarp masking to VRT")
       
       gdalUtils::gdalwarp(srcfile=rstTmp,
                           dstfile=output_file_vrt,
@@ -1002,7 +1002,7 @@ processNlData <- function (ctryCodes,
         #tile not found. if the cropped raster is not found try to download
         if (!file.exists(rasterOutputFnamePath))
         {
-          if(!downloadNlTiles(nlType = nlType, nlPeriod = nlPeriod, tileList = tileList))
+          if(!downloadNlTiles(nlType = nlType, configName = configName, nlPeriod = nlPeriod, tileList = tileList))
           {
             message(Sys.time(), ": Something went wrong with the tile downloads. Aborting ...")
             

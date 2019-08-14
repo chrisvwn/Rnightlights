@@ -114,7 +114,7 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   tmpDir = raster::tmpDir(),
 
   .allowed = list(
-    configName_OLS.Y = settings::inlist("cf_cvg", "avg_vis", "stable_lights"),
+    configName_OLS.Y = settings::inlist("cf_cvg", "avg_vis", "stable_lights", "pct_lights", "avg_lights_x_pct"),
     configName_VIIRS.D = settings::inlist("vcmcfg", "vcmsl"),
     configName_VIIRS.M = settings::inlist("vcmcfg", "vcmsl"),
     configName_VIIRS.Y = settings::inlist("vcm-orm", "vcm-orm-ntl", "vcm-ntl"),
@@ -138,6 +138,45 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
 #' @section Supported options:
 #' The following options are supported
 #' \describe{
+#' \item{\code{configName_OLS.Y}}{(\code{character}) The regex to uniquely
+#'      identify the tile file to use out of the downloaded tile .tar. The
+#'      data are available as annual composited series:
+#'      \itemize{
+#'          \item cf_cvg \emph{(Cloud-free coverages)}: 
+#'           tally the total number of observations that went into each 30 arc
+#'            second grid cell. This image can be used to identify areas with
+#'            low numbers of observations where the quality is reduced.
+#'            In some years there are areas with zero cloud- free observations
+#'            in certain locations.
+#'      
+#'          \item avg_vis \emph{(Raw average visible band)}: contains the
+#'           average of the visible band digital number values with no further
+#'           filtering. Data values range from 0-63. Areas with zero cloud-free
+#'           observations are represented by the value 255.
+#'          
+#'          \item stable_lights \emph{(Cleaned up avg_vis)}: contains the
+#'           lights from cities, towns, and other sites with persistent 
+#'           lighting, including gas flares. Ephemeral events, such as fires 
+#'           have been discarded. Then the background noise was identified and
+#'           replaced with values of zero. Data values range from 1-63. Areas 
+#'           with zero cloud-free observations are represented by the value 255.
+#'          
+#'          \item pct_lights \emph{(Percent detection freq)}: the percentage of
+#'          observations where light is detected per grid cell.
+#'          
+#'          \item avg_lights_x_pct \emph{(Avg vis band x percent detection freq)}:
+#'           derived from the average visible band digital number(DN) of
+#'            cloud-free light detections multiplied by the percent frequency
+#'            of light detection. The inclusion of the percent frequency 
+#'            of detection term normalizes the resulting digital values for 
+#'            variations in the persistence of lighting. For instance, the 
+#'            value for a light only detected half the time is discounted by 50\%.
+#'            Note that this product contains detections from fires and a 
+#'            variable amount of background noise. This is the product used 
+#'            to infer gas flaring volumes from the nighttime lights.
+#'            }
+#'          }
+#'      
 #'  \item{\code{configName_VIIRS.D}}{(\code{character}) The regex to uniquely
 #'      identify the tile file to use out of the downloaded tile .tgz. The
 #'      version 1 monthly series is run globally using two different 
@@ -200,13 +239,13 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
 #'      to use }
 #'  \item{\code{extractMethod}}{(\code{character}) The method to use to 
 #'      extract data from the rasters }
-#'  \item{\code{gdalCacheMax}}{(\code{character}) The maximum memory gdal 
+#'  \item{\code{gdalCacheMax}}{(\code{numeric}) The maximum memory gdal 
 #'      should use in gdal_rasterize }
 #'  \item{\code{ntLtsIndexUrlOLS.Y}}{(\code{character}) The url with the OLS 
 #'      tile index }
 #'  \item{\code{ntLtsIndexUrlVIIRS}}{(\code{character}) The url with the 
 #'      VIIRS tile index }
-#'  \item{\code{numCores}}{(\code{character}) The number of processor cores 
+#'  \item{\code{numCores}}{(\code{integer}) The number of processor cores 
 #'      to use when extractMethod = "raster" }
 #'  \item{\code{omitCountries}}{(\code{character}) The countries to exclude 
 #'      in processing }
