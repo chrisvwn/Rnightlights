@@ -832,9 +832,9 @@ getCtryNlData <- function(ctryCode=NULL,
     {
       #check if the stats exist in the given year months will test nlYm1+stat1, nlYm2+stat1, ..., nlYm1+stat2, nlYm2+stat2
       if(is.list(nlPeriods))
-        a <- lapply(1:length(nlTypes), function(i) cbind(nlTypes[i], nlPeriods[[i]]))
+        a <- lapply(1:length(nlTypes), function(i) cbind(nlTypes[i], configNames[i], nlPeriods[[i]]))
       else
-        a <- lapply(1:length(nlTypes), function(i) cbind(nlTypes[i], nlPeriods))
+        a <- lapply(1:length(nlTypes), function(i) cbind(nlTypes[i], configNames[i], nlPeriods))
       
       a <- data.frame(do.call("rbind", a), stringsAsFactors = F)
       
@@ -859,16 +859,16 @@ getCtryNlData <- function(ctryCode=NULL,
                                   FUN = function(x) existsCtryNlData(ctryCode = ctryCode,
                                                                      admLevel = admLevel,
                                                                      nlTypes =  x[1],
-                                                                     configNames = configNames,
-                                                                     nlPeriods = x[2],
-                                                                     nlStats = as.character(x[3]),
+                                                                     configNames = x[2],
+                                                                     nlPeriods = x[3],
+                                                                     nlStats = as.character(x[4]),
                                                                      gadmVersion = gadmVersion,
                                                                      gadmPolyType = gadmPolyType, 
                                                                      custPolyPath = custPolyPath))
       
       missingData <- paste0(apply(X = nlPeriodStats[!existnlPeriodStats,],
                                   MARGIN = 1,
-                                  FUN = function(x) paste0(x[1], ":", x[2], ":", x[3])),
+                                  FUN = function(x) paste0(x[1], ":", x[2], ":", x[3], ":", x[4])),
                             collapse = ", ")
       
       if (!all(existnlPeriodStats))
@@ -992,9 +992,9 @@ getCtryNlData <- function(ctryCode=NULL,
                                       existsCtryNlData(ctryCode = ctryCode,
                                                        admLevel = admLevel,
                                                        nlTypes = x[1],
-                                                       configNames = configNames,
-                                                       nlPeriods = x[2],
-                                                       nlStats = x[3],
+                                                       configNames = x[2],
+                                                       nlPeriods = x[3],
+                                                       nlStats = x[4],
                                                        gadmVersion = gadmVersion,
                                                        gadmPolyType = gadmPolyType,
                                                        custPolyPath = custPolyPath)
@@ -1005,9 +1005,10 @@ getCtryNlData <- function(ctryCode=NULL,
       {
         existingCols <- apply(nlPeriodStats[existnlPeriodStats,],
                               1,
-                              function(x) getCtryNlDataColName(nlPeriod = x[2],
+                              function(x) getCtryNlDataColName(nlPeriod = x[3],
                                                                nlType = x[1],
-                                                               nlStat = x[3]))
+                                                               configName = x[2],
+                                                               nlStat = x[4]))
         
         message(Sys.time(), ": All stats exist")
       }
