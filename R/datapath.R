@@ -101,10 +101,10 @@ setupDataPath <- function(newDataPath=tempdir(), ...)
                          "\n\nEnter 0 to use a temporary directory for this session only.")
         
         
-        ans <- utils::menu(choices = c(paste0("Use current directory '",  
+        ans <- utils::menu(choices = c(paste0("Keep current directory '",  
                                               path.expand(getNlDataPath()), " as the data path"), 
                                        "Choose a different directory as the data path"),
-                           graphics = F, title = prompt);
+                           graphics = FALSE, title = prompt);
         
         if (ans == 1)
           return(invisible(getNlDataPath()))
@@ -207,24 +207,29 @@ setNlDataPath <- function(dataPath)
   if (!is.character(dataPath) || is.null(dataPath) || is.na(dataPath) || dataPath == "")
     stop(Sys.time(), ": dataPath must be a valid character string")
   
-  dataPath <- as.character(dataPath)
+  dataPath <- as.character(path.expand(dataPath))
   
   dataDirName <- ".Rnightlights"
   
-  homePath <- file.path("~", ".Rnightlights")
+  homePath <- path.expand(file.path("~", ".Rnightlights"))
   
-  existingPath <- getNlDataPath()
+  existingPath <- path.expand(getNlDataPath())
   
   #if existingPath is not null we already have an existing directory. This is potentially a move
+  #unless the dataPath == tempdir. assume it is temporary don't move
   if (!is.null(existingPath))
   {
     #if the supplied directory is the same as the current dataPath stop. Nothing to do
-    if(path.expand(dataPath) == path.expand(existingPath))
+    if(dataPath == existingPath)
     {
       message(Sys.time(), ": The directories are the same. Not changing")
       return(invisible(dataPath)) #return user version. less expensive
-    }
-    else #if they are different we will move
+      
+    } else if(dataPath == tempdir())
+    {
+      isMove <- FALSE #don't move to a tempdir since it will only be available for this session
+      
+    } else #if they are different we will move
     {
       isMove <- TRUE
     }
