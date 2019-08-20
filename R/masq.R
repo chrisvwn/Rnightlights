@@ -37,14 +37,14 @@ masqVIIRS <- function(ctryPoly, ctryRast, idx, retVal="colrowval", configName)
   #Extract one polygon based on index value i
   polygon <- ctryPoly[idx,] #extract one polygon
   
-  extent <- raster::extent(polygon) #extract the polygon extent
+  extent <- raster::extent(x = polygon) #extract the polygon extent
   
   #Raster extract
-  outer <- raster::crop(ctryRast, extent) #extract raster by polygon extent
+  outer <- raster::crop(x = ctryRast, y = extent) #extract raster by polygon extent
   
   #inner <- mask(outer,polygon) #keeps values from raster extract that are within polygon
   
-  inner <- raster::rasterize(polygon, outer, mask=TRUE) #crops to polygon edge & converts to raster
+  inner <- raster::rasterize(x = polygon, y = outer, mask = TRUE) #crops to polygon edge & converts to raster
   
   #Convert cropped raster into a vector
   #Specify coordinates
@@ -53,8 +53,8 @@ masqVIIRS <- function(ctryPoly, ctryRast, idx, retVal="colrowval", configName)
   
   colrows <- expand.grid(1:ncol(inner), 1:nrow(inner))
 
-  #Convert raster into vector  
-  vals <- as.vector(inner)
+  #Convert raster into vector
+  vals <- as.vector(x = inner)
   
   #data <- data[!is.na(data)] #keep non-NA values only ... shall this affect mask values?
   #data[is.na(data)] <- 0
@@ -109,25 +109,34 @@ masqOLS <- function(shp, rast, i, retVal="colrowval", configName)
   extent <- raster::extent(polygon) #extract the polygon extent
   
   #Raster extract
-  outer <- raster::crop(rast, extent) #extract raster by polygon extent
+  #if we are in a gasflare zone it is possible that the raster has been cropped and
+  #will not intersect with the poly. We expect an error here
+  #if an error is encountered we will assign NA as the only value
+  result <- try(outer <- raster::crop(rast, extent), silent = TRUE) #extract raster by polygon extent
 
-  inner <- raster::rasterize(polygon, outer, mask=TRUE) #crops to polygon edge & converts to raster
-  
-  rowVals <- NULL
-  colVals <- NULL
-  
-  #Convert cropped raster into a vector
-  colrows <- expand.grid(1:ncol(inner), 1:nrow(inner))
-  
-  #Specify coordinates
-  lonlats <- expand.grid(seq(extent@xmin,extent@xmax,(extent@xmax-extent@xmin)/(ncol(inner)-1)),
-                        seq(extent@ymin,extent@ymax,(extent@ymax-extent@ymin)/(nrow(inner)-1)))
-  
-  vals <- as.vector(inner)
-  
-  ##THIS SECTION NEEDS WORK. confirm error and NA values and handling of the same
-  #keep non-NA values only?
-  #data <- data[!is.na(data)]
+  if(!inherits(x = result, what = "try-error"))
+  {
+    #we should be okay here
+    inner <- raster::rasterize(x = polygon, y = outer, mask=TRUE) #crops to polygon edge & converts to raster
+    
+    rowVals <- NULL
+    colVals <- NULL
+    
+    #Convert cropped raster into a vector
+    colrows <- expand.grid(1:ncol(inner), 1:nrow(inner))
+    
+    #Specify coordinates
+    lonlats <- expand.grid(seq(extent@xmin,extent@xmax,(extent@xmax-extent@xmin)/(ncol(inner)-1)),
+                          seq(extent@ymin,extent@ymax,(extent@ymax-extent@ymin)/(nrow(inner)-1)))
+    
+    vals <- as.vector(inner)
+  } else
+  {
+    #put NAs
+    colrows <- data.frame(cols=NA,rows=NA)
+    lonlats <- data.frame(lats=NA,lons=NA)
+    vals <- NA
+  }
   
   # source: https://ngdc.noaa.gov/eog/gcv4_readme.txt
   # Three image types are
@@ -161,11 +170,11 @@ masqOLS <- function(shp, rast, i, retVal="colrowval", configName)
     vals[which(vals == 255)] <- NA
   }
 
-  #negative values are errors replace with 0?
-  vals[vals < 0] <- 0
+  #negative values are errors replace with NA
+  #vals[vals < 0] <- NA
   
   #Convert raster into vector
-  data <- stats::setNames(data.frame(colrows,lonlats,vals), c("cols","rows","lons","lats","vals"))
+  data <- stats::setNames(data.frame(colrows, lonlats, vals), c("cols","rows","lons","lats","vals"))
 
   return(data)
 }

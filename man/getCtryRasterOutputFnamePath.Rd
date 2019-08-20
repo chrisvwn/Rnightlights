@@ -4,7 +4,10 @@
 \alias{getCtryRasterOutputFnamePath}
 \title{Get the full path to the file where the cropped VIIRS country raster is stored.}
 \usage{
-getCtryRasterOutputFnamePath(ctryCode, nlType, configName, nlPeriod,
+getCtryRasterOutputFnamePath(ctryCode, nlType, configName,
+  multiTileStrategy = pkgOptions("multiTileStrategy"),
+  multiTileMergeFun = pkgOptions("multiTileMergeFun"),
+  removeGasFlares = pkgOptions("removeGasFlares"), nlPeriod,
   gadmVersion = pkgOptions("gadmVersion"),
   gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
 }

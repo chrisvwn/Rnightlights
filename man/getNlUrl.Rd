@@ -2,7 +2,7 @@
 % Please edit documentation in R/getnlurl.R
 \name{getNlUrl}
 \alias{getNlUrl}
-\title{Function to return the url of the OLS tile to download}
+\title{Function to return the url of the tile to download}
 \usage{
 getNlUrl(nlPeriod)
 }
@@ -10,10 +10,10 @@ getNlUrl(nlPeriod)
 \item{nlPeriod}{The nlPeriod of the tile for which to return the tile download URL}
 }
 \value{
-character string Url of the OLS tile file
+character string Url of the tile file
 }
 \description{
-Function to return the url of the OLS tile to download given the year
+Function to return the url of the tile to download given the year
 }
 \examples{
 \dontrun{

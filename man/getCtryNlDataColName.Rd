@@ -4,7 +4,9 @@
 \alias{getCtryNlDataColName}
 \title{Construct the name of a nightlight data column given the nightlight type and nlPeriod}
 \usage{
-getCtryNlDataColName(nlPeriod, nlStat, nlType, configName)
+getCtryNlDataColName(nlPeriod, nlStat, nlType, configName,
+  multiTileStrategy = "all", multiTileMergeFun = "mean",
+  removeGasFlares = TRUE)
 }
 \arguments{
 \item{nlPeriod}{character vector The nlPeriod to process}
@@ -14,6 +16,10 @@ getCtryNlDataColName(nlPeriod, nlStat, nlType, configName)
 \item{nlType}{character vector The type of nightlight}
 
 \item{configName}{character the type of raster being processed}
+
+\item{multiTileStrategy}{character How to handle multiple tiles per nlPeriod}
+
+\item{removeGasFlares}{logical Whether to perform gas flare removal pre-processing}
 }
 \value{
 character string

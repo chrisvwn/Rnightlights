@@ -585,6 +585,9 @@ createNlDataDirs <- function()
   if(!dir.exists(getNlDir("dirNlData")))
     dir.create(getNlDir("dirNlData"))
   
+  if(!dir.exists(getNlDir("dirNlGasFlares")))
+    dir.create(getNlDir("dirNlGasFlares"))
+  
   if(!dir.exists(getNlDir("dirRasterOutput")))
     dir.create(getNlDir("dirRasterOutput"))
   

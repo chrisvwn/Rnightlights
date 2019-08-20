@@ -5,7 +5,10 @@
 \title{Processes nightlights for an individual country in a particular nlPeriod}
 \usage{
 processNLCountry(ctryCode, admLevel, nlType,
-  configName = pkgOptions(paste0("configName_", nlType)), nlPeriod,
+  configName = pkgOptions(paste0("configName_", nlType)),
+  multiTileStrategy = pkgOptions("multiTileStrategy"),
+  multiTileMergeFun = pkgOptions("multiTileMergeFun"),
+  removeGasFlares = pkgOptions("removeGasFlares"), nlPeriod,
   nlStats = pkgOptions("nlStats"),
   downloadMethod = pkgOptions("downloadMethod"),
   cropMaskMethod = pkgOptions("cropMaskMethod"),

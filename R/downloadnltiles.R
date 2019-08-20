@@ -202,7 +202,8 @@ downloadNlTilesVIIRS <- function(nlPeriod,
 downloadNlTilesOLS <- function(nlPeriod,
                                downloadMethod=pkgOptions("downloadMethod"),
                                nlType = "OLS.Y",
-                               configName = pkgOptions(paste0("configName_", nlType)))
+                               configName = pkgOptions(paste0("configName_", nlType)),
+                               multiTileStrategy = pkgOptions("multiTileStrategy"))
 {
   if(missing(nlPeriod))
     stop(Sys.time(), ": Missing required parameter nlPeriod")
@@ -216,37 +217,35 @@ downloadNlTilesOLS <- function(nlPeriod,
   
   if(length(nlUrlsOLS) > 1)
   {
-    message(Sys.time(), ": Multiple tiles found for ", nlType, ":", nlPeriod)
+    message(Sys.time(), ": Multiple (", length(nlUrlsOLS), ") tiles found for ", nlType, ":", nlPeriod)
     
-    mergeStrategy <- pkgOptions("multiTileStrategy")
-    
-    if(mergeStrategy == "first")
+    if(multiTileStrategy == "first")
     {
-      message(Sys.time(), ": MultiTile Strategy: Selecting tile: ", mergeStrategy)
+      message(Sys.time(), ": MultiTile Strategy: Selecting tile: ", multiTileStrategy)
       nlUrlsOLS <- nlUrlsOLS[1]
-    } else if(mergeStrategy == "last")
+    } else if(multiTileStrategy == "last")
     {
-      message(Sys.time(), ": MultiTile Strategy: Selecting tile: ", mergeStrategy)
+      message(Sys.time(), ": MultiTile Strategy: Selecting tile: ", multiTileStrategy)
       
       nlUrlsOLS <- nlUrlsOLS[length(nlUrlsOLS)]
-    } else if(is.integer(mergeStrategy))
+    } else if(is.integer(multiTileStrategy))
     {
-      message(Sys.time(), ": MultiTile Strategy: Selecting tile(s): ", mergeStrategy)
-      nlUrlsOLS <- nlUrlsOLS[mergeStrategy]
+      message(Sys.time(), ": MultiTile Strategy: Selecting tile(s): ", multiTileStrategy)
+      nlUrlsOLS <- nlUrlsOLS[multiTileStrategy]
     } else if(pkgOptions("multiTileStrategy") == "merge")
     {
-      message(Sys.time(), ": MultiTile Strategy: Selecting all tiles: ", mergeStrategy) 
+      message(Sys.time(), ": MultiTile Strategy: Selecting all tiles: ", multiTileStrategy) 
     }
   }
    
-  message(Sys.time(), ": Commencing download")
-  
   ntLtsZipLocalNameOLS <- getNlTileZipLclNameOLS(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
   ntLtsZipLocalNamePathOLS <- getNlTileZipLclNamePath(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
   ntLtsTifLocalNamePathOLS <- getNlTileTifLclNamePath(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
   
   if(!file.exists(ntLtsTifLocalNamePathOLS))
   {
+    message(Sys.time(), ": Commencing download")
+    
     for(i in 1:length(nlUrlsOLS))
     {
       rsltDnld <- NA
@@ -274,7 +273,7 @@ downloadNlTilesOLS <- function(nlPeriod,
           if(!(downloadMethod %in% validDnldMethods))
             downloadMethod <- "auto"
           
-          message(Sys.time(), ": Downloading ", ntLtsFileUrl)
+          message(Sys.time(), ": Downloading tile(", i, "/", length(nlUrlsOLS), "): ", ntLtsFileUrl)
           
           if(downloadMethod %in% c("auto", "curl", "libcurl", "wget"))
             rsltDnld <- utils::download.file(ntLtsFileUrl, ntLtsZipLocalNamePathOLSTemp, mode = "wb", method = downloadMethod, extra = "-c")
@@ -335,17 +334,19 @@ downloadNlTilesOLS <- function(nlPeriod,
             
             message(Sys.time(), ": Decompressing ", tgzFile)
             
-            R.utils::gunzip(file.path(getNlDir("dirNlTiles"), tgzFile), ntLtsTifLocalNamePathOLS)
+            if(!file.exists(ntLtsTifLocalNamePathOLSTemp))
+              R.utils::gunzip(filename = file.path(getNlDir("dirNlTiles"), tgzFile), destname = ntLtsTifLocalNamePathOLSTemp, overwite = TRUE)
           
             #unlink(ntLtsZipLocalNamePathOLS, force = TRUE)
           } else if(configName %in% toupper(c("pct_lights", "avg_lights_x_pct")))
           {
-            message(Sys.time(), ": Decompressing ", tgzFile, " and renaming to ", ntLtsTifLocalNamePathOLS)
+            message(Sys.time(), ": Decompressing ", tgzFile, " and renaming to ", ntLtsTifLocalNamePathOLSTemp)
             
             #the tifs are not compressed so extract directly and rename
-            utils::untar(tarfile = ntLtsZipLocalNamePathOLSTemp, files = tgzFile, exdir = getNlDir("dirNlTiles"), tar = "internal")
+            if(!file.exists(tgzFile))
+              utils::untar(tarfile = ntLtsZipLocalNamePathOLSTemp, files = tgzFile, exdir = getNlDir("dirNlTiles"), tar = "internal")
             
-            file.rename(file.path(getNlDir("dirNlTiles"), tgzFile), ntLtsTifLocalNamePathOLS)
+            file.rename(file.path(getNlDir("dirNlTiles"), tgzFile), ntLtsTifLocalNamePathOLSTemp)
           }
         }
         else
@@ -355,12 +356,16 @@ downloadNlTilesOLS <- function(nlPeriod,
       }
     }
     
-    if(length(nlUrlsOLS) > 1)
+    if(length(nlUrlsOLS) == 1)
     {
-      message("Processing multiple tiles into one")
+      message(Sys.time(), ": Renaming single tile")
       
-      if(!exists("wgs84"))
-        wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+      file.rename(ntLtsTifLocalNamePathOLSTemp, ntLtsTifLocalNamePathOLS)
+    } else
+    {
+      message(Sys.time(), ": Processing multiple tiles")
+      
+      wgs84 <- getCRS()
   
       ntLtsTifLocalNameOLS <- getNlTileTifLclNameOLS(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
   
@@ -372,9 +377,9 @@ downloadNlTilesOLS <- function(nlPeriod,
         ntLtsTifLocalNamePathOLS <- gsub(pattern = "(\\.tif)", paste0("_", i, "\\1"), ntLtsTifLocalNamePathOLS)
       })
   
-      message("Merging Tifs")
+      message(Sys.time(), ": Merging Tifs")
       
-      r <- raster::raster(ntLtsTifList[1])
+      r <- raster::raster(x = ntLtsTifList[1])
       
       #get the extent and change to minx, miny, maxx, maxy order for use
       #in gdal_rasterize. Explanation below
@@ -417,6 +422,9 @@ downloadNlTilesOLS <- function(nlPeriod,
       file.remove(ntLtsTifList)
       file.remove(outputFileVrt)
     }
+  } else
+  {
+    message("Merged tile already exists")
   }
   
   return (rsltDnld == 0)

@@ -132,6 +132,9 @@ processNLCountry <- function(ctryCode,
                              admLevel,
                              nlType,
                              configName = pkgOptions(paste0("configName_", nlType)),
+                             multiTileStrategy = pkgOptions("multiTileStrategy"),
+                             multiTileMergeFun = pkgOptions("multiTileMergeFun"),
+                             removeGasFlares = pkgOptions("removeGasFlares"),
                              nlPeriod,
                              nlStats=pkgOptions("nlStats"),
                              downloadMethod=pkgOptions("downloadMethod"),
@@ -173,9 +176,11 @@ processNLCountry <- function(ctryCode,
                 (grepl("=", nlStats[i]) || length(names(nlStats[i])) > 0))))
     nlStats <- list(nlStats)
   
-  message(Sys.time(), ": **processNLCountry: ", paste(ctryCode, admLevel, nlType, nlPeriod, sep=" "))
-
-  wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+  funArgs <- match.call()[-1]
+  
+  message(Sys.time(), ": ProcessNlCountry: ", paste(names(funArgs), sapply(names(funArgs), function(x)eval(parse(text = x))), sep="=",collapse = ", "), "****")
+  
+  wgs84 <- getCRS()
   
   message(Sys.time(), ": Check for existing data file")
   
@@ -207,6 +212,9 @@ processNLCountry <- function(ctryCode,
                                                                     admLevel = admLevel,
                                                                     nlTypes = nlType,
                                                                     configNames = configName,
+                                                                    multiTileStrategy = multiTileStrategy,
+                                                                    multiTileMergeFun = multiTileMergeFun,
+                                                                    removeGasFlares = removeGasFlares,
                                                                     nlPeriods = nlPeriod,
                                                                     nlStats = nlStat[[1]],
                                                                     gadmVersion = gadmVersion,
@@ -226,7 +234,7 @@ processNLCountry <- function(ctryCode,
     }
     
     message(Sys.time(), ": Load country data file")
-    ctryNlDataDF <- utils::read.csv(ctryNlDataFnamePath)
+    ctryNlDataDF <- utils::read.csv(ctryNlDataFnamePath, header = TRUE, check.names = FALSE, encoding = "UTF-8")
     
     message(Sys.time(), ": Load country polygon admin level")
     
@@ -251,17 +259,21 @@ processNLCountry <- function(ctryCode,
   
   #get the path we will use to save the cropped raster
   ctryRasterOutputFnamePath <- getCtryRasterOutputFnamePath(ctryCode = ctryCode,
-                                                             nlType = nlType,
-                                                             nlPeriod = nlPeriod,
-                                                             gadmVersion = gadmVersion,
-                                                             gadmPolyType = gadmPolyType,
-                                                             custPolyPath = custPolyPath)
+                                                            nlType = nlType,
+                                                            configName = configName,
+                                                            multiTileStrategy = multiTileStrategy,
+                                                            multiTileMergeFun = multiTileMergeFun,
+                                                            removeGasFlares = removeGasFlares,
+                                                            nlPeriod = nlPeriod,
+                                                            gadmVersion = gadmVersion,
+                                                            gadmPolyType = gadmPolyType,
+                                                            custPolyPath = custPolyPath)
   
   if(!file.exists(ctryRasterOutputFnamePath))
   {
     message(Sys.time(), ": Country output raster not found. Creating")
     
-    message(Sys.time(), ": Reading in the raster tiles " )
+    message(Sys.time(), ": Reading in the raster tiles")
     
     tileList <- getCtryTileList(ctryCodes = ctryCode, nlType = nlType)
     
@@ -285,8 +297,40 @@ processNLCountry <- function(ctryCode,
       
       #extTempCrop <- crop(rastTile, ctryExtent)
       
+      if(removeGasFlares)
+      {
+        #read in the mosaiced gas flare polys
+        message(Sys.time(), ": Gas flare removal is ON")
+        
+        #does this country require gas flare removal
+        if(hasNlCtryGasFlares(ctryCode = ctryCode,
+                              gadmVersion = gadmVersion,
+                              gadmPolyType = gadmPolyType,
+                              custPolyPath = custPolyPath))
+        {
+          message(Sys.time(), ": Processing gas flare removal")
+         
+          ctryPolyAdm0 <- getNlCtryGasFlaresPoly(ctryCode,
+                                                 gadmVersion = gadmVersion,
+                                                 gadmPolyType = gadmPolyType,
+                                                 custPolyPath = custPolyPath)
+          
+        } else
+        {
+          message(Sys.time(), ": Gas flare removal not required for: ", ctryCode)
+        }
+      } else
+      {
+        message(Sys.time(), ": Gas flare removal is OFF. Skipping")
+      }
+      
+      message(Sys.time(), ": Cropping tile")
+      
+      #we crop using raster for both rast and gdal
       tempCrop <- raster::crop(x = rastTile, y = ctryPolyAdm0, progress='text')
       
+      #will only be non-null if there are multiple tiles to be mosaiced i.e. a country
+      #that straddles multiple tiles. So in the 2nd+ loop ctryRastCropped will not be null
       if(is.null(ctryRastCropped))
       {
         ctryRastCropped <- tempCrop
@@ -295,10 +339,12 @@ processNLCountry <- function(ctryCode,
       }
       else
       {
+        #if we are here we are mosaicing multiple tiles
         ctryRastMerged <- ctryRastCropped
         
         ctryRastCropped <- NULL
         
+        #mosaic the tiles and store back in ctryRastCropped
         ctryRastCropped <- raster::merge(x = ctryRastMerged, y = tempCrop)
         
         rm(ctryRastMerged)
@@ -307,20 +353,22 @@ processNLCountry <- function(ctryCode,
       rm(tempCrop)
     }
     
+    #unload the tile from memory
     rm(rastTile)
     
+    #release unused memory
     gc()
     
-    message(Sys.time(), ": Masking the merged raster ")
+    message(Sys.time(), ": Masking the raster ")
     
     if (cropMaskMethod == "rast")
     {
-      
       #RASTERIZE
       message(Sys.time(), ": Mask using rasterize ")
+      
       ctryRastCropped <- raster::rasterize(x = ctryPolyAdm0, y = ctryRastCropped, mask=TRUE, progress="text") #crops to polygon edge & converts to raster
       
-      message(Sys.time(), ": Writing the merged raster to disk ")
+      message(Sys.time(), ": Writing the raster to disk ")
       
       raster::writeRaster(x = ctryRastCropped,
                           filename = ctryRasterOutputFnamePath,
@@ -343,23 +391,23 @@ processNLCountry <- function(ctryCode,
       
       gc()
       
-      output_file_vrt <- file.path(getNlDir(dirName = "dirNlTemp"), paste0(ctryCode, "_", nlType, "_", nlPeriod, ".vrt"), fsep = )
+      #the polygon will already correspond to having gas flares removed or not
+      ctryPolyAdm0TmpDir <- tools::file_path_sans_ext(rstTmp)
       
-      if (file.exists(output_file_vrt))
-        file.remove(output_file_vrt)
+      rgdal::writeOGR(obj = as(ctryPolyAdm0,"SpatialPolygonsDataFrame"), dsn = ctryPolyAdm0TmpDir, driver = "ESRI Shapefile", layer = "GID_0_IDX")
+      
+      outputFileVrt <- file.path(getNlDir(dirName = "dirNlTemp"), paste0(ctryCode, "_", nlType, "_", nlPeriod, ".vrt"), fsep = )
+      
+      if (file.exists(outputFileVrt))
+        file.remove(outputFileVrt)
       
       message(Sys.time(), ": gdalwarp masking to VRT")
       
       gdalUtils::gdalwarp(srcfile=rstTmp,
-                          dstfile=output_file_vrt,
+                          dstfile=outputFileVrt,
                           s_srs=wgs84, t_srs=wgs84,
-                          cutline=getPolyFnamePath(ctryCode = ctryCode,
-                                                   gadmVersion = gadmVersion,
-                                                   custPolyPath = custPolyPath),
-                          cl= getCtryShpLyrNames(ctryCodes = ctryCode,
-                                                 lyrNums = 0,
-                                                 gadmVersion = gadmVersion,
-                                                 custPolyPath = custPolyPath),
+                          cutline=ctryPolyAdm0TmpDir,
+                          cl="GID_0_IDX",
                           multi=TRUE,
                           wm=pkgOptions("gdalCacheMax"),
                           wo=paste0("NUM_THREADS=",
@@ -368,13 +416,14 @@ processNLCountry <- function(ctryCode,
 
       message(Sys.time(), ": gdal_translate converting VRT to TIFF ")
       gdalUtils::gdal_translate(co = "compress=LZW",
-                                src_dataset = output_file_vrt,
+                                src_dataset = outputFileVrt,
                                 dst_dataset = ctryRasterOutputFnamePath)
       
       message(Sys.time(), ": Deleting the component rasters ")
       
       file.remove(rstTmp)
-      file.remove(output_file_vrt)
+      file.remove(outputFileVrt)
+      unlink(ctryPolyAdm0TmpDir, recursive = T, force = T)
       
       ctryRastCropped <- raster::raster(ctryRasterOutputFnamePath)
       
@@ -411,7 +460,7 @@ processNLCountry <- function(ctryCode,
   #message(Sys.time(), ": End create web raster ")
   #system(cmd)
   
-  message(Sys.time(), ": Begin extracting the data from the merged raster ")
+  message(Sys.time(), ": Begin extracting data from the raster ")
   
   ctryPoly <- readCtryPolyAdmLayer(ctryCode = ctryCode,
                                    admLevel = admLevel,
@@ -432,6 +481,9 @@ processNLCountry <- function(ctryCode,
                               ctryPoly=ctryPoly,
                               nlType=nlType,
                               configName=configName,
+                              multiTileStrategy = multiTileStrategy,
+                              multiTileMergeFun = multiTileMergeFun,
+                              removeGasFlares = removeGasFlares,
                               nlPeriod=nlPeriod,
                               nlStats=nlStats,
                               gadmVersion=gadmVersion,
@@ -446,7 +498,10 @@ processNLCountry <- function(ctryCode,
                                     statType = nlStatName,
                                     nlPeriod = nlPeriod,
                                     nlType = nlType,
-                                    configName = configName)
+                                    configName = configName,
+                                    multiTileStrategy = multiTileStrategy,
+                                    multiTileMergeFun = multiTileMergeFun,
+                                    removeGasFlares = removeGasFlares)
   
   message(Sys.time(), ": DONE processing ", ctryCode, " ", nlPeriod)
   
@@ -498,6 +553,9 @@ processNLCountry <- function(ctryCode,
 getCtryRasterOutputFname <- function(ctryCode,
                                      nlType,
                                      configName = pkgOptions(paste0("configName_", nlType)),
+                                     multiTileStrategy = pkgOptions("multiTileStrategy"),
+                                     multiTileMergeFun = pkgOptions("multiTileMergeFun"),
+                                     removeGasFlares = pkgOptions("removeGasFlares"),
                                      nlPeriod,
                                      gadmVersion = pkgOptions("gadmVersion"),
                                      gadmPolyType=pkgOptions("gadmPolyType"),
@@ -527,10 +585,20 @@ getCtryRasterOutputFname <- function(ctryCode,
   configName <- toupper(configName)
   
   fname <- if(is.null(custPolyPath))
-             paste0("NL_", ctryCode, "_", nlType, "_", nlPeriod, "_", configName, "_GADM-", gadmVersion, "-", toupper(gadmPolyType), ".tif")
+             paste0("NL_", ctryCode, "_",
+                    nlType, "_",
+                    nlPeriod, "_",
+                    configName,
+                    "-MTS", toupper(multiTileStrategy), "-", toupper(multiTileMergeFun),
+                    "-RGF", substr(as.character(removeGasFlares),1,1),
+                    "_GADM-", gadmVersion, "-", toupper(gadmPolyType), ".tif")
            else
-             paste0("NL_", ctryCode, "_", nlType, "_", nlPeriod, "_", configName, "_CUST-", basename(custPolyPath), "-SHPZIP.tif")
-  
+             paste0("NL_", ctryCode, "_",
+                    nlType, "_",
+                    nlPeriod, "_",
+                    configName, "-MTS", toupper(multiTileStrategy), "-", toupper(multiTileMergeFun),
+                    "-RGF", substr(as.character(removeGasFlares),1,1),
+                    "_CUST-", basename(custPolyPath), "-SHPZIP.tif")
   return (fname)
 }
 
@@ -568,6 +636,9 @@ getCtryRasterOutputFname <- function(ctryCode,
 getCtryRasterOutputFnamePath <- function(ctryCode,
                                          nlType,
                                          configName,
+                                         multiTileStrategy = pkgOptions("multiTileStrategy"),
+                                         multiTileMergeFun = pkgOptions("multiTileMergeFun"),
+                                         removeGasFlares = pkgOptions("removeGasFlares"),
                                          nlPeriod,
                                          gadmVersion=pkgOptions("gadmVersion"),
                                          gadmPolyType=pkgOptions("gadmPolyType"),
@@ -598,6 +669,9 @@ getCtryRasterOutputFnamePath <- function(ctryCode,
                     getCtryRasterOutputFname(ctryCode = ctryCode,
                                              nlType = nlType,
                                              configName = configName,
+                                             multiTileStrategy = multiTileStrategy,
+                                             multiTileMergeFun = multiTileMergeFun,
+                                             removeGasFlares = removeGasFlares,
                                              nlPeriod = nlPeriod,
                                              gadmVersion = gadmVersion,
                                              gadmPolyType = gadmPolyType,
@@ -712,6 +786,9 @@ processNlData <- function (ctryCodes,
                            admLevels,
                            nlTypes,
                            configNames,
+                           multiTileStrategy = pkgOptions("multiTileStrategy"),
+                           multiTileMergeFun = pkgOptions("multiTileMergeFun"),
+                           removeGasFlares = pkgOptions("removeGasFlares"),
                            nlPeriods,
                            nlStats=pkgOptions("nlStats"),
                            custPolyPath=NULL,
@@ -724,13 +801,11 @@ processNlData <- function (ctryCodes,
   if(missing(ctryCodes))
     ctryCodes <- getAllNlCtryCodes(omit = "error")
   
-  ctryCodes <- toupper(x = ctryCodes)
-  
   if(missing(nlTypes))
     nlTypes <- getAllNlTypes()
   
   if(missing(configNames))
-    configNames <- paste0("configName_", nlTypes)
+    configNames <- pkgOptions(paste0("configName_", nlTypes))
   
   #if the period is not given process all available periods
   if(missing("nlPeriods") || is.na(nlPeriods) || length(nlPeriods) == 0 || nlPeriods == "")
@@ -750,6 +825,13 @@ processNlData <- function (ctryCodes,
     if(length(ctryCodes) > 1 && length(ctryCodes) != length(admLevels))
       stop(Sys.time(), "admLevels do not match ctryCodes")
   }
+  
+  funArgs <- match.call()[-1]
+
+  message(Sys.time(), ": **** START PROCESSING: ", paste(names(funArgs), sapply(names(funArgs), function(x)eval(parse(text = x))), sep="=",collapse = ", "), "****")
+  
+  #uppercase vars
+  ctryCodes <- toupper(x = ctryCodes)
   
   #Ensure we have all polygons before checking admLevels
   message(Sys.time(), ": Downloading country polygons ...")
@@ -950,6 +1032,9 @@ processNlData <- function (ctryCodes,
                                                                 admLevels = admLevel,
                                                                 nlTypes = nlType,
                                                                 configNames = configNames,
+                                                                multiTileStrategy = multiTileStrategy,
+                                                                multiTileMergeFun = multiTileMergeFun,
+                                                                removeGasFlares = removeGasFlares,
                                                                 nlPeriods = nlPeriod,
                                                                 nlStats = nlStats,
                                                                 gadmVersion = gadmVersion,
@@ -981,7 +1066,7 @@ processNlData <- function (ctryCodes,
         }
       }
       
-      message(Sys.time(), length(tileList)," Required tiles: ", paste(tileList, collapse=","))
+      message(Sys.time(), ": numTiles: ", length(tileList),", Required tiles: ", paste(tileList, collapse=","))
       
       if (length(tileList) == 0)
       {
@@ -994,6 +1079,9 @@ processNlData <- function (ctryCodes,
         rasterOutputFnamePath <- getCtryRasterOutputFnamePath(ctryCode = ctryCode,
                                                               nlType = nlType,
                                                               configName = configName,
+                                                              multiTileStrategy = multiTileStrategy,
+                                                              multiTileMergeFun = multiTileMergeFun,
+                                                              removeGasFlares = removeGasFlares,
                                                               nlPeriod = nlPeriod,
                                                               gadmVersion = gadmVersion,
                                                               gadmPolyType = gadmPolyType,
@@ -1002,7 +1090,7 @@ processNlData <- function (ctryCodes,
         #tile not found. if the cropped raster is not found try to download
         if (!file.exists(rasterOutputFnamePath))
         {
-          if(!downloadNlTiles(nlType = nlType, configName = configName, nlPeriod = nlPeriod, tileList = tileList))
+          if(!downloadNlTiles(nlType = nlType, configName = configName, multiTileStrategy = multiTileStrategy, nlPeriod = nlPeriod, tileList = tileList))
           {
             message(Sys.time(), ": Something went wrong with the tile downloads. Aborting ...")
             
@@ -1032,6 +1120,9 @@ processNlData <- function (ctryCodes,
                            admLevel = admLevel,
                            nlType = nlType,
                            configName = configName,
+                           multiTileStrategy = multiTileStrategy,
+                           multiTileMergeFun = multiTileMergeFun,
+                           removeGasFlares = removeGasFlares,
                            nlPeriod = nlPeriod,
                            nlStats = nlStats,
                            downloadMethod = downloadMethod,
@@ -1070,7 +1161,7 @@ processNlData <- function (ctryCodes,
         }
       }
       
-      message(Sys.time(), ": **** COMPLETED PROCESSING nlType:", nlType, " nlPeriod:", nlPeriod, "****")
+      message(Sys.time(), ": **** COMPLETED PROCESSING :", paste(names(funArgs), sapply(names(funArgs), function(x)eval(parse(text = x))), sep="=",collapse = ", "), "****")
     }
   }
 }

@@ -143,7 +143,7 @@ addCtryPolyIdx <- function(ctryCode,
                            gadmPolyType=pkgOptions("gadmPolyType"),
                            custPolyPath=NULL)
 {
-  wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+  wgs84 <- getCRS()
   
   if(!is.null(custPolyPath))
   {
@@ -240,10 +240,250 @@ addCtryPolyIdx <- function(ctryCode,
 #'
 #' @examples
 #' \dontrun{
-#' Rnightlights:::dnldCtryPoly("KEN")
+#' Rnightlights:::dnldCtryShpZip("KEN", "3.6", "shpZip)
 #' }
 #'
 dnldGADMCtryShpZip <- function(ctryCode,
+                              gadmVersion = pkgOptions("gadmVersion"),
+                              gadmPolyType = pkgOptions("gadmPolyType"),
+                              downloadMethod = pkgOptions("downloadMethod"),
+                              custPolyPath = NULL)
+  
+{
+  if(is.null(ctryCode) && is.null(custPolyPath))
+    stop(Sys.time(), ": Missing required parameter. One of ctryCode/custPolyPath required")
+  
+  if(!is.null(ctryCode) && !validCtryCodes(ctryCode))
+    stop(Sys.time(), ": Invalid ISO3 ctryCode: ", ctryCode)
+  
+  if(gadmPolyType != "shpZip")
+    stop(Sys.time(), ": Invalid gadmPolyType")
+  
+  message(Sys.time(), ": Downloading ctry shpZip: ", ctryCode)
+  
+
+  fullPolyUrl <- getCtryPolyUrl(ctryCode = ctryCode,
+                                gadmVersion = gadmVersion,
+                                gadmPolyType = gadmPolyType,
+                                custPolyPath = custPolyPath)
+  
+  result <- NULL
+  
+  #if the path doesn't exist
+  if (!existsPolyFnamePath(ctryCode = ctryCode,
+                           gadmVersion = gadmVersion,
+                           gadmPolyType = gadmPolyType,
+                           custPolyPath = custPolyPath))
+  {
+    #if the dir and zip dont exist download and unzip
+    if (!existsPolyFnameZip(ctryCode = ctryCode,
+                            gadmVersion = gadmVersion,
+                            gadmPolyType = gadmPolyType,
+                            custPolyPath = custPolyPath))
+    {
+      #do not use aria. Seems GADM has issues with it. Use auto
+      downloadMethod <- "auto"
+      
+      message(Sys.time(), ": Downloading ", fullPolyUrl)
+      
+      if (downloadMethod %in% c("auto", "curl", "libcurl", "wget"))
+        rsltDnld <- utils::download.file(url = fullPolyUrl,
+                                         destfile = getPolyFnameZip(ctryCode = ctryCode,
+                                                                    gadmVersion = gadmVersion,
+                                                                    gadmPolyType = gadmPolyType,
+                                                                    custPolyPath = custPolyPath),
+                                         method = "auto",
+                                         mode = "wb",
+                                         extra = "-c")
+      else if (downloadMethod == "aria")
+        rsltDnld <- system(paste0("aria2c -c -x", pkgOptions("numParDnldConns"), " --show-console-readout=false --summary-interval=10 ", fullPolyUrl,
+                                  " -d ", getNlDir("dirPolygon"),
+                                  " -o ", basename(getPolyFnameZip(ctryCode = ctryCode,
+                                                                   gadmVersion = gadmVersion,
+                                                                   gadmPolyType = gadmPolyType,
+                                                                   custPolyPath = custPolyPath)))) #downloads to path relative to -d if specified else local dir
+      
+      if(rsltDnld == 0)
+      {
+        #unzip does not like double slashes! Replace with singles if found
+        
+        polyFnameZip <- getPolyFnameZip(ctryCode = ctryCode,
+                                        gadmVersion = gadmVersion,
+                                        gadmPolyType = gadmPolyType,
+                                        custPolyPath = custPolyPath)
+        polyFnameZip <- gsub("//", "/", polyFnameZip, perl=TRUE)
+        polyFnameZip <- gsub("\\\\\\\\", "\\\\", polyFnameZip, perl=TRUE)
+        
+        polyFnamePath <- getPolyFnamePath(ctryCode = ctryCode,
+                                          gadmVersion = gadmVersion,
+                                          gadmPolyType = gadmPolyType,
+                                          custPolyPath = custPolyPath)
+        polyFnamePath <- gsub("//", "/", polyFnamePath, perl=TRUE)
+        polyFnamePath <- gsub("\\\\\\\\", "\\\\", polyFnamePath, perl=TRUE)
+        
+        #unzip
+        result <- utils::unzip(zipfile = polyFnameZip, junkpaths = TRUE, exdir = polyFnamePath)
+        file.remove(polyFnameZip)
+        
+        if(!is.null(custPolyPath) || gadmVersion == "3.6")
+          addCtryPolyIdx(ctryCode = ctryCode,
+                         gadmVersion = gadmVersion,
+                         gadmPolyType = gadmPolyType,
+                         custPolyPath = custPolyPath)
+      }else
+      {
+        stop(Sys.time(), ": Something went wrong. Polygon download failed!")
+      }
+    }else
+    {
+      #if the dir doesn't exist but the zip does unzip the zip
+      #unzip does not like double slashes! Replace with singles if found
+      
+      #Convert double forward slashes to single
+      polyFnameZip <- getPolyFnameZip(ctryCode = ctryCode,
+                                      gadmVersion = gadmVersion,
+                                      gadmPolyType = gadmPolyType,
+                                      custPolyPath = custPolyPath)
+      polyFnameZip <- gsub("//", "/", polyFnameZip, perl=TRUE) #forward
+      polyFnameZip <- gsub("\\\\\\\\", "\\\\", polyFnameZip, perl=TRUE) #back
+      
+      polyFnamePath <- getPolyFnamePath(ctryCode = ctryCode,
+                                        gadmVersion = gadmVersion,
+                                        gadmPolyType = gadmPolyType,
+                                        custPolyPath = custPolyPath)
+      polyFnamePath <- gsub("//", "/", polyFnamePath, perl=TRUE)
+      polyFnamePath <- gsub("\\\\\\\\", "\\\\", polyFnamePath, perl=TRUE)
+      
+      #unzip
+      result <- utils::unzip(zipfile = polyFnameZip, junkpaths = TRUE, exdir = polyFnamePath)
+      file.remove(polyFnameZip)
+      
+      if(!is.null(custPolyPath) || gadmVersion == "3.6")
+        addCtryPolyIdx(ctryCode = ctryCode,
+                       gadmVersion = gadmVersion,
+                       gadmPolyType = gadmPolyType,
+                       custPolyPath = custPolyPath)
+    }
+    
+    if(!is.null(custPolyPath))
+    {
+      orderCustPolyLayers(ctryCode = ctryCode, custPolyPath = custPolyPath)
+    }
+    
+    wgs84 <- getCRS()
+    
+    #saving RDS
+    message(Sys.time(), ": Saving shapefile as RDS for faster access")
+    message(Sys.time(), ": Getting admLevels in ", ctryCode)
+    if(is.null(custPolyPath))
+      allCtryLevels <- sort(unlist(grep("adm",
+                                        rgdal::ogrListLayers(
+                                          getPolyFnamePath(ctryCode = ctryCode,
+                                                           gadmVersion = gadmVersion,
+                                                           gadmPolyType = gadmPolyType,
+                                                           custPolyPath = custPolyPath)),
+                                        value = T)))
+    else
+      allCtryLevels <- rgdal::ogrListLayers(getPolyFnamePath(ctryCode = ctryCode,
+                                                             gadmVersion = gadmVersion,
+                                                             gadmPolyType = gadmPolyType,
+                                                             custPolyPath = custPolyPath))
+    
+    message(Sys.time(), ": Reading in all admLevels")
+    listCtryPolys <- 
+      unlist(lapply(allCtryLevels,
+                    function(lvl){
+                      ctryPoly <- rgdal::readOGR(
+                        dsn = getPolyFnamePath(ctryCode = ctryCode,
+                                               gadmVersion = gadmVersion,
+                                               gadmPolyType = gadmPolyType,
+                                               custPolyPath = custPolyPath),
+                        layer = lvl,
+                        encoding = "UTF-8",
+                        use_iconv = TRUE)}))
+    
+    message(Sys.time(), ": Saving admLevel polygons as RDS")
+    saveRDS(object = listCtryPolys,
+            file = getPolyFnameRDS(ctryCode = ctryCode,
+                                   gadmVersion = gadmVersion,
+                                   gadmPolyType = gadmPolyType,
+                                   custPolyPath = custPolyPath))
+  }
+  else
+  {
+    message(Sys.time(),
+            ": Polygon dir for ",
+            paste(ctryCode,
+                  ifelse(is.null(custPolyPath),
+                         gadmVersion,
+                         basename(custPolyPath)),
+                  sep = ":"),
+            " already exists")
+    
+    if(!file.exists(getPolyFnameRDS(ctryCode = ctryCode,
+                                    gadmVersion = gadmVersion,
+                                    gadmPolyType = gadmPolyType,
+                                    custPolyPath = custPolyPath)))
+    {
+      message(Sys.time(), ": Saving shapefile as RDS for faster access")
+      message(Sys.time(), ": Getting admLevels in ", ctryCode)
+      if(is.null(custPolyPath))
+        allCtryLevels <- sort(unlist(grep("adm",
+                                          rgdal::ogrListLayers(
+                                            dsn = getPolyFnamePath(ctryCode = ctryCode,
+                                                                   gadmVersion = gadmVersion,
+                                                                   gadmPolyType = gadmPolyType,
+                                                                   custPolyPath = custPolyPath)),
+                                          value = T)))
+      else
+        allCtryLevels <- rgdal::ogrListLayers(getPolyFnamePath(ctryCode = ctryCode,
+                                                               gadmVersion = gadmVersion,
+                                                               gadmPolyType = gadmPolyType,
+                                                               custPolyPath = custPolyPath))
+      
+      message(Sys.time(), ": Reading in all admLevels")
+      listCtryPolys <- 
+        unlist(lapply(allCtryLevels,
+                      function(lvl){
+                        ctryPoly <- 
+                          rgdal::readOGR(dsn = getPolyFnamePath(ctryCode = ctryCode,
+                                                                gadmVersion = gadmVersion,
+                                                                gadmPolyType = gadmPolyType,
+                                                                custPolyPath = custPolyPath),
+                                         layer = lvl); ctryPoly <- cleangeo::clgeo_Clean(ctryPoly)}))
+      
+      message(Sys.time(), ": Saving admLevel polygons as RDS")
+      saveRDS(listCtryPolys, getPolyFnameRDS(ctryCode = ctryCode,
+                                             gadmVersion = gadmVersion,
+                                             gadmPolyType = gadmPolyType,
+                                             custPolyPath = custPolyPath))
+    }
+  }
+}
+
+######################## dnldGADMCtryRDS ###################################
+
+#' Download a country's polygon RDS files from \url{http://gadm.org}
+#'
+#' Download a country's polygon RDS files from \url{http://gadm.org} and
+#'     combine them into one RDS to match other polygon downloads
+#' 
+#' @param ctryCode The ISO3 ctryCode of the country polygon to download
+#' 
+#' @param gadmVersion The GADM version to use
+#' 
+#' @param gadmPolyType The format of polygons to download from GADM
+#' 
+#' @param downloadMethod The method used to download polygons
+#'
+#' @return TRUE/FALSE Success/Failure of the download
+#'
+#' @examples
+#' \dontrun{
+#' Rnightlights:::dnldCtryPoly("KEN")
+#' }
+#'
+dnldGADMCtrySpRds <- function(ctryCode,
                                gadmVersion = pkgOptions("gadmVersion"),
                                gadmPolyType = pkgOptions("gadmPolyType"),
                                downloadMethod = pkgOptions("downloadMethod"))
@@ -331,158 +571,6 @@ dnldGADMCtryShpZip <- function(ctryCode,
                      gadmPolyType = gadmPolyType)
 }
 
-######################## dnldGADMCtrySpRds ###################################
-
-#' Download a country's polygon RDS files from \url{http://gadm.org}
-#'
-#' Download a country's polygon RDS files from \url{http://gadm.org} and
-#'     combine them into one RDS to match other polygon downloads
-#' 
-#' @param ctryCode The ISO3 ctryCode of the country polygon to download
-#' 
-#' @param gadmVersion The GADM version to use
-#' 
-#' @param gadmPolyType The format of polygons to download from GADM
-#' 
-#' @param downloadMethod The method used to download polygons
-#'
-#' @return TRUE/FALSE Success/Failure of the download
-#'
-#' @examples
-#' \dontrun{
-#' Rnightlights:::dnldCtryPoly("KEN")
-#' }
-#'
-dnldGADMCtrySpRds <- function(ctryCode,
-                              gadmVersion = pkgOptions("gadmVersion"),
-                              gadmPolyType = pkgOptions("gadmPolyType"),
-                              downloadMethod = pkgOptions("downloadMethod"))
-{
-  if(file.exists(getPolyFnameRDS(ctryCode = ctryCode)))
-    stop(ctryCode, " ", gadmVersion, " RDS already exists. Please delete it to force")
-  
-  if(gadmVersion == "2.8")
-    baseUrl <- paste0("https://biogeo.ucdavis.edu/data/gadm", gadmVersion, "/rds/")
-  else
-    baseUrl <- paste0("https://biogeo.ucdavis.edu/data/gadm", gsub("\\.", "", gadmVersion), "/Rsp/")
-  
-  ctryPolyList <- NULL
-  
-  # res <- 0
-  # 
-  # ntLtsPage <- xml2::read_html(baseUrl)
-  # 
-  # ntLtsPage <- rvest::html_nodes(ntLtsPage, "table tr td a")
-  # 
-  # #search for a line containing the patterns that make the files unique
-  # #sample url: https://www.ngdc.noaa.gov/eog/data/web_data/v4composites/F101992.v4.tar
-  # #create the pattern
-  # ntLtsPageRgxp <- paste0("F.*.", nlPeriod,".*.tar")
-  # 
-  # #search for the pattern in the page
-  # ntLtsPageHtml <- ntLtsPage[grep(pattern = ntLtsPageRgxp, x=ntLtsPage)]
-  # 
-  # #split the output on quotes since this url is of the form ...<a href="URL"download> ...
-  # #the url is in the second position
-  # ntLtsPageUrl <- rvest::html_attr(ntLtsPageHtml,name = "href")
-  # 
-  # ntLtsPageUrl <- gsub("\n", "", ntLtsPageUrl)
-  # ntLtsPageUrl <- gsub("\r", "", ntLtsPageUrl)
-  # 
-  # ntLtsPageUrl <- unlist(lapply(ntLtsPageUrl, FUN=function(x) paste0(ntLtsBaseUrl, x)))
-  
-  for (idx in 0:4)
-  {
-    if(gadmVersion == "2.8")
-      fName <- paste0(ctryCode, "_adm", idx, ".rds")
-    else
-      fName <- paste0("gadm", gsub("\\.", "", gadmVersion), "_", ctryCode, "_", idx, "_sp.rds")
-    
-    message("Processing ", fName)
-    
-    dnldUrl <- paste0(baseUrl, fName)
-    
-    tempFName <- file.path(getNlDir("dirNlTemp"), fName)
-    
-    if(!file.exists(tempFName))
-      res <- tryCatch(expr = utils::download.file(url = dnldUrl,
-                                                  destfile = tempFName,
-                                                  method = "auto"), 
-                      warning = function(warn)
-                      {
-                        warn
-                      },
-                      error = function(err)
-                      {
-                        err
-                      })
-    
-    if(inherits(res, "simpleWarning") || inherits(res, "try-error"))
-    {
-      #if we have run at least once then get a 404
-      #we assume we have surpassed the last file index so move on
-      #to processing
-      if(idx > 0 && grepl("404 Not Found", res))
-        break()
-      
-      #for any other warning we assume another error
-      #occurred so stop
-      stop("An error occurred: ", res)
-    }
-    
-    ctryPoly <- readRDS(file = tempFName)
-    
-    lowestIDCol <- paste0("GID_", idx, "_IDX")
-    
-    #for GADM 3.6 polygons the attribute col GID_3 contains
-    #strings which cannot be used by gdal_rasterize
-    #Create an integer col in the shapefile corresponding to the unique GIDs
-    if(gadmVersion == "3.6" && is.null(ctryPoly@data[[lowestIDCol]]))
-    {
-      message(Sys.time(), ": Creating integer zone attribute col for polygon")
-      
-      lowestIDColOrig <- gsub("_IDX", "", lowestIDCol)
-      
-      ctryPoly@data[,lowestIDCol] <- 1:length(sort(ctryPoly@data[,lowestIDColOrig]))  # Make new attribute
-    }
-    
-    if(!dir.exists(getPolyFnamePath(ctryCode = ctryCode,
-                                    gadmVersion = gadmVersion,
-                                    gadmPolyType = gadmPolyType)))
-    {
-      message(Sys.time(), ": Writing shapefile layer")
-      rgdal::writeOGR(obj = ctryPoly,
-                      dsn = getPolyFnamePath(ctryCode = ctryCode,
-                                             gadmVersion = gadmVersion,
-                                             gadmPolyType = gadmPolyType),
-                      layer = paste0("gadm_", ctryCode, "_", idx),
-                      driver = "ESRI Shapefile",
-                      overwrite_layer = T) # Save new version of shapefile
-    }
-    
-    ctryPolyList <- append(ctryPolyList, ctryPoly)
-    
-    #advance idx to check for next rds
-    idx <- idx + 1
-  }
-  
-  message("saving combined RDS")
-  
-  if(!file.exists(getPolyFnameRDS(ctryCode = ctryCode,
-                                  gadmVersion = gadmVersion,
-                                  gadmPolyType = gadmPolyType)))
-    saveRDS(ctryPolyList, getPolyFnameRDS(ctryCode = ctryCode,
-                                          gadmVersion = gadmVersion,
-                                          gadmPolyType = gadmPolyType))
-  
-  if(!file.exists(getCtryStructFnamePath(ctryCode,
-                                         gadmVersion = gadmVersion,
-                                         gadmPolyType = gadmPolyType)))
-    createCtryStruct(ctryCode = ctryCode,
-                     gadmVersion = gadmVersion,
-                     gadmPolyType = gadmPolyType)
-}
-
 ######################## dnldCtryPoly ###################################
 
 #' Download a country's polygon shapefile from \url{http://gadm.org}
@@ -522,206 +610,15 @@ dnldCtryPoly <- function(ctryCode=NULL,
   
   if(gadmPolyType == "shpZip" || !is.null(custPolyPath))
   {
-    fullPolyUrl <- getCtryPolyUrl(ctryCode = ctryCode,
-                                  gadmVersion = gadmVersion,
-                                  gadmPolyType = gadmPolyType,
-                                  custPolyPath = custPolyPath)
-    
-    result <- NULL
-    
-    #if the path doesn't exist
-    if (!existsPolyFnamePath(ctryCode = ctryCode,
-                             gadmVersion = gadmVersion,
-                             gadmPolyType = gadmPolyType,
-                             custPolyPath = custPolyPath))
-    {
-      #if the dir and zip dont exist download and unzip
-      if (!existsPolyFnameZip(ctryCode = ctryCode,
-                              gadmVersion = gadmVersion,
-                              gadmPolyType = gadmPolyType,
-                              custPolyPath = custPolyPath))
-      {
-        #do not use aria. Seems GADM has issues with it. Use auto
-        downloadMethod <- "auto"
-  
-        message(Sys.time(), ": Downloading ", fullPolyUrl)
-        
-        if (downloadMethod %in% c("auto", "curl", "libcurl", "wget"))
-          rsltDnld <- utils::download.file(url = fullPolyUrl,
-                                           destfile = getPolyFnameZip(ctryCode = ctryCode,
-                                                                      gadmVersion = gadmVersion,
-                                                                      gadmPolyType = gadmPolyType,
-                                                                      custPolyPath = custPolyPath),
-                                           method = "auto",
-                                           mode = "wb",
-                                           extra = "-c")
-        else if (downloadMethod == "aria")
-          rsltDnld <- system(paste0("aria2c -c -x", pkgOptions("numParDnldConns"), " --show-console-readout=false --summary-interval=10 ", fullPolyUrl,
-                                    " -d ", getNlDir("dirPolygon"),
-                                    " -o ", basename(getPolyFnameZip(ctryCode = ctryCode,
-                                                                     gadmVersion = gadmVersion,
-                                                                     gadmPolyType = gadmPolyType,
-                                                                     custPolyPath = custPolyPath)))) #downloads to path relative to -d if specified else local dir
-  
-        if(rsltDnld == 0)
-        {
-          #unzip does not like double slashes! Replace with singles if found
-          
-          polyFnameZip <- getPolyFnameZip(ctryCode = ctryCode,
-                                          gadmVersion = gadmVersion,
-                                          gadmPolyType = gadmPolyType,
-                                          custPolyPath = custPolyPath)
-          polyFnameZip <- gsub("//", "/", polyFnameZip, perl=TRUE)
-          polyFnameZip <- gsub("\\\\\\\\", "\\\\", polyFnameZip, perl=TRUE)
-          
-          polyFnamePath <- getPolyFnamePath(ctryCode = ctryCode,
-                                            gadmVersion = gadmVersion,
-                                            gadmPolyType = gadmPolyType,
-                                            custPolyPath = custPolyPath)
-          polyFnamePath <- gsub("//", "/", polyFnamePath, perl=TRUE)
-          polyFnamePath <- gsub("\\\\\\\\", "\\\\", polyFnamePath, perl=TRUE)
-          
-          #unzip
-          result <- utils::unzip(zipfile = polyFnameZip, junkpaths = TRUE, exdir = polyFnamePath)
-          file.remove(polyFnameZip)
-          
-          if(!is.null(custPolyPath) || gadmVersion == "3.6")
-            addCtryPolyIdx(ctryCode = ctryCode,
-                           gadmVersion = gadmVersion,
-                           gadmPolyType = gadmPolyType,
-                           custPolyPath = custPolyPath)
-        }else
-        {
-          stop(Sys.time(), ": Something went wrong. Polygon download failed!")
-        }
-      }else
-      {
-        #if the dir doesn't exist but the zip does unzip the zip
-        #unzip does not like double slashes! Replace with singles if found
-        
-        #Convert double forward slashes to single
-        polyFnameZip <- getPolyFnameZip(ctryCode = ctryCode,
-                                        gadmVersion = gadmVersion,
-                                        gadmPolyType = gadmPolyType,
-                                        custPolyPath = custPolyPath)
-        polyFnameZip <- gsub("//", "/", polyFnameZip, perl=TRUE) #forward
-        polyFnameZip <- gsub("\\\\\\\\", "\\\\", polyFnameZip, perl=TRUE) #back
-        
-        polyFnamePath <- getPolyFnamePath(ctryCode = ctryCode,
-                                          gadmVersion = gadmVersion,
-                                          gadmPolyType = gadmPolyType,
-                                          custPolyPath = custPolyPath)
-        polyFnamePath <- gsub("//", "/", polyFnamePath, perl=TRUE)
-        polyFnamePath <- gsub("\\\\\\\\", "\\\\", polyFnamePath, perl=TRUE)
-        
-        #unzip
-        result <- utils::unzip(zipfile = polyFnameZip, junkpaths = TRUE, exdir = polyFnamePath)
-        file.remove(polyFnameZip)
-        
-        if(!is.null(custPolyPath) || gadmVersion == "3.6")
-          addCtryPolyIdx(ctryCode = ctryCode,
-                         gadmVersion = gadmVersion,
-                         gadmPolyType = gadmPolyType,
-                         custPolyPath = custPolyPath)
-      }
-  
-      if(!is.null(custPolyPath))
-      {
-        orderCustPolyLayers(ctryCode = ctryCode, custPolyPath = custPolyPath)
-      }
-          
-      wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
-      
-      #saving RDS
-      message(Sys.time(), ": Saving shapefile as RDS for faster access")
-      message(Sys.time(), ": Getting admLevels in ", ctryCode)
-      if(is.null(custPolyPath))
-        allCtryLevels <- sort(unlist(grep("adm",
-                                          rgdal::ogrListLayers(
-                                            getPolyFnamePath(ctryCode = ctryCode,
-                                                             gadmVersion = gadmVersion,
-                                                             gadmPolyType = gadmPolyType,
-                                                             custPolyPath = custPolyPath)),
-                                          value = T)))
-      else
-        allCtryLevels <- rgdal::ogrListLayers(getPolyFnamePath(ctryCode = ctryCode,
-                                                               gadmVersion = gadmVersion,
-                                                               gadmPolyType = gadmPolyType,
-                                                               custPolyPath = custPolyPath))
-      
-      message(Sys.time(), ": Reading in all admLevels")
-      listCtryPolys <- 
-        unlist(lapply(allCtryLevels,
-                      function(lvl){
-                        ctryPoly <- rgdal::readOGR(
-                          dsn = getPolyFnamePath(ctryCode = ctryCode,
-                                                 gadmVersion = gadmVersion,
-                                                 gadmPolyType = gadmPolyType,
-                                                 custPolyPath = custPolyPath),
-                          layer = lvl,
-                          encoding = "UTF-8",
-                          use_iconv = TRUE)}))
-      
-      message(Sys.time(), ": Saving admLevel polygons as RDS")
-      saveRDS(object = listCtryPolys,
-              file = getPolyFnameRDS(ctryCode = ctryCode,
-                                     gadmVersion = gadmVersion,
-                                     gadmPolyType = gadmPolyType,
-                                     custPolyPath = custPolyPath))
-    }
-    else
-    {
-      message(Sys.time(),
-              ": Polygon dir for ",
-              paste(ctryCode,
-                    ifelse(is.null(custPolyPath),
-                           gadmVersion,
-                           basename(custPolyPath)),
-                    sep = ":"),
-              " already exists")
-      
-      if(!file.exists(getPolyFnameRDS(ctryCode = ctryCode,
-                                      gadmVersion = gadmVersion,
-                                      gadmPolyType = gadmPolyType,
-                                      custPolyPath = custPolyPath)))
-      {
-        message(Sys.time(), ": Saving shapefile as RDS for faster access")
-        message(Sys.time(), ": Getting admLevels in ", ctryCode)
-        if(is.null(custPolyPath))
-          allCtryLevels <- sort(unlist(grep("adm",
-                                            rgdal::ogrListLayers(
-                                              dsn = getPolyFnamePath(ctryCode = ctryCode,
-                                                                     gadmVersion = gadmVersion,
-                                                                     gadmPolyType = gadmPolyType,
-                                                                     custPolyPath = custPolyPath)),
-                                            value = T)))
-        else
-          allCtryLevels <- rgdal::ogrListLayers(getPolyFnamePath(ctryCode = ctryCode,
-                                                                 gadmVersion = gadmVersion,
-                                                                 gadmPolyType = gadmPolyType,
-                                                                 custPolyPath = custPolyPath))
-        
-        message(Sys.time(), ": Reading in all admLevels")
-        listCtryPolys <- 
-          unlist(lapply(allCtryLevels,
-                        function(lvl){
-                          ctryPoly <- 
-                            rgdal::readOGR(dsn = getPolyFnamePath(ctryCode = ctryCode,
-                                                                  gadmVersion = gadmVersion,
-                                                                  gadmPolyType = gadmPolyType,
-                                                                  custPolyPath = custPolyPath),
-                                           layer = lvl); ctryPoly <- cleangeo::clgeo_Clean(ctryPoly)}))
-        
-        message(Sys.time(), ": Saving admLevel polygons as RDS")
-        saveRDS(listCtryPolys, getPolyFnameRDS(ctryCode = ctryCode,
-                                               gadmVersion = gadmVersion,
-                                               gadmPolyType = gadmPolyType,
-                                               custPolyPath = custPolyPath))
-      }
-    }
+    res <- dnldGADMCtryShpZip(ctryCode = ctryCode,
+                      gadmVersion = gadmVersion,
+                      gadmPolyType = gadmPolyType,
+                      downloadMethod = downloadMethod,
+                      custPolyPath = custPolyPath)
+
   } else if(gadmPolyType == "spRds")
   {
-    dnldGADMCtrySpRds(ctryCode = ctryCode,
+    res <- dnldGADMCtrySpRds(ctryCode = ctryCode,
                       gadmVersion = gadmVersion,
                       gadmPolyType = gadmPolyType,
                       downloadMethod = downloadMethod)
@@ -735,13 +632,16 @@ dnldCtryPoly <- function(ctryCode=NULL,
   {
     message(Sys.time(), ": Saving country admLevel structure to CSV")
   
-    createCtryStruct(ctryCode = ctryCode,
+    result <- createCtryStruct(ctryCode = ctryCode,
                      gadmVersion = gadmVersion,
                      gadmPolyType = gadmPolyType,
                      custPolyPath = custPolyPath)
   }
 
-  return (!is.null(result))
+  return (existsCtryPoly(ctryCode = ctryCode,
+                         gadmVersion = gadmVersion,
+                         gadmPolyType = gadmPolyType,
+                         custPolyPath))
 }
 
 ######################## deleteCtryPoly ###################################
@@ -947,6 +847,7 @@ createCtryStruct <- function(ctryCode=NULL,
   
   if(!exists(ctryStructFnamePath))
   {
+    message(Sys.time(), ": ctryStruct not found. Creating")
     ctryNlDataDF <- createCtryNlDataDF(ctryCode = ctryCode,
                                        admLevel = getCtryShpLowestLyrNames(ctryCodes = ctryCode,
                                                                            gadmVersion = gadmVersion,
@@ -957,6 +858,9 @@ createCtryStruct <- function(ctryCode=NULL,
                                        custPolyPath = custPolyPath)
     
     utils::write.table(x = ctryNlDataDF, file = ctryStructFnamePath, row.names = F, sep = ",", fileEncoding = "UTF-8")
+  } else
+  {
+    message(Sys.time(), ": ctryStruct already exists")
   }
 }
 

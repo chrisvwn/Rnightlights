@@ -11,7 +11,10 @@ getCtryNlData(ctryCode = NULL, admLevel, nlTypes, nlPeriods,
   downloadMethod = pkgOptions("downloadMethod"),
   cropMaskMethod = pkgOptions("cropMaskMethod"),
   extractMethod = pkgOptions("extractMethod"), configNames,
-  source = "local", ...)
+  multiTileStrategy = pkgOptions("multiTileStrategy"),
+  multiTileMergeFun = pkgOptions("multiTileMergeFun"),
+  removeGasFlares = pkgOptions("removeGasFlares"), source = "local",
+  ...)
 }
 \arguments{
 \item{ctryCode}{the ISO3 code of the country. Only 1 country can be 

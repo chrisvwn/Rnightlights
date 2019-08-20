@@ -92,7 +92,7 @@ validNlConfigName <- function(configName, nlType)
 #' 
 #' #returns TRUE if the download was successful or tile is cached locally
 #'
-downloadNlTiles <- function(nlType, configName=pkgOptions(paste0("configName_", nlType)), nlPeriod, tileList)
+downloadNlTiles <- function(nlType, configName=pkgOptions(paste0("configName_", nlType)), nlPeriod, tileList, multiTileStrategy = pkgOptions("multiTileStrategy"))
 {
   if(missing(nlType))
     stop(Sys.time(), ": Missing required parameter nlType")
@@ -119,7 +119,8 @@ downloadNlTiles <- function(nlType, configName=pkgOptions(paste0("configName_", 
     success <- success && downloadNlTilesOLS(nlPeriod = nlPeriod,
                                              downloadMethod = pkgOptions("downloadMethod"),
                                              nlType = nlType,
-                                             configName = configName)
+                                             configName = configName,
+                                             multiTileStrategy = multiTileStrategy)
   else if(stringr::str_detect(nlType, "VIIRS"))
     for (tile in tileList)
     {
@@ -252,7 +253,7 @@ createNlTilesSpPolysDF <- function()
     nlTiles <- getNlTiles(grep("VIIRS", getAllNlTypes(), value = T)[1])
   }
   
-  wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+  wgs84 <- getCRS()
   
   #convert nlTiles min/max columns to numeric
   for (cIdx in grep("id|min|max", names(nlTiles))) nlTiles[,cIdx] <- as.numeric(as.character(nlTiles[, cIdx]))
@@ -328,7 +329,7 @@ plotCtryWithTilesVIIRS <- function(ctry)
   if(!is.character(ctry))
     stop(Sys.time(), ": The parameter you supplied needs to be type character")
   
-  wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+  wgs84 <- getCRS()
   
   #if the map variable does not exist
   map <- getWorldMap()
@@ -500,7 +501,7 @@ mapCtryPolyToTilesVIIRS <- function(ctryCodes="all", omitCountries=pkgOptions("o
   #if the rworldmap::getMap() hasn't been loaded, load it
   map <- getWorldMap()
   
-  wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+  wgs84 <- getCRS()
   
   #get the indices of the country polygons from the rworldmap
   ctryCodeIdx <- which(map@data$ISO3 %in% ctryCodes)
@@ -576,7 +577,7 @@ getTilesCtryIntersectVIIRS <- function(ctryCode)
  
   map <- getWorldMap()
   
-  wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+  wgs84 <- getCRS()
   
   #print(ctryISO3)
   
@@ -750,7 +751,7 @@ tilesPolygonIntersectVIIRS <- function(shpPolygon)
   if (!exists("nlTiles"))
     nlTiles <- getNlTiles(grep("VIIRS", getAllNlTypes(), value = TRUE)[1])
   
-  wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+  wgs84 <- getCRS()
   
   raster::projection(shpPolygon) <- sp::CRS(wgs84)
   

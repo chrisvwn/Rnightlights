@@ -4,7 +4,8 @@
 \alias{downloadNlTiles}
 \title{Download the listed tiles for a given nlType in a given nlPeriod}
 \usage{
-downloadNlTiles(nlType, nlPeriod, tileList)
+downloadNlTiles(nlType, configName = pkgOptions(paste0("configName_",
+  nlType)), nlPeriod, tileList)
 }
 \arguments{
 \item{nlType}{character The nightlight type}

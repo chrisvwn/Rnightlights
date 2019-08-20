@@ -193,7 +193,7 @@ upgradeRnightlights <- function()
           
           idx <- idx + 0.01
           
-          ctryNlData <- utils::read.csv(newFileName, header = T)
+          ctryNlData <- utils::read.csv(newFileName, header = TRUE, check.names = FALSE, encoding = "UTF-8")
           
           cols <- names(ctryNlData)
           

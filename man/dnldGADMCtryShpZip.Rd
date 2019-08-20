@@ -6,7 +6,7 @@
 \usage{
 dnldGADMCtryShpZip(ctryCode, gadmVersion = pkgOptions("gadmVersion"),
   gadmPolyType = pkgOptions("gadmPolyType"),
-  downloadMethod = pkgOptions("downloadMethod"))
+  downloadMethod = pkgOptions("downloadMethod"), custPolyPath = NULL)
 }
 \arguments{
 \item{ctryCode}{The ISO3 ctryCode of the country polygon to download}
@@ -23,10 +23,4 @@ TRUE/FALSE Success/Failure of the download
 \description{
 Download a country's polygon RDS files from \url{http://gadm.org} and
     combine them into one RDS to match other polygon downloads
-}
-\examples{
-\dontrun{
-Rnightlights:::dnldCtryPoly("KEN")
-}
-
 }

@@ -23,6 +23,8 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   #Set directory paths
   dirNlData = "data",
   
+  dirNlGasFlares = "gasflares",
+  
   dirNlRoot = ".Rnightlights",
   
   dirNlTiles = "tiles",
@@ -49,7 +51,7 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   #the polygon type to download from GADM
   #essentially the options on the gadm site that we support
   #we support:
-  #shpZip: shapefile folder zip (default),
+  #shpZip: shapefile zip folder(default),
   #spRds: R spatial polygons for R (sp package) in Rds format
   #we list but do not yet support:
   #gpkgZip: Geopackage zip
@@ -60,7 +62,7 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   #gdalCacheMax Speeds up gdal_rasterize calculation of stats in function
   #ZonalPipe with more cache (advice: max 1/3 of your total RAM)
   #ref: http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/
-  gdalCacheMax = 1024,
+  gdalCacheMax = 2048,
 
   #if multiTileStrategy is set to merge where tiles are merged
   #before processing set the function to merge with. The function
@@ -71,8 +73,10 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   #for the same nlPeriod? Possible options:
   #  + first - use only the first tile
   #  + last  - use only the last tile
-  #  + merge - 
-  multiTileStrategy = "first",
+  #  + all - 
+  #  + delimited ints (1,2) - use specified tile indices
+  
+  multiTileStrategy = "all",
   
   #default stats to calculate in processNlData. Can be added to if the
   #function exists i.e. if not a standard function can be created in workspace
@@ -114,17 +118,19 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   tmpDir = raster::tmpDir(),
 
   .allowed = list(
-    configName_OLS.Y = settings::inlist("cf_cvg", "avg_vis", "stable_lights", "pct_lights", "avg_lights_x_pct"),
+    configName_OLS.Y = settings::inlist("avg_lights_x_pct", "avg_vis", "cf_cvg", "pct_lights", "stable_lights"),
     configName_VIIRS.D = settings::inlist("vcmcfg", "vcmsl"),
     configName_VIIRS.M = settings::inlist("vcmcfg", "vcmsl"),
     configName_VIIRS.Y = settings::inlist("vcm-orm", "vcm-orm-ntl", "vcm-ntl"),
     cropMaskMethod = settings::inlist("gdal", "rast"),
-    extractMethod = settings::inlist("gdal", "rast"),
+    deleteTiles = settings::inlist(FALSE, TRUE),
     downloadMethod = settings::inlist("aria", "auto", "curl", "libcurl", "wget"),
+    extractMethod = settings::inlist("gdal", "rast"),
     gadmVersion = settings::inlist("2.8", "3.6"),
     gadmPolyType = settings::inlist("gpkgZip", "kmlZip", "shpZip", "sfRds", "spRds"),
-    multiTileStrategy = settings::inlist("first","last", "merge"),
-    omitCountries = settings::inlist("error", "missing", "long", "all", "none")
+    multiTileStrategy = settings::inlist("first","last", "all"),
+    omitCountries = settings::inlist("all", "error", "long", "missing", "none"),
+    removeGasFlares = settings::inlist(FALSE, TRUE)
   )
 )
 
@@ -276,6 +282,22 @@ pkgOptions <- function(...)
   settings::stop_if_reserved(...)
   
   RNIGHTLIGHTSOPTIONS(...)
+}
+
+######################## pkgDefaults ###################################
+
+#' Retrieve default global options for the Rnightlights package
+#' 
+#' Retrieve default global options for the Rnightlights package
+#'
+#' @examples
+#' #get cropMaskMethod
+#' pkgDefaults("cropMaskMethod") #returns default "rast"
+#' 
+#' @export
+pkgDefaults <- function(...)
+{
+  settings::defaults(RNIGHTLIGHTSOPTIONS)[...]
 }
 
 ######################## pkgReset ###################################

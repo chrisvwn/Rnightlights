@@ -5,7 +5,10 @@
 \title{Check if VIIRS nightlight stats exist locally}
 \usage{
 existsCtryNlData(ctryCode = NULL, admLevel, nlTypes, configNames,
-  nlPeriods, nlStats, gadmVersion = pkgOptions("gadmVersion"),
+  multiTileStrategy = pkgOptions("multiTileStrategy"),
+  multiTileMergeFun = pkgOptions("multiTileMergeFun"),
+  removeGasFlares = pkgOptions("removeGasFlares"), nlPeriods, nlStats,
+  gadmVersion = pkgOptions("gadmVersion"),
   gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
 }
 \arguments{

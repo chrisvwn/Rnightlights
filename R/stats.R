@@ -75,7 +75,7 @@ validNlStats <- function(nlStats)
 #' @return numeric value result of the given nlStat function
 #' 
 #' @import data.table
-myZonal <- function (rast, zone, nlStats, digits = 0, retVal=NULL, na.rm = TRUE, ...)
+myZonal <- function (rast, nlType, configName, zone, nlStats, digits = 0, retVal=NULL, na.rm = TRUE, ...)
 {
   options(fftempdir=getNlDir("dirNlTemp"), fffinalizer="delete")
   
@@ -152,9 +152,49 @@ myZonal <- function (rast, zone, nlStats, digits = 0, retVal=NULL, na.rm = TRUE,
     lonlatVals <- stats::setNames(expand.grid(seq(extent@xmin,extent@xmax,(extent@xmax-extent@xmin)/(rast@ncols-1)),
                           seq(extent@ymin,extent@ymax,(extent@ymax-extent@ymin)/(tr$nrows[i]-1))), c("lons","lats"))
     
-    #convert negative values to NA 
-    rastVals[rastVals < 0] <- NA
-    
+    if(grepl(x = nlType, pattern = "OLS"))
+    {
+      # source: https://ngdc.noaa.gov/eog/gcv4_readme.txt
+      # Three image types are
+      # available as geotiffs for download from the version 4 composites:
+      #   
+      #   
+      #   F1?YYYY_v4b_cf_cvg.tif: Cloud-free coverages tally the total 
+      # number of observations that went into each 30 arc second grid cell. This
+      # image can be used to identify areas with low numbers of observations
+      # where the quality is reduced. In some years there are areas with zero
+      # cloud- free observations in certain locations.
+      # 
+      # 
+      # F1?YYYY_v4b_avg_vis.tif: Raw avg_vis contains the average of the 
+      # visible band digital number values with no further filtering. Data
+      # values range from 0-63. Areas with zero cloud-free observations are
+      # represented by the value 255.
+      # 
+      # 
+      # F1?YYYY_v4b_stable_lights.avg_vis.tif: The cleaned up avg_vis 
+      # contains the lights from cities, towns, and other sites with persistent
+      # lighting, including gas flares. Ephemeral events, such as fires have
+      # been discarded. Then the background noise was identified and replaced
+      # with values of zero. Data values range from 1-63. Areas with zero
+      # cloud-free observations are represented by the value 255.
+      
+      if(configName %in% c("avg_vis", "stable_lights"))
+      {
+        #not for cf_cvg
+        #in DMSP-OLS 255 == NA
+        rastVals[which(rastVals == 255)] <- NA
+      }
+      
+      #negative values are errors replace with NA
+      rastVals[rastVals < 0] <- NA
+      
+    } else if(grepl(x = nlType, pattern = "VIIRS"))
+    {
+      #convert negative values to NA
+      rastVals[rastVals < 0] <- NA      
+    }
+
     #get all pixels in zone 0 which should be
     #the pixels outside the polygon
     idxZone0 <- which(zoneVals == 0)
@@ -256,11 +296,11 @@ myZonal <- function (rast, zone, nlStats, digits = 0, retVal=NULL, na.rm = TRUE,
     {
       nlStatCols <- grep(funName, names(result), value = T)
       
-      names(result)[which(names(result)==nlStatCols)] <- funName
+      names(result)[which(names(result) == nlStatCols)] <- funName
     }
   }
   
-  resultDF <- as.data.frame(result[,c("zones",funNames), with=F])
+  resultDF <- as.data.frame(result[ ,c("zones", funNames), with=F])
   
   ff::delete(rDT, result)
   rm(rDT, result)
@@ -307,6 +347,8 @@ myZonal <- function (rast, zone, nlStats, digits = 0, retVal=NULL, na.rm = TRUE,
 ZonalPipe <- function (ctryCode,
                        admLevel,
                        ctryPoly,
+                       nlType,
+                       configName,
                        path.in.shp,
                        path.in.r,
                        path.out.r,
@@ -361,7 +403,7 @@ ZonalPipe <- function (ctryCode,
   # )
   
   #Initiate parameter
-  r<-raster::stack(path.in.r)
+  r <- raster::raster(path.in.r)
   
   if (!file.exists(path.out.r))
   {
@@ -369,28 +411,22 @@ ZonalPipe <- function (ctryCode,
     
     #get the extent and change to minx, miny, maxx, maxy order for use
     #in gdal_rasterize. Explanation below
-    ext<-raster::extent(r)
-    ext<-paste(ext[1], ext[3], ext[2], ext[4])
+    ext <- raster::extent(r)
+    ext <- paste(ext[1], ext[3], ext[2], ext[4])
     
     #get the resolution of the raster. will be used in gdal_rasterize
     #for target resolution which should be the same as the source resolution.
     #Specifying makes it run faster (?)
-    res<-paste(raster::res(r)[1], raster::res(r)[2])
+    res <- paste(raster::res(r)[1], raster::res(r)[2])
     
     lyrName <- admLevel #getCtryShpLowestLyrNames(ctryCode)
-    lowestIDCol <- if(!is.null(custPolyPath))
-    {
-      if(gadmVersion == "2.8")
-        paste0("ID_", stringr::str_extract(lyrName, "\\d+$"))
-      else if(gadmVersion == "3.6")
-        paste0("GID_", stringr::str_extract(lyrName, "\\d+$"), "_IDX")
-    }else
-    {
-      paste0("GID_IDX")
-    }
-    
+
     tempRast <- file.path(getNlDir("dirNlTemp"), paste0(basename(tempfile()), ".tif"))
+        
+    #ctryPolyAdm0TmpDir <- tools::file_path_sans_ext(tempRast)
     
+    #rgdal::writeOGR(obj = as(ctryPoly,"SpatialPolygonsDataFrame"), dsn = ctryPolyAdm0TmpDir, driver = "ESRI Shapefile", layer = lyrName)
+
     #Gdal_rasterize
     message(Sys.time(), ": Creating zonal raster")
     command<-'gdal_rasterize'
@@ -418,6 +454,8 @@ ZonalPipe <- function (ctryCode,
                               dst_dataset = path.out.r)
     
     file.remove(tempRast)
+    
+    #unlink(ctryPolyAdm0TmpDir, recursive = T, force = T)
   }
   
   if(file.exists(path.out.r))
@@ -426,14 +464,14 @@ ZonalPipe <- function (ctryCode,
     stop(path.out.r, " not found. Zonal creation failed.")
   
   # 2/ Zonal Stat using myZonal function
-  zone<-raster::raster(path.out.r)
+  zone <- raster::raster(path.out.r)
   
   message(Sys.time(), ": Calculating zonal stats ...")
-  Zstat<-data.frame(myZonal(r, zone, nlStats))
+  Zstat <- data.frame(myZonal(rast = r, nlType = nlType, configName = configName, zone = zone, nlStats = nlStats))
   
   message(Sys.time(), ": Calculating zonal stats ... DONE")
 
-  colnames(Zstat)[2:length(Zstat)] <- sapply(nlStats, function(x) x[[1]])
+  colnames(Zstat)[2:length(Zstat)] <- sapply(X = nlStats, FUN = function(x) x[[1]])
   
   return(Zstat)
   
@@ -491,7 +529,10 @@ fnAggRadGdal <- function(ctryCode,
                          admLevel,
                          ctryPoly,
                          nlType,
-                         configName,
+                         configName = pkgOptions(paste0("configName_", nlType)),
+                         multiTileStrategy = pkgOptions("multiTileStrategy"),
+                         multiTileMergeFun = pkgOptions("multiTileMergeFun"),
+                         removeGasFlares = pkgOptions("removeGasFlares"),
                          nlPeriod,
                          nlStats=pkgOptions("nlStats"),
                          gadmVersion=pkgOptions("gadmVersion"),
@@ -523,31 +564,40 @@ fnAggRadGdal <- function(ctryCode,
   path.in.r<- getCtryRasterOutputFnamePath(ctryCode = ctryCode,
                                            nlType = nlType,
                                            configName = configName,
+                                           multiTileStrategy = multiTileStrategy,
+                                           multiTileMergeFun = multiTileMergeFun,
+                                           removeGasFlares = removeGasFlares,
                                            nlPeriod = nlPeriod,
                                            gadmVersion = gadmVersion,
                                            gadmPolyType = gadmPolyType,
                                            custPolyPath = custPolyPath) #or path.in.r<-list.files("/home/, pattern=".tif$")
   
-  if(stringr::str_detect(nlType, "VIIRS"))
-    nlTp <- "VIIRS"
-  else
-    nlTp <- "OLS"
-  
   if(is.null(custPolyPath))
-    path.out.r<- file.path(getNlDir("dirZonals"), paste0(admLevel, "_zone_",
-                                                         nlTp, "_",
+    path.out.r<- file.path(getNlDir("dirZonals"), paste0("NL_ZONAL_",
+                                                         ctryCode,"_",
+                                                         "ADM", substr(x = admLevel, start = nchar(admLevel), stop = nchar(admLevel)), "_",
+                                                         nlType, "_",
+                                                         nlPeriod, "_",
+                                                         "GF", substr(as.character(removeGasFlares),1,1), "_",
                                                          "GADM-", gadmVersion, "-",toupper(gadmPolyType),
                                                          ".tif"))
   else
-    path.out.r<- file.path(getNlDir("dirZonals"), paste0(admLevel, "_zone_", nlTp, "SHPZIP.tif"))
+    path.out.r<- file.path(getNlDir("dirZonals"), paste0("NL_ZONAL_",
+                                                         ctryCode,"_",
+                                                         "ADM", gsub("[^[:INTEGER:]]", "", admLevel),"_",
+                                                         nlType, "_",
+                                                         nlPeriod, "_",
+                                                         "GF", substr(as.character(removeGasFlares),1,1), "_",
+                                                         basename(custPolyPath),"-SHPZIP.tif"))
   
+  #path.out.shp not in use at the moment
   if(is.null(custPolyPath))
     path.out.shp <- file.path(getNlDir("dirZonals"), paste0(admLevel, "_zone_",
-                                                            nlTp, "_",
+                                                            nlType, "_",
                                                             "GADM-", gadmVersion,
                                                             ".shp"))
   else
-    path.out.shp <- file.path(getNlDir("dirZonals"), paste0(admLevel, "_zone_", nlTp, "SHPZIP.shp"))
+    path.out.shp <- file.path(getNlDir("dirZonals"), paste0(admLevel, "_zone_", nlType, "SHPZIP.shp"))
   
   zone.attribute <- if(is.null(custPolyPath))
   {
@@ -576,6 +626,8 @@ fnAggRadGdal <- function(ctryCode,
   sumAvgRad <- ZonalPipe(ctryCode = ctryCode,
                          admLevel = admLevel,
                          ctryPoly = ctryPoly,
+                         nlType = nlType,
+                         configName = configName,
                          path.in.shp = path.in.shp,
                          path.in.r = path.in.r,
                          path.out.r = path.out.r,
@@ -597,7 +649,7 @@ fnAggRadGdal <- function(ctryCode,
 
   if (grepl("^ID_0$",lyrIDCol))
   {
-    sumAvgRad <- cbind(ctryPolyData$ID_0, sumAvgRad[sumAvgRad$z!=0, ])
+    sumAvgRad <- cbind(ctryPolyData$ID_0, sumAvgRad[sumAvgRad$z != 0, ])
   }
   else
   {
@@ -686,10 +738,10 @@ fnAggRadRast <- function(ctryPoly, ctryRastCropped, nlType, configName, nlStats,
   
   result <- foreach::foreach(i=1:nrow(ctryPoly@data),
                               .combine=rbind,
-                              .export = c("masqOLS", "masqVIIRS", "nlStatNames"),
+                              .export = c("masqOLS", "masqVIIRS", nlStatNames),
                               .packages = c("raster"),
                               .options.snow = list(progress=progress)) %dopar% {
-  # for(i in 1:nrow(ctryPoly@data)){
+   # for(i in 1:nrow(ctryPoly@data)){
                                 
                                   options(stringsAsFactors = FALSE)
                                 
@@ -697,10 +749,10 @@ fnAggRadRast <- function(ctryPoly, ctryRastCropped, nlType, configName, nlStats,
                                   
                                   message(Sys.time(), ": PID:", pid, " Extracting data from polygon " , i)
                                   
-                                  if(stringr::str_detect(nlType, "OLS"))
-                                    dta <- masqOLS(shp = ctryPoly, rast = ctryRastCropped, i = i, configName = configName)
+                                  dta <- if(stringr::str_detect(nlType, "OLS"))
+                                    masqOLS(shp = ctryPoly, rast = ctryRastCropped, i = i, configName = configName)
                                   else if(stringr::str_detect(nlType, "VIIRS"))
-                                    dta <- masqVIIRS(ctryPoly = ctryPoly, ctryRast = ctryRastCropped, idx = i, configName = configName)
+                                    masqVIIRS(ctryPoly = ctryPoly, ctryRast = ctryRastCropped, idx = i, configName = configName)
                                   
                                   message(Sys.time(), ": PID:", pid, " Calculating the NL stats of polygon ", i)
                                   

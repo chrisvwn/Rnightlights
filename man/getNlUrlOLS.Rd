@@ -4,7 +4,7 @@
 \alias{getNlUrlOLS}
 \title{Function to return the url of the OLS tile to download}
 \usage{
-getNlUrlOLS(nlPeriod)
+getNlUrlOLS(nlPeriod, configName = pkgOptions("configName_OLS.Y"))
 }
 \arguments{
 \item{nlPeriod}{The nlPeriod of the tile for which to return the tile download URL}

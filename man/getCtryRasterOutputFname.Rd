@@ -5,7 +5,10 @@
 \title{Constructs the name of the output raster}
 \usage{
 getCtryRasterOutputFname(ctryCode, nlType,
-  configName = pkgOptions(paste0("configName_", nlType)), nlPeriod,
+  configName = pkgOptions(paste0("configName_", nlType)),
+  multiTileStrategy = pkgOptions("multiTileStrategy"),
+  multiTileMergeFun = pkgOptions("multiTileMergeFun"),
+  removeGasFlares = pkgOptions("removeGasFlares"), nlPeriod,
   gadmVersion = pkgOptions("gadmVersion"),
   gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
 }

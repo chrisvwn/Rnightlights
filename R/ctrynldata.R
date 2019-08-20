@@ -44,7 +44,7 @@ createCtryNlDataDF <- function(ctryCode=NULL,
                                       gadmPolyType = gadmPolyType,
                                       custPolyPath = custPolyPath)
   
-  wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+  wgs84 <- getCRS()
   
   ctryPoly <- readCtryPolyAdmLayer(ctryCode = ctryCode,
                                    admLevel = admLevel,
@@ -226,7 +226,7 @@ createCtryNlDataDF <- function(ctryCode=NULL,
 #'     dataCol, "mean", "2012", "OLS.Y")
 #'     }
 #'
-insertNlDataCol <- function (ctryNlDataDF, dataCol, statType, nlPeriod, nlType, configName)
+insertNlDataCol <- function (ctryNlDataDF, dataCol, statType, nlPeriod, nlType, configName, multiTileStrategy, multiTileMergeFun, removeGasFlares = TRUE)
 {
   if(missing(ctryNlDataDF))
     stop(Sys.time(), ": Missing required parameter ctryNlDataDF")
@@ -248,7 +248,7 @@ insertNlDataCol <- function (ctryNlDataDF, dataCol, statType, nlPeriod, nlType, 
   ctryNlDataDF <- cbind(ctryNlDataDF, dataCol)
   
   #name the new column which is currently last with the yearmonth of the data
-  names(ctryNlDataDF)[ncol(ctryNlDataDF)] <- getCtryNlDataColName(nlPeriod = nlPeriod, nlStat = statType, nlType = nlType, configName = configName)
+  names(ctryNlDataDF)[ncol(ctryNlDataDF)] <- getCtryNlDataColName(nlPeriod = nlPeriod, nlStat = statType, nlType = nlType, configName = configName, removeGasFlares = removeGasFlares)
   
   #re-arrange the columns
   #read in all column names in the dataframe afresh
@@ -310,8 +310,12 @@ insertNlDataCol <- function (ctryNlDataDF, dataCol, statType, nlPeriod, nlType, 
 deleteNlDataCol <- function (ctryCode=NULL,
                              admLevel,
                              nlType,
+                             configName = pkgOptions(paste0("configName_", nlType)),
+                             multiTileStrategy = pkgOptions("multiTileStrategy"),
+                             multiTileMergeFun = pkgOptions("multiTileMergeFun"),
+                             removeGasFlares = pkgOptions("removeGasFlares"),
                              nlPeriod,
-                             statType,
+                             nlStat,
                              gadmVersion=pkgOptions("gadmVersion"),
                              gadmPolyType=pkgOptions("gadmPolyType"),
                              custPolyPath=NULL)
@@ -334,6 +338,10 @@ deleteNlDataCol <- function (ctryCode=NULL,
   ctryNlDataDF <- suppressMessages(getCtryNlData(ctryCode = ctryCode,
                                 admLevel = admLevel,
                                 nlTypes = nlType,
+                                configNames = configName,
+                                multiTileStrategy = multiTileStrategy,
+                                multiTileMergeFun = multiTileMergeFun,
+                                removeGasFlares = removeGasFlares,
                                 nlPeriods = getAllNlPeriods(nlTypes = nlType), 
                                 ignoreMissing = TRUE,
                                 gadmVersion = gadmVersion,
@@ -343,7 +351,12 @@ deleteNlDataCol <- function (ctryCode=NULL,
   #read in all column names in the dataframe
   cols <- names(ctryNlDataDF)
   
-  colName <- paste("NL", nlType, nlPeriod, toupper(statType), sep = "_")
+  #colName <- paste("NL", nlType, nlPeriod, toupper(statType), sep = "_")
+  
+  colName <- paste0("NL_", nlType, "_", toupper(configName),
+                    "-MTS", toupper(multiTileStrategy), "-", toupper(multiTileMergeFun),
+                    "-RGF", substr(as.character(removeGasFlares),1,1), "_",
+                    nlPeriod, "_", toupper(nlStat))
   
   #get only the named nightlight data column(s)
   nlDataColIdx <- grep(colName, cols)
@@ -427,7 +440,8 @@ saveCtryNlData <- function(ctryNlDataDF,
                                                    gadmVersion = gadmVersion,
                                                    gadmPolyType = gadmPolyType,
                                                    custPolyPath = custPolyPath),
-                     row.names = F,
+                     row.names = FALSE,
+                     fileEncoding = "UTF-8",
                      sep = ",")
 }
 
@@ -548,8 +562,6 @@ getCtryNlDataFname <- function(ctryCode=NULL,
 #' #get the full path to the file containing data for KEN counties
 #' getCtryNlDataFnamePath("KEN", "KEN_adm0")
 #'
-#' #@export only due to exploreData() shiny app
-#' @export
 getCtryNlDataFnamePath <- function(ctryCode=NULL,
                                    admLevel,
                                    gadmVersion=pkgOptions("gadmVersion"),
@@ -709,6 +721,9 @@ getCtryNlData <- function(ctryCode=NULL,
                           cropMaskMethod=pkgOptions("cropMaskMethod"),
                           extractMethod=pkgOptions("extractMethod"),
                           configNames,
+                          multiTileStrategy = pkgOptions("multiTileStrategy"),
+                          multiTileMergeFun = pkgOptions("multiTileMergeFun"),
+                          removeGasFlares = pkgOptions("removeGasFlares"),
                           source="local", ...)
 {
   if(source != "local")
@@ -836,7 +851,7 @@ getCtryNlData <- function(ctryCode=NULL,
       else
         a <- lapply(1:length(nlTypes), function(i) cbind(nlTypes[i], configNames[i], nlPeriods))
       
-      a <- data.frame(do.call("rbind", a), stringsAsFactors = F)
+      a <- data.frame(do.call("rbind", a), stringsAsFactors = F, row.names = NULL)
       
       if(is.list(nlStats) && length(nlStats) > 1 && all(sapply(2:length(nlStats), function(i) !is.list(nlStats[[i]]) && (grepl("=", nlStats[i]) || length(names(nlStats[i])) > 0))))
         nlStats <- list(nlStats)
@@ -860,6 +875,9 @@ getCtryNlData <- function(ctryCode=NULL,
                                                                      admLevel = admLevel,
                                                                      nlTypes =  x[1],
                                                                      configNames = x[2],
+                                                                     multiTileStrategy = multiTileStrategy,
+                                                                     multiTileMergeFun = multiTileMergeFun,
+                                                                     removeGasFlares = removeGasFlares,
                                                                      nlPeriods = x[3],
                                                                      nlStats = as.character(x[4]),
                                                                      gadmVersion = gadmVersion,
@@ -892,6 +910,9 @@ getCtryNlData <- function(ctryCode=NULL,
                         admLevels = admLevel,
                         nlTypes = nlTypes,
                         configNames = configNames,
+                        multiTileStrategy = multiTileStrategy,
+                        multiTileMergeFun = multiTileMergeFun,
+                        removeGasFlares = removeGasFlares,
                         nlPeriods = nlPeriods,
                         nlStats = nlStats,
                         gadmVersion = gadmVersion,
@@ -960,7 +981,7 @@ getCtryNlData <- function(ctryCode=NULL,
                               MARGIN =  1,
                               FUN = function(x)
                               {
-                                getCtryNlDataColName(nlType = x[1], nlPeriod = x[2], nlStat = x[3])
+                                getCtryNlDataColName(nlType = x[1], nlPeriod = x[2], nlStat = x[3], configName = configName, removeGasFlares = removeGasFlares)
                               })
       else
         existingCols <- NULL
@@ -979,6 +1000,9 @@ getCtryNlData <- function(ctryCode=NULL,
                                                        admLevel = admLevel,
                                                        nlTypes = x[1],
                                                        configNames = configNames,
+                                                       multiTileStrategy = multiTileStrategy,
+                                                       multiTileMergeFun = multiTileMergeFun,
+                                                       removeGasFlares = removeGasFlares,
                                                        nlPeriods = x[2],
                                                        nlStats = x[3],
                                                        gadmVersion = gadmVersion,
@@ -993,6 +1017,9 @@ getCtryNlData <- function(ctryCode=NULL,
                                                        admLevel = admLevel,
                                                        nlTypes = x[1],
                                                        configNames = x[2],
+                                                       multiTileStrategy = multiTileStrategy,
+                                                       multiTileMergeFun = multiTileMergeFun,
+                                                       removeGasFlares = removeGasFlares,
                                                        nlPeriods = x[3],
                                                        nlStats = x[4],
                                                        gadmVersion = gadmVersion,
@@ -1006,9 +1033,12 @@ getCtryNlData <- function(ctryCode=NULL,
         existingCols <- apply(nlPeriodStats[existnlPeriodStats,],
                               1,
                               function(x) getCtryNlDataColName(nlPeriod = x[3],
+                                                               nlStat = x[4],
                                                                nlType = x[1],
                                                                configName = x[2],
-                                                               nlStat = x[4]))
+                                                               multiTileStrategy = multiTileStrategy,
+                                                               multiTileMergeFun = multiTileMergeFun,
+                                                               removeGasFlares = removeGasFlares))
         
         message(Sys.time(), ": All stats exist")
       }
@@ -1061,6 +1091,10 @@ getCtryNlData <- function(ctryCode=NULL,
 #' @param nlType character vector The type of nightlight
 #' 
 #' @param configName character the type of raster being processed
+#' 
+#' @param multiTileStrategy character How to handle multiple tiles per nlPeriod
+#' 
+#' @param removeGasFlares logical Whether to perform gas flare removal pre-processing
 #'
 #' @return character string
 #'
@@ -1068,7 +1102,7 @@ getCtryNlData <- function(ctryCode=NULL,
 #' 
 #' Rnightlights:::getCtryNlDataColName("201612", "sum", nlType="VIIRS.M")
 #'   
-getCtryNlDataColName <- function(nlPeriod, nlStat, nlType, configName)
+getCtryNlDataColName <- function(nlPeriod, nlStat, nlType, configName, multiTileStrategy = "all", multiTileMergeFun="mean", removeGasFlares = TRUE)
 {
   if(missing(nlPeriod))
     stop(Sys.time(), ": Missing required parameter nlPeriod")
@@ -1088,7 +1122,7 @@ getCtryNlDataColName <- function(nlPeriod, nlStat, nlType, configName)
   if (!allValid(nlStat, validNlStats))
     stop(Sys.time(), ": Invalid/unsupported nlStat detected")
   
-  colName <- paste0("NL_", nlType, "_", toupper(configName), "_")
+  colName <- paste0("NL_", nlType, "_", toupper(configName), "-MTS", toupper(multiTileStrategy), "-", toupper(multiTileMergeFun), "-RGF", substr(as.character(removeGasFlares),1,1), "_")
   
   colName <- paste0(colName, sapply(nlPeriod, function(x) paste0(x, "_", toupper(nlStat))))
   
@@ -1183,6 +1217,9 @@ existsCtryNlData <- function(ctryCode=NULL,
                              admLevel,
                              nlTypes,
                              configNames,
+                             multiTileStrategy = pkgOptions("multiTileStrategy"),
+                             multiTileMergeFun = pkgOptions("multiTileMergeFun"),
+                             removeGasFlares = pkgOptions("removeGasFlares"),
                              nlPeriods,
                              nlStats,
                              gadmVersion=pkgOptions("gadmVersion"),
@@ -1233,13 +1270,19 @@ existsCtryNlData <- function(ctryCode=NULL,
                              gadmVersion = gadmVersion,
                              gadmPolyType = gadmPolyType,
                              custPolyPath = custPolyPath),
-      nrow=1, header=TRUE)
+      nrow=1, header=TRUE, check.names = FALSE, encoding = "UTF-8")
   else
     dta <- NULL
   
   hdrs <- names(dta)
   
-  searchCols <- paste("NL", toupper(nlTypes), toupper(configNames), toupper(nlPeriods), toupper(nlStats), sep="_")
+  searchCols <- paste("NL", toupper(nlTypes),
+                      paste(toupper(configNames),
+                            paste0("MTS", toupper(multiTileStrategy)),
+                            toupper(multiTileMergeFun),
+                            paste0("RGF", toupper(substr(as.character(removeGasFlares),1,1))), sep = "-"),
+                      toupper(nlPeriods),
+                      toupper(nlStats), sep="_")
   
   return(unlist(lapply(searchCols, function(x) length(grep(pattern = x, x = hdrs, ignore.case = T))>0)))
 }
@@ -1274,6 +1317,9 @@ allExistsCtryNlData <- function(ctryCodes,
                                 admLevels,
                                 nlTypes,
                                 configNames,
+                                multiTileStrategy = pkgOptions("multiTileStrategy"),
+                                multiTileMergeFun = pkgOptions("multiTileMergeFun"),
+                                removeGasFlares = pkgOptions("removeGasFlares"),
                                 nlPeriods,
                                 nlStats,
                                 gadmVersion=pkgOptions("gadmVersion"),
@@ -1288,6 +1334,9 @@ allExistsCtryNlData <- function(ctryCodes,
                               nlPeriods = nlPeriods,
                               nlTypes = nlTypes,
                               configNames = configNames,
+                              multiTileStrategy = multiTileStrategy,
+                              multiTileMergeFun = multiTileMergeFun,
+                              removeGasFlares = removeGasFlares,
                               nlStats = nlStats,
                               gadmVersion = gadmVersion,
                               gadmPolyType = gadmPolyType,

@@ -35,6 +35,19 @@ getWorldMap <- function()
   get(x = "map", envir = .RnightlightsEnv)
 }
 
+getCRS <- function()
+{
+  if(!exists(".RnightlightsEnv"))
+    .RnightlightsEnv <<- new.env(parent = emptyenv())
+  
+  if(!exists(x = "CRS", envir = .RnightlightsEnv))
+  {
+    assign(x = "CRS", value = "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0 +no_defs", envir = .RnightlightsEnv)
+  }
+  
+  get(x = "CRS", envir = .RnightlightsEnv)
+}
+
 .RnightlightsEnv <- new.env(parent = emptyenv())
 
 
@@ -58,7 +71,7 @@ getWorldMap <- function()
 
   #projection system to use
   #still needed?
-  wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+  #.RnightlightsEnv$wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0 +no_defs"
   
   #try to speed up the code
   #does this work?
@@ -91,9 +104,6 @@ getWorldMap <- function()
   #     called when gc() runs which we do not want to happen for nlCleanup()
   #     especially since we do call gc() in some instances.
 
-  map <- NULL
-  shpTopLyrName <- NULL
-  wgs84 <- NULL
   nlTiles <- NULL
   tilesSpPolysDFs <- NULL
   

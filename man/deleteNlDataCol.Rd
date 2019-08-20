@@ -4,7 +4,11 @@
 \alias{deleteNlDataCol}
 \title{Delete an aggregate nightlight data column in a country nightlights dataframe}
 \usage{
-deleteNlDataCol(ctryCode = NULL, admLevel, nlType, nlPeriod, statType,
+deleteNlDataCol(ctryCode = NULL, admLevel, nlType,
+  configName = pkgOptions(paste0("configName_", nlType)),
+  multiTileStrategy = pkgOptions("multiTileStrategy"),
+  multiTileMergeFun = pkgOptions("multiTileMergeFun"),
+  removeGasFlares = pkgOptions("removeGasFlares"), nlPeriod, nlStat,
   gadmVersion = pkgOptions("gadmVersion"),
   gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
 }
@@ -17,13 +21,13 @@ deleteNlDataCol(ctryCode = NULL, admLevel, nlType, nlPeriod, statType,
 
 \item{nlPeriod}{the nlPeriod that the dataCol belongs to}
 
-\item{statType}{the stat which produced the dataCol vector}
-
 \item{gadmVersion}{The GADM version to use}
 
 \item{gadmPolyType}{The format of polygons to download from GADM}
 
 \item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
+
+\item{statType}{the stat which produced the dataCol vector}
 }
 \description{
 Delete an aggregate nightlight data column in a country nightlights dataframe. The number
