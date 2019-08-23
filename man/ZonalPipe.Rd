@@ -4,8 +4,8 @@
 \alias{ZonalPipe}
 \title{Create a zonal file if it does not exist and calculate the zonal stats}
 \usage{
-ZonalPipe(ctryCode, admLevel, ctryPoly, path.in.shp, path.in.r, path.out.r,
-  path.out.shp, zone.attribute, nlStats,
+ZonalPipe(ctryCode, admLevel, ctryPoly, nlType, configName, path.in.shp,
+  path.in.r, path.out.r, path.out.shp, zone.attribute, nlStats,
   gadmVersion = pkgOptions("gadmVersion"),
   gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
 }

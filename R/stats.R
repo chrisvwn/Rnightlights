@@ -146,12 +146,14 @@ myZonal <- function (rast, nlType, configName, zone, nlStats, digits = 0, retVal
     rastVals <- raster::getValuesBlock(rast, row=tr$row[i], nrows=tr$nrows[i])
     zoneVals <- raster::getValuesBlock(zone, row=tr$row[i], nrows=tr$nrows[i])
 
-    colrowVals <- stats::setNames(expand.grid(tr$row[i]:(tr$row[i]+tr$nrows[i]-1), 1:rast@ncols), c("cols","rows"))
-
-    extent <- raster::extent(rast)
-    lonlatVals <- stats::setNames(expand.grid(seq(extent@xmin,extent@xmax,(extent@xmax-extent@xmin)/(rast@ncols-1)),
-                          seq(extent@ymin,extent@ymax,(extent@ymax-extent@ymin)/(tr$nrows[i]-1))), c("lons","lats"))
+    lonlatVals <- setNames(as.data.frame(raster::xyFromCell(object = rast, cell = start:end)), c("lons", "lats"))
     
+    colrowVals <- setNames(as.data.frame(raster::rowColFromCell(object = rast, cell = start:end)), c("rows", "cols"))
+    
+    colrowVals <- colrowVals[ ,c(2,1)]
+    
+    #modifications e.g. NA removal must be done now
+    #as we cannot modify 
     if(grepl(x = nlType, pattern = "OLS"))
     {
       # source: https://ngdc.noaa.gov/eog/gcv4_readme.txt
@@ -192,7 +194,7 @@ myZonal <- function (rast, nlType, configName, zone, nlStats, digits = 0, retVal
     } else if(grepl(x = nlType, pattern = "VIIRS"))
     {
       #convert negative values to NA
-      rastVals[rastVals < 0] <- NA      
+      rastVals[rastVals < 0] <- NA
     }
 
     #get all pixels in zone 0 which should be
@@ -237,19 +239,10 @@ myZonal <- function (rast, nlType, configName, zone, nlStats, digits = 0, retVal
   close(pb)
   
   #merge the zone and raster ffvectors into an ffdf
-  rDT <- ff::ffdf(zones, cols, rows, vals, lons, lats)
+  rDT <- ff::ffdf(zones, cols, rows, lons, lats, vals)
 
   message(Sys.time(), ": Calculating nlStats ")
   
-  if(length(unique(rDT$zones)) == 1)
-  {
-    #no longer required. fixed bug in ffdfdply when zone was length 1
-    dta <- data.table::as.data.table(rDT)
-    
-    result <- eval(parse(text = funs))
-  }
-  else
-  {
   #calculate the nlStats on the ffdf
   #hard coded the batchbytes which is the size of the
   #data to load into memory. Currently set at 1% of an 8GB memory
@@ -258,7 +251,7 @@ myZonal <- function (rast, nlType, configName, zone, nlStats, digits = 0, retVal
   result <- ffbase::ffdfdply(x=rDT,
                              split=as.character(zones),
                              trace=TRUE,
-                             BATCHBYTES = 80.85*2^20, #try approx 1% of RAM
+                             BATCHBYTES = getBatchBytes(),
                              FUN = function(dta){
                                ## This happens in RAM - containing **several** split 
                                #elements so here we can use data.table which works 
@@ -271,9 +264,8 @@ myZonal <- function (rast, nlType, configName, zone, nlStats, digits = 0, retVal
                                as.data.frame(result)
                                
                              })
-  }
   
-  result <- as.data.table(result)
+  result <- data.table::as.data.table(result)
   
   #count cols with nlStat in them
   nlStatColCounts <- sapply(funNames, function(funName) length(grep(paste0("^", funName,"\\.*"), names(result))))
@@ -570,7 +562,7 @@ fnAggRadGdal <- function(ctryCode,
                                            nlPeriod = nlPeriod,
                                            gadmVersion = gadmVersion,
                                            gadmPolyType = gadmPolyType,
-                                           custPolyPath = custPolyPath) #or path.in.r<-list.files("/home/, pattern=".tif$")
+                                           custPolyPath = custPolyPath)
   
   if(is.null(custPolyPath))
     path.out.r<- file.path(getNlDir("dirZonals"), paste0("NL_ZONAL_",
@@ -610,8 +602,10 @@ fnAggRadGdal <- function(ctryCode,
     paste0("GID_IDX")
   }
   
-  lyrName <- admLevel #getCtryShpLowestLyrNames(ctryCode)
+  lyrName <- admLevel
   
+  #which col to use as the unique id. For GADM 3.6
+  #use the col we generated at download
   lyrIDCol <- if(is.null(custPolyPath))
   {
     if(gadmVersion == "2.8")
@@ -644,10 +638,13 @@ fnAggRadGdal <- function(ctryCode,
   
   ctryPolyData <- ctryPolyData[order(ctryPolyData[,lyrIDCol]),]
   
-  #if there is only the country adm level i.e. no lower adm levels than the country adm level then we only have 1 row each but IDs may not match as seen with ATA. treat differently
-  #since we do not have IDs to merge by, we simply cbind the columns and return column 2
+  #if there is only the country adm level i.e. no lower adm levels than
+  #    the country adm level then we only have 1 row each but IDs may not
+  #    match as seen with ATA. treat differently
+  #    since we do not have IDs to merge by, we simply cbind the columns
+  #    and return column 2
 
-  if (grepl("^ID_0$",lyrIDCol))
+  if (grepl("^ID_0$", lyrIDCol))
   {
     sumAvgRad <- cbind(ctryPolyData$ID_0, sumAvgRad[sumAvgRad$z != 0, ])
   }
@@ -741,7 +738,7 @@ fnAggRadRast <- function(ctryPoly, ctryRastCropped, nlType, configName, nlStats,
                               .export = c("masqOLS", "masqVIIRS", nlStatNames),
                               .packages = c("raster"),
                               .options.snow = list(progress=progress)) %dopar% {
-   # for(i in 1:nrow(ctryPoly@data)){
+    # for(i in 1:nrow(ctryPoly@data)){
                                 
                                   options(stringsAsFactors = FALSE)
                                 

@@ -4,7 +4,11 @@
 \alias{fnAggRadGdal}
 \title{Calculate zonal statistics using GDAL}
 \usage{
-fnAggRadGdal(ctryCode, admLevel, ctryPoly, nlType, configName, nlPeriod,
+fnAggRadGdal(ctryCode, admLevel, ctryPoly, nlType,
+  configName = pkgOptions(paste0("configName_", nlType)),
+  multiTileStrategy = pkgOptions("multiTileStrategy"),
+  multiTileMergeFun = pkgOptions("multiTileMergeFun"),
+  removeGasFlares = pkgOptions("removeGasFlares"), nlPeriod,
   nlStats = pkgOptions("nlStats"),
   gadmVersion = pkgOptions("gadmVersion"),
   gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)

@@ -122,12 +122,26 @@ masqOLS <- function(shp, rast, i, retVal="colrowval", configName)
     rowVals <- NULL
     colVals <- NULL
     
-    #Convert cropped raster into a vector
-    colrows <- expand.grid(1:ncol(inner), 1:nrow(inner))
+    #get the local rows and cols
+    #colrowsLocal <- expand.grid(1:ncol(inner), 1:nrow(inner))
     
-    #Specify coordinates
-    lonlats <- expand.grid(seq(extent@xmin,extent@xmax,(extent@xmax-extent@xmin)/(ncol(inner)-1)),
-                          seq(extent@ymin,extent@ymax,(extent@ymax-extent@ymin)/(nrow(inner)-1)))
+    ext <- raster::extent(inner) #extract the cropped raster extent
+    
+    #get the cells that this polygon represent in the ctryPolygon
+    xyrast <- raster::cellFromXY(object = rast, xyFromCell(inner, 1:ncell(inner)))
+    
+    #get the rows and cols this polygon represents in the ctryPolygon
+    colrows <- raster::rowColFromCell(object = rast, cell = xyrast)
+    
+    colrows <- colrows[ ,c(2,1)]
+    
+    #Get the cell coordinates
+    lonlats <- raster::xyFromCell(object = rast, cell = xyrast)
+    
+    rm(xyrast)
+    
+    #xyFromCell gives the center of the cell. Subtract 1/2 res to get top-left
+    #lonlatsTopLeft <- lonlats - raster::res(inner)/2
     
     vals <- as.vector(inner)
   } else
@@ -174,7 +188,9 @@ masqOLS <- function(shp, rast, i, retVal="colrowval", configName)
   #vals[vals < 0] <- NA
   
   #Convert raster into vector
-  data <- stats::setNames(data.frame(colrows, lonlats, vals), c("cols","rows","lons","lats","vals"))
+  dta <- stats::setNames(data.frame(colrows, lonlats, vals), c("cols","rows","lons","lats","vals"))
 
-  return(data)
+  dta <- dta[!is.na(dta$vals), ]
+  
+  return(dta)
 }

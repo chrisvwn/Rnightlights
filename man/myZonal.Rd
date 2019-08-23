@@ -4,8 +4,8 @@
 \alias{myZonal}
 \title{Calculate zonal statistics. Used internally}
 \usage{
-myZonal(rast, zone, nlStats, digits = 0, retVal = NULL, na.rm = TRUE,
-  ...)
+myZonal(rast, nlType, configName, zone, nlStats, digits = 0,
+  retVal = NULL, na.rm = TRUE, ...)
 }
 \arguments{
 \item{rast}{the country raster}
