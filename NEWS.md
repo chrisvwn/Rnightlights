@@ -3,12 +3,20 @@
 ### ChangeLog
 #### v0.2.4
 ##### *Bug Fixes*
-This version does not fix any bugs. Only a workaround for a missing layer in at least one shapefile is introduced by adding a parameter *gadmPolyType*. More on that in the *New features* section below.
+This version does not fix any bugs. Only a workaround for a missing layer in at least one shapefile (IDN) is introduced by adding a parameter *gadmPolyType*. More on that in the *New features* section below.
 
 ##### *New features*
 This version introduces a few new features:
 
-- **`gadmPolyType`** is added as a parameter to give the option to allow the download one of the various formats of polygon available on GADM i.e.:
+- **`Enhanced nlStat custom function data`** Custom nlStat functions can now receive apart from pixel values also colrow (column and row) and lonlat (longitude and latitude) values. The colrow values are in reference to the whole country/custom polygon. Conceptually, this should allow for more complex spatial aware custom functions in addition to the normal aggregations. In addition to the ability to return multiple values this may add the power of functionality. Higher order functions may require multiple passes which right now requires a good understanding of the package and some manual custom function chaining. Maybe in future the ability to perform multiple passes/function chaining passing the output of functions to higher order functions will be added. An example is given to show how these values might be useful.
+
+- **`mergeTileStrategy`** is added to specify how to deal with nlPeriods where there are more than one tile available. Currently this only happens with OLS.Y where there are tiles from 2 satellites at different points. Before the introduction of this the package just used the first tile. The default now is to merge the tiles averaging pixel values. One can choose to use the first tile, or last tile only or if there are more than 2 to select the indices to merge.
+
+- **`mergeTileFun`** adds the idea that apart from merging by taking the mean of pixels you can choose a different way to merge them by specifying the function to use. This is not in use currently.
+
+- **`removeGasFlares`** (finally) adds the ability to apply gasflare removal for areas that are known to have gasflares. The gasflare polygons used are from NOAA, however, they may be dated (created 2009). If you might know of a more recent gasflare polygon dataset please do let me know.
+
+- **`gadmPolyType`** is added as a parameter to getCtryNlData give the option to allow the download one of the various formats of polygon available on GADM i.e.:
 
     + gpkgZip (gpkg zip),
     + kmlZip (KML zip),
@@ -71,12 +79,6 @@ This version introduces a few new features:
             noise was identified and replaced with values of zero. Data values
             range from 1-63. Areas with zero cloud-free observations are represented
             by the value 255.
-
-##### *Bugs *
-- A bug in `getCtryNlData` caused `admLevel=country` to error out [issue #10](https://github.com/chrisvwn/Rnightlights/issues/10). This is fixed.
-- A possible change in the download policy of GADM causes `downloadMethod=aria` to fail for polygon downloads. This version forces polygon downloads to use normal download methods.
-- A bug was found in the extraction of `VIIRS.Y` raster tiles [issue #12](https://github.com/chrisvwn/Rnightlights/issues/12). This was fixed.
-- A change in GADM downloads that only allows https connections is made.
 
 ##### *New features*
 - This version introduces the possibility to have `nlStat` functions return multi-value outputs. Prior to this each function could only return a scalar per (sub-)polygon/zone.
