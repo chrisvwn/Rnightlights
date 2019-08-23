@@ -5,7 +5,8 @@
 \title{Insert an aggregate nightlight data column in a country nightlights dataframe}
 \usage{
 insertNlDataCol(ctryNlDataDF, dataCol, statType, nlPeriod, nlType,
-  configName)
+  configName, multiTileStrategy, multiTileMergeFun,
+  removeGasFlares = TRUE)
 }
 \arguments{
 \item{ctryNlDataDF}{dataframe with the country data to save}
