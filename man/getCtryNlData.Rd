@@ -58,6 +58,12 @@ on the satellite raster}
 
 \item{configNames}{character the types of raster being processed}
 
+\item{multiTileStrategy}{character How to handle multiple tiles per nlPeriod}
+
+\item{multiTileMergeFun}{character The function to use to merge tiles}
+
+\item{removeGasFlares}{logical Whether to perform gas flare removal pre-processing}
+
 \item{source}{"local" or "remote" Whether to download and process the
 data locally or to download the pre-processed data from a remote 
 source/repo}

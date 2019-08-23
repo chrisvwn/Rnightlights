@@ -190,6 +190,8 @@ downloadNlTilesVIIRS <- function(nlPeriod,
 #' @param nlType A character string of nlType
 #' 
 #' @param configName character the type of raster being processed
+#' 
+#' @param multiTileStrategy character How to handle multiple tiles per nlPeriod
 #'
 #' @return TRUE/FALSE Whether the download was successful
 #'

@@ -104,12 +104,6 @@ getCRS <- function()
   #     called when gc() runs which we do not want to happen for nlCleanup()
   #     especially since we do call gc() in some instances.
 
-  nlTiles <- NULL
-  tilesSpPolysDFs <- NULL
-  
-  #remove any global vars we created in .onAttach
-  suppressWarnings(rm(map, shpTopLyrName, wgs84, nlTiles, tilesSpPolysDFs))
-  
   #cleanup by removing any global vars created etc
   nlCleanup()
   

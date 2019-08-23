@@ -20,6 +20,12 @@ existsCtryNlData(ctryCode = NULL, admLevel, nlTypes, configNames,
 
 \item{configNames}{character the types of raster being processed}
 
+\item{multiTileStrategy}{character How to handle multiple tiles per nlPeriod}
+
+\item{multiTileMergeFun}{character The function to use to merge tiles}
+
+\item{removeGasFlares}{logical Whether to perform gas flare removal pre-processing}
+
 \item{nlPeriods}{character The nlPeriods}
 
 \item{nlStats}{character The nlStats to check for}

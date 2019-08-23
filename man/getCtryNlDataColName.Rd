@@ -19,6 +19,8 @@ getCtryNlDataColName(nlPeriod, nlStat, nlType, configName,
 
 \item{multiTileStrategy}{character How to handle multiple tiles per nlPeriod}
 
+\item{multiTileMergeFun}{character The function to use to merge tiles}
+
 \item{removeGasFlares}{logical Whether to perform gas flare removal pre-processing}
 }
 \value{

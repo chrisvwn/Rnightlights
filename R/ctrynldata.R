@@ -204,13 +204,19 @@ createCtryNlDataDF <- function(ctryCode=NULL,
 #' 
 #' @param dataCol the numeric vector to be inserted as a column
 #' 
-#' @param statType the stat which produced the dataCol vector
+#' @param nlStat the stat which produced the dataCol vector
 #' 
 #' @param nlPeriod the nlPeriod that the dataCol belongs to
 #' 
 #' @param nlType the type of nightlight data
 #' 
 #' @param configName character the type of raster being processed
+#' 
+#' @param multiTileStrategy character How to handle multiple tiles per nlPeriod
+#' 
+#' @param multiTileMergeFun character The function to use to merge tiles
+#' 
+#' @param removeGasFlares logical Whether to perform gas flare removal pre-processing
 #'
 #' @return the updated dataframe
 #'
@@ -226,7 +232,7 @@ createCtryNlDataDF <- function(ctryCode=NULL,
 #'     dataCol, "mean", "2012", "OLS.Y")
 #'     }
 #'
-insertNlDataCol <- function (ctryNlDataDF, dataCol, statType, nlPeriod, nlType, configName, multiTileStrategy, multiTileMergeFun, removeGasFlares = TRUE)
+insertNlDataCol <- function (ctryNlDataDF, dataCol, nlStat, nlPeriod, nlType, configName, multiTileStrategy, multiTileMergeFun, removeGasFlares = TRUE)
 {
   if(missing(ctryNlDataDF))
     stop(Sys.time(), ": Missing required parameter ctryNlDataDF")
@@ -234,8 +240,8 @@ insertNlDataCol <- function (ctryNlDataDF, dataCol, statType, nlPeriod, nlType, 
   if(missing(dataCol))
     stop(Sys.time(), ": Missing required parameter dataCol")
   
-  if(missing(statType))
-    stop(Sys.time(), ": Missing required parameter statType")
+  if(missing(nlStat))
+    stop(Sys.time(), ": Missing required parameter nlStat")
   
   if(missing(nlPeriod))
     stop(Sys.time(), ": Missing required parameter nlPeriod")
@@ -248,7 +254,7 @@ insertNlDataCol <- function (ctryNlDataDF, dataCol, statType, nlPeriod, nlType, 
   ctryNlDataDF <- cbind(ctryNlDataDF, dataCol)
   
   #name the new column which is currently last with the yearmonth of the data
-  names(ctryNlDataDF)[ncol(ctryNlDataDF)] <- getCtryNlDataColName(nlPeriod = nlPeriod, nlStat = statType, nlType = nlType, configName = configName, removeGasFlares = removeGasFlares)
+  names(ctryNlDataDF)[ncol(ctryNlDataDF)] <- getCtryNlDataColName(nlPeriod = nlPeriod, nlStat = nlStat, nlType = nlType, configName = configName, removeGasFlares = removeGasFlares)
   
   #re-arrange the columns
   #read in all column names in the dataframe afresh
@@ -284,9 +290,17 @@ insertNlDataCol <- function (ctryNlDataDF, dataCol, statType, nlPeriod, nlType, 
 #' 
 #' @param nlType  the type of nightlight data
 #' 
+#' @param configName character the type of raster being processed
+#' 
+#' @param multiTileStrategy character How to handle multiple tiles per nlPeriod
+#' 
+#' @param multiTileMergeFun character The function to use to merge tiles
+#' 
+#' @param removeGasFlares logical Whether to perform gas flare removal pre-processing
+#'  
 #' @param nlPeriod the nlPeriod that the dataCol belongs to
 #' 
-#' @param statType the stat which produced the dataCol vector
+#' @param nlStat the stat which produced the dataCol vector
 #' 
 #' @param gadmVersion The GADM version to use
 #' 
@@ -332,8 +346,8 @@ deleteNlDataCol <- function (ctryCode=NULL,
   if(missing(nlPeriod))
     stop(Sys.time(), ": Missing required parameter nlPeriod")
   
-  if(missing(statType))
-    stop(Sys.time(), ": Missing required parameter statType")
+  if(missing(nlStat))
+    stop(Sys.time(), ": Missing required parameter nlStat")
   
   ctryNlDataDF <- suppressMessages(getCtryNlData(ctryCode = ctryCode,
                                 admLevel = admLevel,
@@ -351,7 +365,7 @@ deleteNlDataCol <- function (ctryCode=NULL,
   #read in all column names in the dataframe
   cols <- names(ctryNlDataDF)
   
-  #colName <- paste("NL", nlType, nlPeriod, toupper(statType), sep = "_")
+  #colName <- paste("NL", nlType, nlPeriod, toupper(nlStat), sep = "_")
   
   colName <- paste0("NL_", nlType, "_", toupper(configName),
                     "-MTS", toupper(multiTileStrategy), "-", toupper(multiTileMergeFun),
@@ -560,7 +574,7 @@ getCtryNlDataFname <- function(ctryCode=NULL,
 #'
 #' @examples
 #' #get the full path to the file containing data for KEN counties
-#' getCtryNlDataFnamePath("KEN", "KEN_adm0")
+#' Rnightlights:::getCtryNlDataFnamePath("KEN", "KEN_adm0")
 #'
 getCtryNlDataFnamePath <- function(ctryCode=NULL,
                                    admLevel,
@@ -652,6 +666,12 @@ getCtryNlDataFnamePath <- function(ctryCode=NULL,
 #'     on the satellite raster
 #'     
 #' @param configNames character the types of raster being processed
+#' 
+#' @param multiTileStrategy character How to handle multiple tiles per nlPeriod
+#' 
+#' @param multiTileMergeFun character The function to use to merge tiles
+#' 
+#' @param removeGasFlares logical Whether to perform gas flare removal pre-processing
 #' 
 #' @param source "local" or "remote" Whether to download and process the
 #'     data locally or to download the pre-processed data from a remote 
@@ -981,7 +1001,7 @@ getCtryNlData <- function(ctryCode=NULL,
                               MARGIN =  1,
                               FUN = function(x)
                               {
-                                getCtryNlDataColName(nlType = x[1], nlPeriod = x[2], nlStat = x[3], configName = configName, removeGasFlares = removeGasFlares)
+                                getCtryNlDataColName(nlType = x[1], nlPeriod = x[2], nlStat = x[3], configName = configNames, removeGasFlares = removeGasFlares)
                               })
       else
         existingCols <- NULL
@@ -1094,6 +1114,8 @@ getCtryNlData <- function(ctryCode=NULL,
 #' 
 #' @param multiTileStrategy character How to handle multiple tiles per nlPeriod
 #' 
+#' @param multiTileMergeFun character The function to use to merge tiles
+#' 
 #' @param removeGasFlares logical Whether to perform gas flare removal pre-processing
 #'
 #' @return character string
@@ -1196,6 +1218,12 @@ existsCtryNlDataFile <- function(ctryCode=NULL,
 #' @param nlTypes character The nlTypes
 #' 
 #' @param configNames character the types of raster being processed
+#' 
+#' @param multiTileStrategy character How to handle multiple tiles per nlPeriod
+#' 
+#' @param multiTileMergeFun character The function to use to merge tiles
+#' 
+#' @param removeGasFlares logical Whether to perform gas flare removal pre-processing
 #'
 #' @param nlPeriods character The nlPeriods
 #' 
@@ -1300,6 +1328,12 @@ existsCtryNlData <- function(ctryCode=NULL,
 #' @param nlTypes A character vector of nlTypes to filter by
 #' 
 #' @param configNames character the type of raster being processed
+#' 
+#' @param multiTileStrategy character How to handle multiple tiles per nlPeriod
+#' 
+#' @param multiTileMergeFun character The function to use to merge tiles
+#' 
+#' @param removeGasFlares logical Whether to perform gas flare removal pre-processing
 #' 
 #' @param nlPeriods A character vector of nlPeriods to filter by 
 #' 

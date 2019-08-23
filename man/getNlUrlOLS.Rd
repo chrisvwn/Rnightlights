@@ -8,6 +8,8 @@ getNlUrlOLS(nlPeriod, configName = pkgOptions("configName_OLS.Y"))
 }
 \arguments{
 \item{nlPeriod}{The nlPeriod of the tile for which to return the tile download URL}
+
+\item{configName}{character the type of raster being processed}
 }
 \value{
 character string Url of the OLS tile file

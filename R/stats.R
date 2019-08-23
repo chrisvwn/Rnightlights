@@ -56,6 +56,10 @@ validNlStats <- function(nlStats)
 #'     \url{http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/}
 #'
 #' @param rast the country raster
+#' 
+#' @param nlType the nlType of interest
+#' 
+#' @param configName character the type of raster being processed 
 #'
 #' @param zone the zonal country polygon layer
 #'
@@ -146,9 +150,9 @@ myZonal <- function (rast, nlType, configName, zone, nlStats, digits = 0, retVal
     rastVals <- raster::getValuesBlock(rast, row=tr$row[i], nrows=tr$nrows[i])
     zoneVals <- raster::getValuesBlock(zone, row=tr$row[i], nrows=tr$nrows[i])
 
-    lonlatVals <- setNames(as.data.frame(raster::xyFromCell(object = rast, cell = start:end)), c("lons", "lats"))
+    lonlatVals <- stats::setNames(as.data.frame(raster::xyFromCell(object = rast, cell = start:end)), c("lons", "lats"))
     
-    colrowVals <- setNames(as.data.frame(raster::rowColFromCell(object = rast, cell = start:end)), c("rows", "cols"))
+    colrowVals <- stats::setNames(as.data.frame(raster::rowColFromCell(object = rast, cell = start:end)), c("rows", "cols"))
     
     colrowVals <- colrowVals[ ,c(2,1)]
     
@@ -315,7 +319,11 @@ myZonal <- function (rast, nlType, configName, zone, nlStats, digits = 0, retVal
 #' @param admLevel The country admin level of interest
 #'
 #' @param ctryPoly the SpatialPolygonsDataFrame country polygon to process
-#'
+#' 
+#' @param nlType character The nlType of interest
+#' 
+#' @param configName character the type of raster being processed
+#' 
 #' @param path.in.shp The path to the country shapefile
 #'
 #' @param path.in.r The path to the raster tile
@@ -493,6 +501,12 @@ ZonalPipe <- function (ctryCode,
 #' @param nlType the nlType of interest
 #' 
 #' @param configName character the type of raster being processed
+#' 
+#' @param multiTileStrategy character How to handle multiple tiles per nlPeriod
+#' 
+#' @param multiTileMergeFun character The function to use to merge tiles
+#' 
+#' @param removeGasFlares logical Whether to perform gas flare removal pre-processing
 #'
 #' @param nlPeriod character string the nlPeriod to be processed
 #' 

@@ -64,6 +64,8 @@ validNlConfigName <- function(configName, nlType)
 #' Download the listed tiles for a given nlType in a given nlPeriod
 #'
 #' @param nlType character The nightlight type
+#' 
+#' @param configName character the type of raster being processed
 #'
 #' @param nlPeriod character The nlPeriod to process in the appropriate 
 #'     format
@@ -71,7 +73,9 @@ validNlConfigName <- function(configName, nlType)
 #' @param tileList integer vector or character vector of digits containing 
 #'     valid tile numbers as obtained by tileName2Idx for VIIRS. Ignore for 
 #'     nlType=="OLS"
-#'
+#'     
+#' @param multiTileStrategy character How to handle multiple tiles per nlPeriod
+#' 
 #' @return TRUE/FALSE if the download was successful
 #' 
 #' @examples

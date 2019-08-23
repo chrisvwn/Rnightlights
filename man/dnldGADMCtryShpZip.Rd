@@ -16,6 +16,8 @@ dnldGADMCtryShpZip(ctryCode, gadmVersion = pkgOptions("gadmVersion"),
 \item{gadmPolyType}{The format of polygons to download from GADM}
 
 \item{downloadMethod}{The method used to download polygons}
+
+\item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
 }
 \value{
 TRUE/FALSE Success/Failure of the download
@@ -23,4 +25,10 @@ TRUE/FALSE Success/Failure of the download
 \description{
 Download a country's polygon RDS files from \url{http://gadm.org} and
     combine them into one RDS to match other polygon downloads
+}
+\examples{
+\dontrun{
+ Rnightlights:::dnldCtryShpZip("KEN", "3.6", "shpZip")
+}
+
 }

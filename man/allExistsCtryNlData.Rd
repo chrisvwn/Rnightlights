@@ -20,6 +20,12 @@ allExistsCtryNlData(ctryCodes, admLevels, nlTypes, configNames,
 
 \item{configNames}{character the type of raster being processed}
 
+\item{multiTileStrategy}{character How to handle multiple tiles per nlPeriod}
+
+\item{multiTileMergeFun}{character The function to use to merge tiles}
+
+\item{removeGasFlares}{logical Whether to perform gas flare removal pre-processing}
+
 \item{nlPeriods}{A character vector of nlPeriods to filter by}
 
 \item{nlStats}{The stats to filter by}

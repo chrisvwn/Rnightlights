@@ -10,6 +10,10 @@ myZonal(rast, nlType, configName, zone, nlStats, digits = 0,
 \arguments{
 \item{rast}{the country raster}
 
+\item{nlType}{the nlType of interest}
+
+\item{configName}{character the type of raster being processed}
+
 \item{zone}{the zonal country polygon layer}
 
 \item{nlStats}{a character list of statistics to calculate}

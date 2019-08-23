@@ -7,7 +7,9 @@
 setDataVersion(path = getNlDataPath(), version)
 }
 \arguments{
-\item{to}{The folder to add the README file to}
+\item{path}{The folder to add the README file to}
+
+\item{version}{The version of the package}
 }
 \value{
 None

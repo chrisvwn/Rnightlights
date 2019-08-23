@@ -25,6 +25,12 @@ which to calculate stats}
 
 \item{configNames}{character the types of raster being processed}
 
+\item{multiTileStrategy}{character How to handle multiple tiles per nlPeriod}
+
+\item{multiTileMergeFun}{character The function to use to merge tiles}
+
+\item{removeGasFlares}{logical Whether to perform gas flare removal pre-processing}
+
 \item{nlPeriods}{the nlPeriods of interest}
 
 \item{nlStats}{the statistics to calculate. If not provided will calculate

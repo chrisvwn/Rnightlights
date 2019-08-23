@@ -29,6 +29,6 @@ Construct the full path to save the file containing the country data. Note
 }
 \examples{
 #get the full path to the file containing data for KEN counties
-getCtryNlDataFnamePath("KEN", "KEN_adm0")
+Rnightlights:::getCtryNlDataFnamePath("KEN", "KEN_adm0")
 
 }

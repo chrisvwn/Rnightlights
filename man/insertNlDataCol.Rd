@@ -4,7 +4,7 @@
 \alias{insertNlDataCol}
 \title{Insert an aggregate nightlight data column in a country nightlights dataframe}
 \usage{
-insertNlDataCol(ctryNlDataDF, dataCol, statType, nlPeriod, nlType,
+insertNlDataCol(ctryNlDataDF, dataCol, nlStat, nlPeriod, nlType,
   configName, multiTileStrategy, multiTileMergeFun,
   removeGasFlares = TRUE)
 }
@@ -13,13 +13,19 @@ insertNlDataCol(ctryNlDataDF, dataCol, statType, nlPeriod, nlType,
 
 \item{dataCol}{the numeric vector to be inserted as a column}
 
-\item{statType}{the stat which produced the dataCol vector}
+\item{nlStat}{the stat which produced the dataCol vector}
 
 \item{nlPeriod}{the nlPeriod that the dataCol belongs to}
 
 \item{nlType}{the type of nightlight data}
 
 \item{configName}{character the type of raster being processed}
+
+\item{multiTileStrategy}{character How to handle multiple tiles per nlPeriod}
+
+\item{multiTileMergeFun}{character The function to use to merge tiles}
+
+\item{removeGasFlares}{logical Whether to perform gas flare removal pre-processing}
 }
 \value{
 the updated dataframe

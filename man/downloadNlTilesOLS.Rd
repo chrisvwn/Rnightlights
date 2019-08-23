@@ -17,6 +17,8 @@ downloadNlTilesOLS(nlPeriod,
 \item{nlType}{A character string of nlType}
 
 \item{configName}{character the type of raster being processed}
+
+\item{multiTileStrategy}{character How to handle multiple tiles per nlPeriod}
 }
 \value{
 TRUE/FALSE Whether the download was successful

@@ -98,6 +98,12 @@
 #' @param nlType \code{character} The nlType of interest
 #' 
 #' @param configName character the type of raster being processed
+#' 
+#' @param multiTileStrategy character How to handle multiple tiles per nlPeriod
+#' 
+#' @param multiTileMergeFun character The function to use to merge tiles
+#' 
+#' @param removeGasFlares logical Whether to perform gas flare removal pre-processing
 #'
 #' @param nlPeriod \code{character} The nlPeriod of interest
 #' 
@@ -394,7 +400,7 @@ processNLCountry <- function(ctryCode,
       #the polygon will already correspond to having gas flares removed or not
       ctryPolyAdm0TmpDir <- tools::file_path_sans_ext(rstTmp)
       
-      rgdal::writeOGR(obj = as(ctryPolyAdm0,"SpatialPolygonsDataFrame"), dsn = ctryPolyAdm0TmpDir, driver = "ESRI Shapefile", layer = "GID_0_IDX")
+      rgdal::writeOGR(obj = methods::as(ctryPolyAdm0,"SpatialPolygonsDataFrame"), dsn = ctryPolyAdm0TmpDir, driver = "ESRI Shapefile", layer = "GID_0_IDX")
       
       outputFileVrt <- file.path(getNlDir(dirName = "dirNlTemp"), paste0(ctryCode, "_", nlType, "_", nlPeriod, ".vrt"), fsep = )
       
@@ -495,7 +501,7 @@ processNLCountry <- function(ctryCode,
   for(nlStatName in nlStatNames)
     ctryNlDataDF <- insertNlDataCol(ctryNlDataDF = ctryNlDataDF,
                                     dataCol = sumAvgRad[,nlStatName],
-                                    statType = nlStatName,
+                                    nlStat = nlStatName,
                                     nlPeriod = nlPeriod,
                                     nlType = nlType,
                                     configName = configName,
@@ -533,6 +539,12 @@ processNLCountry <- function(ctryCode,
 #' @param nlType the nlType of interest
 #' 
 #' @param configName character the type of raster being processed
+#' 
+#' @param multiTileStrategy character How to handle multiple tiles per nlPeriod
+#' 
+#' @param multiTileMergeFun character The function to use to merge tiles
+#' 
+#' @param removeGasFlares logical Whether to perform gas flare removal pre-processing
 #'
 #' @param nlPeriod the nlPeriod of interest
 #' 
@@ -614,6 +626,12 @@ getCtryRasterOutputFname <- function(ctryCode,
 #' @param nlType the nlType of interest
 #' 
 #' @param configName character the type of raster being processed
+#' 
+#' @param multiTileStrategy character How to handle multiple tiles per nlPeriod
+#' 
+#' @param multiTileMergeFun character The function to use to merge tiles
+#' 
+#' @param removeGasFlares logical Whether to perform gas flare removal pre-processing
 #'
 #' @param nlPeriod the nlPeriod of interest
 #' 
@@ -708,6 +726,12 @@ getCtryRasterOutputFnamePath <- function(ctryCode,
 #' @param nlTypes the types of nightlights to process
 #' 
 #' @param configNames character the types of raster being processed
+#' 
+#' @param multiTileStrategy character How to handle multiple tiles per nlPeriod
+#' 
+#' @param multiTileMergeFun character The function to use to merge tiles
+#' 
+#' @param removeGasFlares logical Whether to perform gas flare removal pre-processing
 #' 
 #' @param nlPeriods the nlPeriods of interest
 #' 

@@ -535,7 +535,9 @@ addREADME <- function(to=getNlDataPath())
 #'
 #' Add README file to the root data path
 #'
-#' @param to The folder to add the README file to
+#' @param path The folder to add the README file to
+#' 
+#' @param version The version of the package
 #'     
 #' @return None
 #'

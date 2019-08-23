@@ -295,6 +295,9 @@ pkgOptions <- function(...)
 #' 
 #' Retrieve default global options for the Rnightlights package
 #'
+#' @param ... Option names to retrieve option values or \code{[key]=[value]}
+#'     pairs to set options. See \code{pkgOptions} for details.
+#'
 #' @examples
 #' #get cropMaskMethod
 #' pkgDefaults("cropMaskMethod") #returns default "rast"

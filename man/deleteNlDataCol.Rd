@@ -19,15 +19,23 @@ deleteNlDataCol(ctryCode = NULL, admLevel, nlType,
 
 \item{nlType}{the type of nightlight data}
 
+\item{configName}{character the type of raster being processed}
+
+\item{multiTileStrategy}{character How to handle multiple tiles per nlPeriod}
+
+\item{multiTileMergeFun}{character The function to use to merge tiles}
+
+\item{removeGasFlares}{logical Whether to perform gas flare removal pre-processing}
+
 \item{nlPeriod}{the nlPeriod that the dataCol belongs to}
+
+\item{nlStat}{the stat which produced the dataCol vector}
 
 \item{gadmVersion}{The GADM version to use}
 
 \item{gadmPolyType}{The format of polygons to download from GADM}
 
 \item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
-
-\item{statType}{the stat which produced the dataCol vector}
 }
 \description{
 Delete an aggregate nightlight data column in a country nightlights dataframe. The number

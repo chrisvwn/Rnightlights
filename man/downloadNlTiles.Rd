@@ -11,12 +11,16 @@ downloadNlTiles(nlType, configName = pkgOptions(paste0("configName_",
 \arguments{
 \item{nlType}{character The nightlight type}
 
+\item{configName}{character the type of raster being processed}
+
 \item{nlPeriod}{character The nlPeriod to process in the appropriate 
 format}
 
 \item{tileList}{integer vector or character vector of digits containing 
 valid tile numbers as obtained by tileName2Idx for VIIRS. Ignore for 
 nlType=="OLS"}
+
+\item{multiTileStrategy}{character How to handle multiple tiles per nlPeriod}
 }
 \value{
 TRUE/FALSE if the download was successful

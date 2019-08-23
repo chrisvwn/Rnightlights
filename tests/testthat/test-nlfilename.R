@@ -32,8 +32,8 @@ test_that("nlfilenames are correct", {
   
   expect_equal(Rnightlights:::getCtryNlDataFnamePath(ctryCode = "KEN", admLevel = "KEN_adm0", gadmVersion = "2.8"), file.path(file.path(getNlDir("dirNlData"), "NL_DATA_KEN_ADM0_GADM-2.8-SHPZIP.csv")))
   
-  expect_equal(Rnightlights:::getCtryRasterOutputFname(ctryCode = "KEN", nlType = "VIIRS.M", nlPeriod = "201204", gadmVersion = "2.8"), "NL_KEN_VIIRS.M_201204_VCMCFG_GADM-2.8-SHPZIP.tif")
+  expect_equal(Rnightlights:::getCtryRasterOutputFname(ctryCode = "KEN", nlType = "VIIRS.M", nlPeriod = "201204", gadmVersion = "2.8"), "NL_KEN_VIIRS.M_201204_VCMCFG-MTSALL-MEAN-RGFT_GADM-2.8-SHPZIP.tif")
   
-  expect_equal(Rnightlights:::getCtryRasterOutputFnamePath(ctryCode = "KEN", nlType = "VIIRS.M", nlPeriod = "201204", "3.6"), file.path(getNlDir("dirRasterOutput"), "NL_KEN_VIIRS.M_201204_3.6_GADM-3.6-SHPZIP.tif"))
+  expect_equal(Rnightlights:::getCtryRasterOutputFnamePath(ctryCode = "KEN", nlType = "VIIRS.M", nlPeriod = "201204", "3.6"), file.path(getNlDir("dirRasterOutput"), "NL_KEN_VIIRS.M_201204_3.6-MTSALL-MEAN-RGFT_GADM-3.6-SHPZIP.tif"))
   
 })

@@ -1,7 +1,53 @@
-#'@export
-myfun <- function(col, row, val, numPts=3) #function(dt, numPts=3)
+######################## myfun ###################################
+
+#' Function to test the use of rowcols and lonlats in getCtryNlData
+#'
+#' Function to test the use of rowcols and lonlats in getCtryNlData as
+#'     input to the nlStats parameter.
+#'     
+#'     The function gets the top numPts brightest pixels in a sub-polygon
+#'     or zone and looks at increasing neighbouring distances looking
+#'     for the distance to the first pixel that is 1/2 the value of the
+#'     central pixel. 
+#' 
+#' @param col character parameter to tell the package to pass in the colrow
+#'     values i.e. column and row indices as per the country polygon
+#' 
+#' @param row character parameter to tell the package to pass in the colrow
+#'     values i.e. column and row indices of non-NA pixels as per the country
+#'     polygon
+#'     
+#' @param lon character parameter to tell the package to pass in the lonlat
+#'     values i.e. column and row indices of non-NA pixels as per the country
+#'     polygon
+#' 
+#' @param lat character parameter to tell the package to pass in the lonlat
+#'     values i.e. column and row indices of non-NA pixels as per the country
+#'     polygon
+#' 
+#' @param val character variable which will hold the raster values found in
+#'     in the raster
+#'     
+#' @param numPts integer The number of top pixels to detect
+#' 
+#' @examples
+#' 
+#' \dontrun{
+#' pkgReset();
+#'   system.time(rastGFT92 <-  getCtryNlData(ctryCode = "NGA",
+#'      admLevel = "lowest", nlTypes = "OLS.Y", nlPeriods = "1992",
+#'      removeGasFlares = F, ignoreMissing=FALSE, nlStats = list("myfun")))
+#'    
+#'   pkgOptions(extractMethod="gdal",cropMaskMethod="gdal");
+#'   system.time(gdalGFT92 <-  getCtryNlData(ctryCode = "NGA",
+#'       admLevel = "lowest", nlTypes = "OLS.Y", nlPeriods = "1992",
+#'       removeGasFlares = F, ignoreMissing=FALSE, nlStats="myfun"))
+#' }
+#'
+#' @export 
+myfun <- function(col, row, lon, lat, val, numPts=3) #function(dt, numPts=3)
 {
-  dt <- data.frame(col, row, val)
+  dt <- data.frame(col, row)
   
   topPts <- dt[order(dt$val, decreasing = T)[1:numPts],]
   

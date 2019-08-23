@@ -16,6 +16,10 @@ ZonalPipe(ctryCode, admLevel, ctryPoly, nlType, configName, path.in.shp,
 
 \item{ctryPoly}{the SpatialPolygonsDataFrame country polygon to process}
 
+\item{nlType}{character The nlType of interest}
+
+\item{configName}{character the type of raster being processed}
+
 \item{path.in.shp}{The path to the country shapefile}
 
 \item{path.in.r}{The path to the raster tile}

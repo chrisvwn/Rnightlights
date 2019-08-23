@@ -128,7 +128,7 @@ masqOLS <- function(shp, rast, i, retVal="colrowval", configName)
     ext <- raster::extent(inner) #extract the cropped raster extent
     
     #get the cells that this polygon represent in the ctryPolygon
-    xyrast <- raster::cellFromXY(object = rast, xyFromCell(inner, 1:ncell(inner)))
+    xyrast <- raster::cellFromXY(object = rast, raster::xyFromCell(inner, 1:raster::ncell(inner)))
     
     #get the rows and cols this polygon represents in the ctryPolygon
     colrows <- raster::rowColFromCell(object = rast, cell = xyrast)

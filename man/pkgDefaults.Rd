@@ -6,6 +6,10 @@
 \usage{
 pkgDefaults(...)
 }
+\arguments{
+\item{...}{Option names to retrieve option values or \code{[key]=[value]}
+pairs to set options. See \code{pkgOptions} for details.}
+}
 \description{
 Retrieve default global options for the Rnightlights package
 }

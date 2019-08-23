@@ -5,6 +5,8 @@
 #' Function to return the url of the OLS tile to download given the year
 #'
 #' @param nlPeriod The nlPeriod of the tile for which to return the tile download URL
+#' 
+#' @param configName character the type of raster being processed
 #'
 #' @return character string Url of the OLS tile file
 #'

@@ -235,12 +235,14 @@ addCtryPolyIdx <- function(ctryCode,
 #' @param gadmPolyType The format of polygons to download from GADM
 #' 
 #' @param downloadMethod The method used to download polygons
+#' 
+#' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
 #'
 #' @return TRUE/FALSE Success/Failure of the download
 #'
 #' @examples
 #' \dontrun{
-#' Rnightlights:::dnldCtryShpZip("KEN", "3.6", "shpZip)
+#'  Rnightlights:::dnldCtryShpZip("KEN", "3.6", "shpZip")
 #' }
 #'
 dnldGADMCtryShpZip <- function(ctryCode,
