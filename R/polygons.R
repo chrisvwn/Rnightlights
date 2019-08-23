@@ -46,6 +46,60 @@ getGadmLevelNames <- function(ctryCode, layerNum)
   
 }
 
+######################## getWorldMap ###################################
+
+#' Make the rworldmap available for other functions
+#' 
+#' Make the rworldmap available for other functions. Since running cleangeo
+#'     takes some time we want to run it once the first time it is called
+#'     and make it available to other functions without overhead. The map
+#'     is stored to the .RnightlightsEnv hidden package environment
+#' 
+getWorldMap <- function()
+{
+  if(!exists(".RnightlightsEnv"))
+    .RnightlightsEnv <<- new.env(parent = emptyenv())
+  
+  if(!exists(x = "map", envir = .RnightlightsEnv))
+  {
+    #world map and clean it
+    #may take a sec or two so let's do it once
+    #clean now (2019) shows a progressbar which is not ideal
+    #we may move this back into the main code and maybe instantiate
+    #it globally the first time we need it
+    map <- rworldmap::getMap()
+    
+    #capture cleangeo progressbar output
+    out <- utils::capture.output(map <- cleangeo::clgeo_Clean(map))
+    
+    rm(out)
+    
+    assign(x = "map", value = map, envir = .RnightlightsEnv)
+  }
+  
+  get(x = "map", envir = .RnightlightsEnv)
+}
+
+######################## getCRS ###################################
+
+#' Specify the wgs84 CRS globally
+#' 
+#' Specify the wgs84 CRS which is currently the only CRS we support
+#'    for use throughout the package. Saves the proj4 wgs84 string to the
+#'    .RnightlightsEnv package hidden environment
+#' 
+getCRS <- function()
+{
+  if(!exists(".RnightlightsEnv"))
+    .RnightlightsEnv <<- new.env(parent = emptyenv())
+  
+  if(!exists(x = "CRS", envir = .RnightlightsEnv))
+  {
+    assign(x = "CRS", value = "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0 +no_defs", envir = .RnightlightsEnv)
+  }
+  
+  get(x = "CRS", envir = .RnightlightsEnv)
+}
 
 gadmLayerToAlias <- function(layerNames, gadmVersion=pkgOptions("gadmVersion"))
 {

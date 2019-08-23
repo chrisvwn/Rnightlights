@@ -19,11 +19,11 @@
 #' @examples
 #' 
 #' \donttest{
-#' Rnightlights:::allValid(c("KEZ", "UGA", "RWA", "TZA"), Rnightlights:::validCtryCodes)
+#'   Rnightlights:::allValid(c("KEZ", "UGA", "RWA", "TZA"), Rnightlights:::validCtryCodes)
 #' }
 #'  
 #' \donttest{
-#' Rnightlights:::allValid(c("2012", "2015"), validNlPeriods, "OLS.Y")
+#'   Rnightlights:::allValid(c("2012", "2015"), validNlPeriods, "OLS.Y")
 #' }
 #'
 allValid <- function(testData, testFun, ...)
@@ -38,6 +38,13 @@ allValid <- function(testData, testFun, ...)
   return(all(valid))
 }
 
+######################## getFreeRAM ###################################
+
+#' Detect the amount of available RAM on the computer
+#' 
+#' Detect the amount of available RAM on the computer for dynamic
+#'     configuration of available memory
+#' 
 getFreeRAM <- function()
 {
   if(Sys.info()[["sysname"]] == "Windows")
@@ -80,6 +87,15 @@ getFreeRAM <- function()
   return(freeMem)
 }
 
+######################## getBatchBytes ###################################
+
+#' Calculate the RAM to provide to the package for gdal calculations
+#' 
+#' Calculate the RAM to provide to the package to calculate when
+#'     pkgOption("extractMethod") == "gdal"
+#'
+#' @param freeRAM the amount of available RAM to consider
+#' 
 getBatchBytes <- function(freeRAM = pkgOptions("batchBytes"))
 {
   sysFreeRAM <- getFreeRAM() * 2^10
@@ -148,6 +164,42 @@ nlCleanup <- function(temp=TRUE, tileCache=FALSE)
   #  unlink(file.path(tempdir(), ".Rnightlights"), recursive = TRUE, force = TRUE)
 }
 
+######################## printCredits ###################################
+
+#' Format credits to print to the console
+#'
+#' Format credits to print to the console
+#'
+#' @param credits character a single length character vector
+#' 
+#' @param newLineChar character the character/sequence used to split the 
+#'     credits into new lines
+#'     
+#' @param surroundChar character the character to use as a decoration
+#' 
+#' @param horzPadding integer the number of blank spaces between text and
+#'     the surrounding text horizontally
+#'     
+#' @param vertPadding integer the number of blank spaces between text and
+#'     the surrounding text vertically
+#'     
+#' @param horzWidth integer the width of the decoration horizontally
+#'
+#' @param vertWidth integer the width of the decoration vertically
+#'  
+#' @return character a formatted credits character vector
+#' 
+#' @example
+#' 
+#' credits <- "DMSP data collected by US Air Force Weather Agency
+#'Image and data processing by NOAA's National Geophysical Data Center
+#'(https://www.ngdc.noaa.gov/eog/download.html)
+#'
+#'Maps distributed by GADM
+#'(https://gadm.org)"
+#'  
+#' printCredits(credits)
+#'
 printCredits <- function(credits, newLineChar="\n", surroundChar = "*", horzPadding = 1, vertPadding = 1, horzWidth = 3, vertWidth = 2)
 {
   width <- getOption("width")

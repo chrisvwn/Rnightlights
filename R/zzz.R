@@ -10,44 +10,13 @@ Maps distributed by GADM
   #printCredits(credits)
 }
 
-getWorldMap <- function()
-{
-  if(!exists(".RnightlightsEnv"))
-    .RnightlightsEnv <<- new.env(parent = emptyenv())
-  
-  if(!exists(x = "map", envir = .RnightlightsEnv))
-  {
-    #world map and clean it
-    #may take a sec or two so let's do it once
-    #clean now (2019) shows a progressbar which is not ideal
-    #we may move this back into the main code and maybe instantiate
-    #it globally the first time we need it
-    map <- rworldmap::getMap()
-    
-    #capture cleangeo progressbar output
-    out <- utils::capture.output(map <- cleangeo::clgeo_Clean(map))
-    
-    rm(out)
-    
-    assign(x = "map", value = map, envir = .RnightlightsEnv)
-  }
-  
-  get(x = "map", envir = .RnightlightsEnv)
-}
+######################## .RnightlightsENV ###################################
 
-getCRS <- function()
-{
-  if(!exists(".RnightlightsEnv"))
-    .RnightlightsEnv <<- new.env(parent = emptyenv())
-  
-  if(!exists(x = "CRS", envir = .RnightlightsEnv))
-  {
-    assign(x = "CRS", value = "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0 +no_defs", envir = .RnightlightsEnv)
-  }
-  
-  get(x = "CRS", envir = .RnightlightsEnv)
-}
-
+#' A package-wide hidden environment
+#' 
+#' A package-wide hidden environment used to store variables/settings and
+#'     functions to retrieve them
+#' 
 .RnightlightsEnv <- new.env(parent = emptyenv())
 
 
@@ -63,19 +32,9 @@ getCRS <- function()
   if(is.null(getNlDataPath()))
     setupDataPath()
   
-  #global constants
-  #map <- getWorldMap()
-  
-  #still needed?
-  shpTopLyrName <- "adm0"
-
-  #projection system to use
-  #still needed?
-  #.RnightlightsEnv$wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0 +no_defs"
-  
   #try to speed up the code
   #does this work?
-  #enabled in DESCRIPTION file
+  #also enabled in DESCRIPTION file
   compiler::enableJIT(3)
   
   upgradeRnightlights()
