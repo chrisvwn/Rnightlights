@@ -4,6 +4,11 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   #Specify the regex to uniquely identify the tile file
   #to extract from the download tile compressed file
   
+  #the amount of RAM to provide to the gdal batch processing calculations
+  #can be a percentage or fixed value with KB/MB/GB suffixed
+  ##try approx 10% of **free** RAM
+  batchBytes = "10%",
+  
   #for OLS: more info at: https://ngdc.noaa.gov/eog/gcv4_readme.txt
   configName_OLS.Y = "stable_lights",
   

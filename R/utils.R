@@ -80,6 +80,40 @@ getFreeRAM <- function()
   return(freeMem)
 }
 
+getBatchBytes <- function(freeRAM = pkgOptions("batchBytes"))
+{
+  sysFreeRAM <- getFreeRAM() * 2^10
+  
+  if(grepl("%", freeRAM))
+  {
+    freeRAM <- as.numeric(gsub("%","",freeRAM))
+    
+    freeRAM <- freeRAM/100
+    
+    freeRAM <- freeRAM*sysFreeRAM
+  } else if(grepl("KB", freeRAM))
+  {
+    freeRAM <- as.numeric(gsub("KB","",freeRAM))
+    
+    freeRAM <- freeRAM*2^10
+  } else if(grepl("MB", freeRAM))
+  {
+    freeRAM <- as.numeric(gsub("MB","",freeRAM))
+    
+    freeRAM <- freeRAM*2^20
+  } else if(grepl("GB", freeRAM))
+  {
+    freeRAM <- as.numeric(gsub("GB","",freeRAM))
+    
+    freeRAM <- freeRAM*2^30
+  }
+  
+  if(freeRAM > sysFreeRAM)
+    freeRAM <- 0.1 * sysFreeRAM * 2^20
+
+  return(freeRAM)
+}
+
 ######################## nlCleanup ###################################
 
 #' Clean up the environment after processing (Not yet implemented)
