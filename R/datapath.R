@@ -156,7 +156,7 @@ setupDataPath <- function(newDataPath=tempdir(), ...)
         }
       }
       
-      #setNlDataPath(dataPath)
+      setNlDataPath(dataPath)
     }
   }
   else
@@ -413,6 +413,11 @@ getNlDataPath <- function()
   homePath = path.expand("~")
   dirName = ".Rnightlights"
   dataPathFile = "datapath.rda"
+  
+  #if the tempdir exists it was created within this session
+  #return it until the session ends and tempdir() changes
+  if(dir.exists(file.path(tempdir(), dirName)))
+    return(file.path(tempdir()))
   
   if(dir.exists(file.path(tempdir(), dirName)))
   {
