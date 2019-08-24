@@ -8,7 +8,7 @@ printCredits(credits, newLineChar = "\\n", surroundChar = "*",
   horzPadding = 1, vertPadding = 1, horzWidth = 3, vertWidth = 2)
 }
 \arguments{
-\item{credits}{character a single length character vector}
+\item{credits}{character a single length character vector with newlines}
 
 \item{newLineChar}{character the character/sequence used to split the 
 credits into new lines}
