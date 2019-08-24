@@ -191,6 +191,7 @@ nlCleanup <- function(temp=TRUE, tileCache=FALSE)
 #' 
 #' @example
 #' 
+#' \donttest{
 #' credits <- "DMSP data collected by US Air Force Weather Agency
 #'Image and data processing by NOAA's National Geophysical Data Center
 #'(https://www.ngdc.noaa.gov/eog/download.html)
@@ -199,7 +200,9 @@ nlCleanup <- function(temp=TRUE, tileCache=FALSE)
 #'(https://gadm.org)"
 #'  
 #' printCredits(credits)
+#' }
 #'
+#' @export
 printCredits <- function(credits, newLineChar="\n", surroundChar = "*", horzPadding = 1, vertPadding = 1, horzWidth = 3, vertWidth = 2)
 {
   width <- getOption("width")
