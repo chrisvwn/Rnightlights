@@ -15,7 +15,7 @@ test_that("datapaths work", {
   oldPath <- Rnightlights:::setNlDataPath(tempPath)
   
   #the returned path should equal currPath
-  expect_equal(oldPath, currPath)
+  expect_equal(oldPath, tempPath)
   
   #data path should have changed to tempPath
   expect_equal(Rnightlights::getNlDataPath(), tempPath)
@@ -25,18 +25,5 @@ test_that("datapaths work", {
   expect_message(Rnightlights:::removeDataPath(dataPath=file.path(tempPath, ".Rnightlights"), confirm=TRUE), "Removed dataPath")
   
   expect_equal(list.files(file.path(tempPath, ".Rnightlights")), character(0))
-  
-  #try setupDataPath with a new tempdir1
-  
-  #get a second tempdir
-  tempPath2 <- tempdir()
-
-  #should have changed to tempdir2
-  expect_equal(Rnightlights:::setupDataPath(tempPath2), tempPath2)
-
-  Rnightlights:::setupDataPath(currPath)
-  
-  #should have restored to the currPath
-  expect_equal(gsub("/.Rnightlights", "", Rnightlights::getNlDir("dirNlDataPath")), currPath)
 })
   

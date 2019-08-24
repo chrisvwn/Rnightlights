@@ -2,24 +2,24 @@
 % Please edit documentation in R/datapath.R
 \name{setDataVersion}
 \alias{setDataVersion}
-\title{Add README file to the root data path}
+\title{Add data version file to the root data path}
 \usage{
-setDataVersion(path = getNlDataPath(), version)
+setDataVersion(path = getNlDataPath(), pkgVersion)
 }
 \arguments{
 \item{path}{The folder to add the README file to}
 
-\item{version}{The version of the package}
+\item{pkgVersion}{The version of the package}
 }
 \value{
 None
 }
 \description{
-Add README file to the root data path
+Add data version file to the root data path
 }
 \examples{
   \dontrun{
-  Rnightlights:::addREADME()
+  Rnightlights:::setDataVersion(version="0.2.4")
   }
     
 }
