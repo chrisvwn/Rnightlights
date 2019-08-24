@@ -53,7 +53,7 @@ setupDataPath <- function(newDataPath=tempdir(), ...)
         else if (ans == 2)
           dataPath <- tryCatch(
             {
-              path <- tcltk::tk_choose.dir(getNlDataPath())
+              path <- tcltk::tk_choose.dir("~")
             }, 
             error=function(ex) 
             {
@@ -101,27 +101,27 @@ setupDataPath <- function(newDataPath=tempdir(), ...)
                          "\n\nEnter 0 to use a temporary directory for this session only.")
         
         
-        ans <- utils::menu(choices = c(paste0("Keep current directory '",  
+        ans <- utils::menu(choices = c(paste0("Use current directory '",  
                                               path.expand(getNlDataPath()), " as the data path"), 
                                        "Choose a different directory as the data path"),
-                           graphics = FALSE, title = prompt);
+                           graphics = F, title = prompt);
         
         if (ans == 1)
           return(invisible(getNlDataPath()))
         else if (ans == 2)
         {
           dataPath <- tryCatch(
-            {
-              path <- tcltk::tk_choose.dir("~/")
-            }, 
-            error=function(ex) 
-            {
-              path <- readline("Please enter the directory path: ")
-              if (dir.exists(path))
-                return (path)
-              else
-                stop(path, " not found")
-            })
+          {
+            path <- tcltk::tk_choose.dir(getNlDataPath())
+          }, 
+          error=function(ex) 
+          {
+            path <- readline("Please enter the directory path: ")
+            if (dir.exists(path))
+              return (path)
+            else
+              stop(path, " not found")
+          })
           
           if (is.null(dataPath) || is.na(dataPath))
           {
@@ -156,7 +156,7 @@ setupDataPath <- function(newDataPath=tempdir(), ...)
         }
       }
       
-      setNlDataPath(dataPath)
+      #setNlDataPath(dataPath)
     }
   }
   else
@@ -207,29 +207,24 @@ setNlDataPath <- function(dataPath)
   if (!is.character(dataPath) || is.null(dataPath) || is.na(dataPath) || dataPath == "")
     stop(Sys.time(), ": dataPath must be a valid character string")
   
-  dataPath <- as.character(path.expand(dataPath))
+  dataPath <- as.character(dataPath)
   
   dataDirName <- ".Rnightlights"
   
-  homePath <- path.expand(file.path("~", ".Rnightlights"))
+  homePath <- file.path("~", ".Rnightlights")
   
-  existingPath <- path.expand(getNlDataPath())
+  existingPath <- getNlDataPath()
   
   #if existingPath is not null we already have an existing directory. This is potentially a move
-  #unless the dataPath == tempdir. assume it is temporary don't move
   if (!is.null(existingPath))
   {
     #if the supplied directory is the same as the current dataPath stop. Nothing to do
-    if(dataPath == existingPath)
+    if(path.expand(dataPath) == path.expand(existingPath))
     {
       message(Sys.time(), ": The directories are the same. Not changing")
       return(invisible(dataPath)) #return user version. less expensive
-      
-    } else if(dataPath == tempdir())
-    {
-      isMove <- FALSE #don't move to a tempdir since it will only be available for this session
-      
-    } else #if they are different we will move
+    }
+    else #if they are different we will move
     {
       isMove <- TRUE
     }
@@ -245,13 +240,7 @@ setNlDataPath <- function(dataPath)
     dirCreate <- file.path(dataPath, dataDirName)
     
     successCreate <- tryCatch({
-      if(!dir.exists(dirCreate))
-        dir.create(dirCreate)
-      else
-      {
-        message(dirCreate, " already exists")
-        NA
-      }
+      dir.create(dirCreate)
     }, error=function(err)
     {
       message(Sys.time(), ": Error: ", err)
@@ -262,18 +251,12 @@ setNlDataPath <- function(dataPath)
       return(FALSE)
     })
     
-    if(!is.na(successCreate) && !successCreate)
+    if(!successCreate)
       message(Sys.time(), ": Unable to create directory ", dirCreate)
     else
     {
-      if(is.na(successCreate))
-      {
-        
-      } else
-      {
-        message(Sys.time(), ": Data directory created ", path.expand(dirCreate))
-        message(Sys.time(), ": Rnightlights may require 3GB+. Run setupDataPath() to change the location")
-      }
+      message(Sys.time(), ": Data directory created ", path.expand(dirCreate))
+      message(Sys.time(), ": Rnightlights may require 3GB+. Run setupDataPath() to change the location")
     }
   }
   else
@@ -282,7 +265,7 @@ setNlDataPath <- function(dataPath)
   #If we are here we have created a new directory
   #If dataPath not the tempdir(), Make sure the homePath exists and persist the dataPath
   #~/.Rnightlights Must always exist even if it does not hold the data
-  if(dataPath != tempdir() && !dir.exists(file.path(homePath)))
+  if(dataPath != tempdir() && !exists(file.path(homePath)))
     if(dir.exists(file.path(homePath)) || dir.create(file.path(homePath)))
       if(!isMove) #only change the path if not a move since move may fail
         saveRDS(path.expand(dataPath), file.path(homePath, "datapath.rda"))
@@ -314,7 +297,7 @@ setNlDataPath <- function(dataPath)
       if(path.expand(existingPath) == path.expand("~"))
       {
         #remove the datapath.rda from the new path
-        if(path.expand(dataPath) != path.expand("~"))
+        if(dataPath != "~")
           if(file.exists(file.path(dataPath, dataDirName, "datapath.rda")))
             file.remove(file.path(dataPath, dataDirName, "datapath.rda"))
         
@@ -335,9 +318,8 @@ setNlDataPath <- function(dataPath)
           file.remove(file.path(dataPath, dataDirName, "_RNIGHTLIGHTS_SAFE_TO_DELETE"))
         
         #remove the copied datapath.rda if it exists. Usually if the datapath is moving from the default location i.e. home dir
-        if(path.expand(dataPath) != path.expand("~"))
-          if(file.exists(file.path(dataPath, dataDirName, "datapath.rda")))
-            file.remove(file.path(dataPath, dataDirName, "datapath.rda"))
+        if(dataPath != "~")
+          file.remove(file.path(dataPath, dataDirName, "datapath.rda"))
         
         message(Sys.time(), ": Move of datapath from ", existingPath, " to ", dataPath, " complete.")
         message(Sys.time(), ": You may now delete ", file.path(existingPath, dataDirName))
@@ -373,22 +355,21 @@ setNlDataPath <- function(dataPath)
   
   #If dataPath was created
   if(!is.null(getNlDataPath()))
-  if(path.expand(getNlDataPath()) == path.expand(dataPath))
-  {
-    # Add a README.txt file, if missing.
-    addREADME(to=file.path(dataPath, dataDirName))
-    
-    #add data-version.txt if a new install
-    #also prevents upgrade from running first time
-    if(!isMove && !file.exists(file.path(dataPath,dataDirName,"data-version.txt")))
-      setDataVersion(path=file.path(dataPath, dataDirName), version = as.character(utils::packageVersion("Rnightlights")))
-    
-    #create the package dirs
-    createNlDataDirs()
-  }
+    if(path.expand(getNlDataPath()) == path.expand(dataPath))
+    {
+      # Add a README.txt file, if missing.
+      addREADME(to=file.path(dataPath, dataDirName))
+      
+      #add data-version.txt if a new install
+      #also prevents upgrade from running first time
+      if(!isMove && !file.exists(file.path(dataPath,dataDirName,"data-version.txt")))
+        setDataVersion(path=file.path(dataPath, dataDirName), pkgVersion = as.character(utils::packageVersion("Rnightlights")))
+      
+      #create the package dirs
+      createNlDataDirs()
+    }
   
-  #getNlDataPath()
-  invisible(existingPath)
+  getNlDataPath()
 } # setNlDataPath()
 
 ######################## getNlDataPath ###################################
@@ -414,16 +395,8 @@ getNlDataPath <- function()
   dirName = ".Rnightlights"
   dataPathFile = "datapath.rda"
   
-  #if the tempdir exists it was created within this session
-  #return it until the session ends and tempdir() changes
   if(dir.exists(file.path(tempdir(), dirName)))
     return(file.path(tempdir()))
-  
-  if(dir.exists(file.path(tempdir(), dirName)))
-  {
-    if(!file.exists(file.path(tempdir(), dirName, "_RNIGHTLIGHTS_SAFE_TO_DELETE")))
-      return(file.path(tempdir()))
-  }
   
   if (dir.exists(file.path(homePath, dirName)))
   {
@@ -534,32 +507,32 @@ addREADME <- function(to=getNlDataPath())
   }
 } # addREADME()
 
-######################## addREADME ###################################
+######################## setDataVersion ###################################
 
-#' Add README file to the root data path
+#' Add data version file to the root data path
 #'
-#' Add README file to the root data path
+#' Add data version file to the root data path
 #'
 #' @param path The folder to add the README file to
 #' 
-#' @param version The version of the package
+#' @param pkgVersion The version of the package
 #'     
 #' @return None
 #'
 #' @examples
 #'   \dontrun{
-#'   Rnightlights:::addREADME()
+#'   Rnightlights:::setDataVersion(version="0.2.4")
 #'   }
 #'     
-setDataVersion <- function(path=getNlDataPath(), version)
+setDataVersion <- function(path=getNlDataPath(), pkgVersion)
 {
   # Add a data-version.txt to dataPath (to show the data directory version)
   filename <- "data-version.txt"
   
   pathnameD <- file.path(path, filename)
   
-  cat(version, file = pathnameD)
-    
+  cat(pkgVersion, file = pathnameD)
+  
 } # setDataVersion()
 
 ######################## createNlDataDirs ###################################
@@ -591,9 +564,6 @@ createNlDataDirs <- function()
   
   if(!dir.exists(getNlDir("dirNlData")))
     dir.create(getNlDir("dirNlData"))
-  
-  if(!dir.exists(getNlDir("dirNlGasFlares")))
-    dir.create(getNlDir("dirNlGasFlares"))
   
   if(!dir.exists(getNlDir("dirRasterOutput")))
     dir.create(getNlDir("dirRasterOutput"))
@@ -646,7 +616,7 @@ getNlDir <- function(dirName)
   if(is.null(dataPath))
   {
     setupDataPath()
-
+    
     dataPath <- getNlDataPath()
   }
   
