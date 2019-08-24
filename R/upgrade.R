@@ -64,18 +64,43 @@ newNlType <- function(oldNlType)
 #' @export
 upgradeRnightlights <- function()
 {
-  nlDataFilePatterns <- list("pre-v0.2.0"="", "v0.2.0"="", "v0.2.1"="", "v0.2.2"="")
+  #v0.2.3 - NL_DATA_KEN_ADM0_GADM-3.6.csv
+  #v0.2.4 - NL_DATA_CHN_ADM1_GADM-3.6-SHPZIP.csv
+  nlDataFilePatterns <- list("pre-v0.2.0"="",
+                             "v0.2.0"="",
+                             "v0.2.1"="",
+                             "v0.2.2"="",
+                             "v0.2.3"="NL_DATA_[A-Z]{3,4}_ADM\\d+_(GADM-[2|3]\\.[8|6]|CUST).*\\.csv",
+                             "v0.2.4"="NL_DATA_[A-Z]{3,4}_ADM\\d+_(GADM-[2|3]\\.[8|6]|CUST)-(SHPZIP|SPRDS)\\.csv")
   
-  nlDataColPatterns <- list("pre-v0.2.0"="", "v0.2.0"="", "v0.2.1"="", "v0.2.2"="")
+  #v0.2.3 - NL_OLS.Y_2012_SUM
+  #v0.2.4 - NL_OLS.Y_STABLE_LIGHTS-MTSALL-MEAN-RGFF_1992_SUM
+  nlDataColPatterns <- list("pre-v0.2.0"="",
+                            "v0.2.0"="",
+                            "v0.2.1"="",
+                            "v0.2.2"="",
+                            "v0.2.3"="[A-Z]{3,5}.[D|M|Y]_\\d{4,8}_.*",
+                            "v0.2.4"="NL_[A-Z]{3,5}.[D|M|Y]_([A-Z]+_*)+-MTS.*-MEAN-RGF[F|T]_\\d{4,8}_.*")
   
-  #0.2.0,1 - NL_ETH_VIIRS.M_201701.tif
-  #0.2.2 - NL_ETH_VIIRS.M_201701_GADM-2.8.tif NL_ETH_VIIRS.M_201701_CUST-Ethiopia_zip_all.tif
+  #v0.2.0,1 - NL_ETH_VIIRS.M_201701.tif
+  #v0.2.2 - NL_ETH_VIIRS.M_201701_GADM-2.8.tif; NL_ETH_VIIRS.M_201701_CUST-Ethiopia_zip_all.tif
+  #v0.2.3 - NL_KEN_OLS.Y_2012_GADM-3.6.tif
+  #v0.2.4 - NL_CHN_OLS.Y_1992_STABLE_LIGHTS-MTSALL-MEAN-RGFF_GADM-3.6-SHPZIP.tif 
   nlRasterFilePatterns <- list("pre-v0.2.0"="",
                                "v0.2.0"="",
                                "v0.2.1"="NL_.*_[A-Z]{3,5}\\.[A-Z]_[0-9]{4,6}",
-                               "v0.2.2"="NL_.*_[A-Z]{3,5}\\.[A-Z]_[0-9]{4,6}_(GADM|CUST)-.*")
+                               "v0.2.2"="NL_.*_[A-Z]{3,5}\\.[A-Z]_[0-9]{4,6}_(GADM|CUST)-.*",
+                               "v0.2.3"="NL_[A-Z]{3,4}__[A-Z]{3,5}\\.[A-Z]_(GADM-[2|3]\\.[6|8]|CUST)\\.tif",
+                               "v0.2.4"="NL_[A-Z]{3,4}_[A-Z]{3,5}\\.[A-Z]_[0-9]{4,6}_(GADM|CUST)-.*")
   
-  nlTilePatterns <- list("pre-v0.2.0"="", "v0.2.0"="", "v0.2.1"="", "v0.2.2"="")
+  #v0.2.3 - NL_TILE_OLS.Y_2012_00N180W.tif
+  #v0.2.4 - NL_TILE_OLS.Y_STABLE_LIGHTS_1992_00N180W.tif
+  nlTilePatterns <- list("pre-v0.2.0"="",
+                         "v0.2.0"="",
+                         "v0.2.1"="",
+                         "v0.2.2"="",
+                         "v0.2.3"="NL_TILE_[A-Z]{3,5}\\.[D|M|Y]_\\d{4,8}_\\d{2,3}[N|S]\\d{2,3}[E|W]\\.tif",
+                         "v0.2.4"="NL_TILE_[A-Z]{3,5}\\.[D|M|Y]_.*_\\d{4,8}_\\d{2,3}[N|S]\\d{2,3}[E|W]\\.tif")
 
   tryCatch(
   {
@@ -107,7 +132,7 @@ upgradeRnightlights <- function()
       #we are already using the latest data version. Exit
       if(dataVersion == pkgVersion)
       {
-        return(FALSE)
+        return(TRUE)
       }
     } else
     {
@@ -118,7 +143,7 @@ upgradeRnightlights <- function()
     
     #ver 0.2.0 is the first version employing upgrade
     #upgrades required for 0.2.0, 0.2.1 & 0.2.2
-    if(pkgVersion >= "0.2.0" && dataVersion < "0.2.3")
+    if(pkgVersion >= "0.2.0" && dataVersion < "0.2.4")
     {
       message(Sys.time(), ": Upgrading data directory to ver. ", pkgVersion)
       
@@ -129,7 +154,7 @@ upgradeRnightlights <- function()
       
       message(Sys.time(), ": Renaming tiles:")
       
-      fileNames <- list.files(pattern = "^[[a-zA-Z]]{3,5}_[[:digit:]]{4,6}_[[:alnum:]]{7,8}\\.tif$")
+      fileNames <- list.files(pattern = "^[[a-zA-Z]]{3,5}|[[:digit:]]{4,6}|[[:alnum:]]{7,8}\\.tif$")
       
       if(length(fileNames) > 0)
       {
