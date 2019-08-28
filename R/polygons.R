@@ -10,7 +10,8 @@
 #' \dontrun{
 #' Rnightlights:::getAllGadmVersions()
 #' }
-#'
+#' 
+#' @export
 getAllGadmVersions <- function()
 {
   return(c("2.8", "3.6"))
@@ -31,6 +32,7 @@ getAllGadmVersions <- function()
 #' Rnightlights:::validGadmVersions("2.8")
 #' }
 #'
+#' @export
 validGadmVersions <- function(gadmVersions)
 {
   return(stats::setNames(gadmVersions %in% getAllGadmVersions(), gadmVersions))
@@ -44,6 +46,45 @@ getGadmLayerNames <- function(ctryCode, layerNum, gadmVersion)
 getGadmLevelNames <- function(ctryCode, layerNum)
 {
   
+}
+
+######################## getAllGadmPolyTypes #############################
+
+#' Return a vector of GADM polyTypes
+#'
+#' Return a vector of GADM polyTypes
+#' 
+#' @return character vector valid GADM polyTypes
+#'
+#' @examples
+#' 
+#' getAllGadmPolyTypes()
+#'
+#' @export
+getAllGadmPolyTypes <- function()
+{
+  return(c("gpkgZip", "kmlZip", "shpZip", "sfRds", "spRds"))
+}
+
+######################## validGadmPolyTypes #############################
+
+#' Check whether GADM polyTypes are valid
+#'
+#' Check whether GADM polyTypes are valid
+#' 
+#' @param gadmPolyTypes The GADM polyTypes to validate
+#' 
+#' @return logical vector
+#'
+#' @examples
+#' \dontrun{
+#' Rnightlights:::validGadmPolyTypes("shpZip")
+#' }
+#'
+#' @export
+validGadmPolyTypes <- function(gadmPolyTypes)
+{
+  return(stats::setNames(gadmPolyTypes %in% getAllGadmPolyTypes(), gadmPolyTypes))
 }
 
 ######################## getWorldMap ###################################
@@ -1350,7 +1391,7 @@ getCtryPolyAdmLevelNames <- function(ctryCode=NULL,
     stop(Sys.time(), ": Missing required parameter ctryCode")
   
   if(!is.null(ctryCode) && !allValidCtryCodes(ctryCodes = ctryCode))
-    stop(Sys.time(), ": Invalid ctryCode(s) detected ")
+    stop(Sys.time(), ": Invalid ctryCode(s) detected")
   
   if(missing(lowestAdmLevel))
     lowestLayer <- getCtryShpLowestLyrNames(ctryCodes = ctryCode,
