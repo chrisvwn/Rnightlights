@@ -23,8 +23,12 @@ newNlType <- function(oldNlType)
   if(missing(oldNlType))
     stop(Sys.time(), ": Missing required parameters oldNlType")
   
-  if(length(oldNlType) > 1 || !oldNlType %in% c("OLS","VIIRS"))
+  if(length(oldNlType) > 1)
     return(NA)
+  
+  #check if already in new format return the same
+  if(grepl(pattern = "(OLS|VIIRS)\\.[D|M|Y]", x = oldNlType))
+    return(oldNlType)
   
   #pre 0.2.0 all OLS is annual and all
   #VIIRS is monthly. Convert name accordingly
@@ -107,7 +111,7 @@ upgradeRnightlights <- function()
     #will only make alterations after the current package version updates
     pkgVersion <- utils::packageDescription("Rnightlights")$Version
     
-    upgradeLog <- data.frame("idx"=NULL, "operation"=NULL, "params"=NULL)
+    upgradeLog <- data.frame("idx"=NULL, "operation"=NULL, "params"=NULL, "success"=NULL)
     
     if(is.null(pkgVersion) || pkgVersion == "")
     {
@@ -115,7 +119,7 @@ upgradeRnightlights <- function()
       #and skip the upgrade
       message("Could not determine the installed Rnightlights version. Skipping upgrade")
       
-      return(0)
+      return(TRUE)
     }
     
     dataVersionFile <- file.path(Rnightlights::getNlDir("dirNlDataPath"), "data-version.txt")
@@ -131,9 +135,8 @@ upgradeRnightlights <- function()
       #if the data version == pkg version
       #we are already using the latest data version. Exit
       if(dataVersion == pkgVersion)
-      {
         return(TRUE)
-      }
+      
     } else
     {
       #if the data version isnt found
@@ -154,33 +157,36 @@ upgradeRnightlights <- function()
       
       message(Sys.time(), ": Renaming tiles:")
       
-      fileNames <- list.files(pattern = "^[[a-zA-Z]]{3,5}|[[:digit:]]{4,6}|[[:alnum:]]{7,8}\\.tif$")
+      #fileNames <- list.files(pattern = "^[[a-zA-Z]]{3,5}|[[:digit:]]{4,6}|[[:alnum:]]{7,8}\\.tif$")
+      fileNames <- list.files(pattern = "*.tif")
       
       if(length(fileNames) > 0)
       {
         for(fileName in fileNames)
         {
           #split tile filename into components
-          splits <- unlist(strsplit(substr(fileName, 1, nchar(fileName)-4), "_"))
+          #splits <- unlist(strsplit(tools::file_path_sans_ext(fileName), "_"))
           
-          nlType <- splits[1]
+          nlType <- stringr::str_extract(string = fileName, "(OLS|VIIRS)\\.[D|M|Y]")
           
           nlType <- newNlType(nlType)
           
-          nlPeriod <- splits[2]
+          nlPeriod <- stringr::str_extract(string = fileName, "\\d{4,8}")
           
-          tileName <- splits[3]
+          tileName <- stringr::str_extract(string = fileName, "\\d{2,3}[N|S]\\d{2,3}[E|W]")
   
-          newTileName <- getNlTileTifLclNamePath(nlType,
-                                                 nlPeriod,
-                                                 tileName2Idx(tileName, nlType)
-                                                 )
-          
-          message(Sys.time(), ": Rename: '", fileName, "' -> '", newTileName, "' : ", ifelse(file.rename(fileName, newTileName), "Success", "Fail"))
+          newTileName <- getNlTileTifLclNamePath(nlType = nlType,
+                                                 configName = "avg_vis",
+                                                 nlPeriod = nlPeriod,
+                                                 tileNum = tileName2Idx(tileName = tileName,
+                                                                        nlType =  nlType))
+          res <- file.rename(fileName, newTileName)
+          resTxt <- paste0("Rename: '", fileName, "' -> '", newTileName, "' : ", ifelse(res, "Success", "Fail"))
+          message(Sys.time(), ": ", resTxt)
           
           idx <- idx + 0.1
           
-          upgradeLog <- rbind.data.frame(upgradeLog, cbind(idx, "file.rename", paste0(tileName, newTileName, sep="|")))
+          upgradeLog <- rbind.data.frame(upgradeLog, cbind(idx, "file.rename", paste0(tileName, newTileName, sep="|"), res))
         }
       }else
       {
@@ -188,11 +194,12 @@ upgradeRnightlights <- function()
       }
       
       #rename data files using new format
-      idx <- round(idx + 1)
+      idx <- floor(idx + 1)
       
       message(Sys.time(), ": Renaming data files:")
       setwd(Rnightlights::getNlDir("dirNlData"))
       
+      #fileNames <- list.files(pattern = "^[[:alpha:]]{3,5}_NLData\\.csv$")
       fileNames <- list.files(pattern = "^[[:alpha:]]{3,5}_NLData\\.csv$")
       
       if(length(fileNames) > 0)
@@ -202,13 +209,32 @@ upgradeRnightlights <- function()
           idx <- idx + 0.1
           #split filename into components
           
-          splits <- unlist(strsplit(substr(fileName, 1, nchar(fileName)-4), "_"))
+          #splits <- unlist(strsplit(substr(fileName, 1, nchar(fileName)-4), "_"))
           
-          ctryCode <- splits[1]
+          ctryCodes <- gsub("_", "", stringr::str_extract_all(string = fileName, pattern = "_.{3}_"))
           
-          admLevel <- unlist(getCtryShpLowestLyrNames(ctryCodes=ctryCode))
-         
-          newFileName <- getCtryNlDataFname(ctryCode, admLevel)
+          ctryCode <- ctryCodes[validCtryCodes(ctryCodes)]
+          
+          admLevel <- gsub("_", "", stringr::str_extract(string = fileName, pattern = "_ADM.?_"))
+          
+          gadmVersion <- gsub("_", "", stringr::str_extract(string = fileName, pattern = "_GADM-\\d\\.\\d"))
+          
+          #if gadm version not found it is 2.8
+          gadmVersion <- if(is.na(gadmVersion)) "2.8" else unlist(strsplit(gadmVersion,"-"))[2]
+          
+          gadmPolyType <- gsub("_", "", stringr::str_extract(string = fileName, pattern = "sh?p(Zip|Rds)"))
+          
+          gadmPolyType <- if(is.na(gadmPolyType)) "shpZip" else gadmPolyType
+          
+          custPolyPath <- gsub("_|\\.", "", stringr::str_extract(string = fileName, pattern = "_CUST-.*\\."))
+          
+          custPolyPath <- if(is.na(custPolyPath)) NULL else custPolyPath
+          
+          newFileName <- getCtryNlDataFname(ctryCode = ctryCode,
+                                                          admLevel = admLevel,
+                                                          gadmVersion = gadmVersion,
+                                                          gadmPolyType = gadmPolyType,
+                                                          custPolyPath = custPolyPath)
           
           message(Sys.time(), ": Rename: '", fileName, "' -> '", newFileName, "' : ", ifelse(file.rename(fileName, newFileName),"Success","Fail"))
           
@@ -226,17 +252,51 @@ upgradeRnightlights <- function()
           nlCols <- grep("NL_", cols, value = T)
           
           newNlCols <- lapply(nlCols, function(x){
-            colSplits <- unlist(strsplit(x, "_"))
+            #colSplits <- unlist(strsplit(x, "_"))
             
-            nlType <- colSplits[2]
+            nlType <- stringr::str_extract(string = x, "(OLS|VIIRS)\\.[D|M|Y]")
             
             nlType <- newNlType(nlType)
             
-            nlPeriod <- colSplits[3]
+            nlPeriod <- stringr::str_extract(string = x, "\\d{4,8}")
             
-            nlStat <- tolower(colSplits[4])
+            nlStat <- gsub("_", "", stringr::str_extract(string = x, "_[A-Z]+$"))
+          
+            configName <- unlist(stringr::str_extract(string = x, pattern = "(CF_CVG|AVG_VIS|STABLE_LIGHTS|PCT_LIGHTS|AVG_LIGHTS_X_PCT|VCMCFG|VCMSL|VCMCFG|VCMSL|VCM-ORM|VCM-ORM-NTL|VCM-NTL)"))
             
-            newColName <- getCtryNlDataColName(nlPeriod, nlStat, nlType)
+            #gsub always returns a string
+            #if configName is null it is pre-0.2.4 where configName=AVG_VIS
+            configName <- if(is.na(configName)) "AVG_VIS" else configName  
+            
+            extraOptions <- gsub("_", "", stringr::str_extract(string = x, pattern = "MTS[A-Z\\-]*_"))
+            
+            extraOptions <- unlist(strsplit(x = extraOptions, split = "-"))
+            
+            multiTileStrategy <- gsub("MTS","",extraOptions[1])
+            
+            #gsub always returns a string
+            #if null use First
+            multiTileStrategy <- if(is.na(multiTileStrategy)) "first" else multiTileStrategy
+            
+            multiTileMergeFun <- extraOptions[2]
+            
+            #gsub always returns a string
+            #if null set multiMergeFun to default
+            multiTileMergeFun <- if(is.na(multiTileMergeFun)) NULL else multiTileMergeFun
+            
+            removeGasFlares <- gsub("RGF", "", extraOptions[3])
+            
+            #gsub always returns a string
+            #if null set removeGasFlares to false
+            removeGasFlares <- if(is.na(removeGasFlares)) FALSE else as.logical(removeGasFlares)
+
+            newColName <- getCtryNlDataColName(nlPeriod = nlPeriod,
+                                               nlStat = nlStat,
+                                               nlType = nlType,
+                                               configName = configName,
+                                               multiTileStrategy = multiTileStrategy,
+                                               multiTileMergeFun = multiTileMergeFun,
+                                               removeGasFlares = removeGasFlares)
           })
         
           names(ctryNlData) <- c(ctryCols, newNlCols)
@@ -257,24 +317,79 @@ upgradeRnightlights <- function()
       message(Sys.time(), ": Renaming country rasters:")
 
       setwd(Rnightlights::getNlDir("dirRasterOutput"))
-      fileNames <- list.files(pattern = "^[a-zA-Z]{3}_[a-zA-Z]{3,5}_[0-9]{4,6}\\.tif$")
+      #fileNames <- list.files(pattern = "^[a-zA-Z]{3}_[a-zA-Z]{3,5}_[0-9]{4,6}\\.tif$")
+      
       
       if(length(fileNames) > 0)
       {
         for(fileName in fileNames)
         {
           #split tile filename into components
-          splits <- unlist(strsplit(substr(fileName, 1, nchar(fileName)-4), "_"))
+          #splits <- unlist(strsplit(substr(fileName, 1, nchar(fileName)-4), "_"))
           
-          ctryCode <- splits[1]
+          ctryCodes <- gsub("_", "", stringr::str_extract_all(string = fileName, pattern = "_.{3}_"))
           
-          nlType <- splits[2]
+          ctryCode <- ctryCodes[validCtryCodes(ctryCodes)]
+          
+          nlType <- stringr::str_extract(string = fileName, "(OLS|VIIRS)\\.[D|M|Y]")
           
           nlType <- newNlType(nlType)
           
-          nlPeriod <- splits[3]
+          nlPeriod <- stringr::str_extract(string = fileName, "\\d{4,8}")
           
-          newFileName <- getCtryRasterOutputFname(ctryCode=ctryCode, nlType=nlType, nlPeriod=nlPeriod)
+          nlStat <- gsub("_", "", stringr::str_extract(string = fileName, "_[A-Z]+$"))
+          
+          configName <- unlist(stringr::str_extract(string = fileName, pattern = "(CF_CVG|AVG_VIS|STABLE_LIGHTS|PCT_LIGHTS|AVG_LIGHTS_X_PCT|VCMCFG|VCMSL|VCMCFG|VCMSL|VCM-ORM|VCM-ORM-NTL|VCM-NTL)"))
+          
+          #gsub always returns a string
+          #if configName is null it is pre-0.2.4 where configName=AVG_VIS
+          configName <- if(is.na(configName)) "AVG_VIS" else configName  
+          
+          extraOptions <- gsub("_", "", stringr::str_extract(string = fileName, pattern = "MTS[A-Z\\-]*_"))
+          
+          extraOptions <- unlist(strsplit(x = extraOptions, split = "-"))
+          
+          multiTileStrategy <- gsub("MTS","",extraOptions[1])
+          
+          #gsub always returns a string
+          #if null use First
+          multiTileStrategy <- if(is.na(multiTileStrategy)) "first" else multiTileStrategy
+          
+          multiTileMergeFun <- extraOptions[2]
+          
+          #gsub always returns a string
+          #if null set multiMergeFun to default
+          multiTileMergeFun <- if(is.na(multiTileMergeFun)) NULL else multiTileMergeFun
+          
+          removeGasFlares <- gsub("RGF", "", extraOptions[3])
+          
+          #gsub always returns a string
+          #if null set removeGasFlares to false
+          removeGasFlares <- if(is.na(removeGasFlares)) FALSE else as.logical(removeGasFlares)          
+          
+          gadmVersion <- gsub("_", "", stringr::str_extract(string = fileName, pattern = "_GADM-\\d\\.\\d"))
+          
+          #if gadm version not found it is 2.8
+          gadmVersion <- if(is.na(gadmVersion)) "2.8" else unlist(strsplit(gadmVersion,"-"))[2]
+          
+          gadmPolyType <- gsub("_", "", stringr::str_extract(string = fileName, pattern = "sh?p(Zip|Rds)"))
+          
+          gadmPolyType <- if(is.na(gadmPolyType)) "shpZip" else gadmPolyType
+          
+          custPolyPath <- gsub("_|\\.", "", stringr::str_extract(string = fileName, pattern = "_CUST-.*\\."))
+          
+          custPolyPath <- if(is.na(custPolyPath)) NULL else custPolyPath
+          
+          newFileName <- getCtryRasterOutputFname(ctryCode=ctryCode,
+                                                  nlType=nlType,
+                                                  nlPeriod=nlPeriod,
+                                                  configName = configName,
+                                                  multiTileStrategy = multiTileStrategy,
+                                                  multiTileMergeFun = multiTileMergeFun,
+                                                  removeGasFlares = removeGasFlares,
+                                                  gadmVersion = gadmVersion,
+                                                  gadmPolyType = gadmPolyType,
+                                                  custPolyPath = custPolyPath)
           
           message(Sys.time(), ": Rename:: '", fileName, "' -> '", newFileName, "' : ", ifelse(file.rename(fileName, newFileName), "Success", "Fail"))
           
