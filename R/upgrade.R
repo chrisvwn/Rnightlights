@@ -245,7 +245,7 @@ upgradeRnightlights <- function()
                                                           custPolyPath = custPolyPath)
           
           res <- file.rename(fileName, newFileName)
-          resTxt <- paste0("Rename: '", fileName, "' -> '", newTileName, "' : ", ifelse(res, "Success", "Fail"))
+          resTxt <- paste0("Rename: '", fileName, "' -> '", newFileName, "' : ", ifelse(res, "Success", "Fail"))
           message(Sys.time(), ": ", resTxt)
           
           idx <- idx + 0.1
@@ -263,7 +263,7 @@ upgradeRnightlights <- function()
           ctryCols <- grep("NL_", cols, invert = T, value = T)
           nlCols <- grep("NL_", cols, value = T)
           
-          newNlCols <- lapply(nlCols, function(x){
+          newNlCols <- sapply(nlCols, function(x){
             #colSplits <- unlist(strsplit(x, "_"))
             
             nlType <- stringr::str_extract(string = x, "(OLS|VIIRS)\\.[D|M|Y]")
@@ -311,6 +311,8 @@ upgradeRnightlights <- function()
                                                removeGasFlares = removeGasFlares)
           })
         
+          message("Renaming: ", paste(nlCols, sep="|"), " to: ", paste(newNlCols, sep="|"))
+          
           names(ctryNlData) <- c(ctryCols, newNlCols)
           
           utils::write.table(ctryNlData, newFileName, row.names = F, sep = ",")
@@ -453,5 +455,7 @@ upgradeRnightlights <- function()
       
       utils::write.table(x = upgradeLog, file = logFile, sep = ",")
     }
+    
+    setwd(origWd)
   })
 }
