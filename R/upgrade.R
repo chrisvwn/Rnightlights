@@ -332,7 +332,7 @@ upgradeRnightlights <- function()
 
       setwd(Rnightlights::getNlDir("dirRasterOutput"))
       #fileNames <- list.files(pattern = "^[a-zA-Z]{3}_[a-zA-Z]{3,5}_[0-9]{4,6}\\.tif$")
-      
+      fileNames <- list.files(pattern = ".tif")
       
       if(length(fileNames) > 0)
       {
@@ -369,13 +369,11 @@ upgradeRnightlights <- function()
           
           multiTileMergeFun <- extraOptions[2]
           
-          #gsub always returns a string
           #if null set multiMergeFun to default
           multiTileMergeFun <- if(is.na(multiTileMergeFun)) NULL else multiTileMergeFun
           
           removeGasFlares <- gsub("RGF", "", extraOptions[3])
           
-          #gsub always returns a string
           #if null set removeGasFlares to false
           removeGasFlares <- if(is.na(removeGasFlares)) FALSE else as.logical(removeGasFlares)          
           
