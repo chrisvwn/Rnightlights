@@ -294,7 +294,7 @@ upgradeRnightlights <- function()
             
             #gsub always returns a string
             #if null set multiMergeFun to default
-            multiTileMergeFun <- if(is.na(multiTileMergeFun)) NULL else multiTileMergeFun
+            multiTileMergeFun <- if(is.na(multiTileMergeFun)) "MEAN" else multiTileMergeFun
             
             removeGasFlares <- gsub("RGF", "", extraOptions[3])
             
