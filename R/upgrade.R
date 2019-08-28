@@ -109,7 +109,7 @@ upgradeRnightlights <- function()
   tryCatch(
   {
     #will only make alterations after the current package version updates
-    pkgVersion <- utils::packageDescription("Rnightlights")$Version
+    pkgVersion <- utils::packageVersion("Rnightlights")
     
     upgradeLog <- data.frame("idx"=NULL, "operation"=NULL, "params"=NULL, "success"=NULL)
     
@@ -183,7 +183,7 @@ upgradeRnightlights <- function()
           
           tileName <- stringr::str_extract(string = fileName, "\\d{2,3}[N|S]\\d{2,3}[E|W]")
   
-          newTileName <- getNlTileTifLclNamePath(nlType = nlType,
+          newTileName <- getNlTileTifLclName(nlType = nlType,
                                                  configName = configName,
                                                  nlPeriod = nlPeriod,
                                                  tileNum = tileName2Idx(tileName = tileName,
