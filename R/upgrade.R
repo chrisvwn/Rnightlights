@@ -452,6 +452,8 @@ upgradeRnightlights <- function()
     if(nrow(upgradeLog) > 0)
     {
       message("Writing upgrade log:")
+      if(!exists("upgradeLog"))
+        message("upgradeLog No")
       
       print(upgradeLog)
       

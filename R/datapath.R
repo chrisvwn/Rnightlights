@@ -363,7 +363,7 @@ setNlDataPath <- function(dataPath)
       #add data-version.txt if a new install
       #also prevents upgrade from running first time
       if(!isMove && !file.exists(file.path(dataPath,dataDirName,"data-version.txt")))
-        setDataVersion(path=file.path(dataPath, dataDirName), pkgVersion = as.character(utils::packageVersion("Rnightlights")))
+        setDataVersion(path=file.path(dataPath, dataDirName), pkgVersion = as.character(utils::packageDescription("Rnightlights")$Version))
       
       #create the package dirs
       createNlDataDirs()
