@@ -6,6 +6,21 @@ context("admLevels")
 test_that("admLevel lookups work", {
   skip_if_not(internetAvailable(), "Internet not available")
   
+  #no ctryCode
+  expect_error(Rnightlights:::getCtryPolyAdmLevelNames(), "Missing required parameter ctryCode")
+  
+  #specify lowestAdmLevel
+  expect_equal(Rnightlights:::getCtryPolyAdmLevelNames(ctryCode = "STP", lowestAdmLevel = "gadm36_STP_1"), c("country", "Municipality_(Concelho)"), fixed=TRUE)
+  
+  #specify already downloaded gadmVersion 
+  expect_equal(Rnightlights:::getCtryPolyAdmLevelNames(ctryCode = "STP", gadmVersion = "3.6"), c("country", "Municipality_(Concelho)", "District"), fixed=TRUE)
+  
+  #specify mismatching gadmVersion and lowestAdmLevel
+  expect_error(Rnightlights:::getCtryPolyAdmLevelNames(ctryCode = "STP", lowestAdmLevel = "gadm36_STP_1", gadmVersion = "2.8"), "argument of length 0")
+  
+  #specify non-existent custPolyPath
+  expect_error(Rnightlights:::getCtryPolyAdmLevelNames(custPolyPath = "unknown"), "No such file or directory")
+  
   #ctryCodeToName
   expect_equal(Rnightlights:::getCtryPolyAdmLevelNames("STP"), c("country", "Municipality_(Concelho)", "District"), fixed=TRUE)
   expect_equal(Rnightlights:::getCtryPolyAdmLevelNames("STP", "gadm36_STP_1"), c("country", "Municipality_(Concelho)"), fixed=TRUE)

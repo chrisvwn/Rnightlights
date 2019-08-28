@@ -20,8 +20,10 @@ test_that("datapaths work", {
   #data path should have changed to tempPath
   expect_equal(Rnightlights::getNlDataPath(), tempPath)
 
+  #test remove non-interactive with confirm=FALSE
   expect_message(Rnightlights:::removeDataPath(dataPath = file.path(tempPath, ".Rnightlights")), "Aborted")
   
+  #test remove non-interactive with confirm=TRUE
   expect_message(Rnightlights:::removeDataPath(dataPath=file.path(tempPath, ".Rnightlights"), confirm=TRUE), "Removed dataPath")
   
   expect_equal(list.files(file.path(tempPath, ".Rnightlights")), character(0))
