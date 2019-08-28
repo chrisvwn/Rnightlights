@@ -4,7 +4,8 @@
 \alias{setDataVersion}
 \title{Add data version file to the root data path}
 \usage{
-setDataVersion(path = getNlDataPath(), pkgVersion)
+setDataVersion(path = getNlDataPath(),
+  pkgVersion = utils::packageDescription("Rnightlights")$Version)
 }
 \arguments{
 \item{path}{The folder to add the README file to}

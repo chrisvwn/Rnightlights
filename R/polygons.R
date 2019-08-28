@@ -1476,9 +1476,10 @@ getCtryPolyAdmLevelNames <- function(ctryCode=NULL,
 
 ######################## getCtryStructAdmLevelNames ###################################
 
-#' Get the list of admin level names in a polygon shapefile
+#' Get the list of admin level names from a ctryStruct file
 #'
-#' Get the list of admin level names in a polygon shapefile. It returns
+#' Get the list of admin level names from a ctryStruct file created from
+#'     the polygon for speed. It returns:
 #'     all official names starting from 1 to the specified 
 #'     \code{lowestAdmLevel}. If not \code{lowestAdmLevel} is not
 #'     specified, all admin level names are returned
@@ -1497,7 +1498,7 @@ getCtryPolyAdmLevelNames <- function(ctryCode=NULL,
 #'
 #' @examples
 #' \dontrun{
-#' Rnightlights:::getCtryPolyAdmLevelNames("KEN")
+#' Rnightlights:::getCtryStructAdmLevelNames("KEN")
 #' #returns vector [1] "County"       "Constituency" "Ward"
 #' #if KEN shapefile exists otherwise errors
 #' }
