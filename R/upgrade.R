@@ -183,13 +183,13 @@ upgradeRnightlights <- function()
           
           tileName <- stringr::str_extract(string = fileName, "\\d{2,3}[N|S]\\d{2,3}[E|W]")
   
-          newTileName <- getNlTileTifLclNamePath(nlType = nlType,
+          newFileName <- getNlTileTifLclNamePath(nlType = nlType,
                                                  configName = configName,
                                                  nlPeriod = nlPeriod,
                                                  tileNum = tileName2Idx(tileName = tileName,
                                                                         nlType =  nlType))
           res <- file.rename(fileName, newFileName)
-          resTxt <- paste0("Rename: '", fileName, "' -> '", newTileName, "' : ", ifelse(res, "Success", "Fail"))
+          resTxt <- paste0("Rename: '", fileName, "' -> '", newFileName, "' : ", ifelse(res, "Success", "Fail"))
           message(Sys.time(), ": ", resTxt)
           
           idx <- idx + 0.1
@@ -404,7 +404,7 @@ upgradeRnightlights <- function()
                                                   custPolyPath = custPolyPath)
           
           res <- file.rename(fileName, newFileName)
-          resTxt <- paste0("Rename: '", fileName, "' -> '", newTileName, "' : ", ifelse(res, "Success", "Fail"))
+          resTxt <- paste0("Rename: '", fileName, "' -> '", newFileName, "' : ", ifelse(res, "Success", "Fail"))
           message(Sys.time(), ": ", resTxt)
           
           idx <- idx + 0.1
