@@ -183,7 +183,7 @@ upgradeRnightlights <- function()
           
           tileName <- stringr::str_extract(string = fileName, "\\d{2,3}[N|S]\\d{2,3}[E|W]")
   
-          newTileName <- getNlTileTifLclName(nlType = nlType,
+          newTileName <- getNlTileTifLclNamePath(nlType = nlType,
                                                  configName = configName,
                                                  nlPeriod = nlPeriod,
                                                  tileNum = tileName2Idx(tileName = tileName,
