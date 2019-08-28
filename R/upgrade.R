@@ -453,6 +453,8 @@ upgradeRnightlights <- function()
     {
       message("Writing upgrade log:")
       
+      print(upgradeLog)
+      
       logFile = file.path(Rnightlights::getNlDir("dirNlDataPath"), paste0("upgrade-",pkgVersion,".log"))
       
       utils::write.table(x = upgradeLog, file = logFile, sep = ",")
