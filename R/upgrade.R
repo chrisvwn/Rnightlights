@@ -266,7 +266,7 @@ upgradeRnightlights <- function()
           newNlCols <- sapply(nlCols, function(x){
             #colSplits <- unlist(strsplit(x, "_"))
             
-            nlType <- stringr::str_extract(string = x, "(OLS|VIIRS)\\.[D|M|Y]")
+            nlType <- stringr::str_extract(string = x, "(OLS|VIIRS)")
             
             nlType <- newNlType(nlType)
             
@@ -422,7 +422,7 @@ upgradeRnightlights <- function()
       setwd(getNlDir("dirZonals"))
       
       if(length(list.files()) > 0)
-        message(ifelse(all(file.remove(list.files())), "Success", "Fail"))
+        message("Delete zonal tiles: ", ifelse(all(file.remove(list.files())), "Success", "Fail"))
       else
         message(Sys.time(), ": No upgrade required")
       
