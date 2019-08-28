@@ -175,12 +175,14 @@ upgradeRnightlights <- function()
           
           nlType <- newNlType(nlType)
           
+          configName <- unlist(stringr::str_extract(string = x, pattern = "(CF_CVG|AVG_VIS|STABLE_LIGHTS|PCT_LIGHTS|AVG_LIGHTS_X_PCT|VCMCFG|VCMSL|VCMCFG|VCMSL|VCM-ORM|VCM-ORM-NTL|VCM-NTL)"))
+          
           nlPeriod <- stringr::str_extract(string = fileName, "\\d{4,8}")
           
           tileName <- stringr::str_extract(string = fileName, "\\d{2,3}[N|S]\\d{2,3}[E|W]")
   
           newTileName <- getNlTileTifLclNamePath(nlType = nlType,
-                                                 configName = "avg_vis",
+                                                 configName = 
                                                  nlPeriod = nlPeriod,
                                                  tileNum = tileName2Idx(tileName = tileName,
                                                                         nlType =  nlType))
@@ -269,8 +271,8 @@ upgradeRnightlights <- function()
             configName <- unlist(stringr::str_extract(string = x, pattern = "(CF_CVG|AVG_VIS|STABLE_LIGHTS|PCT_LIGHTS|AVG_LIGHTS_X_PCT|VCMCFG|VCMSL|VCMCFG|VCMSL|VCM-ORM|VCM-ORM-NTL|VCM-NTL)"))
             
             #gsub always returns a string
-            #if configName is null it is pre-0.2.4 where configName=AVG_VIS
-            configName <- if(is.na(configName)) "AVG_VIS" else configName  
+            #if configName is null it is pre-0.2.4 where configName=AVG_VIS or VCM_CFG
+            configName <- if(is.na(configName)) ifelse(grepl("OLS", nlType), "AVG_VIS", "VCM_CFG")  else configName  
             
             extraOptions <- gsub("_", "", stringr::str_extract(string = x, pattern = "MTS[A-Z\\-]*_"))
             
