@@ -417,6 +417,71 @@ upgradeRnightlights <- function()
         message(Sys.time(), ": No upgrade required")
       }
       
+      #rename polygons
+      idx <- round(idx + 1)
+      
+      #rename tiles using new format
+      message(Sys.time(), ": Renaming country rasters:")
+      
+      setwd(Rnightlights::getNlDir("dirPolygon"))
+      
+      #fileNames <- list.files(pattern = "^[a-zA-Z]{3}_[a-zA-Z]{3,5}_[0-9]{4,6}\\.tif$")
+      fileNames <- list.files()
+      
+      if(length(fileNames) > 0)
+      {
+        for(fileName in fileNames)
+        {
+          #split tile filename into components
+          #splits <- unlist(strsplit(substr(fileName, 1, nchar(fileName)-4), "_"))
+          
+          ctryCodes <- gsub("_", "", stringr::str_extract_all(string = fileName, pattern = "_.{3}_"))
+          
+          ctryCode <- ctryCodes[validCtryCodes(ctryCodes)]
+          
+          gadmVersion <- gsub("_", "", stringr::str_extract(string = fileName, pattern = "_GADM-\\d\\.\\d"))
+          
+          #if gadm version not found it is 2.8
+          gadmVersion <- if(is.na(gadmVersion)) "2.8" else unlist(strsplit(gadmVersion,"-"))[2]
+          
+          gadmPolyType <- gsub("_", "", stringr::str_extract(string = fileName, pattern = "sh?p(Zip|Rds)"))
+          
+          gadmPolyType <- if(is.na(gadmPolyType)) "shpZip" else gadmPolyType
+          
+          custPolyPath <- gsub("_|\\.", "", stringr::str_extract(string = fileName, pattern = "_CUST-.*\\."))
+          
+          custPolyPath <- if(is.na(custPolyPath)) NULL else custPolyPath
+          
+          newFileName <- if(tools::file_ext(fileName)=="RDS")
+            getPolyFnameRDS(ctryCode=ctryCode,
+                            gadmVersion = gadmVersion,
+                            gadmPolyType = gadmPolyType,
+                            custPolyPath = custPolyPath)
+          else if(tools::file_ext(fileName)=="zip")
+            getPolyFnameZip(ctryCode=ctryCode,
+                           gadmVersion = gadmVersion,
+                           gadmPolyType = gadmPolyType,
+                           custPolyPath = custPolyPath)
+          else
+            getPolyFname(ctryCode=ctryCode,
+                        gadmVersion = gadmVersion,
+                        gadmPolyType = gadmPolyType,
+                        custPolyPath = custPolyPath)
+          
+
+          res <- file.rename(fileName, newFileName)
+          resTxt <- paste0("Rename: '", fileName, "' -> '", newFileName, "' : ", ifelse(res, "Success", "Fail"))
+          message(Sys.time(), ": ", resTxt)
+          
+          idx <- idx + 0.1
+          
+          upgradeLog <- rbind.data.frame(upgradeLog, cbind(idx=idx, operation="file.rename", params=paste(fileName, newFileName, sep="=", collapse="|"), success=res))
+        }
+      }else
+      {
+        message(Sys.time(), ": No upgrade required")
+      }
+      
       #remove zonal rasters will be recreated at next run
       message(Sys.time(), ": Remove Old Zonal Files:")
       setwd(getNlDir("dirZonals"))
