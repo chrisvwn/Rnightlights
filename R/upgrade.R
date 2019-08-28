@@ -244,7 +244,7 @@ upgradeRnightlights <- function()
                                                           gadmPolyType = gadmPolyType,
                                                           custPolyPath = custPolyPath)
           
-          res <- file.rename(fileName, newTileName)
+          res <- file.rename(fileName, newFileName)
           resTxt <- paste0("Rename: '", fileName, "' -> '", newTileName, "' : ", ifelse(res, "Success", "Fail"))
           message(Sys.time(), ": ", resTxt)
           
