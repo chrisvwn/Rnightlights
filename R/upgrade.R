@@ -311,13 +311,13 @@ upgradeRnightlights <- function()
                                                removeGasFlares = removeGasFlares)
           })
         
-          message("Renaming: ", paste(nlCols, sep="|"), " to: ", paste(newNlCols, sep="|"))
+          message("Renaming: ", paste(nlCols, collapse="|"), " to: ", paste(newNlCols, collapse="|"))
           
           names(ctryNlData) <- c(ctryCols, newNlCols)
           
           utils::write.table(ctryNlData, newFileName, row.names = F, sep = ",")
           
-          upgradeLog <- rbind.data.frame(upgradeLog, cbind(idx, "cols.rename", paste(nlCols, newNlCols, sep="|"), TRUE))
+          upgradeLog <- rbind.data.frame(upgradeLog, cbind(idx, "cols.rename", paste(nlCols, newNlCols, sep="=", collapse="|"), TRUE))
           
         }
       }else
