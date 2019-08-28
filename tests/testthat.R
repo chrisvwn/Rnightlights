@@ -16,10 +16,8 @@ setup({
   #clipping and data extraction
   currDir <<- getNlDataPath()
   
-  tempDir <<- path.expand(file.path("~", basename(tempdir())))
-  
-  dir.create(tempDir)
-  
+  tempDir <<- tempdir()
+
   Rnightlights:::setNlDataPath(tempDir)
 })
 
