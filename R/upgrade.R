@@ -175,14 +175,16 @@ upgradeRnightlights <- function()
           
           nlType <- newNlType(nlType)
           
-          configName <- unlist(stringr::str_extract(string = x, pattern = "(CF_CVG|AVG_VIS|STABLE_LIGHTS|PCT_LIGHTS|AVG_LIGHTS_X_PCT|VCMCFG|VCMSL|VCMCFG|VCMSL|VCM-ORM|VCM-ORM-NTL|VCM-NTL)"))
+          configName <- unlist(stringr::str_extract(string = fileName, pattern = "(CF_CVG|AVG_VIS|STABLE_LIGHTS|PCT_LIGHTS|AVG_LIGHTS_X_PCT|VCMCFG|VCMSL|VCMCFG|VCMSL|VCM-ORM|VCM-ORM-NTL|VCM-NTL)"))
+          
+          configName <- if(is.na(configName)) ifelse(grepl("OLS",nlType), "AVG_VIS", "VCM_CFG")  else configName  
           
           nlPeriod <- stringr::str_extract(string = fileName, "\\d{4,8}")
           
           tileName <- stringr::str_extract(string = fileName, "\\d{2,3}[N|S]\\d{2,3}[E|W]")
   
           newTileName <- getNlTileTifLclNamePath(nlType = nlType,
-                                                 configName = 
+                                                 configName = configName,
                                                  nlPeriod = nlPeriod,
                                                  tileNum = tileName2Idx(tileName = tileName,
                                                                         nlType =  nlType))
