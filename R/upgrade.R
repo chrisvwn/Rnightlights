@@ -188,13 +188,16 @@ upgradeRnightlights <- function()
                                                  nlPeriod = nlPeriod,
                                                  tileNum = tileName2Idx(tileName = tileName,
                                                                         nlType =  nlType))
+          
+          newFileName <- basename(newFileName)
+          
           res <- file.rename(fileName, newFileName)
           resTxt <- paste0("Rename: '", fileName, "' -> '", newFileName, "' : ", ifelse(res, "Success", "Fail"))
           message(Sys.time(), ": ", resTxt)
           
           idx <- idx + 0.1
           
-          upgradeLog <- rbind.data.frame(upgradeLog, cbind(idx=idx, operation="file.rename", params=paste0(fileName, newFileName, collapse="|"), success=res))
+          upgradeLog <- rbind.data.frame(upgradeLog, cbind(idx=idx, operation="file.rename", params=paste(fileName, newFileName, sep="=", collapse="|"), success=res))
         }
       }else
       {
@@ -250,7 +253,7 @@ upgradeRnightlights <- function()
           
           idx <- idx + 0.1
           
-          upgradeLog <- rbind.data.frame(upgradeLog, cbind(idx=idx, operation="file.rename", params=paste0(fileName, newFileName, collapse="|"), success=res))
+          upgradeLog <- rbind.data.frame(upgradeLog, cbind(idx=idx, operation="file.rename", params=paste(fileName, newFileName, sep="=", collapse="|"), success=res))
           
           message(Sys.time(), ": Renaming columns:")
           
@@ -370,7 +373,7 @@ upgradeRnightlights <- function()
           multiTileMergeFun <- extraOptions[2]
           
           #if null set multiMergeFun to default
-          multiTileMergeFun <- if(is.na(multiTileMergeFun)) NULL else multiTileMergeFun
+          multiTileMergeFun <- if(is.na(multiTileMergeFun)) "MEAN" else multiTileMergeFun
           
           removeGasFlares <- gsub("RGF", "", extraOptions[3])
           
@@ -407,8 +410,7 @@ upgradeRnightlights <- function()
           
           idx <- idx + 0.1
           
-          upgradeLog <- rbind.data.frame(upgradeLog, cbind(idx=idx, operation="file.rename", params=paste0(fileName, newFileName, collapse="|"), success=res))
-          
+          upgradeLog <- rbind.data.frame(upgradeLog, cbind(idx=idx, operation="file.rename", params=paste(fileName, newFileName, sep="=", collapse="|"), success=res))
         }
       }else
       {
