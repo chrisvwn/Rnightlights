@@ -559,8 +559,8 @@ createNlDataDirs <- function()
   if(!dir.exists(getNlDir("dirNlTiles")))
     dir.create(getNlDir("dirNlTiles"))
   
-  if(!dir.exists(getNlDir("dirNlTiles")))
-    dir.create(getNlDir("dirNlTiles"))
+  if(!dir.exists(getNlDir("dirNlGasFlares")))
+    dir.create(getNlDir("dirNlGasFlares"))
   
   if(!dir.exists(getNlDir("dirNlData")))
     dir.create(getNlDir("dirNlData"))

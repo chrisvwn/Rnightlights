@@ -122,6 +122,10 @@ upgradeRnightlights <- function()
       return(TRUE)
     }
     
+    #if the gasflares dir does not exist create it
+    if(!dir.exists(getNlDir("dirNlGasFlares")))
+      dir.create(getNlDir("dirNlGasFlares"))
+    
     dataVersionFile <- file.path(Rnightlights::getNlDir("dirNlDataPath"), "data-version.txt")
     
     if(file.exists(dataVersionFile))
@@ -260,7 +264,7 @@ upgradeRnightlights <- function()
             
             nlPeriod <- stringr::str_extract(string = x, "\\d{4,8}")
             
-            nlStat <- gsub("_", "", stringr::str_extract(string = x, "_[A-Z]+$"))
+            nlStat <- tolower(gsub("_", "", stringr::str_extract(string = x, "_[A-Z]+$")))
           
             configName <- unlist(stringr::str_extract(string = x, pattern = "(CF_CVG|AVG_VIS|STABLE_LIGHTS|PCT_LIGHTS|AVG_LIGHTS_X_PCT|VCMCFG|VCMSL|VCMCFG|VCMSL|VCM-ORM|VCM-ORM-NTL|VCM-NTL)"))
             
@@ -336,8 +340,6 @@ upgradeRnightlights <- function()
           nlType <- newNlType(nlType)
           
           nlPeriod <- stringr::str_extract(string = fileName, "\\d{4,8}")
-          
-          nlStat <- gsub("_", "", stringr::str_extract(string = fileName, "_[A-Z]+$"))
           
           configName <- unlist(stringr::str_extract(string = fileName, pattern = "(CF_CVG|AVG_VIS|STABLE_LIGHTS|PCT_LIGHTS|AVG_LIGHTS_X_PCT|VCMCFG|VCMSL|VCMCFG|VCMSL|VCM-ORM|VCM-ORM-NTL|VCM-NTL)"))
           
