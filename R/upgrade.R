@@ -208,7 +208,7 @@ upgradeRnightlights <- function()
       setwd(Rnightlights::getNlDir("dirNlData"))
       
       #fileNames <- list.files(pattern = "^[[:alpha:]]{3,5}_NLData\\.csv$")
-      fileNames <- grep(list.files(), pattern = "STRUCT", invert = TRUE, value = TRUE)
+      fileNames <- grep(list.files(full.names = TRUE), pattern = "STRUCT", invert = TRUE, value = TRUE)
       
       if(length(fileNames) > 0)
       {
