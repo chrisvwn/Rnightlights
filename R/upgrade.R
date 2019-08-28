@@ -451,6 +451,8 @@ upgradeRnightlights <- function()
     cat(pkgVersion, file = file.path(Rnightlights::getNlDir("dirNlDataPath"), "data-version.txt"))
     if(nrow(upgradeLog) > 0)
     {
+      message("Writing upgrade log:")
+      
       logFile = file.path(Rnightlights::getNlDir("dirNlDataPath"), paste0("upgrade-",pkgVersion,".log"))
       
       utils::write.table(x = upgradeLog, file = logFile, sep = ",")
