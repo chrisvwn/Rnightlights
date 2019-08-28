@@ -179,6 +179,8 @@ upgradeRnightlights <- function()
           
           configName <- if(is.na(configName)) ifelse(grepl("OLS",nlType), "AVG_VIS", "VCM_CFG")  else configName  
           
+          configName <- if(is.na(configName)) ifelse(grepl("OLS",nlType), "AVG_VIS", "VCM_CFG")  else configName  
+          
           nlPeriod <- stringr::str_extract(string = fileName, "\\d{4,8}")
           
           tileName <- stringr::str_extract(string = fileName, "\\d{2,3}[N|S]\\d{2,3}[E|W]")
