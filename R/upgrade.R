@@ -455,7 +455,5 @@ upgradeRnightlights <- function()
       
       utils::write.table(x = upgradeLog, file = logFile, sep = ",")
     }
-    
-    setwd(origWd)
   })
 }
