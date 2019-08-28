@@ -177,9 +177,7 @@ upgradeRnightlights <- function()
           
           configName <- unlist(stringr::str_extract(string = fileName, pattern = "(CF_CVG|AVG_VIS|STABLE_LIGHTS|PCT_LIGHTS|AVG_LIGHTS_X_PCT|VCMCFG|VCMSL|VCMCFG|VCMSL|VCM-ORM|VCM-ORM-NTL|VCM-NTL)"))
           
-          configName <- if(is.na(configName)) ifelse(grepl("OLS",nlType), "AVG_VIS", "VCM_CFG")  else configName  
-          
-          configName <- if(is.na(configName)) ifelse(grepl("OLS",nlType), "AVG_VIS", "VCM_CFG")  else configName  
+          configName <- if(is.na(configName)) ifelse(grepl("OLS",nlType), "AVG_VIS", "VCMCFG")  else configName  
           
           nlPeriod <- stringr::str_extract(string = fileName, "\\d{4,8}")
           
@@ -276,7 +274,7 @@ upgradeRnightlights <- function()
             
             #gsub always returns a string
             #if configName is null it is pre-0.2.4 where configName=AVG_VIS or VCM_CFG
-            configName <- if(is.na(configName)) ifelse(grepl("OLS", nlType), "AVG_VIS", "VCM_CFG")  else configName  
+            configName <- if(is.na(configName)) ifelse(grepl("OLS", nlType), "AVG_VIS", "VCMCFG")  else configName  
             
             extraOptions <- gsub("_", "", stringr::str_extract(string = x, pattern = "MTS[A-Z\\-]*_"))
             
