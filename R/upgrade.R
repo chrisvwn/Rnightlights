@@ -171,7 +171,7 @@ upgradeRnightlights <- function()
           #split tile filename into components
           #splits <- unlist(strsplit(tools::file_path_sans_ext(fileName), "_"))
           
-          nlType <- stringr::str_extract(string = fileName, "(OLS|VIIRS)\\.[D|M|Y]")
+          nlType <- stringr::str_extract(string = fileName, "(OLS|VIIRS)(\\.[D|M|Y])?")
           
           nlType <- newNlType(nlType)
           
@@ -266,7 +266,7 @@ upgradeRnightlights <- function()
           newNlCols <- sapply(nlCols, function(x){
             #colSplits <- unlist(strsplit(x, "_"))
             
-            nlType <- stringr::str_extract(string = x, "(OLS|VIIRS)")
+            nlType <- stringr::str_extract(string = x, "(OLS|VIIRS)(\\.[D|M|Y])?")
             
             nlType <- newNlType(nlType)
             
@@ -345,7 +345,7 @@ upgradeRnightlights <- function()
           
           ctryCode <- ctryCodes[validCtryCodes(ctryCodes)]
           
-          nlType <- stringr::str_extract(string = fileName, "(OLS|VIIRS)\\.[D|M|Y]")
+          nlType <- stringr::str_extract(string = fileName, "(OLS|VIIRS)(\\.[D|M|Y])?")
           
           nlType <- newNlType(nlType)
           
