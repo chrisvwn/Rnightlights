@@ -109,7 +109,7 @@ upgradeRnightlights <- function()
   tryCatch(
   {
     #will only make alterations after the current package version updates
-    pkgVersion <- utils::packageVersion("Rnightlights")
+    pkgVersion <- utils::packageDescription("Rnightlights")$Version
     
     upgradeLog <- data.frame("idx"=NULL, "operation"=NULL, "params"=NULL, "success"=NULL)
     

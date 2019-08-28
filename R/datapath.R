@@ -524,7 +524,7 @@ addREADME <- function(to=getNlDataPath())
 #'   Rnightlights:::setDataVersion(version="0.2.4")
 #'   }
 #'     
-setDataVersion <- function(path=getNlDataPath(), pkgVersion = utils::packageVersion("Rnightlights"))
+setDataVersion <- function(path=getNlDataPath(), pkgVersion = utils::packageDescription("Rnightlights")$Version)
 {
   # Add a data-version.txt to dataPath (to show the data directory version)
   filename <- "data-version.txt"
