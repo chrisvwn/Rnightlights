@@ -194,7 +194,7 @@ upgradeRnightlights <- function()
           
           idx <- idx + 0.1
           
-          upgradeLog <- rbind.data.frame(upgradeLog, cbind(idx, "file.rename", paste0(tileName, newTileName, sep="|"), res))
+          upgradeLog <- rbind.data.frame(upgradeLog, cbind(idx, "file.rename", paste0(tileName, newTileName, collapse="|"), res))
         }
       }else
       {
@@ -250,7 +250,7 @@ upgradeRnightlights <- function()
           
           idx <- idx + 0.1
           
-          upgradeLog <- rbind.data.frame(upgradeLog, cbind(idx, "file.rename", paste0(tileName, newTileName, sep="|"), res))
+          upgradeLog <- rbind.data.frame(upgradeLog, cbind(idx, "file.rename", paste0(tileName, newTileName, collapse="|"), res))
           
           message(Sys.time(), ": Renaming columns:")
           
@@ -410,7 +410,7 @@ upgradeRnightlights <- function()
           
           idx <- idx + 0.1
           
-          upgradeLog <- rbind.data.frame(upgradeLog, cbind(idx, "file.rename", paste0(tileName, newTileName, sep="|"), res))
+          upgradeLog <- rbind.data.frame(upgradeLog, cbind(idx, "file.rename", paste0(tileName, newTileName, collapse="|"), res))
           
         }
       }else
