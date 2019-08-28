@@ -170,7 +170,9 @@ nlCleanup <- function(temp=TRUE, tileCache=FALSE)
 #'
 #' Format credits to print to the console
 #'
-#' @param credits character a single length character vector with newlines
+#' @param credits character a single length character vector with newlineChar
+#'     used to separate lines. Two consecutive newlineChara are used to
+#'     put in a horizontal divider
 #' 
 #' @param newLineChar character the character/sequence used to split the 
 #'     credits into new lines
@@ -189,22 +191,21 @@ nlCleanup <- function(temp=TRUE, tileCache=FALSE)
 #'  
 #' @return character a formatted credits character vector
 #' 
-#' @example
+#' @examples
+#'   printCredits(credits="DMSP data collected by US Air Force Weather Agency|
+#'   Image and data processing by NOAA's National Geophysical Data Center|
+#'   (https://www.ngdc.noaa.gov/eog/download.html)||
+#'   Maps distributed by GADM|(https://gadm.org)", newLineChar="|")
 #' 
-#' printCredits("DMSP data collected by US Air Force Weather Agency
-#'Image and data processing by NOAA's National Geophysical Data Center
-#'(https://www.ngdc.noaa.gov/eog/download.html)
-#'
-#'Maps distributed by GADM
-#'(https://gadm.org)")
-#'
-#'
 #' @export
 printCredits <- function(credits, newLineChar="\n", surroundChar = "*", horzPadding = 1, vertPadding = 1, horzWidth = 3, vertWidth = 2)
 {
   width <- getOption("width")
   
-  credits <- unlist(strsplit(x = credits, split = newLineChar))
+  if(newLineChar != "\n")
+    credits <- gsub(pattern = "\n", replacement = "", x = credits)
+  
+  credits <- unlist(strsplit(x = credits, split = newLineChar, fixed = T))
   
   sideFrame <- paste(rep(surroundChar, horzWidth), collapse = "")  
   

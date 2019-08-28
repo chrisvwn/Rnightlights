@@ -8,7 +8,9 @@ printCredits(credits, newLineChar = "\\n", surroundChar = "*",
   horzPadding = 1, vertPadding = 1, horzWidth = 3, vertWidth = 2)
 }
 \arguments{
-\item{credits}{character a single length character vector with newlines}
+\item{credits}{character a single length character vector with newlineChar
+used to separate lines. Two consecutive newlineChara are used to
+put in a horizontal divider}
 
 \item{newLineChar}{character the character/sequence used to split the 
 credits into new lines}
@@ -30,4 +32,11 @@ character a formatted credits character vector
 }
 \description{
 Format credits to print to the console
+}
+\examples{
+  printCredits(credits="DMSP data collected by US Air Force Weather Agency|
+  Image and data processing by NOAA's National Geophysical Data Center|
+  (https://www.ngdc.noaa.gov/eog/download.html)||
+  Maps distributed by GADM|(https://gadm.org)", newLineChar="|")
+
 }

@@ -9,7 +9,7 @@
 #' @examples
 #' getAllNlConfigNames("OLS.Y")
 #'  #returns '"cf_cvg", "avg_vis", "stable_lights"'
-
+#'  
 #' @export
 getAllNlConfigNames <- function(nlType)
 {

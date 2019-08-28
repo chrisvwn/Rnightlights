@@ -15,4 +15,5 @@ Generate a list of all possible configNames for a given nlType
 \examples{
 getAllNlConfigNames("OLS.Y")
  #returns '"cf_cvg", "avg_vis", "stable_lights"'
+ 
 }
