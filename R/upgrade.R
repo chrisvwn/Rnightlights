@@ -126,7 +126,7 @@ upgradeRnightlights <- function()
     if(!dir.exists(getNlDir("dirNlGasFlares")))
       dir.create(getNlDir("dirNlGasFlares"))
     
-    dataVersionFile <- file.path(Rnightlights::getNlDir("dirNlDataPath"), "data-version.txt")
+    dataVersionFile <- file.path(getNlDir("dirNlDataPath"), "data-version.txt")
     
     if(file.exists(dataVersionFile))
     {
@@ -157,7 +157,7 @@ upgradeRnightlights <- function()
       idx <- 1
       
       #rename tiles using new format
-      origWd <- setwd(Rnightlights::getNlDir("dirNlTiles"))
+      origWd <- setwd(getNlDir("dirNlTiles"))
       
       message(Sys.time(), ": Renaming tiles:")
       
@@ -208,7 +208,7 @@ upgradeRnightlights <- function()
       idx <- floor(idx + 1)
       
       message(Sys.time(), ": Renaming data files:")
-      setwd(Rnightlights::getNlDir("dirNlData"))
+      setwd(getNlDir("dirNlData"))
       
       #fileNames <- list.files(pattern = "^[[:alpha:]]{3,5}_NLData\\.csv$")
       fileNames <- grep(list.files(full.names = TRUE), pattern = "STRUCT", invert = TRUE, value = TRUE)
@@ -333,7 +333,7 @@ upgradeRnightlights <- function()
       #rename tiles using new format
       message(Sys.time(), ": Renaming country rasters:")
 
-      setwd(Rnightlights::getNlDir("dirRasterOutput"))
+      setwd(getNlDir("dirRasterOutput"))
       #fileNames <- list.files(pattern = "^[a-zA-Z]{3}_[a-zA-Z]{3,5}_[0-9]{4,6}\\.tif$")
       fileNames <- list.files(pattern = ".tif")
       
@@ -423,7 +423,7 @@ upgradeRnightlights <- function()
       #rename tiles using new format
       message(Sys.time(), ": Renaming country rasters:")
       
-      setwd(Rnightlights::getNlDir("dirPolygon"))
+      setwd(getNlDir("dirPolygon"))
       
       #fileNames <- list.files(pattern = "^[a-zA-Z]{3}_[a-zA-Z]{3,5}_[0-9]{4,6}\\.tif$")
       fileNames <- list.files()
@@ -512,7 +512,7 @@ upgradeRnightlights <- function()
     return(FALSE)
   },finally = {
     #mark as upgraded
-    cat(pkgVersion, file = file.path(Rnightlights::getNlDir("dirNlDataPath"), "data-version.txt"))
+    cat(pkgVersion, file = file.path(getNlDir("dirNlDataPath"), "data-version.txt"))
     if(nrow(upgradeLog) > 0)
     {
       message("Writing upgrade log:")
@@ -521,7 +521,7 @@ upgradeRnightlights <- function()
       
       print(upgradeLog)
       
-      logFile = file.path(Rnightlights::getNlDir("dirNlDataPath"), paste0("upgrade-",pkgVersion,".log"))
+      logFile = file.path(getNlDir("dirNlDataPath"), paste0("upgrade-",pkgVersion,".log"))
       
       utils::write.table(x = upgradeLog, file = logFile, sep = ",")
     }
