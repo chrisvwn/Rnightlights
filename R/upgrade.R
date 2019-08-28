@@ -244,9 +244,13 @@ upgradeRnightlights <- function()
                                                           gadmPolyType = gadmPolyType,
                                                           custPolyPath = custPolyPath)
           
-          message(Sys.time(), ": Rename: '", fileName, "' -> '", newFileName, "' : ", ifelse(file.rename(fileName, newFileName),"Success","Fail"))
+          res <- file.rename(fileName, newTileName)
+          resTxt <- paste0("Rename: '", fileName, "' -> '", newTileName, "' : ", ifelse(res, "Success", "Fail"))
+          message(Sys.time(), ": ", resTxt)
           
-          upgradeLog <- rbind.data.frame(upgradeLog, cbind(idx, "file.rename", paste0(fileName, newFileName, sep="|")))
+          idx <- idx + 0.1
+          
+          upgradeLog <- rbind.data.frame(upgradeLog, cbind(idx, "file.rename", paste0(tileName, newTileName, sep="|"), res))
           
           message(Sys.time(), ": Renaming columns:")
           
@@ -309,9 +313,10 @@ upgradeRnightlights <- function()
         
           names(ctryNlData) <- c(ctryCols, newNlCols)
           
-          upgradeLog <- rbind.data.frame(upgradeLog, cbind(idx, "cols.rename", paste(nlCols, newNlCols, sep="|")))
-          
           utils::write.table(ctryNlData, newFileName, row.names = F, sep = ",")
+          
+          upgradeLog <- rbind.data.frame(upgradeLog, cbind(idx, "cols.rename", paste(nlCols, newNlCols, sep="|")), TRUE)
+          
         }
       }else
       {
@@ -397,9 +402,13 @@ upgradeRnightlights <- function()
                                                   gadmPolyType = gadmPolyType,
                                                   custPolyPath = custPolyPath)
           
-          message(Sys.time(), ": Rename:: '", fileName, "' -> '", newFileName, "' : ", ifelse(file.rename(fileName, newFileName), "Success", "Fail"))
+          res <- file.rename(fileName, newTileName)
+          resTxt <- paste0("Rename: '", fileName, "' -> '", newTileName, "' : ", ifelse(res, "Success", "Fail"))
+          message(Sys.time(), ": ", resTxt)
           
-          upgradeLog <- rbind.data.frame(upgradeLog, cbind(idx, "file.rename", paste0(fileName, newFileName, sep="|")))
+          idx <- idx + 0.1
+          
+          upgradeLog <- rbind.data.frame(upgradeLog, cbind(idx, "file.rename", paste0(tileName, newTileName, sep="|"), res))
           
         }
       }else
