@@ -8,7 +8,7 @@ This version does not fix any bugs. A workaround for a missing layer in at least
 ##### *New features*
 This version introduces a few new features:
 
-- **`ignoreMissing=FALSE is default`** Up to now, `ignoreMissing=FALSE` had to be specified to tell `getCtryNlData` and `processNlData` to process missing nlStats. This is now the default and does not need to be specified. To suppress processing of data for example to retrieve only stats that have already been calculated use `ignoreMissing=TRUE` or to return NULL if any nlStats have not already been calculated set `ignoreMissing=NULL`
+- **`ignoreMissing=FALSE is default`** Up to now, `ignoreMissing=FALSE` had to be specified to tell `getCtryNlData` to process missing nlStats. This is now the default and does not need to be specified. To suppress processing of data for example to retrieve only stats that have already been calculated use `ignoreMissing=TRUE` or to return NULL if any nlStats have not already been calculated set `ignoreMissing=NULL`
 
 - **`default nlStats`** the default nlStats used by `getCtryNlData` and `processNlData` as specified by `pkgOptions("nlStats")` has been altered to introduce the parameter `na.rm=TRUE` for both `sum` and `mean`.
 
