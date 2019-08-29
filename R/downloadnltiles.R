@@ -337,7 +337,7 @@ downloadNlTilesOLS <- function(nlPeriod,
             message(Sys.time(), ": Decompressing ", tgzFile)
             
             if(!file.exists(ntLtsTifLocalNamePathOLSTemp))
-              R.utils::gunzip(filename = file.path(getNlDir("dirNlTiles"), tgzFile), destname = ntLtsTifLocalNamePathOLSTemp, overwite = TRUE)
+              R.utils::gunzip(filename = file.path(getNlDir("dirNlTiles"), tgzFile), destname = ntLtsTifLocalNamePathOLSTemp, overwrite = TRUE)
           
             #unlink(ntLtsZipLocalNamePathOLS, force = TRUE)
           } else if(configName %in% toupper(c("pct_lights", "avg_lights_x_pct")))
