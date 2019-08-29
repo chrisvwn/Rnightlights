@@ -222,7 +222,7 @@ upgradeRnightlights <- function()
           
           #splits <- unlist(strsplit(substr(fileName, 1, nchar(fileName)-4), "_"))
           
-          ctryCodes <- gsub("_", "", stringr::str_extract_all(string = fileName, pattern = "_.{3}_"))
+          ctryCodes <- gsub("_", "", unlist(stringr::str_extract_all(string = fileName, pattern = "_.{3}_")))
           
           ctryCode <- ctryCodes[validCtryCodes(ctryCodes)]
           
@@ -344,7 +344,7 @@ upgradeRnightlights <- function()
           #split tile filename into components
           #splits <- unlist(strsplit(substr(fileName, 1, nchar(fileName)-4), "_"))
           
-          ctryCodes <- gsub("_", "", stringr::str_extract_all(string = fileName, pattern = "_.{3}_"))
+          ctryCodes <- gsub("_", "", unlist(stringr::str_extract_all(string = fileName, pattern = "_.{3}_")))
           
           ctryCode <- ctryCodes[validCtryCodes(ctryCodes)]
           
