@@ -83,7 +83,7 @@ NOTE: \code{processNLCountry()} assumes that all inputs are available
     from the function \code{processNlData()} which does all the 
     preparation for processing. \code{processNlData()} which can process 
     multiple countries and time periods will download all the required 
-    tiles and polygons prior to calling \code{processnlcountry}. 
+    tiles and polygons prior to calling \code{processNlCountry}. 
     \code{getCtryNlData} can also be used with the option 
     \code{ignoreMissing=FALSE} which will call \code{processNlData} 
     in the background.

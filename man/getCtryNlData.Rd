@@ -5,7 +5,7 @@
 \title{Returns nightlight statistics for the given ctryCode and nlType in the given nPeriods}
 \usage{
 getCtryNlData(ctryCode = NULL, admLevel, nlTypes, nlPeriods,
-  nlStats = pkgOptions("nlStats"), ignoreMissing = NULL,
+  nlStats = pkgOptions("nlStats"), ignoreMissing = FALSE,
   gadmVersion = pkgOptions("gadmVersion"),
   gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL,
   downloadMethod = pkgOptions("downloadMethod"),
