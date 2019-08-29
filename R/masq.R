@@ -32,8 +32,6 @@
 #'
 masqVIIRS <- function(ctryPoly, ctryRast, idx, retVal="colrowval", configName)
 {
-  #based on masq function from https://commercedataservice.github.io/tutorial_viirs_part1/
-  #slightly modified to use faster masking method by converting the raster to vector
   #Extract one polygon based on index value i
   polygon <- ctryPoly[idx,] #extract one polygon
   
