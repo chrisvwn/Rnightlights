@@ -509,7 +509,7 @@ upgradeRnightlights <- function()
             Please open an issue on the package github page if you encounter
             any issues. Continuing ...")
     
-    upgradeLog <- rbind.data.frame(upgradeLog, cbind(idx=999, operation="error", params=paste(err, sep="=", collapse="|"), success=res))
+    upgradeLog <- rbind.data.frame(upgradeLog, cbind(idx=999, operation="error", params=paste(err, sep="=", collapse="|"), success=FALSE))
     
     return(TRUE)
   },finally = {
@@ -517,11 +517,16 @@ upgradeRnightlights <- function()
     cat(pkgVersion, file = file.path(getNlDir("dirNlDataPath"), "data-version.txt"))
     if(nrow(upgradeLog) > 0)
     {
-      message("Writing upgrade log:")
-      if(!exists("upgradeLog"))
-        message("upgradeLog No")
+      if(any(!upgradeLog$success))
+        message(Sys.time(), ": The package was unable to upgrade all the data in the Rnightlights data dir. 
+              Some of your old data may not be accessible from the upgraded package
+              but can be accessed manually from the Rnightlights data folder. 
+              Please open an issue on the package github page if you encounter
+              any issues. Continuing ...")
       
-      print(upgradeLog)
+      message(Sys.time(), ": Writing upgrade log:")
+
+      #print(upgradeLog)
       
       logFile = file.path(getNlDir("dirNlDataPath"), paste0("upgrade-",pkgVersion,".log"))
       
