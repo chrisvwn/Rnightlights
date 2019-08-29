@@ -18,17 +18,23 @@ test_that("nlfilenames are correct", {
   expect_equal(Rnightlights:::getCtryNlDataFname(ctryCode = "KEN", admLevel = "KEN_adm0", gadmVersion = "2.8"),
                "NL_DATA_KEN_ADM0_GADM-2.8-SHPZIP.csv")
   
-  expect_equal(Rnightlights:::getPolyFname(ctryCode = "KEN", gadmVersion = "2.8"), "POLY_KEN_GADM-2.8-SHPZIP")
+  expect_equal(Rnightlights:::getPolyFname(ctryCode = "KEN", gadmVersion = "2.8"),
+               "POLY_KEN_GADM-2.8-SHPZIP")
   
-  expect_equal(Rnightlights:::getPolyFnamePath(ctryCode = "KEN", gadmVersion = "2.8"), file.path(getNlDir("dirPolygon"), "POLY_KEN_GADM-2.8-SHPZIP"))
+  expect_equal(Rnightlights:::getPolyFnamePath(ctryCode = "KEN", gadmVersion = "2.8"),
+               file.path(getNlDir("dirPolygon"), "POLY_KEN_GADM-2.8-SHPZIP"))
   
-  expect_equal(Rnightlights:::getPolyFnameZip(ctryCode = "KEN", gadmVersion = "2.8"), file.path(getNlDir("dirPolygon"), "POLY_KEN_GADM-2.8-SHPZIP.zip"))
+  expect_equal(Rnightlights:::getPolyFnameZip(ctryCode = "KEN", gadmVersion = "2.8"),
+               file.path(getNlDir("dirPolygon"), "POLY_KEN_GADM-2.8-SHPZIP.zip"))
   
-  expect_equal(Rnightlights:::existsPolyFnameZip(ctryCode = "KEN"), file.exists(file.path(file.path(getNlDir("dirPolygon"), "POLY_KEN_GADM-2.8-SHPZIP.zip"))))
+  expect_equal(Rnightlights:::existsPolyFnameZip(ctryCode = "KEN"),
+               file.exists(file.path(file.path(getNlDir("dirPolygon"), "POLY_KEN_GADM-3.6-SHPZIP.zip"))))
   
-  expect_equal(Rnightlights:::existsPolyFnameRDS(ctryCode = "KEN"), file.exists(file.path(file.path(getNlDir("dirPolygon"), "POLY_KEN_GADM-2.8-SHPZIP.rds"))))
+  expect_equal(Rnightlights:::existsPolyFnameRDS(ctryCode = "KEN"),
+               file.exists(file.path(file.path(getNlDir("dirPolygon"), "POLY_KEN_GADM-3.6-SHPZIP.rds"))))
   
-  expect_equal(Rnightlights:::existsPolyFnameZip(ctryCode = "KEN"), file.exists(file.path(getNlDir("dirPolygon"), "SHP_KEN_GADM-2.8.zip")))
+  expect_equal(Rnightlights:::existsPolyFnameZip(ctryCode = "KEN"),
+               file.exists(file.path(getNlDir("dirPolygon"), "SHP_KEN_GADM-3.6.zip")))
   
   expect_equal(Rnightlights:::getCtryNlDataFnamePath(ctryCode = "KEN", admLevel = "KEN_adm0", gadmVersion = "2.8"), file.path(file.path(getNlDir("dirNlData"), "NL_DATA_KEN_ADM0_GADM-2.8-SHPZIP.csv")))
   
