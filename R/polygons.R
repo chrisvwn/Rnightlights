@@ -859,10 +859,10 @@ getCtryStructFname <- function(ctryCode=NULL,
               else
                 paste0("NL_STRUCT_",
                        ifelse(is.null(ctryCode), "", paste0(ctryCode, "_")),
-                       "CUST-", basename(custPolyPath), "SHPZIP.csv")
+                       "CUST-", basename(custPolyPath), "-SHPZIP.csv")
   } else if(toupper(gadmVersion) == toupper("spRds"))
   {
-    fName <- paste0("NL_STRUCT_", ctryCode, "_GADM-", gadmVersion, "SPRDS.csv")
+    fName <- paste0("NL_STRUCT_", ctryCode, "_GADM-", gadmVersion, "-SPRDS.csv")
   }
   
   return(fName)
