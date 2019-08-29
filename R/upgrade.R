@@ -502,7 +502,7 @@ upgradeRnightlights <- function()
     }
   }, error=function(err)
   {
-    #message(err)
+    message(err)
     message(Sys.time(), ": The package was unable to upgrade all the data in the Rnightlights data dir. 
             Some of your old data may not be accessible from the upgraded package
             but can be accessed manually from the Rnightlights data folder. 
