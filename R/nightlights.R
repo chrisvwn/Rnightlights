@@ -85,7 +85,7 @@
 #'     from the function \code{processNlData()} which does all the 
 #'     preparation for processing. \code{processNlData()} which can process 
 #'     multiple countries and time periods will download all the required 
-#'     tiles and polygons prior to calling \code{processnlcountry}. 
+#'     tiles and polygons prior to calling \code{processNlCountry}. 
 #'     \code{getCtryNlData} can also be used with the option 
 #'     \code{ignoreMissing=FALSE} which will call \code{processNlData} 
 #'     in the background.
@@ -330,7 +330,7 @@ processNLCountry <- function(ctryCode,
         message(Sys.time(), ": Gas flare removal is OFF. Skipping")
       }
       
-      message(Sys.time(), ": Cropping tile")
+      message(Sys.time(), ": Cropping tile = ", tile)
       
       #we crop using raster for both rast and gdal
       tempCrop <- raster::crop(x = rastTile, y = ctryPolyAdm0, progress='text')
