@@ -3,7 +3,6 @@
 #' extract data from a raster using one polygon in a multipolygon
 #'
 #' extract data from a raster using one polygon in a multipolygon. 
-#'     Modified from \url{https://commercedataservice.github.io/tutorial_viirs_part1/}
 #'
 #' @param ctryPoly the country Polygon layer as SpatialPolygon
 #'
@@ -101,7 +100,6 @@ masqVIIRS <- function(ctryPoly, ctryRast, idx, retVal="colrowval", configName)
 #'
 masqOLS <- function(shp, rast, i, retVal="colrowval", configName)
 {
-  #based on masq function from https://commercedataservice.github.io/tutorial_viirs_part1/
   #Extract one polygon based on index value i
   polygon <- shp[i,] #extract one polygon
   extent <- raster::extent(polygon) #extract the polygon extent

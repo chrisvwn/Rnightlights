@@ -24,8 +24,7 @@ value while lonlatval returns a data.frame with lon,lat and val.}
 numeric vector of radiances
 }
 \description{
-extract data from a raster using one polygon in a multipolygon. 
-    Modified from \url{https://commercedataservice.github.io/tutorial_viirs_part1/}
+extract data from a raster using one polygon in a multipolygon.
 }
 \examples{
 \dontrun{
