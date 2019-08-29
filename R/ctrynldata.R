@@ -733,7 +733,8 @@ getCtryNlData <- function(ctryCode=NULL,
                           admLevel,
                           nlTypes,
                           nlPeriods, 
-                          nlStats=pkgOptions("nlStats"), ignoreMissing=NULL, 
+                          nlStats=pkgOptions("nlStats"),
+                          ignoreMissing=FALSE, 
                           gadmVersion=pkgOptions("gadmVersion"),
                           gadmPolyType=pkgOptions("gadmPolyType"),
                           custPolyPath=NULL,
@@ -1002,7 +1003,7 @@ getCtryNlData <- function(ctryCode=NULL,
                               MARGIN =  1,
                               FUN = function(x)
                               {
-                                getCtryNlDataColName(nlType = x[1], nlPeriod = x[2], nlStat = x[3], configName = configNames, removeGasFlares = removeGasFlares)
+                                getCtryNlDataColName(nlType = x[1], nlPeriod = x[3], nlStat = x[4], configName = configNames, removeGasFlares = removeGasFlares)
                               })
       else
         existingCols <- NULL
