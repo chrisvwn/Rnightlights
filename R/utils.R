@@ -45,6 +45,7 @@ allValid <- function(testData, testFun, ...)
 #' Detect the amount of available RAM on the computer for dynamic
 #'     configuration of available memory
 #' 
+#' @export
 getFreeRAM <- function()
 {
   if(Sys.info()[["sysname"]] == "Windows")
@@ -96,6 +97,7 @@ getFreeRAM <- function()
 #'
 #' @param freeRAM the amount of available RAM to consider
 #' 
+#' @export
 getBatchBytes <- function(freeRAM = pkgOptions("batchBytes"))
 {
   sysFreeRAM <- getFreeRAM() * 2^10
