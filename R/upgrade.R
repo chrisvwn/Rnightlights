@@ -435,7 +435,7 @@ upgradeRnightlights <- function()
           #split tile filename into components
           #splits <- unlist(strsplit(substr(fileName, 1, nchar(fileName)-4), "_"))
           
-          ctryCodes <- gsub("_", "", stringr::str_extract_all(string = fileName, pattern = "_.{3}_"))
+          ctryCodes <- gsub("_", "", unlist(stringr::str_extract_all(string = fileName, pattern = "_?.{3}_")))
           
           ctryCode <- ctryCodes[validCtryCodes(ctryCodes)]
           
@@ -502,14 +502,16 @@ upgradeRnightlights <- function()
     }
   }, error=function(err)
   {
-    message(err)
-    message(Sys.time(), ": An error occurred in upgrading the Rnightlights data dir. 
+    #message(err)
+    message(Sys.time(), ": The package was unable to upgrade all the data in the Rnightlights data dir. 
             Some of your old data may not be accessible from the upgraded package
-            but can be accessed directly from the Rnightlights data folder. 
+            but can be accessed manually from the Rnightlights data folder. 
             Please open an issue on the package github page if you encounter
             any issues. Continuing ...")
     
-    return(FALSE)
+    upgradeLog <- rbind.data.frame(upgradeLog, cbind(idx=999, operation="error", params=paste(err, sep="=", collapse="|"), success=res))
+    
+    return(TRUE)
   },finally = {
     #mark as upgraded
     cat(pkgVersion, file = file.path(getNlDir("dirNlDataPath"), "data-version.txt"))
