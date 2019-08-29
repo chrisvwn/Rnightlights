@@ -8,7 +8,9 @@ This version does not fix any bugs. A workaround for a missing layer in at least
 ##### *New features*
 This version introduces a few new features:
 
-- **`default nlStats`** the default nlStats as specified by `pkgOptions("nlStats")` has been altered to introduce the parameter `na.rm=TRUE` for both `sum` and `mean`.
+- **`ignoreMissing=FALSE is default`** Up to now, `ignoreMissing=FALSE` had to be specified to tell `getCtryNlData` and `processNlData` to process missing nlStats. This is now the default and does not need to be specified. To suppress processing of data for example to retrieve only stats that have already been calculated use `ignoreMissing=TRUE` or to return NULL if any nlStats have not already been calculated set `ignoreMissing=NULL`
+
+- **`default nlStats`** the default nlStats used by `getCtryNlData` and `processNlData` as specified by `pkgOptions("nlStats")` has been altered to introduce the parameter `na.rm=TRUE` for both `sum` and `mean`.
 
 - **`Enhanced nlStat custom function data`** Custom nlStat functions can now receive apart from pixel values also colrow (column and row) and lonlat (longitude and latitude) values. The colrow values are in reference to the whole country/custom polygon. Conceptually, this should allow for more complex spatial aware custom functions in addition to the normal aggregations. In addition to the ability to return multiple values this may add the power of functionality. Higher order functions may require multiple passes which right now requires a good understanding of the package and some manual custom function chaining. Maybe in future the ability to perform multiple passes/function chaining passing the output of functions to higher order functions will be added. An example is given to show how these values might be useful.
 
