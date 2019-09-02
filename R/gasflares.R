@@ -1,13 +1,57 @@
+######################## getNlGasFlaresRdsFnamePath ###################################
+
+#' Get the path to the saved world gasflare RDS
+#'
+#' Get the path to the saved world gasflare RDS
+#' 
+#' @return \code{character} the path to the world gasflare RDS
+#'
+#' @examples
+#' \dontrun{
+#'   getNlGasFlaresRdsFnamePath(ctryCode="NGA")
+#' #returns path to the world RDS
+#' }
+#'
 getNlGasFlaresRdsFnamePath <- function()
 {
   return(file.path(getNlDir("dirNlGasFlares"), "gasflaresmosaic.rds"))
 }
 
+######################## getNlCtryGasFlaresRdsFnamePath ###################################
+
+#' Get the path to the saved country gasflare RDS
+#'
+#' Get the path to the saved country gasflare RDS
+#' 
+#' @param ctryCode \code{character} The ctryCode of the country of interest
+#' 
+#' @return \code{character} the path to the world gasflare RDS
+#'
+#' @examples
+#' \dontrun{
+#'   getNlCtryGasFlaresRdsFnamePath(ctryCode="NGA")
+#' #returns path to the world RDS
+#' }
+#'
 getNlCtryGasFlaresRdsFnamePath <- function(ctryCode)
 {
   return(file.path(getNlDir("dirNlGasFlares"), paste0("gasflares_", ctryCode, ".rds")))
 }
-        
+
+######################## getNlGasFlaresRdsFnamePath ###################################
+
+#' Get the path to the saved world gasflare RDS
+#'
+#' Get the path to the saved world gasflare RDS
+#' 
+#' @return None
+#'
+#' @examples
+#' \dontrun{
+#'   getNlGasFlaresRdsFnamePath(ctryCode="NGA")
+#' #returns path to the world RDS
+#' }
+#'
 createNlGasFlares <- function()
 {
   message(Sys.time(), ": removeGasFlares = TRUE. Downloading gas flare country polygons. This will take a while")
@@ -115,6 +159,20 @@ createNlGasFlares <- function()
   }
 }
 
+######################## existsNlGasFlaresRds ###################################
+
+#' Check if the world gasflare RDS exists
+#'
+#' Check if the world gasflare RDS exists
+#' 
+#' @return \code{logical} if the gasflare rds exists
+#'
+#' @examples
+#' \dontrun{
+#'   existsNlGasFlaresRds()
+#' #returns TRUE/FALSE
+#' }
+#'
 existsNlGasFlaresRds <- function()
 {
   gasFlareRdsFnamePath <- getNlGasFlaresRdsFnamePath()
@@ -122,6 +180,20 @@ existsNlGasFlaresRds <- function()
   return(file.exists(gasFlareRdsFnamePath))
 }
 
+######################## getNlGasFlaresRds ###################################
+
+#' Returns the world gasflares polygon if it exists
+#'
+#' Returns the world gasflares polygon if it exists
+#' 
+#' @return \code{spPolygons} the country gasflare polygon
+#'
+#' @examples
+#' \dontrun{
+#'   getNlGasFlaresRds()
+#' #returns mosaiced gasflare polygon
+#' }
+#'
 getNlGasFlaresRds <- function()
 {
   if(!existsNlGasFlaresRds())
@@ -130,6 +202,29 @@ getNlGasFlaresRds <- function()
   readRDS(getNlGasFlaresRdsFnamePath())
 }
 
+######################## hasNlCtryGasFlares ###################################
+
+#' Checks if a country has gasflares
+#'
+#' Checks if a country has gasflares
+#' 
+#' @param ctryCode \code{character} The ctryCode of the country of interest
+#' 
+#' @param gadmVersion The GADM version to use
+#' 
+#' @param gadmPolyType The format of polygons to download from GADM
+#' 
+#' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
+#' 
+#' @return \code{logical} whether the country has gasflares
+#'
+#' @examples
+#' \dontrun{
+#'   hasNlCtryGasFlares(ctryCode="NGA")
+#' #returns TRUE
+#' }
+#'
+#' @export
 hasNlCtryGasFlares <- function(ctryCode,
                                gadmVersion=pkgOptions("gadmVersion"),
                                gadmPolyType=pkgOptions("gadmPolyType"),
@@ -148,6 +243,28 @@ hasNlCtryGasFlares <- function(ctryCode,
   return(rgeos::gIntersects(ctryPolyAdm0, gasFlarePoly))
 }
 
+######################## hasNlCtryGasFlares ###################################
+
+#' Checks if a country has gasflares
+#'
+#' Checks if a country has gasflares
+#' 
+#' @param ctryCode \code{character} The ctryCode of the country of interest
+#' 
+#' @param gadmVersion The GADM version to use
+#' 
+#' @param gadmPolyType The format of polygons to download from GADM
+#' 
+#' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
+#' 
+#' @return \code{logical} whether the country has gasflares
+#'
+#' @examples
+#' \dontrun{
+#'   hasNlCtryGasFlares(ctryCode="NGA")
+#' #returns TRUE
+#' }
+#'
 createNlCtryGasFlares <- function(ctryCode, 
                                   gadmVersion = pkgOptions("gadmVersion"),
                                   gadmPolyType = pkgOptions("gadmPolyType"),
@@ -194,6 +311,23 @@ createNlCtryGasFlares <- function(ctryCode,
   }
 }
 
+
+######################## existsNlCtryGasFlaresRds ###################################
+
+#' Checks if the country gasflares rds exists
+#'
+#' Checks if the country gasflares rds exists
+#' 
+#' @param ctryCode \code{character} The ctryCode of the country of interest
+#' 
+#' @return \code{logical} whether the country has gasflares
+#'
+#' @examples
+#' \dontrun{
+#'   existsNlCtryGasFlaresRds(ctryCode="NGA")
+#' #returns TRUE
+#' }
+#'
 existsNlCtryGasFlaresRds <- function(ctryCode)
 {
   gfNlCtryRdsFnamePath <- getNlCtryGasFlaresRdsFnamePath(ctryCode)
@@ -201,6 +335,28 @@ existsNlCtryGasFlaresRds <- function(ctryCode)
   return(file.exists(gfNlCtryRdsFnamePath))
 }
 
+######################## getNlCtryGasFlaresPoly ###################################
+
+#' Creates and returns a country's gasflares polygon
+#'
+#' Creates and returns a country's gasflares polygon
+#' 
+#' @param ctryCode \code{character} The ctryCode of the country of interest
+#' 
+#' @param gadmVersion The GADM version to use
+#' 
+#' @param gadmPolyType The format of polygons to download from GADM
+#' 
+#' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
+#' 
+#' @return \code{spPolygons} the country gasflare polygon
+#'
+#' @examples
+#' \dontrun{
+#'   getNlCtryGasFlaresRds(ctryCode="NGA")
+#' #returns gasflare polygon
+#' }
+#'
 getNlCtryGasFlaresRds <- function(ctryCode = ctryCode, 
                                   gadmVersion = pkgOptions("gadmVersion"),
                                   gadmPolyType = pkgOptions("gadmPolyType"),
@@ -220,6 +376,28 @@ getNlCtryGasFlaresRds <- function(ctryCode = ctryCode,
   return(res)
 }
 
+######################## getNlCtryGasFlaresPoly ###################################
+
+#' Returns a country's gasflares polygon if it exists
+#'
+#' Returns a country's gasflares polygon if it exists
+#' 
+#' @param ctryCode \code{character} The ctryCode of the country of interest
+#' 
+#' @param gadmVersion The GADM version to use
+#' 
+#' @param gadmPolyType The format of polygons to download from GADM
+#' 
+#' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
+#' 
+#' @return \code{spPolygons} the country gasflare polygon
+#'
+#' @examples
+#' \dontrun{
+#'   getNlCtryGasFlaresPoly(ctryCode="NGA")
+#' #returns gasflare polygon
+#' }
+#'
 getNlCtryGasFlaresPoly <- function(ctryCode = ctryCode, 
                                    gadmVersion = pkgOptions("gadmVersion"),
                                    gadmPolyType = pkgOptions("gadmPolyType"),
