@@ -880,7 +880,12 @@ processNlData <- function (ctryCodes,
   {
     ctryCode <- ctryCodes[[cCodeIdx]]
     
-    ctryAdmLevels <- admLevels[[cCodeIdx]]
+    #ctryAdmLevels <- admLevels[[cCodeIdx]]
+    
+    ctryAdmLevels <- if(is.list(admLevels))
+      unlist(admLevels[cCodeIdx])
+    else
+      admLevels[cCodeIdx]
     
     unlist(sapply(ctryAdmLevels, function(admLevel)
     {
