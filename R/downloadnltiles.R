@@ -63,7 +63,7 @@ downloadNlTilesVIIRS <- function(nlPeriod,
     
     if(is.null(ntLtsFileUrl))
     {
-      message(Sys.time(), ": ** Tile not available on the NOAA page.\n Please manually check for the ", nlPeriod, " tile at 'https://ngdc.noaa.gov/eog/viirs/download_dnb_composites.html'. If it exists please report this as a bug **")
+      message(Sys.time(), ": ** Tile not available on the NOAA page.\n Please manually check for the ", nlPeriod, " tile at '", pkgOptions(paste0("ntLtsIndexUrl", nlType)),"'. If it exists please report this as a bug **")
       return(FALSE)
     }
     
