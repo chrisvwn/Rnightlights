@@ -84,12 +84,6 @@ alignCenter <- function(el) {
                  
                  shiny::uiOutput(outputId = "countries"),
 
-                 shiny::uiOutput(outputId = "polySrc"),
-                 
-                 shiny::uiOutput(outputId = "polyVer"),
-                 
-                 shiny::uiOutput(outputId = "polyType"),
-                 
                  shiny::uiOutput(outputId = "btnGo"),
 
                  shiny::uiOutput(outputId = "intraCountry"),
@@ -98,9 +92,23 @@ alignCenter <- function(el) {
                  ),
 
         shinydashboard::menuItem("Stats", selected = TRUE, startExpanded = TRUE, tabName = "stats",
-                                 shiny::uiOutput("nlType"),
+                                 shiny::uiOutput(outputId = "nlType"),
                                  
-                                 shiny::uiOutput("ctryStats"),
+                                 shiny::uiOutput(outputId = "ctryStats"),
+                                 
+                                 shiny::uiOutput(outputId = "polySrc"),
+                                 
+                                 shiny::uiOutput(outputId = "polyVer"),
+                                 
+                                 shiny::uiOutput(outputId = "polyType"),
+                                 
+                                 shiny::uiOutput(outputId = "configName"),
+                                 
+                                 shiny::uiOutput(outputId = "multiTileMergeStrategy"),
+                                 
+                                 shiny::uiOutput(outputId = "multiTileMergeFun"),
+                                 
+                                 shiny::uiOutput(outputId = "removeGasFlares"),
                                  
                                  shiny::checkboxInput(inputId = "norm_area",
                                                            label = "norm_area",
@@ -130,7 +138,7 @@ alignCenter <- function(el) {
       shinydashboard::dashboardBody(
         shinydashboard::tabBox(width = 12,
           shiny::tabPanel(title = "plots",
-                   shiny::plotOutput(outputId = "plotNightLights"),
+                   plotly::plotlyOutput(outputId = "plotNightLights"),
                    
                    shiny::uiOutput("sliderNlPeriodRange")
           ),
