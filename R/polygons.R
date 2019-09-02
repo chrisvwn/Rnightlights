@@ -705,17 +705,17 @@ dnldCtryPoly <- function(ctryCode=NULL,
 
   message(Sys.time(), ": Downloading ctry poly: ", ctryCode)
   
-  if(gadmPolyType == "shpZip" || !is.null(custPolyPath))
+  res <- if(toupper(gadmPolyType) == toupper("shpZip") || !is.null(custPolyPath))
   {
-    res <- dnldGADMCtryShpZip(ctryCode = ctryCode,
-                      gadmVersion = gadmVersion,
-                      gadmPolyType = gadmPolyType,
-                      downloadMethod = downloadMethod,
-                      custPolyPath = custPolyPath)
+    dnldGADMCtryShpZip(ctryCode = ctryCode,
+                        gadmVersion = gadmVersion,
+                        gadmPolyType = gadmPolyType,
+                        downloadMethod = downloadMethod,
+                        custPolyPath = custPolyPath)
 
-  } else if(gadmPolyType == "spRds")
+  } else if(toupper(gadmPolyType) == toupper("spRds"))
   {
-    res <- dnldGADMCtrySpRds(ctryCode = ctryCode,
+    dnldGADMCtrySpRds(ctryCode = ctryCode,
                       gadmVersion = gadmVersion,
                       gadmPolyType = gadmPolyType,
                       downloadMethod = downloadMethod)
@@ -852,17 +852,17 @@ getCtryStructFname <- function(ctryCode=NULL,
   if(!is.null(ctryCode) && !allValidCtryCodes(ctryCodes = ctryCode))
     stop(Sys.time(), ": Invalid ctryCode(s) detected ")
   
-  if(toupper(gadmPolyType) == toupper("shpZip"))
+  fName <- if(toupper(gadmPolyType) == toupper("shpZip"))
   {
-    fName <- if(is.null(custPolyPath))
-                paste0("NL_STRUCT_", ctryCode, "_GADM-", gadmVersion, "-SHPZIP.csv")
-              else
-                paste0("NL_STRUCT_",
-                       ifelse(is.null(ctryCode), "", paste0(ctryCode, "_")),
-                       "CUST-", basename(custPolyPath), "-SHPZIP.csv")
+    if(is.null(custPolyPath))
+      paste0("NL_STRUCT_", ctryCode, "_GADM-", gadmVersion, "-SHPZIP.csv")
+    else
+      paste0("NL_STRUCT_",
+             ifelse(is.null(ctryCode), "", paste0(ctryCode, "_")),
+                   "CUST-", basename(custPolyPath), "-SHPZIP.csv")
   } else if(toupper(gadmVersion) == toupper("spRds"))
   {
-    fName <- paste0("NL_STRUCT_", ctryCode, "_GADM-", gadmVersion, "-SPRDS.csv")
+    paste0("NL_STRUCT_", ctryCode, "_GADM-", gadmVersion, "-SPRDS.csv")
   }
   
   return(fName)
@@ -1583,6 +1583,146 @@ getCtryStructAdmLevelNames <- function(ctryCode=NULL,
   return (admLevels)
 }
 
+######################## searchAdmLevelName ###################################
+
+#' Search for the admLevelName
+#'
+#' Search for the admLevelName by official name. Expects the shapefile
+#'     to already exist.
+#' 
+#' @param ctryCodes \code{character} The ctryCodes of the country of interest
+#' 
+#' @param admLevelNames \code{character} The names to search for
+#' 
+#' @param dnldPoly \code{logical} If the country polygon doesn't exist 
+#'     should we download it?
+#'     
+#' @param downloadMethod The method used to download polygons
+#' 
+#' @param gadmVersion The GADM version to use
+#' 
+#' @param gadmPolyType The format of polygons to download from GADM
+#' 
+#' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
+#' 
+#' @return character vector of admin level names
+#'
+#' @examples
+#' \dontrun{
+#' searchAdmLevel("KEN", "county")
+#' #returns "KEN_adm1"
+#' }
+#'
+#' @export
+searchAdmLevelName <- function(ctryCodes=NULL,
+                               admLevelNames,
+                               dnldPoly=TRUE,
+                               downloadMethod=pkgOptions("downloadMethod"),
+                               gadmVersion=pkgOptions("gadmVersion"),
+                               gadmPolyType=pkgOptions("gadmPolyType"),
+                               custPolyPath=NULL)
+{
+  if(is.null(custPolyPath) && is.null(ctryCodes))
+    stop(Sys.time(), ": Missing required parameter ctryCode")
+  
+  if(!is.null(ctryCodes) && !allValidCtryCodes(ctryCodes = ctryCodes))
+    stop(Sys.time(), ": Invalid ctryCode(s) detected ")
+  
+  if(missing(admLevelNames))
+    admLevelNames <- NULL
+  #  stop(Sys.time(), ": Missing required parameter admLevelName")
+  
+  #if(length(admLevelName) > 1)
+  #  stop(Sys.time(), ": Only 1 admLevel allowed")
+  
+  if(missing(dnldPoly))
+    dnldPoly <- TRUE
+  
+  #loop over custPolyPaths if present otherwise over ctryCodes
+  #since custPolyPaths can have ctryCodes but not vice versa
+  numLoops <- ifelse(length(custPolyPath) > 0, length(custPolyPath), length(unlist(ctryCodes)))
+  
+  if(numLoops < 1)
+    return(NULL)
+  
+  admLevels <- sapply(1:numLoops, function(cCodeIdx)
+  {
+    if(!existsCtryPoly(ctryCode = ctryCodes[[cCodeIdx]],
+                       gadmVersion = gadmVersion,
+                       gadmPolyType = gadmPolyType,
+                       custPolyPath = custPolyPath))
+    {
+      if(!dnldPoly)
+        message(Sys.time(), ": ctryPoly doesn't exist. Set dnldPoly=TRUE to download it")
+      else
+        dnldCtryPoly(ctryCode = ctryCodes[[cCodeIdx]],
+                     gadmVersion = gadmVersion,
+                     gadmPolyType = gadmPolyType,
+                     custPolyPath = custPolyPath,
+                     downloadMethod = downloadMethod)
+    }
+    
+    allAdmLevelNames <- getCtryStructAdmLevelNames(ctryCode = ctryCodes[[cCodeIdx]],
+                                                   gadmVersion = gadmVersion,
+                                                   gadmPolyType = gadmPolyType,
+                                                   custPolyPath = custPolyPath)
+    
+    
+    if(is.null(admLevelNames))
+    {
+      return(stats::setNames(list(allAdmLevelNames), ctryCodes[[cCodeIdx]]))
+    }
+    
+    ctryAdmLevelNames <- admLevelNames[[cCodeIdx]]
+    
+    sapply(ctryAdmLevelNames, simplify = TRUE, FUN = function(admLevelName)
+    {
+      admLvlNms <- if(admLevelName=="country")
+        allAdmLevelNames[1]
+      else if(admLevelName %in% c("bottom", "lowest"))
+        allAdmLevelNames[length(allAdmLevelNames)]
+      else if(admLevelName %in% c("top","highest"))
+        allAdmLevelNames[2]
+      else if(admLevelName == "all")
+        allAdmLevelNames
+      
+      if(length(admLvlNms) > 0)
+        return(admLvlNms)
+      
+      #if 0 or adm0 take the last digit as the layer num
+      if(length(grep("\\d+$", admLevelName, ignore.case = T)) > 0)
+        idxFound <- as.numeric(stringr::str_extract(admLevelName, "\\d+$"))+1
+      else
+      {
+        #search for the full literal string
+        idxFound <- grep(pattern = paste0("^", admLevelName, "$"), x = allAdmLevelNames, fixed = TRUE)
+        
+        #if literal string not found try regex search for english part only
+        #which is start of string upto underscore (_)
+        if(length(idxFound) == 0)
+          idxFound <- grep(pattern = paste0("^",admLevelName,"_"), x = allAdmLevelNames, ignore.case = TRUE)
+        
+        #if not found in english part
+        if(length(idxFound) == 0)
+          idxFound <- grep(pattern = admLevelName, x = allAdmLevelNames, ignore.case = TRUE)
+      }
+      
+      if(length(idxFound) == 0)
+      {
+        return(NA)
+      }
+      
+      admLvlNms <- allAdmLevelNames[idxFound]
+      
+      return(admLvlNms)
+    })
+  })
+  
+  lvlNames <- if(!is.null(custPolyPath)) basename(custPolyPath) else ctryCodes
+  
+  stats::setNames(admLevels, lvlNames)
+}
+
 ######################## searchAdmLevel ###################################
 
 #' Search for the admLevel by official name
@@ -1662,13 +1802,21 @@ searchAdmLevel <- function(ctryCodes=NULL,
                      downloadMethod = downloadMethod)
     }
     
-    allAdmLevels <- getCtryStructAdmLevelNames(ctryCode = ctryCodes[[cCodeIdx]],
+    allAdmLevelNames <- getCtryStructAdmLevelNames(ctryCode = ctryCodes[[cCodeIdx]],
                                                gadmVersion = gadmVersion,
                                                gadmPolyType = gadmPolyType,
                                                custPolyPath = custPolyPath)
   
+  
     if(is.null(admLevelNames))
+    {
+      allAdmLevels <- getCtryShpAllAdmLvls(ctryCodes = ctryCodes[[cCodeIdx]],
+                                           gadmVersion = gadmVersion,
+                                           gadmPolyType = gadmPolyType,
+                                           custPolyPath = custPolyPath)
+      
       return(stats::setNames(list(allAdmLevels), ctryCodes[[cCodeIdx]]))
+    }
     
     ctryAdmLevelNames <- admLevelNames[[cCodeIdx]]
     
@@ -1682,7 +1830,7 @@ searchAdmLevel <- function(ctryCodes=NULL,
                            custPolyPath = custPolyPath)
       else if(admLevelName %in% c("bottom", "lowest"))
         getCtryShpLyrNames(ctryCodes = ctryCodes[[cCodeIdx]],
-                           lyrNums = length(allAdmLevels),
+                           lyrNums = length(allAdmLevelNames),
                            gadmVersion = gadmVersion,
                            gadmPolyType = gadmPolyType,
                            custPolyPath = custPolyPath)
@@ -1705,7 +1853,14 @@ searchAdmLevel <- function(ctryCodes=NULL,
       if(length(grep("\\d+$", admLevelName, ignore.case = T)) > 0)
         idxFound <- as.numeric(stringr::str_extract(admLevelName, "\\d+$"))
       else
-        idxFound <- grep(pattern = admLevelName, x = allAdmLevels, ignore.case = TRUE)-1
+      {
+        #search for the literal string
+        idxFound <- grep(pattern = admLevelName, x = allAdmLevelNames, fixed = TRUE)-1
+        
+        #if literal string not found try regex search case insensitive
+        if(length(idxFound) == 0)
+          idxFound <- grep(pattern = admLevelName, x = allAdmLevelNames, ignore.case = TRUE)-1
+      }
       
       if(length(idxFound) == 0)
       {
