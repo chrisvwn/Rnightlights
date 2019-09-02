@@ -20,7 +20,6 @@ Encoding: UTF-8
 Imports:
     cleangeo,
     compiler,
-    curl,
     data.table,
     doSNOW,
     dplyr,
@@ -45,6 +44,7 @@ Imports:
     utils,
     xml2
 Suggests:
+    curl,
     dendextend,
     DT,
     gdalUtils,
