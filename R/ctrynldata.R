@@ -122,28 +122,61 @@ createCtryNlDataDF <- function(ctryCode=NULL,
     
     lyrNames <- rgdal::ogrListLayers(polyFnamePath)
     
+    #find columns to use as names
     polyColNames <- sapply(lyrNames, function(lyrName) 
     {
+      #read in the polygon layer
       ctryPoly <- rgdal::readOGR(dsn = polyFnamePath, layer = lyrName,
                                  encoding = "UTF-8", use_iconv = TRUE)
       
+      #read in the column names of the data in the polygon
       colNames <- names(ctryPoly@data)
       
+      #find cols with the most unique values
       uniqueColVals <- nrow(ctryPoly@data)/sapply(colNames, function(x) length(unique(ctryPoly@data[[x]])))
       
+      uniqueColValRatios <- names(uniqueColVals[which(uniqueColVals < 1.2)])
+      
+      #find cols which are not purely numeric
       intColVals <-  sapply(colNames, function(x) length(grep("^\\d+$", ctryPoly@data[[x]])))
       
-      possibleColNames <- intersect(names(uniqueColVals[which(uniqueColVals < 1.1)]), names(intColVals[which(intColVals == intColVals[which.min(intColVals)])]))
+      minIntColVals <- names(intColVals[which(intColVals == intColVals[which.min(intColVals)])])
+      
+      #find cols containing the word "name"
+      nameCols <- sapply(colNames, function(x) length(grep("name", x, ignore.case = T)))
+      
+      nameColNames <- colNames[which(nameCols > 0)]
+      
+      possibleColNames <- intersect(nameColNames, uniqueColValRatios)
       
       if(length(possibleColNames) == 1)
         return(possibleColNames)
+      else if(length(intersect(nameColNames, uniqueColValRatios)) > 1)
+        possibleColNames <- nameColNames
+      else
+        #intersect columns close to 1 unique name per row. Allow for some duplicates 
+        possibleColNames <- intersect(uniqueColValRatios, minIntColVals)
       
+      #if only one column is left at this point use it
+      if(length(possibleColNames) == 1)
+        return(possibleColNames)
+      
+      #if no columns fit start with all cols again
+      if(length(possibleColNames) == 0)
+        possibleColNames <- colNames
+      
+      #how much missing data in the cols
       missingColVals <- sapply(possibleColNames, function(x) sum(is.na(ctryPoly@data[[x]]) | ctryPoly@data[[x]] == ""))
       
+      #choose cols with the fewest missing values
       possibleColNames <- intersect(possibleColNames, names(missingColVals[which(missingColVals == missingColVals[which.min(missingColVals)])]))
       
       if(length(possibleColNames) == 1)
         return(possibleColNames)
+      
+      #if no columns fit start with all cols again
+      if(length(possibleColNames) == 0)
+        possibleColNames <- colNames
       
       partIntColVals <-  sapply(possibleColNames, function(x) length(grep("\\d+", ctryPoly@data[[x]])))
       
@@ -152,8 +185,15 @@ createCtryNlDataDF <- function(ctryCode=NULL,
       if(length(possibleColNames) == 1)
         return(possibleColNames)
       
+      #if no columns fit start with all cols again
+      if(length(possibleColNames) == 0)
+        possibleColNames <- colNames
+      
+      #columns may have a link to the layer name
+      #split the layer name into its parts first removing our lyr idx prefix in the form "0_"
       lyrNameParts <- unlist(strsplit(gsub("^\\d+_", "", lyrName), "[^[:alnum:]]"))
       
+      #do any cols contain the layer nam parts
       partialMatchColNames <- unlist(sapply(lyrNameParts, function(x) grep(x, colNames, ignore.case = T, value = T)))
       
       a <- intersect(possibleColNames, partialMatchColNames)
@@ -163,6 +203,10 @@ createCtryNlDataDF <- function(ctryCode=NULL,
       
       if(length(a) > 1)
         possibleColNames <- a
+      
+      #if no columns fit start with all cols again
+      if(length(possibleColNames) == 0)
+        possibleColNames <- colNames
       
       return(possibleColNames[1])
       
@@ -179,7 +223,10 @@ createCtryNlDataDF <- function(ctryCode=NULL,
                                      gadmPolyType = gadmPolyType,
                                      custPolyPath = custPolyPath)
     
-    ctryNlDataDF <- as.data.frame(ctryPoly@data[, polyColNames], stringsAsFactors=F)
+    ctryNlDataDF <- try(as.data.frame(ctryPoly@data[, polyColNames], stringsAsFactors=F), TRUE)
+    
+    if(inherits(ctryNlDataDF, "try-error"))
+      stop("Lowest layer does not contain upper layer columns. Unable to build ctryStruct")
     
     #add the area as reported by the polygon shapefile as a convenience
     areas <- raster::area(ctryPoly)/1e6
@@ -1423,8 +1470,10 @@ allExistsCtryNlData <- function(ctryCodes,
 #' listCtryNlData(ctryCodes = c("KEN","RWA"), nlPeriods = c("2012", "2013"), nlTypes = "OLS.Y")
 #'
 #' @export
-listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlTypes=NULL, configNames=NULL, nlPeriods=NULL, polySrcs=NULL, polyVers=NULL, polyTypes=NULL, nlStats=NULL, source="local")
+listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlTypes=NULL, configNames=NULL, multiTileMergeStrategys=NULL, multiTileMergeFuns=NULL, removeGasFlares=NULL, nlPeriods=NULL, polySrcs=NULL, polyVers=NULL, polyTypes=NULL, nlStats=NULL, source="local")
 {
+  options(stringsAsFactors = FALSE)
+  
   dataList <- NULL
   dataType <- NULL #appease CRAN note for global variables
   nlType <- NULL #appease CRAN note for global variables
@@ -1492,20 +1541,36 @@ listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlTypes=NULL, configN
     
     #split the NL colnames into their components e.g. "NL_OLS.Y_2012_MEAN"
     #= "NL"+nlType+nlPeriod+stat
-    nlCtryHdr <- reshape2::colsplit(nlCtryHdr, "_", c("V1", "V2","V3","V4", "V5"))
+    nlCtryHdr <- reshape2::colsplit(nlCtryHdr, "_", c("V1", "V2","V3","V7", "V8"))
     
+    parts <- setNames(data.frame(t(sapply(strsplit(nlCtryHdr[,3], "-"),function(x){
+    
+      if(length(x) == 5)
+      {
+        x[1] <- paste(x[1:2], collapse = "_")
+        x <- x[-2]
+      }
+        x
+    })), stringsAsFactors = F), c("V3", "V4", "V5", "V6"))
+    
+    parts$V4 <- gsub("MTS", "", parts$V4)
+    
+    parts$V6 <- as.logical(gsub("RGF", "", parts$V6))
+    
+    nlCtryHdr <- cbind(nlCtryHdr[,c(1,2)], parts, nlCtryHdr[,c(4,5)])
+
     #only add if there are stats cols
     if(nrow(nlCtryHdr) > 0)
     {
       #aggregate (paste) the colnames into a single row with stats for each unique 
       #nlType+nlPeriod converted to a single field
-      nlCtryHdr <- stats::aggregate(V5 ~ V1 + V2 + V3 + V4, data=nlCtryHdr, FUN=paste, collapse=",")
+      nlCtryHdr <- stats::aggregate(V8 ~ V1 + V2 + V3 + V4 + V5 + V6 + V7, data=nlCtryHdr, FUN=paste, collapse=",")
       
       #add a ctryCode column
-      nlCtryHdr <- cbind(rep(ctryCode, nrow(nlCtryHdr)), rep(admLevel, nrow(nlCtryHdr)), rep(polySrc, nrow(nlCtryHdr)), rep(polyVer, nrow(nlCtryHdr)), rep(polyType, nrow(nlCtryHdr)), nlCtryHdr)
+      nlCtryHdr <- cbind.data.frame(rep(ctryCode, nrow(nlCtryHdr)), rep(admLevel, nrow(nlCtryHdr)), rep(polySrc, nrow(nlCtryHdr)), rep(polyVer, nrow(nlCtryHdr)), rep(polyType, nrow(nlCtryHdr)), nlCtryHdr)
       
       #combine into one table
-      dataList <- rbind(dataList, nlCtryHdr)
+      dataList <- rbind.data.frame(dataList, nlCtryHdr)
     }
   }
   
@@ -1516,15 +1581,8 @@ listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlTypes=NULL, configN
   dataList <- data.frame(dataList, row.names = 1:nrow(dataList), stringsAsFactors=F)
   
   #label the columns
-  names(dataList) <- c("ctryCode", "admLevel", "polySrc", "polyVer", "polyType", "dataType", "nlType", "configName", "nlPeriod", "nlStats")
-  
-  dataList$ctryCode <- as.character(dataList$ctryCode)
-  dataList$admLevel <- as.character(dataList$admLevel)
-  dataList$nlPeriod <- as.character(dataList$nlPeriod)
-  dataList$polySrc <- as.character(dataList$polySrc)
-  dataList$polyVer <- as.character(dataList$polyVer)
-  dataList$polyType <- as.character(dataList$polyType)
-  
+  names(dataList) <- c("ctryCode", "admLevel", "polySrc", "polyVer", "polyType", "dataType", "nlType", "configName", "multiTileMergeStrategy", "multiTileMergeFun", "removeGasFlares", "nlPeriod", "nlStats")
+
   #filters
   #filter by ctryCode if supplied
   if(length(ctryCodes) > 0)
@@ -1536,6 +1594,22 @@ listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlTypes=NULL, configN
   #filter by nlType if supplied
   if(length(nlTypes) > 0)
     dataList <- dataList[which(dataList[,"nlType"] %in% nlTypes),]
+  
+  #filter by configName if supplied
+  if(length(configNames) > 0)
+    dataList <- dataList[which(dataList[,"configName"] %in% configNames),]
+  
+  #filter by multiTileMergeStrategy if supplied
+  if(length(multiTileMergeStrategys) > 0)
+    dataList <- dataList[which(dataList[,"multiTileMergeStrategy"] %in% multiTileMergeStrategys),]
+  
+  #filter by multiTileMergeFun if supplied
+  if(length(multiTileMergeFuns) > 0)
+    dataList <- dataList[which(dataList[,"multiTileMergeFun"] %in% multiTileMergeFuns),]
+  
+  #filter by removeGasFlares if supplied
+  if(length(removeGasFlares) > 0)
+    dataList <- dataList[which(dataList[,"removeGasFlares"] %in% removeGasFlares),]
   
   #filter by nlPeriod if supplied
   if(length(nlPeriods) > 0)
@@ -1554,7 +1628,7 @@ listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlTypes=NULL, configN
     dataList <- dataList[unique(unlist(sapply(nlStats, function(nlStat) grep(nlStat, dataList[,"nlStats"], ignore.case = T)))),]
   
   #Reorder the columns
-  dataList <- dplyr::select(dataList, dataType, ctryCode, admLevel, nlType, configName, nlPeriod, polySrc, polyVer, polyType, dplyr::contains("stat"))
+  dataList <- dplyr::select(dataList, dataType, ctryCode, admLevel, nlType, configName, multiTileMergeStrategy, multiTileMergeFun, removeGasFlares, nlPeriod, polySrc, polyVer, polyType, dplyr::contains("stat"))
   
   #only return dataList if we have records esp. after filtering else return NULL
   if(nrow(dataList) > 0)
