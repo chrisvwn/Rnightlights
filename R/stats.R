@@ -127,6 +127,19 @@ myZonal <- function (rast, nlType, configName, zone, nlStats, digits = 0, retVal
   #funs <- paste0("dta[, as.list(unlist(lapply(.SD, function(dta) list(", paste(fun, collapse=","), ")))), by=zones]")
   funs <- paste0("dta[, as.list(unlist(stats::setNames(lapply(fun, function(fn) eval(parse(text=fn))), funNames))), by=zones]")
   
+  retVal <- sapply(nlStats, function(nlStat){
+    nlStat = nlStat[[1]]
+    
+    nlStatArgs <- formals(nlStat)
+    
+    retVal <- if(all(sapply(c("col","row"), "%in%",names(nlStatArgs))))
+      "colrowval"
+    else if(all(sapply(c("lon","lat"), "%in%",names(nlStatArgs))))
+      "lonlatval"
+    else
+      NULL
+  })
+  
   message(Sys.time(), ": Reading in raster data")
 
   #the number of columns in the raster/zone file which are identical in size
@@ -150,11 +163,14 @@ myZonal <- function (rast, nlType, configName, zone, nlStats, digits = 0, retVal
     rastVals <- raster::getValuesBlock(rast, row=tr$row[i], nrows=tr$nrows[i])
     zoneVals <- raster::getValuesBlock(zone, row=tr$row[i], nrows=tr$nrows[i])
 
-    lonlatVals <- stats::setNames(as.data.frame(raster::xyFromCell(object = rast, cell = start:end)), c("lons", "lats"))
-    
-    colrowVals <- stats::setNames(as.data.frame(raster::rowColFromCell(object = rast, cell = start:end)), c("rows", "cols"))
-    
-    colrowVals <- colrowVals[ ,c(2,1)]
+    if(!is.null(retVal))
+    {
+      lonlatVals <- stats::setNames(as.data.frame(raster::xyFromCell(object = rast, cell = start:end)), c("lons", "lats"))
+      
+      colrowVals <- stats::setNames(as.data.frame(raster::rowColFromCell(object = rast, cell = start:end)), c("rows", "cols"))
+      
+      colrowVals <- colrowVals[ ,c(2,1)]
+    }
     
     #modifications e.g. NA removal must be done now
     #as we cannot modify 
@@ -210,19 +226,25 @@ myZonal <- function (rast, nlType, configName, zone, nlStats, digits = 0, retVal
     zoneVals <- zoneVals[-idxZone0]
     rastVals <- rastVals[-idxZone0]
     
-    colrowVals <- colrowVals[-idxZone0,]
-    lonlatVals <- lonlatVals[-idxZone0,]
-
+    if(!is.null(retVal))
+    {
+      colrowVals <- colrowVals[-idxZone0,]
+      lonlatVals <- lonlatVals[-idxZone0,]
+    }
+    
     #for first block init the ff to the given filename
     if (i == 1)
     {
       vals <- ff::ff(initdata = rastVals, finalizer = "delete", overwrite = T)
       zones <- ff::ff(initdata = zoneVals, finalizer = "delete", overwrite = T)
       
-      cols <- ff::ff(initdata = colrowVals$cols, finalizer = "delete", overwrite = T)
-      rows <- ff::ff(initdata = colrowVals$rows, finalizer = "delete", overwrite = T)
-      lons <- ff::ff(initdata = lonlatVals$lons, finalizer = "delete", overwrite = T)
-      lats <- ff::ff(initdata = lonlatVals$lats, finalizer = "delete", overwrite = T)
+      if(!is.null(retVal))
+      {
+        cols <- ff::ff(initdata = colrowVals$cols, finalizer = "delete", overwrite = T)
+        rows <- ff::ff(initdata = colrowVals$rows, finalizer = "delete", overwrite = T)
+        lons <- ff::ff(initdata = lonlatVals$lons, finalizer = "delete", overwrite = T)
+        lats <- ff::ff(initdata = lonlatVals$lats, finalizer = "delete", overwrite = T)
+      }
     } 
     else 
     {
@@ -230,10 +252,13 @@ myZonal <- function (rast, nlType, configName, zone, nlStats, digits = 0, retVal
       vals <- ffbase::ffappend(vals, rastVals, adjustvmode = T)
       zones <- ffbase::ffappend(zones, zoneVals, adjustvmode = T)
 
-      cols <- ffbase::ffappend(cols, colrowVals$cols, adjustvmode = T)
-      rows <- ffbase::ffappend(rows, colrowVals$rows, adjustvmode = T)
-      lons <- ffbase::ffappend(lons, lonlatVals$lons, adjustvmode = T)
-      lats <- ffbase::ffappend(lats, lonlatVals$lats, adjustvmode = T)
+      if(!is.null(retVal))
+      {
+        cols <- ffbase::ffappend(cols, colrowVals$cols, adjustvmode = T)
+        rows <- ffbase::ffappend(rows, colrowVals$rows, adjustvmode = T)
+        lons <- ffbase::ffappend(lons, lonlatVals$lons, adjustvmode = T)
+        lats <- ffbase::ffappend(lats, lonlatVals$lats, adjustvmode = T)
+      }
     }
     
     #upddate progress bar
@@ -243,7 +268,10 @@ myZonal <- function (rast, nlType, configName, zone, nlStats, digits = 0, retVal
   close(pb)
   
   #merge the zone and raster ffvectors into an ffdf
-  rDT <- ff::ffdf(zones, cols, rows, lons, lats, vals)
+  if(!is.null(retVal))
+    rDT <- ff::ffdf(zones, cols, rows, lons, lats, vals)
+  else
+    rDT <- ff::ffdf(zones, vals)
 
   message(Sys.time(), ": Calculating nlStats ")
   
@@ -266,7 +294,6 @@ myZonal <- function (rast, nlType, configName, zone, nlStats, digits = 0, retVal
                                result <- eval(parse(text = funs))
                                
                                as.data.frame(result)
-                               
                              })
   
   result <- data.table::as.data.table(result)
@@ -760,10 +787,23 @@ fnAggRadRast <- function(ctryPoly, ctryRastCropped, nlType, configName, nlStats,
                                   
                                   message(Sys.time(), ": PID:", pid, " Extracting data from polygon " , i)
                                   
+                                  retVal <- sapply(nlStats, function(nlStat){
+                                    nlStat = nlStat[[1]]
+                                    
+                                    nlStatArgs <- formals(nlStat)
+                                    
+                                    retVal <- if(all(sapply(c("col","row"), "%in%",names(nlStatArgs))))
+                                      "colrowval"
+                                    else if(all(sapply(c("lon","lat"), "%in%",names(nlStatArgs))))
+                                      "lonlatval"
+                                    else
+                                      NULL
+                                  })
+                                  
                                   dta <- if(stringr::str_detect(nlType, "OLS"))
-                                    masqOLS(shp = ctryPoly, rast = ctryRastCropped, i = i, configName = configName)
+                                    masqOLS(ctryPoly = ctryPoly, ctryRast = ctryRastCropped, idx = i, retVal=is.null(retVal), configName = configName)
                                   else if(stringr::str_detect(nlType, "VIIRS"))
-                                    masqVIIRS(ctryPoly = ctryPoly, ctryRast = ctryRastCropped, idx = i, configName = configName)
+                                    masqVIIRS(ctryPoly = ctryPoly, ctryRast = ctryRastCropped, idx = i, retVal=is.null(retVal), configName = configName)
                                   
                                   message(Sys.time(), ": PID:", pid, " Calculating the NL stats of polygon ", i)
                                   

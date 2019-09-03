@@ -29,37 +29,67 @@
 #' sumPolygon1 <- sum(masqVIIRS(ctryPoly, ctryRaster, 1), na.rm=T)
 #' }
 #'
-masqVIIRS <- function(ctryPoly, ctryRast, idx, retVal="colrowval", configName)
+masqVIIRS <- function(ctryPoly, ctryRast, idx, retVal=NULL, configName)
 {
   #Extract one polygon based on index value i
   polygon <- ctryPoly[idx,] #extract one polygon
   
-  extent <- raster::extent(x = polygon) #extract the polygon extent
+  extent <- raster::extent(polygon) #extract the polygon extent
   
   #Raster extract
-  outer <- raster::crop(x = ctryRast, y = extent) #extract raster by polygon extent
+  #if we are in a gasflare zone it is possible that the raster has been cropped and
+  #will not intersect with the poly. We expect an error here
+  #if an error is encountered we will assign NA as the only value
+  result <- try(outer <- raster::crop(ctryRast, extent), silent = TRUE) #extract raster by polygon extent
   
-  #inner <- mask(outer,polygon) #keeps values from raster extract that are within polygon
+  if(!inherits(x = result, what = "try-error"))
+  {
+    #we should be okay here
+    inner <- raster::rasterize(x = polygon, y = outer, mask=TRUE) #crops to polygon edge & converts to raster
+    
+    vals <- as.vector(inner)
+    
+    if(!is.null(retVal))
+    {
+      rowVals <- NULL
+      colVals <- NULL
+      
+      #get the local rows and cols
+      #colrowsLocal <- expand.grid(1:ncol(inner), 1:nrow(inner))
+      
+      ext <- raster::extent(inner) #extract the cropped raster extent
+      
+      #get the cells that this polygon represent in the ctryPolygon
+      xyRast <- raster::cellFromXY(object = ctryRast, raster::xyFromCell(inner, 1:raster::ncell(inner)))
+      
+      #get the rows and cols this polygon represents in the ctryPolygon
+      colrows <- raster::rowColFromCell(object = ctryRast, cell = xyRast)
+      
+      colrows <- colrows[ ,c(2,1)]
+      
+      #Get the cell coordinates
+      lonlats <- raster::xyFromCell(object = ctryRast, cell = xyRast)
+      
+      rm(xyRast)
+    }
+  } else
+  {
+    #put NAs
+    colrows <- data.frame(cols=NA,rows=NA)
+    lonlats <- data.frame(lats=NA,lons=NA)
+    vals <- NA
+  }
   
-  inner <- raster::rasterize(x = polygon, y = outer, mask = TRUE) #crops to polygon edge & converts to raster
-  
-  #Convert cropped raster into a vector
-  #Specify coordinates
-  lonlats <- expand.grid(seq(extent@xmin,extent@xmax,(extent@xmax-extent@xmin)/(ncol(inner)-1)),
-                        seq(extent@ymin,extent@ymax,(extent@ymax-extent@ymin)/(nrow(inner)-1)))
-  
-  colrows <- expand.grid(1:ncol(inner), 1:nrow(inner))
+  #any negative values are either recording problems or error values as per:
+  #... Negative values would distort most calculations.
+  vals[vals < 0] <- NA
 
-  #Convert raster into vector
-  vals <- as.vector(x = inner)
+  if(!is.null(retVal))
+    dta <- stats::setNames(data.frame(colrows, lonlats, vals), c("cols","rows","lons","lats","vals"))
+  else
+    dta <- vals
   
-  #data <- data[!is.na(data)] #keep non-NA values only ... shall this affect mask values?
-  #data[is.na(data)] <- 0
-  vals[vals < 0] <- NA #any negative values are either recording problems or error values as per: ... Negative values would distort most calculations.
-  
-  data <- stats::setNames(data.frame(colrows,lonlats,vals), c("cols","rows","lons","lats","vals"))
-  
-  return(data)
+  return(dta)
 }
 
 ######################## masqOLS ###################################
@@ -68,11 +98,11 @@ masqVIIRS <- function(ctryPoly, ctryRast, idx, retVal="colrowval", configName)
 #'
 #' Extract raster pixel values within the boundaries of a polygon
 #'
-#' @param shp the country Polygon layer as SpatialPolygon
+#' @param ctryPoly the country Polygon layer as SpatialPolygon
 #'
-#' @param rast the clipped country raster
+#' @param ctryRast the clipped country raster
 #'
-#' @param i the index of the polygon in the country polygon layer (shp)
+#' @param idx the index of the polygon in the country polygon layer (shp)
 #' 
 #' @param retVal Whether to return the raster data as a vector, or 
 #'     data.frame with spatial context NULL returns a vector of all
@@ -98,48 +128,49 @@ masqVIIRS <- function(ctryPoly, ctryRast, idx, retVal="colrowval", configName)
 #' }
 #' }
 #'
-masqOLS <- function(shp, rast, i, retVal="colrowval", configName)
+masqOLS <- function(ctryPoly, ctryRast, idx, retVal=NULL, configName)
 {
   #Extract one polygon based on index value i
-  polygon <- shp[i,] #extract one polygon
+  polygon <- ctryPoly[idx,] #extract one polygon
   extent <- raster::extent(polygon) #extract the polygon extent
   
   #Raster extract
   #if we are in a gasflare zone it is possible that the raster has been cropped and
   #will not intersect with the poly. We expect an error here
   #if an error is encountered we will assign NA as the only value
-  result <- try(outer <- raster::crop(rast, extent), silent = TRUE) #extract raster by polygon extent
+  result <- try(outer <- raster::crop(ctryRast, extent), silent = TRUE) #extract raster by polygon extent
 
   if(!inherits(x = result, what = "try-error"))
   {
     #we should be okay here
     inner <- raster::rasterize(x = polygon, y = outer, mask=TRUE) #crops to polygon edge & converts to raster
     
-    rowVals <- NULL
-    colVals <- NULL
-    
-    #get the local rows and cols
-    #colrowsLocal <- expand.grid(1:ncol(inner), 1:nrow(inner))
-    
-    ext <- raster::extent(inner) #extract the cropped raster extent
-    
-    #get the cells that this polygon represent in the ctryPolygon
-    xyrast <- raster::cellFromXY(object = rast, raster::xyFromCell(inner, 1:raster::ncell(inner)))
-    
-    #get the rows and cols this polygon represents in the ctryPolygon
-    colrows <- raster::rowColFromCell(object = rast, cell = xyrast)
-    
-    colrows <- colrows[ ,c(2,1)]
-    
-    #Get the cell coordinates
-    lonlats <- raster::xyFromCell(object = rast, cell = xyrast)
-    
-    rm(xyrast)
-    
-    #xyFromCell gives the center of the cell. Subtract 1/2 res to get top-left
-    #lonlatsTopLeft <- lonlats - raster::res(inner)/2
-    
     vals <- as.vector(inner)
+    
+    if(!is.null(retVal))
+    {
+      rowVals <- NULL
+      colVals <- NULL
+      
+      #get the local rows and cols
+      #colrowsLocal <- expand.grid(1:ncol(inner), 1:nrow(inner))
+      
+      ext <- raster::extent(inner) #extract the cropped raster extent
+      
+      #get the cells that this polygon represent in the ctryPolygon
+      xyRast <- raster::cellFromXY(object = ctryRast, raster::xyFromCell(inner, 1:raster::ncell(inner)))
+      
+      #get the rows and cols this polygon represents in the ctryPolygon
+      colrows <- raster::rowColFromCell(object = ctryRast, cell = xyRast)
+      
+      colrows <- colrows[ ,c(2,1)]
+      
+      #Get the cell coordinates
+      lonlats <- raster::xyFromCell(object = ctryRast, cell = xyRast)
+      
+      rm(xyRast)
+    }
+
   } else
   {
     #put NAs
@@ -183,10 +214,17 @@ masqOLS <- function(shp, rast, i, retVal="colrowval", configName)
   #negative values are errors replace with NA
   #vals[vals < 0] <- NA
   
-  #Convert raster into vector
-  dta <- stats::setNames(data.frame(colrows, lonlats, vals), c("cols","rows","lons","lats","vals"))
+  if(!is.null(retVal))
+  {
+    dta <- stats::setNames(data.frame(colrows, lonlats, vals), c("cols","rows","lons","lats","vals"))
 
-  dta <- dta[!is.na(dta$vals), ]
+    #dta <- dta[!is.na(dta$vals), ]
+  } else
+  {
+    dta <- vals
+    
+    dta <- dta[!is.na(dta)]
+  }
   
   return(dta)
 }
