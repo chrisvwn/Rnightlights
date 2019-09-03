@@ -47,7 +47,7 @@
 #' @export 
 myfun <- function(col, row, lon, lat, val, numPts=3) #function(dt, numPts=3)
 {
-  dt <- data.frame(col, row)
+  dt <- data.frame(col, row, val)
   
   topPts <- dt[order(dt$val, decreasing = T)[1:numPts],]
   
