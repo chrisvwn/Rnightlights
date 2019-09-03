@@ -927,7 +927,7 @@ getCtryNlData <- function(ctryCode=NULL,
       nlStatNames <- sapply(nlStats, function(x) x[[1]])
       
       if(length(nlStatNames) == 1)
-        nlPeriodStats <- data.frame(a, X3=nlStatNames, stringsAsFactors = F)
+        nlPeriodStats <- data.frame(a, X3=nlStatNames, stringsAsFactors = F, row.names = NULL)
       else
         nlPeriodStats <- data.frame(apply(X = a,
                                           MARGIN = 2,
