@@ -4,14 +4,14 @@
 \alias{masqOLS}
 \title{Extract raster pixel values within the boundaries of a polygon}
 \usage{
-masqOLS(shp, rast, i, retVal = "colrowval", configName)
+masqOLS(ctryPoly, ctryRast, idx, retVal = NULL, configName)
 }
 \arguments{
-\item{shp}{the country Polygon layer as SpatialPolygon}
+\item{ctryPoly}{the country Polygon layer as SpatialPolygon}
 
-\item{rast}{the clipped country raster}
+\item{ctryRast}{the clipped country raster}
 
-\item{i}{the index of the polygon in the country polygon layer (shp)}
+\item{idx}{the index of the polygon in the country polygon layer (shp)}
 
 \item{retVal}{Whether to return the raster data as a vector, or 
 data.frame with spatial context NULL returns a vector of all

@@ -4,9 +4,21 @@
 \alias{getAllNlConfigNames}
 \title{Generate a list of all possible configNames for a given nlType}
 \usage{
-getAllNlConfigNames(nlType)
+getAllNlConfigNames(nlTypes = NULL, configNames = NULL,
+  description = NULL, pretty = FALSE)
 }
 \arguments{
+\item{description}{\code{(character)} whether to print the long or 
+short description. Possible values are:
+\itemize{
+    \item NULL Do not show descriptions
+    \item short Show short descriptions
+    \item long Show long descriptions
+}}
+
+\item{pretty}{Whether to prettify the output. Prints one line per nlType.
+Only available if description is NULL}
+
 \item{nlType}{if present show only configNames matching the nlType}
 }
 \description{
