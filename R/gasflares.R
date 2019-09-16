@@ -95,7 +95,11 @@ createNlGasFlares <- function()
       if(!file.exists(gfTgzLclFnamePath))
         res <- try(utils::download.file(url = gasFlareUrl, destfile = gfTgzLclFnamePath, method = "auto"), TRUE)
       else
+      {
         message(Sys.time(), ": Exists")
+        
+        res <- 0
+      }
       
       if(res == 0)
       {
@@ -104,9 +108,14 @@ createNlGasFlares <- function()
         gfShpDirLclFnamePath <- tools::file_path_sans_ext(gfTgzLclFnamePath)
         
         if(!dir.exists(gfShpDirLclFnamePath))
+        {
           dir.create(gfShpDirLclFnamePath)
         
-        utils::untar(tarfile = gfTgzLclFnamePath, exdir = gfShpDirLclFnamePath)
+          utils::untar(tarfile = gfTgzLclFnamePath, exdir = gfShpDirLclFnamePath)
+        } else
+        {
+          message(Sys.time(), ": ", gfShpDirLclFnamePath, " already exists")
+        }
       }
       
     }
