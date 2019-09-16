@@ -881,7 +881,9 @@ processNlData <- function (ctryCodes,
     ctryCode <- ctryCodes[[cCodeIdx]]
     
     #ctryAdmLevels <- admLevels[[cCodeIdx]]
-    
+    if(!is.null(names(admLevels)[cCodeIdx]))
+      return(admLevels[ctryCode])
+
     ctryAdmLevels <- if(is.list(admLevels))
       unlist(admLevels[cCodeIdx])
     else
@@ -959,12 +961,13 @@ processNlData <- function (ctryCodes,
                 function(i)
                 {
                    if(is.list(admLevels))
+                   {
                       allValidCtryAdmLvls(ctryCode = ctryCodes[i],
                                           admLevels = admLevels[[i]],
                                           gadmVersion = gadmVersion,
                                           gadmPolyType = gadmPolyType,
                                           custPolyPath = custPolyPath)
-                   else
+                   } else
                    {
                      if(length(ctryCodes)==1)
                       allValidCtryAdmLvls(ctryCode = ctryCodes[i],
@@ -980,6 +983,7 @@ processNlData <- function (ctryCodes,
                                            custPolyPath = custPolyPath)
                    }
                 })))
+  
     stop(Sys.time(), "Invalid admLevels detected")
   
   if(!allValidNlPeriods(nlTypes = nlTypes, nlPeriods = nlPeriods))
@@ -1034,7 +1038,7 @@ processNlData <- function (ctryCodes,
     #for all nlPeriods check if the tiles exist else download
     for (nlPeriod in nlTypePeriods)
     {
-      message(Sys.time(), ": **** PROCESSING nlType:", nlType, "configName: ", configName," nlPeriod:", nlPeriod, "****")
+      message(Sys.time(), ": **** PROCESSING nlType:", nlType, " | configName: ", configName," | nlPeriod:", nlPeriod, "****")
       message(Sys.time(), ": Checking tiles required for ", paste(nlType, nlPeriod))
       
       #init the list of tiles to be downloaded
