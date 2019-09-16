@@ -5,32 +5,138 @@
 #' Generate a list of all possible configNames for a given nlType
 #'
 #' @param nlType if present show only configNames matching the nlType
-#'
+#' 
+#' @param description \code{(character)} whether to print the long or 
+#'     short description. Possible values are:
+#'     \itemize{
+#'         \item NULL Do not show descriptions
+#'         \item short Show short descriptions
+#'         \item long Show long descriptions
+#'     }
+#' 
+#' @param pretty Whether to prettify the output. Prints one line per nlType.
+#'     Only available if description is NULL
+#' 
 #' @examples
 #' getAllNlConfigNames("OLS.Y")
 #'  #returns '"cf_cvg", "avg_vis", "stable_lights"'
 #'  
 #' @export
-getAllNlConfigNames <- function(nlType)
+getAllNlConfigNames <- function(nlTypes=NULL, configNames=NULL, description=NULL, pretty=FALSE)
 {
+  if(!is.null(nlTypes) && !all(validNlTypes(nlTypes = nlTypes)))
+    stop(Sys.time(), ": Invalid nlTypes detected")
+
+  if(!is.null(description) && !description %in% c("long", "short"))
+    stop(Sys.time(), ": Invalid description. Only 'long' and 'short' allowed")
+  
   allConfigNames <- list(
-    "OLS.Y" = c("cf_cvg", "avg_vis", "stable_lights", "pct_lights", "avg_lights_x_pct"),
-    "VIIRS.D" = c("vcmcfg", "vcmsl"),
-    "VIIRS.M" = c("vcmcfg", "vcmsl"),
-    "VIIRS.Y" = c("vcm-orm", "vcm-orm-ntl", "vcm-ntl"))
+    list(nlType="OLS.Y",
+         configName="cf_cvg",
+         shortDescription="Cloud-free coverages",
+         longDescription="Tally of the total number of observations that went into 
+      each 30 arc second grid cell. This image can be used to identify 
+      areas with low numbers of observations where the quality is reduced. 
+      In some years there are areas with zero cloud- free observations in 
+      certain locations"),
+    list(nlType="OLS.Y",
+         configName="avg_vis",
+         shortDescription="Raw average visible band",
+         longDescription="Contains the average of the visible band digital number 
+      values with no further filtering. Data values range from 0-63. Areas 
+      with zero cloud-free observations are represented by the value 255."),
+    list(nlType="OLS.Y",
+         configName="stable_lights",
+         shortDescription="Cleaned up avg_vis",
+         longDescription="Contains the lights from cities, towns, and other sites with persistent 
+          lighting, including gas flares. Ephemeral events, such as fires
+          have been discarded. Then the background noise was identified and
+          replaced with values of zero. Data values range from 1-63. Areas
+          with zero cloud-free observations are represented by the value 255."),
+    list(nlType="OLS.Y",
+         configName="pct_lights",
+         shortDescription="Percent detection freq",
+         longDescription="the percentage of
+         observations where light is detected per grid cell."),
+    list(nlType="OLS.Y",
+         configName="avg_lights_x_pct",
+         shortDescription="Avg vis band x percent detection freq",
+         longDescription="Derived from the average visible band digital number(DN) of
+           cloud-free light detections multiplied by the percent frequency
+           of light detection. The inclusion of the percent frequency
+           of detection term normalizes the resulting digital values for
+           variations in the persistence of lighting. For instance, the
+           value for a light only detected half the time is discounted by 50%.
+           Note that this product contains detections from fires and a
+           variable amount of background noise. This is the product used
+           to infer gas flaring volumes from the nighttime lights."),
+    list(nlType="VIIRS.D",
+         configName="vcmcfg",
+         shortDescription="Stray Light Removed",
+         longDescription="Excludes any data impacted by stray light."),
+    list(nlType="VIIRS.D",
+         configName="vcmsl",
+         shortDescription="Stray Light Corrected",
+         longDescription=" Includes data impacted by stray light if the radiance values 
+      have undergone the stray-light correction procedure. The 'vcmsl' version, 
+      that includes the stray-light corrected data, will have more data coverage 
+      toward the poles, but will be of reduced quality."),
+    list(nlType="VIIRS.M",
+         configName="vcmcfg",
+         shortDescription="Stray Light Removed",
+         longDescription="Excludes any data impacted by stray light."),
+    list(nlType="VIIRS.M",
+         configName="vcmsl",
+         shortDescription="Stray Light Corrected",
+         longDescription="Includes data impacted by stray light if the radiance 
+      values have undergone the stray-light correction procedure. The 
+      'vcmsl' version, that includes the stray-light corrected data, will 
+      have more data coverage toward the poles, but will be of reduced 
+      quality."),
+    list(nlType="VIIRS.Y",
+         configName="vcm-orm",
+         shortDescription="VIIRS Cloud Mask - Outlier Removed",
+         longDescription="This product contains cloud-free average radiance values 
+      that have undergone an outlier removal process to filter out fires 
+      and other ephemeral lights."),
+    list(nlType="VIIRS.Y",
+         configName="vcm-ntl",
+         shortDescription="VIIRS Cloud Mask - Outlier Removed - Nighttime Light",
+         longDescription="This product contains the 'vcm-orm' average, 
+      with background (non-lights) set to zero."),
+    list(nlType="VIIRS.Y",
+         configName="vcm-orm-ntl",
+         shortDescription="VIIRS Cloud Mask - Nighttime Lights",
+         longDescription="This product contains the 'vcm' average, with background 
+      (non-lights) set to zero"))
   
-  if(missing(nlType))
-    return(allConfigNames)
+  res <- do.call(rbind.data.frame, allConfigNames)
   
-  sapply(nlType, function(x)
+  res$longDescription <- gsub("\\s*\\n\\s*", " ", res$longDescription)
+  
+  if(!is.null(nlTypes))
+    res <- res[res$nlType %in% nlTypes, ]
+
+  if(!is.null(configNames))
+    res <- res[res$configName %in% configNames, ]
+
+  if(!is.null(description))
   {
-    pos <- grep(pattern = paste0("^",x,"$"), x = names(allConfigNames))
+    if(description == "short")
+      res$longDescription <- NULL
+  } else
+  {
+    res$shortDescription <- NULL
+    res$longDescription <- NULL
+  }
     
-    if(length(pos) == 0)
-      return(NA)
-    
-    allConfigNames[pos]
-  }, USE.NAMES = F)
+  if(pretty)
+    if(is.null(description))
+      res <- stats::aggregate(configName ~ nlType, res, paste, collapse=", ")
+    else if(description == "long")
+      res$longDescription <- sapply(strwrap(res$longDescription, width = getOption("width")-50, simplify = F), paste, sep="", collapse= "\n", USE.NAMES = F, simplify = T)
+  
+  return(res)
 }
 
 ######################## validNlConfigName ###################################
@@ -54,7 +160,7 @@ getAllNlConfigNames <- function(nlType)
 #'
 validNlConfigName <- function(configName, nlType)
 {
-  toupper(configName) %in% toupper(unlist(getAllNlConfigNames(nlType)))
+  toupper(configName) %in% toupper(unique(getAllNlConfigNames(nlTypes = nlType)$configName))
 }
 
 ######################## downloadNlTiles ###################################
