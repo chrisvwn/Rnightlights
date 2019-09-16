@@ -262,3 +262,370 @@ printCredits <- function(credits, newLineChar="\n", surroundChar = "*", horzPadd
   
   packageStartupMessage(paste(credits, collapse = "\n"))
 }
+
+######################## printCredits ###################################
+
+#' Format credits to print to the console
+#'
+#' Format credits to print to the console
+#'
+#' @param credits character a single length character vector with newlineChar
+#'     used to separate lines. Two consecutive newlineChara are used to
+#'     put in a horizontal divider
+#' 
+#' @param newLineChar character the character/sequence used to split the 
+#'     credits into new lines
+#'     
+#' @param surroundChar character the character to use as a decoration
+#' 
+#' @param horzPadding integer the number of blank spaces between text and
+#'     the surrounding text horizontally
+#'     
+#' @param vertPadding integer the number of blank spaces between text and
+#'     the surrounding text vertically
+#'     
+#' @param horzWidth integer the width of the decoration horizontally
+#'
+#' @param vertWidth integer the width of the decoration vertically
+#'  
+#' @return character a formatted credits character vector
+#' 
+#' @examples
+#'   printCredits(credits="DMSP data collected by US Air Force Weather Agency|
+#'   Image and data processing by NOAA's National Geophysical Data Center|
+#'   (https://www.ngdc.noaa.gov/eog/download.html)||
+#'   Maps distributed by GADM|(https://gadm.org)", newLineChar="|")
+#' 
+#' @export
+printDataFrame <- function(credits, newLineChar="\n", horzChar = "*", vertChar = "*", horzPadding = 1, vertPadding = 1, horzWidth = 3, vertWidth = 2)
+{
+  width <- getOption("width")
+  
+  if(newLineChar != "\n")
+    credits <- gsub(pattern = "\n", replacement = "", x = credits)
+  
+  credits <- unlist(strsplit(x = credits, split = newLineChar, fixed = T))
+  
+  sideFrameLeft <- paste(rep(vertChar, horzWidth), collapse = "") 
+  
+  sideFrameRight <- paste(rep(vertChar, horzWidth), collapse = "") 
+  
+  longestLine <- max(sapply(credits, nchar))
+  
+  fullHorzFrame <- paste(sideFrameLeft, rep(horzChar, longestLine + horzPadding * 2), rep(vertChar, horzWidth), collapse = "")
+  
+  emptyHorzFrame <- paste0(sideFrameLeft, paste0(rep(" ", longestLine + horzPadding * 2), collapse=""), sideFrameRight)
+  
+  header <- rep(fullHorzFrame, vertWidth)
+  
+  footer <- header
+  
+  mainBody <- sapply(credits, USE.NAMES = F, function(x){
+    leftPad <- floor((longestLine-nchar(x))/2)
+    
+    rightPad <- ifelse((longestLine-nchar(x)) %% 2 == 0, leftPad, leftPad + 1)
+    
+    leftSpace <- paste(rep(" ", leftPad+horzPadding), collapse = "")
+    
+    rightSpace <- paste(rep(" ", rightPad+horzPadding), collapse = "")
+    
+    # print((longestLine-nchar(x)))
+    # print(paste0(leftPad, ":", rightPad))
+    out <- if(!grepl(pattern = "^\\s*$", x = x))
+    {
+      paste0(sideFrame, leftSpace, x, rightSpace, sideFrame)
+    }else
+    {
+      if(vertWidth > 0)
+        c(emptyHorzFrame, fullHorzFrame, emptyHorzFrame)
+      else
+        fullHorzFrame
+    }
+    # message("'", leftSpace,"'")
+    # message("'", x, "'")
+    # message("'", rightSpace,"'")
+    
+    #paste0(out,"\n")
+  })
+  
+  credits <- c(header, emptyHorzFrame, unlist(mainBody), emptyHorzFrame, footer)
+  
+  #cat(paste(credits, collapse = "\n"))
+  
+  credits <- sapply(credits, function(cred)
+  {
+    ws <- paste(rep(" ", floor((width - nchar(cred))/2)), collapse = "")
+    
+    paste(ws, cred, sep = "", collapse = "")
+  }, USE.NAMES = F)
+  
+  packageStartupMessage(paste(credits, collapse = "\n"))
+}
+
+######################## writeNightlightsMap ###################################
+
+writeNightlightsMap <- function()
+{
+  tplHead <- "
+  MAP
+    IMAGETYPE   PNG
+    EXTENT	    -180 -90 180 90
+    SIZE		    800 600
+    IMAGECOLOR  \"#ffffffff\"
+    TRANSPARENT ON
+    SHAPEPATH	  <SHAPE_PATH>
+    
+    PROJECTION
+      \"init=epsg:4326\"
+    END
+    
+    OUTPUTFORMAT
+      NAME png
+      DRIVER 'GD/PNG'
+      MIMETYPE 'image/png'
+      IMAGEMODE RGBA
+      EXTENSION 'png'
+    END
+  
+    # OUTPUTFORMAT
+    #   NAME      GEOTIFF
+    #   DRIVER    GDAL/GTiff
+    #   MIMETYPE  image/tiff
+    #   IMAGEMODE RGBA
+    #   EXTENSION tif
+    # END
+    
+    WEB
+      METADATA
+        \"wms_title\" \"Nightlight Rasters\"
+        \"wms_onlineresource\" \"http://localhost/cgi-bin/mapserv?map=test.map\"
+        \"wms_description\" \"nightlights\"
+        \"wms_name\" \"Nightlights\"
+        \"wms_label\" \"Nightlights\"
+        \"wms_srs\" \"EPSG:3857\"
+        \"wms_extent\" \"-180 -90 180 90\"
+        \"wms_formats\" \"GEOTIFF\"
+        \"wms_enable_request\" \"*\"
+      END
+    END"
+  
+  tplTileIndexHead <- "
+    LAYER
+      NAME	<VAL_NAME>
+      STATUS ON
+
+      TILEINDEX	<VAL_NAME>_tindex.shp
+      TILEITEM	\"location\"
+      #OFFSITE 0 0 0
+
+      TYPE RASTER
+      #PROCESSING \"SCALE=AUTO\"
+
+      PROJECTION
+        \"init=epsg:4326\"
+      END
+      METADATA
+        \"DESCRIPTION\" \"nightlights\"
+        \"wms_title\" \"<VAL_NAME>\"
+        \"wms_timeitem\"  \"nlPeriod\"
+        \"wms_timeextent\"  \"201401/201412\"
+      END"
+
+  tplTileIndexClasses <- 
+      "CLASSITEM \"[pixel]\"
+        CLASS
+          NAME \"NODATA\"
+          #EXPRESSION ([pixel] = <VAL_NODATA>)
+          EXPRESSION ([pixel] <= 0)
+          STYLE
+            COLOR \"#000000\"
+            OPACITY 0
+          END
+        END #END CLASS
+        
+        CLASS
+          NAME DEC0
+          EXPRESSION ([pixel] > 0 AND [pixel] < <VAL_DEC0>)
+  
+          STYLE
+            OPACITY 100
+            COLOR \"#000000\"
+          END
+        END
+  
+        CLASS
+          NAME DEC1
+          EXPRESSION ([pixel] >= <VAL_DEC0> AND [pixel] < <VAL_DEC1> )
+  
+          STYLE
+            OPACITY 100
+            COLOR \"<COL_DEC1>\"
+          END
+        END
+  
+        CLASS
+          NAME DEC2
+          EXPRESSION ([pixel] >= <VAL_DEC1>  AND [pixel] < <VAL_DEC2>  )
+  
+          STYLE
+            OPACITY 100
+            COLOR \"<COL_DEC2>\"
+          END
+        END
+  
+        CLASS
+          NAME DEC3
+          EXPRESSION ([pixel] >= <VAL_DEC2> AND [pixel] < <VAL_DEC3> )
+  
+          STYLE
+            OPACITY 100
+            COLOR \"<COL_DEC3>\"
+          END
+        END
+  
+        CLASS
+          NAME DEC4
+          EXPRESSION ([pixel] >= <VAL_DEC3> AND [pixel] < <VAL_DEC4> )
+  
+          STYLE
+            OPACITY 100
+            COLOR \"<COL_DEC4>\"
+          END
+        END
+  
+        CLASS
+          NAME DEC5
+          EXPRESSION ([pixel] >= <VAL_DEC4> AND [pixel] < <VAL_DEC5> )
+  
+          STYLE
+            OPACITY 100
+            COLOR \"<COL_DEC5>\"
+          END
+        END
+  
+        CLASS
+          NAME DEC6
+          EXPRESSION ([pixel] >= <VAL_DEC5> AND [pixel] < <VAL_DEC6> )
+  
+          STYLE
+            OPACITY 100
+            COLOR \"<COL_DEC6>\"
+          END
+        END
+  
+        CLASS
+          NAME DEC7
+          EXPRESSION ([pixel] >= <VAL_DEC6> AND [pixel] < <VAL_DEC7> )
+  
+          STYLE
+            OPACITY 100
+            COLOR \"<COL_DEC7>\"
+          END
+        END
+  
+        CLASS
+          NAME DEC8
+          EXPRESSION ([pixel] >= <VAL_DEC7> AND [pixel] < <VAL_DEC8>)
+  
+          STYLE
+            OPACITY 100
+            COLOR \"<COL_DEC8>\"
+          END
+        END
+  
+        CLASS
+          NAME DEC9
+          EXPRESSION ([pixel] >= <VAL_DEC8> AND [pixel] < <VAL_DEC9>)
+  
+          STYLE
+            OPACITY 100
+            COLOR \"<COL_DEC9>\"
+          END
+        END
+        
+        CLASS
+          NAME DEC10
+          EXPRESSION ([pixel] >= <VAL_DEC9> AND [pixel] < <VAL_DEC10> )
+  
+          STYLE
+            OPACITY 100
+            COLOR \"<COL_DEC10>\"
+          END
+        END
+  
+        CLASS
+          NAME DEC11
+          EXPRESSION ([pixel] > <VAL_DEC10>)
+  
+          STYLE
+            OPACITY 100
+            COLOR \"#FFFFFF\"
+          END
+        END
+      END #END CLASSITEM"
+      
+  fList <- dir(path = getNlDir("dirRasterOutput"), 
+               pattern = "^NL_.*_VIIRS.M_.*_VCMCFG-MTSALL-MEAN-RGFT_GADM-3.6-SHPZIP.tif$",
+               full.names = T)
+  
+  layers <- NULL
+
+  tplHead <- stringr::str_replace_all(tplHead,  "<SHAPE_PATH>", getNlDir("dirRasterOutput"))
+  
+  tplMap <- tplHead
+
+  #gdaltindex NL_CTRYCODE_VIIRS.M_NLPERIOD_VCMCFG-MTSALL-MEAN-RGFT_GADM-3.6-SHPZIP.shp NL_*_VIIRS.M_*_VCMCFG-MTSALL-MEAN-RGFT_GADM-3.6-SHPZIP.tif
+  lyrName <- gsub("NL_[A-Z]{3}_", "NL_CTRYCODE_", tools::file_path_sans_ext(basename(fList[1]))) %>%
+    gsub("_\\d{4,6}_", "_NLPERIOD_", .)
+
+  tplTileIndexHead <- stringr::str_replace_all(tplTileIndexHead,  "<VAL_NAME>", lyrName)
+  
+  gdalInfo <- rgdal::GDALinfo(fList[1], returnStats = FALSE)
+
+  noDataVal <- format(eval(parse(text = (attr(gdalInfo,"df")$NoDataValue))), scientific = F)
+
+  tplLayers <- stringr::str_replace_all(tplTileIndexHead,  "<SHAPE_PATH>", getNlDir("dirRasterOutput"))
+
+  tplTileIndexClasses <- stringr::str_replace_all(tplTileIndexClasses,  "<VAL_NODATA>", noDataVal)
+  
+  deciles <- as.character(quantile(x=-1:200, seq(from = 0, to = 1, by = 0.1)))
+  
+  colFunc <- colorRampPalette(c("#000001", "slategray3", "slategray2", "slategray1", "white"))
+  
+  decileColors <- colFunc(11)
+  
+  #plot(rep(1,length(decileColors)),col=decileColors, pch=19,cex=2)
+  
+  for (i in 1:length(deciles))
+  {
+    decval <- paste0("<VAL_DEC", i-1,">")
+
+    tplTileIndexClasses <- stringr::str_replace_all(tplTileIndexClasses,  decval, deciles[i])
+    
+    decCol <- paste0("<COL_DEC", i-1,">")
+    
+    tplTileIndexClasses <- stringr::str_replace_all(tplTileIndexClasses,  decCol, decileColors[i])
+  }
+
+  tplMap <- paste0(tplMap,
+                   "\n",
+                   tplTileIndexHead,
+                   "\n",
+                   tplTileIndexClasses,
+                   "\n    END #END LAYER",
+                   "\n  END #END MAP")
+  
+  readr::write_file(tplMap, "test.map")
+}
+
+######################## myquantile ###################################
+
+myquantile <- function (x)
+{
+
+  vals <- raster::sampleRandom(x, Reduce("*",dim(x))*0.1)
+  
+  result <- stats::quantile(vals, c(0.02,0.98),na.rm=T)
+
+  return(result)
+}
