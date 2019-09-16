@@ -53,6 +53,11 @@ if (!requireNamespace("DT", quietly = TRUE))
   missingPkgs <- c(missingPkgs, "DT")
 }
 
+if (!requireNamespace("shinycssloaders", quietly = TRUE))
+{
+  missingPkgs <- c(missingPkgs, "shinycssloaders")
+}
+
 if(!is.null(missingPkgs))
   stop(Sys.time(), ": Missing packages needed for this function to work. 
        Please install missing packages: '", paste0(missingPkgs, collapse = ", "), "'", call. = FALSE)
@@ -78,20 +83,21 @@ alignCenter <- function(el) {
   
     # Sidebar with a slider input for number of bins
     shinydashboard::dashboardSidebar(
-      shinydashboard::sidebarMenu(
-      
-        shinydashboard::menuItem("Inputs", selected = TRUE, startExpanded = TRUE, tabName = "inputs",
-                 
-                 shiny::uiOutput(outputId = "countries"),
+      shinydashboard::sidebarMenu(style = "overflow-y:auto; height: 92vh; position:relative;",
 
-                 shiny::uiOutput(outputId = "btnGo"),
+                                  
+        shiny::uiOutput(outputId = "countries"),
+        
+        shiny::uiOutput(outputId = "btnGo"),
+                                  
+        shinydashboard::menuItem("Inputs", selected = TRUE, startExpanded = TRUE, tabName = "inputs",
 
                  shiny::uiOutput(outputId = "intraCountry"),
                  
                  shiny::uiOutput("intraCountry1")
                  ),
 
-        shinydashboard::menuItem("Stats", selected = TRUE, startExpanded = TRUE, tabName = "stats",
+        shinydashboard::menuItem("Stats", selected = FALSE, startExpanded = TRUE, tabName = "stats",
                                  shiny::uiOutput(outputId = "nlType"),
                                  
                                  shiny::uiOutput(outputId = "ctryStats"),
@@ -118,7 +124,7 @@ alignCenter <- function(el) {
 
                  shinydashboard::menuItem(text = "Options", tabName = "options",
 
-                          shiny::checkboxInput(inputId = "strict", label = "Strict", value = T),                                          
+                          shiny::checkboxInput(inputId = "strict", label = "Strict", value = T),
                           shiny::radioButtons(inputId = "graphType",
                                        label = "Graph type",
                                        choices = c("line", "boxplot", "histogram", "point"),
@@ -137,34 +143,35 @@ alignCenter <- function(el) {
       # body
       shinydashboard::dashboardBody(
         shinydashboard::tabBox(width = 12,
-          shiny::tabPanel(title = "plots",
-                   plotly::plotlyOutput(outputId = "plotNightLights"),
+          shiny::tabPanel(title = "Plot",
+                          style = tags$style("overflow-y:auto; height: 76vh; position:relative;"),
+                          shinycssloaders::withSpinner(plotly::plotlyOutput(outputId = "plotNightLights", height = "78%")),
                    
                    shiny::uiOutput("sliderNlPeriodRange")
           ),
 
-          shiny::tabPanel(title = "maps",
-                  tags$style(type = "text/css", "#map {height: calc(100vh - 80px) !important;}"),
-                  leaflet::leafletOutput("map"),
+          shiny::tabPanel(title = "Map",
+                  tags$style("overflow-y:auto; height: 80vh; position:relative;"),
+                  shinycssloaders::withSpinner(leaflet::leafletOutput("map")),
                   
                   shiny::uiOutput("sliderNlPeriod")
           ),
 
-          shiny::tabPanel(title = "stats",
+          shiny::tabPanel(title = "Stats",
                    shiny::fluidRow(
                      shinydashboard::box(title = "Annual Trends", 
                          shiny::plotOutput("plotYearly")),
                      
                      shinydashboard::tabBox(
-                       shiny::tabPanel(title = "plotPointsCluster",
-                                plotly::plotlyOutput("plotPointsCluster")
+                       shiny::tabPanel(title = "Cluster Points",
+                                       shinycssloaders::withSpinner(plotly::plotlyOutput("plotPointsCluster"))
                                 ),
                        
-                       shiny::tabPanel(title = "plotHCluster",
-                                shiny::plotOutput("plotHCluster")
+                       shiny::tabPanel(title = "Cluster Hierarchy",
+                                       shinycssloaders::withSpinner(shiny::plotOutput("plotHCluster"))
                                 ),
-                       shiny::tabPanel(title = "mapHCluster",
-                                leaflet::leafletOutput("mapHCluster")
+                       shiny::tabPanel(title = "Cluster Map",
+                                       shinycssloaders::withSpinner(leaflet::leafletOutput("mapHCluster"))
                        ),
                        shiny::sliderInput("kClusters", "Num Clusters", min=1, max=10, value=2)
                      )
@@ -173,7 +180,7 @@ alignCenter <- function(el) {
                   shiny::fluidRow(
                     shinydashboard::tabBox(
                       shiny::tabPanel(title = "Time Series Decomposed",
-                               shiny::plotOutput("plotTSDecomposed")
+                                      shinycssloaders::withSpinner(shiny::plotOutput("plotTSDecomposed"))
                       
                       )
                     )
