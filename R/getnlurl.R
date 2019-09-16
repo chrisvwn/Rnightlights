@@ -103,7 +103,7 @@ getNlUrlOLS <- function(nlPeriod, configName=pkgOptions("configName_OLS.Y"))
 #' tileUrl <- Rnightlights:::getNlUrlVIIRS("2015", "1", "VIIRS.Y")
 #' }
 #'
-getNlUrlVIIRS <- function(nlPeriod, tileNum, nlType)
+getNlUrlVIIRS <- function(nlPeriod, tileNum, nlType, configName)
 {
   if(missing(nlPeriod))
     stop(Sys.time(), ": Missing required parameter nlPeriod")
