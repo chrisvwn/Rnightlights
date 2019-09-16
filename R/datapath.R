@@ -428,6 +428,24 @@ getNlDataPath <- function()
   dataPath
 }
 
+######################## getNlDataPathFull ###################################
+
+#' Gets the full path to the data directory"
+#'
+#' Gets the full path to the data directory"
+#'
+#' @return Returns the full folder of the current data path
+#'     as a @character string.
+#'
+#' @examples
+#' print(getNlDataPathFull())
+#'     
+#' @export
+getNlDataPathFull <- function()
+{
+  return(file.path(getNlDataPath(), ".Rnightlights"))
+}
+
 ######################## removeDataPath ###################################
 
 #' Deletes a root data path all sub-directories
@@ -626,4 +644,20 @@ getNlDir <- function(dirName)
     nlDir <- file.path(dataPath, pkgOptions("dirNlRoot"), pkgOptions(dirName))
   
   return(nlDir)
+}
+
+######################## getNlDirNames ###################################
+
+#' Get the names of all possible getNlDir dirNames
+#' 
+#' Get the names of all possible getNlDir dirNames that can be supplied
+#'     to the getNlDir function as the dirName parameter
+#'
+#' @examples
+#' getNlDirNames()
+#' 
+#' @export
+getNlDirNames <- function()
+{
+  return(grep("^dir", pkgOptions(), value = TRUE))
 }
