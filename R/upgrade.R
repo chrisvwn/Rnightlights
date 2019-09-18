@@ -175,7 +175,7 @@ upgradeRnightlights <- function()
           
           nlType <- newNlType(nlType)
           
-          configName <- unlist(stringr::str_extract(string = fileName, pattern = "(CF_CVG|AVG_VIS|STABLE_LIGHTS|PCT_LIGHTS|AVG_LIGHTS_X_PCT|VCMCFG|VCMSL|VCMCFG|VCMSL|VCM-ORM|VCM-ORM-NTL|VCM-NTL)"))
+          configName <- unlist(stringr::str_extract(string = fileName, pattern = "(CF_CVG|AVG_VIS|STABLE_LIGHTS|PCT_LIGHTS|AVG_LIGHTS_X_PCT|VCMCFG|VCMSLCFG|VCMCFG|VCMSLCFG|VCM-ORM|VCM-ORM-NTL|VCM-NTL)"))
           
           configName <- if(is.na(configName)) ifelse(grepl("OLS",nlType), "AVG_VIS", "VCMCFG")  else configName  
           
@@ -277,7 +277,7 @@ upgradeRnightlights <- function()
             
             nlStat <- tolower(gsub("_", "", stringr::str_extract(string = x, "_[A-Z]+$")))
           
-            configName <- unlist(stringr::str_extract(string = x, pattern = "(CF_CVG|AVG_VIS|STABLE_LIGHTS|PCT_LIGHTS|AVG_LIGHTS_X_PCT|VCMCFG|VCMSL|VCMCFG|VCMSL|VCM-ORM|VCM-ORM-NTL|VCM-NTL)"))
+            configName <- unlist(stringr::str_extract(string = x, pattern = "(CF_CVG|AVG_VIS|STABLE_LIGHTS|PCT_LIGHTS|AVG_LIGHTS_X_PCT|VCMCFG|VCMSLCFG|VCMCFG|VCMSLCFG|VCM-ORM|VCM-ORM-NTL|VCM-NTL)"))
             
             #gsub always returns a string
             #if configName is null it is pre-0.2.4 where configName=AVG_VIS or VCM_CFG
@@ -354,7 +354,7 @@ upgradeRnightlights <- function()
           
           nlPeriod <- stringr::str_extract(string = fileName, "\\d{4,8}")
           
-          configName <- unlist(stringr::str_extract(string = fileName, pattern = "(CF_CVG|AVG_VIS|STABLE_LIGHTS|PCT_LIGHTS|AVG_LIGHTS_X_PCT|VCMCFG|VCMSL|VCMCFG|VCMSL|VCM-ORM|VCM-ORM-NTL|VCM-NTL)"))
+          configName <- unlist(stringr::str_extract(string = fileName, pattern = "(CF_CVG|AVG_VIS|STABLE_LIGHTS|PCT_LIGHTS|AVG_LIGHTS_X_PCT|VCMCFG|VCMSLCFG|VCMCFG|VCMSLCFG|VCM-ORM|VCM-ORM-NTL|VCM-NTL)"))
           
           #gsub always returns a string
           #if configName is null it is pre-0.2.4 where configName=AVG_VIS
