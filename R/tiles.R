@@ -4,7 +4,9 @@
 #'
 #' Generate a list of all possible configNames for a given nlType
 #'
-#' @param nlType if present show only configNames matching the nlType
+#' @param nlTypes if present show only configNames matching the nlTypes
+#' 
+#' @param configNames if present show only configNames matching the configNames
 #' 
 #' @param description \code{(character)} whether to print the long or 
 #'     short description. Possible values are:
@@ -75,24 +77,38 @@ getAllNlConfigNames <- function(nlTypes=NULL, configNames=NULL, description=NULL
          shortDescription="Stray Light Removed",
          longDescription="Excludes any data impacted by stray light."),
     list(nlType="VIIRS.D",
-         configName="vcmsl",
+         configName="vcmslcfg",
          shortDescription="Stray Light Corrected",
          longDescription=" Includes data impacted by stray light if the radiance values 
-      have undergone the stray-light correction procedure. The 'vcmsl' version, 
+      have undergone the stray-light correction procedure. The 'vcmslcfg' version, 
       that includes the stray-light corrected data, will have more data coverage 
       toward the poles, but will be of reduced quality."),
+    list(nlType="VIIRS.M",
+         configName="cf_cvg",
+         shortDescription="Cloud-free coverages",
+         longDescription="Tally of the total number of observations that went into 
+      each grid cell. This image can be used to identify areas with low numbers of 
+      observations where the quality is reduced. In some time periods there are areas 
+      with zero cloud-free observations in certain locations"),
     list(nlType="VIIRS.M",
          configName="vcmcfg",
          shortDescription="Stray Light Removed",
          longDescription="Excludes any data impacted by stray light."),
     list(nlType="VIIRS.M",
-         configName="vcmsl",
+         configName="vcmslcfg",
          shortDescription="Stray Light Corrected",
          longDescription="Includes data impacted by stray light if the radiance 
       values have undergone the stray-light correction procedure. The 
-      'vcmsl' version, that includes the stray-light corrected data, will 
+      'vcmslcfg' version, that includes the stray-light corrected data, will 
       have more data coverage toward the poles, but will be of reduced 
       quality."),
+    list(nlType="VIIRS.Y",
+         configName="cf_cvg",
+         shortDescription="Cloud-free coverages",
+         longDescription="Tally of the total number of observations that went into 
+      each grid cell. This image can be used to identify areas with low numbers of 
+      observations where the quality is reduced. In some time periods there are areas 
+      with zero cloud-free observations in certain locations"),
     list(nlType="VIIRS.Y",
          configName="vcm-orm",
          shortDescription="VIIRS Cloud Mask - Outlier Removed",
