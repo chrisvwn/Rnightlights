@@ -68,12 +68,12 @@ The following options are supported
          \item vcmcfg \emph{(Stray Light Removed)}: Excludes any
          data impacted by stray light.
      
-         \item vcmsl \emph{(Stray Light Corrected)}: includes data
+         \item vcmslcfg \emph{(Stray Light Corrected)}: includes data
           impacted by stray light if the radiance values have undergone the stray-
          light correction procedure.
      }
      
-     The "vcmsl" version, that includes the stray-light corrected data,
+     The "vcmslcfg" version, that includes the stray-light corrected data,
      will have more data coverage toward the poles, but will be of reduced
      quality.
          

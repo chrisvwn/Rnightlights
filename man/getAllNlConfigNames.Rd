@@ -8,6 +8,10 @@ getAllNlConfigNames(nlTypes = NULL, configNames = NULL,
   description = NULL, pretty = FALSE)
 }
 \arguments{
+\item{nlTypes}{if present show only configNames matching the nlTypes}
+
+\item{configNames}{if present show only configNames matching the configNames}
+
 \item{description}{\code{(character)} whether to print the long or 
 short description. Possible values are:
 \itemize{
@@ -18,8 +22,6 @@ short description. Possible values are:
 
 \item{pretty}{Whether to prettify the output. Prints one line per nlType.
 Only available if description is NULL}
-
-\item{nlType}{if present show only configNames matching the nlType}
 }
 \description{
 Generate a list of all possible configNames for a given nlType

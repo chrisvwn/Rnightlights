@@ -19,6 +19,12 @@ listCtryNlData(ctryCodes = NULL, admLevels = NULL, nlTypes = NULL,
 
 \item{configNames}{character the type of rasters to filter by}
 
+\item{multiTileMergeStrategys}{character the multiTileMergeStrategies to filter by}
+
+\item{multiTileMergeFuns}{character the multiTileMergeFuns to filter by}
+
+\item{removeGasFlares}{character filter by removeGasFlare values}
+
 \item{nlPeriods}{A character vector of nlPeriods to filter by}
 
 \item{polySrcs}{The source of polygons e.g. GADM or CUST to filter by}
