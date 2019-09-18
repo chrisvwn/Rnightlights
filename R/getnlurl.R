@@ -90,7 +90,9 @@ getNlUrlOLS <- function(nlPeriod, configName=pkgOptions("configName_OLS.Y"))
 #'
 #' @param tileNum The integer index of the tile to download as given by \code{getNlTiles}
 #' 
-#' @param nlType character the nlType
+#' @param nlType character the nlType to consider
+#' 
+#' @param configName character the configName to consider
 #'
 #' @return Character string Url of the VIIRS tile file
 #'
@@ -103,7 +105,7 @@ getNlUrlOLS <- function(nlPeriod, configName=pkgOptions("configName_OLS.Y"))
 #' tileUrl <- Rnightlights:::getNlUrlVIIRS("2015", "1", "VIIRS.Y")
 #' }
 #'
-getNlUrlVIIRS <- function(nlPeriod, tileNum, nlType, configName)
+getNlUrlVIIRS <- function(nlPeriod, tileNum, nlType, configName=pkgOptions(paste0("configName_", nlType)))
 {
   if(missing(nlPeriod))
     stop(Sys.time(), ": Missing required parameter nlPeriod")
@@ -140,29 +142,22 @@ getNlUrlVIIRS <- function(nlPeriod, tileNum, nlType, configName)
   #if the file does not exist or is older than a week download it afresh
   if (!file.exists(ntLtsPageLocalName) || (lubridate::date(lubridate::now()) - lubridate::date(file.mtime(ntLtsPageLocalName)) > lubridate::as.difftime(lubridate::period("1 day"))) || file.size(ntLtsPageLocalName) == 0)
   {
-    utils::download.file(url = ntLtsIndexUrlVIIRS, destfile = ntLtsPageLocalName, method = "auto", extra = "  -N --timestamping --no-use-server-timestamps")
+    utils::download.file(url = ntLtsIndexUrlVIIRS, destfile = ntLtsPageLocalName, method = "auto", extra = " -N --timestamping --no-use-server-timestamps")
   }
   #else
   #  message(paste0(ntLtsPageHtml, " already downloaded"))
   
   #read in the html page
   ntLtsPage <- readr::read_lines(ntLtsPageLocalName)
-  
-  #search for a line containing the patterns that make the files unique i.e.
-  #1. SVDNB_npp_20141001 - year+month+01
-  #2. vcmcfg - for file with intensity as opposed to cloud-free counts (vcmslcfg)
-  #sample url VIIRS Daily: https://data.ngdc.noaa.gov/instruments/remote-sensing/passive/spectrometers-radiometers/imaging/viirs/mosaics//20180114/SVDNB_npp_d20180114.d.00N060E.rade9.tif
-  #sample url VIIRS Monthly: https://data.ngdc.noaa.gov/instruments/remote-sensing/passive/spectrometers-radiometers/imaging/viirs/dnb_composites/v10//201210/vcmcfg/SVDNB_npp_20121001-20121031_75N180W_vcmcfg_v10_c201602051401.tgz
-  
-  #create the pattern
+
+  #create the pattern to distinguish the url on the page
   if(stringr::str_detect(nlType, "D"))
-    ntLtsPageRgxp <- paste0("SVDNB_npp_d", nlPeriod, "\\.d\\.", nlTiles[tileNum,"name"], "\\.(rade9\\.tif)")
-  else if(stringr::str_detect(nlType, "M"))
-    ntLtsPageRgxp <- paste0("SVDNB_npp_", nlPeriod, "01.*", nlTiles[tileNum,"name"], ".*vcmcfg")
+    ntLtsPageRgxp <- paste0("SVDNB_npp_d", nlPeriod, "\\.d\\.", nlTiles[tileNum,"name"], "\\.(rade9.*\\.tif)")
+  else if(stringr::str_detect(nlType, "M")) #VIIRS.M has 2 diff tgz files based on configName vcmcfg and vcmslcfg
+    ntLtsPageRgxp <- paste0("SVDNB_npp_", nlPeriod, "01.*", nlTiles[tileNum,"name"], ".*", tolower(configName))
   else if(stringr::str_detect(nlType, "Y"))
     ntLtsPageRgxp <- paste0("SVDNB_npp_", nlPeriod, "0101-", nlPeriod, "1231_", nlTiles[tileNum,"name"], ".*tgz")
-  
-  
+
   #search for the pattern in the page
   ntLtsPageHtml <- ntLtsPage[grep(pattern = ntLtsPageRgxp, x=ntLtsPage)]
   
