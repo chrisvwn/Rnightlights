@@ -125,8 +125,8 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   .allowed = list(
     configName_OLS.Y = settings::inlist("avg_lights_x_pct", "avg_vis", "cf_cvg", "pct_lights", "stable_lights"),
     configName_VIIRS.D = settings::inlist("vcmcfg", "vcmslcfg"),
-    configName_VIIRS.M = settings::inlist("vcmcfg", "vcmslcfg"),
-    configName_VIIRS.Y = settings::inlist("vcm-orm", "vcm-orm-ntl", "vcm-ntl"),
+    configName_VIIRS.M = settings::inlist("cf_cvg", "vcmcfg", "vcmslcfg"),
+    configName_VIIRS.Y = settings::inlist("cf_cvg", "vcm-orm", "vcm-orm-ntl", "vcm-ntl"),
     cropMaskMethod = settings::inlist("gdal", "rast"),
     deleteTiles = settings::inlist(FALSE, TRUE),
     downloadMethod = settings::inlist("aria", "auto", "curl", "libcurl", "wget"),
