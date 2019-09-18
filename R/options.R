@@ -124,8 +124,8 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
 
   .allowed = list(
     configName_OLS.Y = settings::inlist("avg_lights_x_pct", "avg_vis", "cf_cvg", "pct_lights", "stable_lights"),
-    configName_VIIRS.D = settings::inlist("vcmcfg", "vcmsl"),
-    configName_VIIRS.M = settings::inlist("vcmcfg", "vcmsl"),
+    configName_VIIRS.D = settings::inlist("vcmcfg", "vcmslcfg"),
+    configName_VIIRS.M = settings::inlist("vcmcfg", "vcmslcfg"),
     configName_VIIRS.Y = settings::inlist("vcm-orm", "vcm-orm-ntl", "vcm-ntl"),
     cropMaskMethod = settings::inlist("gdal", "rast"),
     deleteTiles = settings::inlist(FALSE, TRUE),
@@ -196,12 +196,12 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
 #'          \item vcmcfg \emph{(Stray Light Removed)}: Excludes any
 #'          data impacted by stray light.
 #'      
-#'          \item vcmsl \emph{(Stray Light Corrected)}: includes data
+#'          \item vcmslcfg \emph{(Stray Light Corrected)}: includes data
 #'           impacted by stray light if the radiance values have undergone the stray-
 #'          light correction procedure.
 #'      }
 #'      
-#'      The "vcmsl" version, that includes the stray-light corrected data,
+#'      The "vcmslcfg" version, that includes the stray-light corrected data,
 #'      will have more data coverage toward the poles, but will be of reduced
 #'      quality.
 #'          
