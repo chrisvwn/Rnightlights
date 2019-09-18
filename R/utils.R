@@ -263,105 +263,6 @@ printCredits <- function(credits, newLineChar="\n", surroundChar = "*", horzPadd
   packageStartupMessage(paste(credits, collapse = "\n"))
 }
 
-######################## printCredits ###################################
-
-#' Format credits to print to the console
-#'
-#' Format credits to print to the console
-#'
-#' @param credits character a single length character vector with newlineChar
-#'     used to separate lines. Two consecutive newlineChara are used to
-#'     put in a horizontal divider
-#' 
-#' @param newLineChar character the character/sequence used to split the 
-#'     credits into new lines
-#'     
-#' @param surroundChar character the character to use as a decoration
-#' 
-#' @param horzPadding integer the number of blank spaces between text and
-#'     the surrounding text horizontally
-#'     
-#' @param vertPadding integer the number of blank spaces between text and
-#'     the surrounding text vertically
-#'     
-#' @param horzWidth integer the width of the decoration horizontally
-#'
-#' @param vertWidth integer the width of the decoration vertically
-#'  
-#' @return character a formatted credits character vector
-#' 
-#' @examples
-#'   printCredits(credits="DMSP data collected by US Air Force Weather Agency|
-#'   Image and data processing by NOAA's National Geophysical Data Center|
-#'   (https://www.ngdc.noaa.gov/eog/download.html)||
-#'   Maps distributed by GADM|(https://gadm.org)", newLineChar="|")
-#' 
-#' @export
-printDataFrame <- function(credits, newLineChar="\n", horzChar = "*", vertChar = "*", horzPadding = 1, vertPadding = 1, horzWidth = 3, vertWidth = 2)
-{
-  width <- getOption("width")
-  
-  if(newLineChar != "\n")
-    credits <- gsub(pattern = "\n", replacement = "", x = credits)
-  
-  credits <- unlist(strsplit(x = credits, split = newLineChar, fixed = T))
-  
-  sideFrameLeft <- paste(rep(vertChar, horzWidth), collapse = "") 
-  
-  sideFrameRight <- paste(rep(vertChar, horzWidth), collapse = "") 
-  
-  longestLine <- max(sapply(credits, nchar))
-  
-  fullHorzFrame <- paste(sideFrameLeft, rep(horzChar, longestLine + horzPadding * 2), rep(vertChar, horzWidth), collapse = "")
-  
-  emptyHorzFrame <- paste0(sideFrameLeft, paste0(rep(" ", longestLine + horzPadding * 2), collapse=""), sideFrameRight)
-  
-  header <- rep(fullHorzFrame, vertWidth)
-  
-  footer <- header
-  
-  mainBody <- sapply(credits, USE.NAMES = F, function(x){
-    leftPad <- floor((longestLine-nchar(x))/2)
-    
-    rightPad <- ifelse((longestLine-nchar(x)) %% 2 == 0, leftPad, leftPad + 1)
-    
-    leftSpace <- paste(rep(" ", leftPad+horzPadding), collapse = "")
-    
-    rightSpace <- paste(rep(" ", rightPad+horzPadding), collapse = "")
-    
-    # print((longestLine-nchar(x)))
-    # print(paste0(leftPad, ":", rightPad))
-    out <- if(!grepl(pattern = "^\\s*$", x = x))
-    {
-      paste0(sideFrame, leftSpace, x, rightSpace, sideFrame)
-    }else
-    {
-      if(vertWidth > 0)
-        c(emptyHorzFrame, fullHorzFrame, emptyHorzFrame)
-      else
-        fullHorzFrame
-    }
-    # message("'", leftSpace,"'")
-    # message("'", x, "'")
-    # message("'", rightSpace,"'")
-    
-    #paste0(out,"\n")
-  })
-  
-  credits <- c(header, emptyHorzFrame, unlist(mainBody), emptyHorzFrame, footer)
-  
-  #cat(paste(credits, collapse = "\n"))
-  
-  credits <- sapply(credits, function(cred)
-  {
-    ws <- paste(rep(" ", floor((width - nchar(cred))/2)), collapse = "")
-    
-    paste(ws, cred, sep = "", collapse = "")
-  }, USE.NAMES = F)
-  
-  packageStartupMessage(paste(credits, collapse = "\n"))
-}
-
 ######################## writeNightlightsMap ###################################
 
 writeNightlightsMap <- function()
@@ -575,8 +476,8 @@ writeNightlightsMap <- function()
   tplMap <- tplHead
 
   #gdaltindex NL_CTRYCODE_VIIRS.M_NLPERIOD_VCMCFG-MTSALL-MEAN-RGFT_GADM-3.6-SHPZIP.shp NL_*_VIIRS.M_*_VCMCFG-MTSALL-MEAN-RGFT_GADM-3.6-SHPZIP.tif
-  lyrName <- gsub("NL_[A-Z]{3}_", "NL_CTRYCODE_", tools::file_path_sans_ext(basename(fList[1]))) %>%
-    gsub("_\\d{4,6}_", "_NLPERIOD_", .)
+  lyrName <- gsub("NL_[A-Z]{3}_", "NL_CTRYCODE_", tools::file_path_sans_ext(basename(fList[1])))
+  lyrName <- gsub("_\\d{4,6}_", "_NLPERIOD_", lyrName)
 
   tplTileIndexHead <- stringr::str_replace_all(tplTileIndexHead,  "<VAL_NAME>", lyrName)
   
@@ -588,9 +489,9 @@ writeNightlightsMap <- function()
 
   tplTileIndexClasses <- stringr::str_replace_all(tplTileIndexClasses,  "<VAL_NODATA>", noDataVal)
   
-  deciles <- as.character(quantile(x=-1:200, seq(from = 0, to = 1, by = 0.1)))
+  deciles <- as.character(stats::quantile(x=-1:200, seq(from = 0, to = 1, by = 0.1)))
   
-  colFunc <- colorRampPalette(c("#000001", "slategray3", "slategray2", "slategray1", "white"))
+  colFunc <- grDevices::colorRampPalette(c("#000001", "slategray3", "slategray2", "slategray1", "white"))
   
   decileColors <- colFunc(11)
   
