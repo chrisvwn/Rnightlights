@@ -92,9 +92,9 @@ alignCenter <- function(el) {
                                   
         shinydashboard::menuItem("Inputs", selected = TRUE, startExpanded = TRUE, tabName = "inputs",
 
-                 shiny::uiOutput(outputId = "intraCountry"),
+                 shiny::uiOutput(outputId = "selectAdmLevel"),
                  
-                 shiny::uiOutput("intraCountry1")
+                 shiny::uiOutput("radioAdmLevel")
                  ),
 
         shinydashboard::menuItem("Stats", selected = FALSE, startExpanded = TRUE, tabName = "stats",
@@ -145,16 +145,18 @@ alignCenter <- function(el) {
         shinydashboard::tabBox(width = 12,
           shiny::tabPanel(title = "Plot",
                           style = tags$style("overflow-y:auto; height: 76vh; position:relative;"),
-                          shinycssloaders::withSpinner(plotly::plotlyOutput(outputId = "plotNightLights", height = "78%")),
-                   
-                   shiny::uiOutput("sliderNlPeriodRange")
+                          
+                          shiny::plotOutput(outputId = "plotNightLights"),
+                          
+                          shiny::uiOutput("sliderNlPeriodRange")
           ),
 
           shiny::tabPanel(title = "Map",
-                  tags$style("overflow-y:auto; height: 80vh; position:relative;"),
-                  shinycssloaders::withSpinner(leaflet::leafletOutput("map")),
-                  
-                  shiny::uiOutput("sliderNlPeriod")
+                          tags$style("overflow-y:auto; height: 80vh; position:relative;"),
+                          
+                          shinycssloaders::withSpinner(leaflet::leafletOutput("map")),
+                          
+                          shiny::uiOutput("sliderNlPeriod")
           ),
 
           shiny::tabPanel(title = "Stats",
