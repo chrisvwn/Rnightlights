@@ -815,7 +815,7 @@ getCtryNlData <- function(ctryCode=NULL,
   
   configNames <- toupper(configNames)
   
-  if(any(!validNlConfigName(configNames)))
+  if(any(!validNlConfigName(configNames, nlTypes)))
     stop("Invalid configName(s) supplied")
   
   #if both nlPeriods and ignoreMissing are not supplied we cannot deduce
@@ -1441,6 +1441,12 @@ allExistsCtryNlData <- function(ctryCodes,
 #' 
 #' @param configNames character the type of rasters to filter by
 #' 
+#' @param multiTileMergeStrategys character the multiTileMergeStrategies to filter by
+#' 
+#' @param multiTileMergeFuns character the multiTileMergeFuns to filter by
+#' 
+#' @param removeGasFlares character filter by removeGasFlare values
+#' 
 #' @param nlPeriods A character vector of nlPeriods to filter by 
 #' 
 #' @param polySrcs The source of polygons e.g. GADM or CUST to filter by
@@ -1543,7 +1549,7 @@ listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlTypes=NULL, configN
     #= "NL"+nlType+nlPeriod+stat
     nlCtryHdr <- reshape2::colsplit(nlCtryHdr, "_", c("V1", "V2","V3","V7", "V8"))
     
-    parts <- setNames(data.frame(t(sapply(strsplit(nlCtryHdr[,3], "-"),function(x){
+    parts <- stats::setNames(data.frame(t(sapply(strsplit(nlCtryHdr[,3], "-"),function(x){
     
       if(length(x) == 5)
       {
@@ -1628,7 +1634,7 @@ listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlTypes=NULL, configN
     dataList <- dataList[unique(unlist(sapply(nlStats, function(nlStat) grep(nlStat, dataList[,"nlStats"], ignore.case = T)))),]
   
   #Reorder the columns
-  dataList <- dplyr::select(dataList, dataType, ctryCode, admLevel, nlType, configName, multiTileMergeStrategy, multiTileMergeFun, removeGasFlares, nlPeriod, polySrc, polyVer, polyType, dplyr::contains("stat"))
+  dataList <- dplyr::select(dataList, "dataType", "ctryCode", "admLevel", "nlType", "configName", "multiTileMergeStrategy", "multiTileMergeFun", "removeGasFlares", "nlPeriod", "polySrc", "polyVer", "polyType", dplyr::contains("stat"))
   
   #only return dataList if we have records esp. after filtering else return NULL
   if(nrow(dataList) > 0)
