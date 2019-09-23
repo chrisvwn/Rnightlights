@@ -21,10 +21,18 @@
 validNlStats <- function(nlStats)
 {
   if(missing(nlStats))
-    stop(Sys.time(), ": Missing required parameter nlStats")
+  {
+    message(Sys.time(), ": Missing required parameter nlStats")
+    
+    return(FALSE)
+  }
   
   if((!is.character(nlStats) && !is.list(nlStats)) || length(nlStats) == 0)
-    stop(Sys.time(), ": Invalid nlStats")
+  {
+    message(Sys.time(), ": Invalid nlStats")
+    
+    return(FALSE)
+  }
   
   if(is.list(nlStats) && length(nlStats) > 1 && all(sapply(2:length(nlStats), function(i) !is.list(nlStats[[i]]) && (grepl("=", nlStats[i]) || length(names(nlStats[i])) > 0))))
     nlStats <- list(nlStats)
@@ -46,6 +54,232 @@ validNlStats <- function(nlStats)
   ))
   
   return(matchedFuns)
+}
+
+uniqueParams <- function(nlStat)
+{
+  #1st param is the function name, the rest are params
+  params <- paste(unlist(nlStat[2:length(nlStat)]), collapse = ",")
+  
+  params1 <- unlist(strsplit(params, ","))
+  
+  #split by = to separate name from value
+  params2 <- lapply(params1, function(x)trimws(unlist(strsplit(x, "="))))
+  
+  #length 1 is unnamed param
+  paramLengths <- sapply(params2, length)
+  
+  paramNames <- sapply(params2, function(x)if(length(x)==1) "" else x[[1]])
+  
+  paramValues <- sapply(params2, function(x)if(length(x)==1)x[[1]] else x[[2]])
+  
+  fmls <- names(formals(eval(parse(text=nlStat[[1]]))))
+  
+  #formals cannot inspect .Primitive functions
+  #so try args
+  if(is.null(fmls))
+  {
+    fmls <- trimws(capture.output(args(nlStat[[1]]))[1])
+    
+    #take out the last bracket which is the last char
+    fmls <- unlist(strsplit(fmls, "function\\s*\\("))[2]
+    fmls <- substr(fmls, 1, nchar(fmls)-1)
+    fmls <- trimws(unlist(strsplit(fmls, ",")))
+    fmls <- unlist(strsplit(fmls, ","))
+    
+    #split by = to separate name from value
+    fmls <- sapply(fmls, function(x)trimws(unlist(strsplit(x, "="))[1]))
+  }
+  
+  unnamedParams <- paramValues[which(paramLengths==1)]
+  
+  #unnamedParamsPos <- sapply(unnamedParams, function(x) which(params1 == params2[x]))
+  
+  unnamedParams <- setNames(unnamedParams, fmls[which(paramNames=="")])
+  
+  namedParams <- which(paramLengths==2)
+  
+  namedParams <- setNames(paramValues[namedParams],paramNames[namedParams]) 
+  
+  #match the first part (param) with the formal args
+  #number is position, NA is not direct match so possibly ... but
+  #if no ... found then keep in position
+  matchFmls <- fmls[match(paramNames, fmls)]
+  
+  matchedNamedParams <- setNames(paramValues[which(!is.na(matchFmls))], paramNames[which(!is.na(matchFmls))])
+
+  unMatchedNamedParams <- sapply(params2[paramNames!="" & !(paramNames%in%names(matchedNamedParams))], paste, collapse="=")
+
+  if(length(unMatchedNamedParams > 0) && "..." %in% fmls)
+  {
+    unMatchedNamedParams <- setNames(unMatchedNamedParams, rep("...", length(unMatchedNamedParams)))
+  }
+  
+  #aim is to get a unique, consistent list of params that we can use
+  #to match even if parameters are in a different order
+  matchedParams <- c(if(length(unnamedParams)>0) unnamedParams else NULL,
+                  if(length(matchedNamedParams)>0) matchedNamedParams else NULL,
+                  if(length(unMatchedNamedParams)>0) unMatchedNamedParams else NULL)
+  
+  paramIdxs <- unlist(sapply(fmls, function(x) which(names(matchedParams)==x), USE.NAMES = F, simplify = T))
+
+  matchedParams <- matchedParams[paramIdxs]
+  
+  paste(names(matchedParams), matchedParams, sep="=", collapse=",")
+}
+
+getSavedNlStatFname <- function()
+{
+  "savedNlStats.RDS"
+}
+
+getSavedNlStatFnamePath <- function()
+{
+  file.path(getNlDir("dirNlData"), getSavedNlStatFname())
+}
+
+saveNlStat <- function(nlStatName)
+{
+  if(!validNlStats(nlStatName))
+  {
+    message(Sys.time(), ": Cannot find a function named ", nlStatName)
+    
+    return(FALSE)
+  }
+  
+  if(existsSavedNlStat(nlStatName))
+  {
+    message(Sys.time(), ": ", nlStatName, " already saved")
+    
+    return(FALSE)
+  }
+  
+  funcBody <- eval(parse(text=nlStatName))
+  
+  funcHash <- hashNlStat(nlStatName)
+  
+  
+  
+  nlStatEntry <- stats::setNames(list(list("funcBody" = funcBody,
+                                        "funcHash" = funcHash)),
+                                 nlStatName)
+  
+  .RnightlightsEnv$savedNlStats <- append(x = .RnightlightsEnv$savedNlStats, values = nlStatEntry)
+  
+  #add fun to the package env and save to rds
+  saveRDS(object = .RnightlightsEnv$savedNlStats, getSavedNlStatFnamePath())
+  
+  return(TRUE)
+}
+
+getSavedNlStat <- function(nlStatName)
+{
+  .RnightlightsEnv$savedNlStats[nlStatName]
+}
+
+listSavedNlStats <- function(nlStatNames = NULL, showBody = FALSE)
+{
+  if(is.null(.RnightlightsEnv$savedNlStats))
+    loadSavedNlStats()
+  
+  savedNlStats <- names(.RnightlightsEnv$savedNlStats)
+  
+  if(!is.null(nlStatNames))
+    savedNlStats <- nlStatNames[savedNlStats %in% nlStatNames]
+  
+  if(length(savedNlStats) > 0 && showBody)
+    savedNlStats <- sapply(savedNlStats, function(x) getSavedNlStat(x), USE.NAMES = F)
+  
+  savedNlStats
+}
+
+savedNlStatsIsLoaded <- function()
+{
+  exists(x = "savedNlStats", envir = .RnightlightsEnv)
+}
+
+loadSavedNlStats <- function()
+{
+  nlStatPath <- getSavedNlStatFnamePath()
+  
+  savedStatList <- NULL
+  
+  if(file.exists(nlStatPath))
+  {
+    savedStatList <- readRDS(nlStatPath)
+  }
+
+  #read in all saved fns into the package env
+  assign(x = "savedNlStats", savedStatList, envir = .RnightlightsEnv)
+  
+  return(TRUE)
+}
+
+existsSavedNlStatName <- function(nlStatName)
+{
+  if(is.null(.RnightlightsEnv$savedNlStats))
+    loadSavedNlStats()
+  
+  existsStatName <- grepl(nlStatName, names(.RnightlightsEnv$savedNlStats))
+}
+
+existsSavedNlStatHash <- function(nlStatName)
+{
+  if(is.null(.RnightlightsEnv$savedNlStats))
+    loadSavedNlStats()
+  
+  statHash <- hashNlStat(nlStatName = nlStatName)
+  
+  existsStatHash <- any(sapply(.RnightlightsEnv$savedNlStats, function(x) x == statHash))
+  
+  return(existsStatHash)
+}
+
+existsSavedNlStat <- function(nlStatName)
+{
+  if(is.null(.RnightlightsEnv$savedNlStats))
+    loadSavedNlStats()
+  
+  existsStatName <- existsSavedNlStatName(nlStatName = nlStatName)
+  
+  existsStatHash <- existsSavedNlStatHash(nlStatName = nlStatName)
+    
+  return(existsStatName || existsStatHash)
+}
+
+deleteSavedNlStat <- function(nlStatName)
+{
+  if(!existsSavedNlStat(nlStatName))
+    return(FALSE)
+  
+  .RnightlightsEnv$savedNlStats[.RnightlightsEnv$savedNlStats == nlStatName] <- NULL
+  
+  return(TRUE)
+}
+
+hashNlStatBody <- function(nlStatBody)
+{
+  #remove whitespace and hash
+  digest::sha1(digest::sha1(gsub("\\s*","", nlStatBody)))
+}
+
+hashNlStat <- function(nlStatName)
+{
+  nlStatBody <- eval(expr = parse(text = nlStatName))
+  
+  digest::sha1(nlStatBody)
+}
+
+equalNlStats <- function(nlStatName1, nlStatName2)
+{
+  if(!allValid(list(nlStatName1, nlStatName2), validNlStats))
+  {
+    message(Sys.time(), ": ", nlStatName1, " not found")
+    
+    return(NA)
+  }
+
+  identical(x = hashNlStat(nlStatName = nlStatName1), y = hashNlStat(nlStatName = nlStatName2))
 }
 
 ######################## myZonal ###################################
