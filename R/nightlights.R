@@ -496,9 +496,16 @@ processNLCountry <- function(ctryCode,
                               gadmPolyType = gadmPolyType,
                               custPolyPath = custPolyPath)
   
-  nlStatNames <- sapply(nlStats, function(x) x[[1]])
-  
-  for(nlStatName in nlStatNames)
+  for(nlStat in nlStats)
+  {
+    nlStatName <- nlStat[[1]]
+    
+    nlStatParams <- NULL
+    
+    #if 
+    if(length(nlStat)>1)
+      nlStatParams <- uniqueParams(nlStats = nlStat)
+    
     ctryNlDataDF <- insertNlDataCol(ctryNlDataDF = ctryNlDataDF,
                                     dataCol = sumAvgRad[,nlStatName],
                                     nlStat = nlStatName,
@@ -508,6 +515,16 @@ processNLCountry <- function(ctryCode,
                                     multiTileStrategy = multiTileStrategy,
                                     multiTileMergeFun = multiTileMergeFun,
                                     removeGasFlares = removeGasFlares)
+    
+    #finally we are sure the nlStat is good and working,
+    #save it
+    message(Sys.time(), ": Saving nlStat '", nlStatName, "' ...")
+    
+    statSaved <- saveNlStat(nlStatName = nlStatName)
+    
+    if(statSaved)
+      message(Sys.time(), ": Saving nlStat '", nlStatName, "' ... DONE")
+  }
   
   message(Sys.time(), ": DONE processing ", ctryCode, " ", nlPeriod)
   
