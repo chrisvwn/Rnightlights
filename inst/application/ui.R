@@ -85,7 +85,8 @@ alignCenter <- function(el) {
     shinydashboard::dashboardSidebar(
       shinydashboard::sidebarMenu(style = "overflow-y:auto; height: 92vh; position:relative;",
 
-                                  
+        shiny::uiOutput(outputId = "textDate"),
+        
         shiny::uiOutput(outputId = "countries"),
         
         shiny::uiOutput(outputId = "btnGo"),
@@ -101,6 +102,15 @@ alignCenter <- function(el) {
                                  shiny::uiOutput(outputId = "nlType"),
                                  
                                  shiny::uiOutput(outputId = "ctryStats"),
+                                 
+                                 shiny::checkboxInput(inputId = "optionNaRm",
+                                                      label = "na.rm",
+                                                      value = TRUE
+                                 ),
+
+                                 shiny::uiOutput(outputId = "newStat"),
+                                 
+                                 shiny::uiOutput(outputId = "btnNewStat"),
                                  
                                  shiny::uiOutput(outputId = "polySrc"),
                                  
@@ -181,7 +191,7 @@ alignCenter <- function(el) {
                   
                   shiny::fluidRow(
                     shinydashboard::tabBox(
-                      shiny::tabPanel(title = "Time Series Decomposed",
+                      shiny::tabPanel(title = "Time Series",
                                       shinycssloaders::withSpinner(shiny::plotOutput("plotTSDecomposed"))
                       
                       )
@@ -189,8 +199,8 @@ alignCenter <- function(el) {
                   )
                 ),
           
-          shiny::tabPanel(title = "models",
-                   shiny::textOutput("Models")
+          shiny::tabPanel(title = "Models",
+                   shiny::textOutput("models")
                    ),
           
           shiny::tabPanel(title = "data",
