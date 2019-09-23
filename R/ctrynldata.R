@@ -417,7 +417,7 @@ deleteNlDataCol <- function (ctryCode=NULL,
   colName <- paste0("NL_", nlType, "_", toupper(configName),
                     "-MTS", toupper(multiTileStrategy), "-", toupper(multiTileMergeFun),
                     "-RGF", substr(as.character(removeGasFlares),1,1), "_",
-                    nlPeriod, "_", toupper(nlStat))
+                    nlPeriod, "_", nlStat)
   
   #get only the named nightlight data column(s)
   nlDataColIdx <- grep(colName, cols)
@@ -840,6 +840,7 @@ getCtryNlData <- function(ctryCode=NULL,
     }
     
     validStats <- validNlStats(nlStats)
+    
     if(!all(validStats))
       stop(Sys.time(), ": Invalid nlStats detected ", as.character(nlStats[!validStats]))
     
@@ -1135,7 +1136,9 @@ getCtryNlData <- function(ctryCode=NULL,
     #"NL_"
     cols <- cols[grep("^[^NL_]", cols)]
     
-    nlCols <- existingCols
+    #nlCols <- existingCols
+    
+    nlCols <- unlist(sapply(existingCols, function(x) grep(x, cols, ignore.case = T, value = T)))
     
     #combine country admin levels and  existing cols  
     cols <- c(cols, nlCols)
@@ -1193,9 +1196,12 @@ getCtryNlDataColName <- function(nlPeriod, nlStat, nlType, configName, multiTile
   if (!allValid(nlStat, validNlStats))
     stop(Sys.time(), ": Invalid/unsupported nlStat detected")
   
-  colName <- paste0("NL_", nlType, "_", toupper(configName), "-MTS", toupper(multiTileStrategy), "-", toupper(multiTileMergeFun), "-RGF", substr(as.character(removeGasFlares),1,1), "_")
+  nlStat <- sapply(nlStat, function(x) paste0(x, "(", uniqueParams(x),")"))
   
-  colName <- paste0(colName, sapply(nlPeriod, function(x) paste0(x, "_", toupper(nlStat))))
+  colName <- paste0("NL_", nlType, "_", toupper(configName), "-MTS", toupper(multiTileStrategy),
+                    "-", toupper(multiTileMergeFun), "-RGF", substr(as.character(removeGasFlares),1,1), "_")
+  
+  colName <- paste0(colName, sapply(nlPeriod, function(x) paste0(x, "_", nlStat)))
   
   colName <- sort(colName)
   
