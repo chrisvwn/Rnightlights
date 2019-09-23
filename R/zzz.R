@@ -38,6 +38,9 @@ Maps distributed by GADM
   compiler::enableJIT(3)
   
   upgradeRnightlights()
+  
+  #load saved stats into memory
+  loadSavedNlStats()
 }
 
 .onUnload <- function(libpath)
