@@ -305,18 +305,18 @@ insertNlDataCol <- function (ctryNlDataDF, dataCol, nlStat, nlPeriod, nlType, co
   
   #re-arrange the columns
   #read in all column names in the dataframe afresh
-  cols <- names(ctryNlDataDF)
+  dtCols <- names(ctryNlDataDF)
   
   #get only the nightlight data columns
-  nlDataColIdx <- grep("^NL_", cols)
+  nlDataColIdx <- grep("^NL_", dtCols)
   
-  nlDataColNames <- cols[nlDataColIdx]
+  nlDataColNames <- dtCols[nlDataColIdx]
   
   #sort the column names ascending
   nlDataColNames <- nlDataColNames[order(nlDataColNames)]
   
   #combine the non-nightlight and the nightlight data columns
-  newNlDataColNames <- c(cols[-nlDataColIdx], nlDataColNames)
+  newNlDataColNames <- c(dtCols[-nlDataColIdx], nlDataColNames)
   
   #write back the dataframe with the new column order
   ctryNlDataDF <- ctryNlDataDF[ , newNlDataColNames]
@@ -949,7 +949,7 @@ getCtryNlData <- function(ctryCode=NULL,
                                                      multiTileMergeFun = multiTileMergeFun,
                                                      removeGasFlares = removeGasFlares,
                                                      nlPeriods = x[3],
-                                                     nlStats = as.character(x[4]),
+                                                     nlStats = nlStats[which(nlStatNames == as.character(x[4]))],
                                                      gadmVersion = gadmVersion,
                                                      gadmPolyType = gadmPolyType, 
                                                      custPolyPath = custPolyPath))
@@ -1051,7 +1051,11 @@ getCtryNlData <- function(ctryCode=NULL,
                               MARGIN =  1,
                               FUN = function(x)
                               {
-                                getCtryNlDataColName(nlType = x[1], nlPeriod = x[3], nlStat = x[4], configName = configNames, removeGasFlares = removeGasFlares)
+                                getCtryNlDataColName(nlType = x[1],
+                                                     nlPeriod = x[3],
+                                                     nlStat = nlStats[which(nlStatNames == x[4])],
+                                                     configName = configNames,
+                                                     removeGasFlares = removeGasFlares)
                               })
       else
         existingCols <- NULL
@@ -1061,49 +1065,30 @@ getCtryNlData <- function(ctryCode=NULL,
       #ignoreMissing == FALSE so we should have the missing data
       #check again to see that processNlData was successful
       #check that each stat exists for given periods
-      if (stringr::str_detect(nlTypes, "VIIRS"))
-        existnlPeriodStats <- apply(X = nlPeriodStats,
-                                    MARGIN = 1,
-                                    FUN = function(x)
-                                    {
-                                      existsCtryNlData(ctryCode = ctryCode,
-                                                       admLevel = admLevel,
-                                                       nlTypes = x[1],
-                                                       configNames = x[2],
-                                                       multiTileStrategy = multiTileStrategy,
-                                                       multiTileMergeFun = multiTileMergeFun,
-                                                       removeGasFlares = removeGasFlares,
-                                                       nlPeriods = x[3],
-                                                       nlStats = x[4],
-                                                       gadmVersion = gadmVersion,
-                                                       gadmPolyType = gadmPolyType,
-                                                       custPolyPath = custPolyPath)})
-      else if (stringr::str_detect(nlTypes, "OLS"))
-        existnlPeriodStats <- apply(X = nlPeriodStats,
-                                    MARGIN = 1,
-                                    FUN = function(x)
-                                    {
-                                      existsCtryNlData(ctryCode = ctryCode,
-                                                       admLevel = admLevel,
-                                                       nlTypes = x[1],
-                                                       configNames = x[2],
-                                                       multiTileStrategy = multiTileStrategy,
-                                                       multiTileMergeFun = multiTileMergeFun,
-                                                       removeGasFlares = removeGasFlares,
-                                                       nlPeriods = x[3],
-                                                       nlStats = x[4],
-                                                       gadmVersion = gadmVersion,
-                                                       gadmPolyType = gadmPolyType,
-                                                       custPolyPath = custPolyPath)
-                                    })
-      
+      existnlPeriodStats <- apply(X = nlPeriodStats,
+                                  MARGIN = 1,
+                                  FUN = function(x)
+                                  {
+                                    existsCtryNlData(ctryCode = ctryCode,
+                                                     admLevel = admLevel,
+                                                     nlTypes = x[1],
+                                                     configNames = x[2],
+                                                     multiTileStrategy = multiTileStrategy,
+                                                     multiTileMergeFun = multiTileMergeFun,
+                                                     removeGasFlares = removeGasFlares,
+                                                     nlPeriods = x[3],
+                                                     nlStats = nlStats[which(nlStatNames == x[4])],
+                                                     gadmVersion = gadmVersion,
+                                                     gadmPolyType = gadmPolyType,
+                                                     custPolyPath = custPolyPath)})
+
       #if they all exist get the list of column names
       if(all(existnlPeriodStats))
       {
-        existingCols <- apply(nlPeriodStats[existnlPeriodStats,],
+        existingNlCols <- apply(nlPeriodStats[existnlPeriodStats,],
                               1,
                               function(x) getCtryNlDataColName(nlPeriod = x[3],
-                                                               nlStat = x[4],
+                                                               nlStat = nlStats[which(nlStatNames == x[4])],
                                                                nlType = x[1],
                                                                configName = x[2],
                                                                multiTileStrategy = multiTileStrategy,
@@ -1117,7 +1102,7 @@ getCtryNlData <- function(ctryCode=NULL,
     }
     
     #if no nightlight columns return NULL
-    if(length(existingCols) < 1)
+    if(length(existingNlCols) < 1)
     {
       message(Sys.time(), ": No nightlight data. Returning ctry admin data only")
       #return(NULL)
@@ -1130,21 +1115,21 @@ getCtryNlData <- function(ctryCode=NULL,
     # ctryData <- as.data.frame(data.table::fread(getCtryNlDataFnamePath(ctryCode = ctryCode, admLevel = admLevel, gadmVersion = gadmVersion)))
     
     #get the names of the columns in the data file
-    cols <- names(ctryData)
+    allCols <- names(ctryData)
     
     #retain columns with country admin levels i.e. those that don't start with
     #"NL_"
-    cols <- cols[grep("^[^NL_]", cols)]
+    dtCols <- allCols[grep("^[^NL_]", allCols)]
     
     #nlCols <- existingCols
     
-    nlCols <- unlist(sapply(existingCols, function(x) grep(x, cols, ignore.case = T, value = T)))
+    #nlCols <- unlist(sapply(existingCols, function(x) grep(x, cols, fixed = T, value = T)))
     
     #combine country admin levels and  existing cols  
-    cols <- c(cols, nlCols)
+    dtCols <- c(dtCols, existingNlCols)
     
     #add the column with the relevant nlPeriod
-    ctryData <- ctryData[,cols]
+    ctryData <- ctryData[,dtCols]
     
     return(ctryData)
 }
@@ -1193,17 +1178,22 @@ getCtryNlDataColName <- function(nlPeriod, nlStat, nlType, configName, multiTile
   if(!allValidNlPeriods(nlPeriods = nlPeriod, nlTypes = nlType))
     stop(Sys.time(), ": Invalid nlPeriod: ", nlPeriod, " for nlType: ", nlType)
   
-  if (!allValid(nlStat, validNlStats))
-    stop(Sys.time(), ": Invalid/unsupported nlStat detected")
+  # if (!allValid(nlStat, validNlStats))
+  #   stop(Sys.time(), ": Invalid/unsupported nlStat detected")
   
-  nlStat <- sapply(nlStat, function(x) paste0(x, "(", uniqueParams(x),")"))
+  nlSt <- NULL
+  
+  for(i in 1:length(nlStat))
+      nlSt <- c(nlSt, nlStatSignature(nlStat = nlStat[[i]]))
+  
+  nlStat <- nlSt
   
   colName <- paste0("NL_", nlType, "_", toupper(configName), "-MTS", toupper(multiTileStrategy),
                     "-", toupper(multiTileMergeFun), "-RGF", substr(as.character(removeGasFlares),1,1), "_")
   
   colName <- paste0(colName, sapply(nlPeriod, function(x) paste0(x, "_", nlStat)))
   
-  colName <- sort(colName)
+  #colName <- sort(colName)
   
   return(colName)
 }
@@ -1339,8 +1329,8 @@ existsCtryNlData <- function(ctryCode=NULL,
   if(!allValidNlPeriods(nlPeriods=nlPeriods, nlTypes=nlTypes))
     stop(Sys.time(), ": Invalid nlPeriod: ", nlPeriods, " for nlType: ", nlTypes)
   
-  if(!all(validNlStats(nlStats)))
-    stop(Sys.time(), ": Invalid nlStat: ", nlStats)
+  #if(!all(validNlStats(nlStats)))
+  #  stop(Sys.time(), ": Invalid nlStat: ", nlStats)
   
   if (existsCtryNlDataFile(ctryCode = ctryCode,
                            admLevel = admLevel,
@@ -1359,15 +1349,22 @@ existsCtryNlData <- function(ctryCode=NULL,
   
   hdrs <- names(dta)
   
+  statArgs <- sapply(nlStats, nlStatSignature)
+  
   searchCols <- paste("NL", toupper(nlTypes),
                       paste(toupper(configNames),
                             paste0("MTS", toupper(multiTileStrategy)),
                             toupper(multiTileMergeFun),
                             paste0("RGF", toupper(substr(as.character(removeGasFlares),1,1))), sep = "-"),
                       toupper(nlPeriods),
-                      toupper(nlStats), sep="_")
+                      statArgs, sep="_")
   
-  return(unlist(lapply(searchCols, function(x) length(grep(pattern = x, x = hdrs, ignore.case = T))>0)))
+  matchHdrs <- unlist(lapply(searchCols, function(x) grep(pattern = x, x = hdrs, fixed = T, value = T)))
+  
+  if(length(matchHdrs) == 0)
+    return(FALSE)
+  
+  return(any(nchar(matchHdrs) == nchar(searchCols)))
 }
 
 ######################## allExistsCtryNlData ###################################

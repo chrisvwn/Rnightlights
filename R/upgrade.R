@@ -306,7 +306,7 @@ upgradeRnightlights <- function()
             removeGasFlares <- if(is.na(removeGasFlares)) FALSE else as.logical(removeGasFlares)
 
             newColName <- getCtryNlDataColName(nlPeriod = nlPeriod,
-                                               nlStat = nlStat,
+                                               nlStat = eval(parse(text=nlStat)),
                                                nlType = nlType,
                                                configName = configName,
                                                multiTileStrategy = multiTileStrategy,

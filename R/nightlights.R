@@ -214,19 +214,26 @@ processNLCountry <- function(ctryCode,
   {
     message(Sys.time(), ": Data file found: ", ctryNlDataFnamePath)
     
-    existStats <- sapply(nlStats, function(nlStat) existsCtryNlData(ctryCode = ctryCode,
-                                                                    admLevel = admLevel,
-                                                                    nlTypes = nlType,
-                                                                    configNames = configName,
-                                                                    multiTileStrategy = multiTileStrategy,
-                                                                    multiTileMergeFun = multiTileMergeFun,
-                                                                    removeGasFlares = removeGasFlares,
-                                                                    nlPeriods = nlPeriod,
-                                                                    nlStats = nlStat[[1]],
-                                                                    gadmVersion = gadmVersion,
-                                                                    gadmPolyType = gadmPolyType,
-                                                                    custPolyPath = custPolyPath))
+    existStats <- NULL
     
+    for(i in 1:length(nlStats))
+    {
+      existStat <- existsCtryNlData(ctryCode = ctryCode,
+                       admLevel = admLevel,
+                       nlTypes = nlType,
+                       configNames = configName,
+                       multiTileStrategy = multiTileStrategy,
+                       multiTileMergeFun = multiTileMergeFun,
+                       removeGasFlares = removeGasFlares,
+                       nlPeriods = nlPeriod,
+                       nlStats = nlStats[i],
+                       gadmVersion = gadmVersion,
+                       gadmPolyType = gadmPolyType,
+                       custPolyPath = custPolyPath)
+      
+      existStats <- c(existStats, existStat)
+    }
+
     if(all(existStats))
     {
       message(Sys.time(), ": **All stats exist for ", paste(ctryCode, admLevel, nlPeriod, sep=" "), ". Skipping")
@@ -496,19 +503,13 @@ processNLCountry <- function(ctryCode,
                               gadmPolyType = gadmPolyType,
                               custPolyPath = custPolyPath)
   
-  for(nlStat in nlStats)
+  for(i in 1:length(nlStats))
   {
-    nlStatName <- nlStat[[1]]
-    
-    nlStatParams <- NULL
-    
-    #if 
-    if(length(nlStat)>1)
-      nlStatParams <- uniqueParams(nlStats = nlStat)
-    
+    nlStatName <- nlStats[[i]][[1]]
+
     ctryNlDataDF <- insertNlDataCol(ctryNlDataDF = ctryNlDataDF,
                                     dataCol = sumAvgRad[,nlStatName],
-                                    nlStat = nlStatName,
+                                    nlStat = nlStats[i],
                                     nlPeriod = nlPeriod,
                                     nlType = nlType,
                                     configName = configName,
@@ -518,9 +519,9 @@ processNLCountry <- function(ctryCode,
     
     #finally we are sure the nlStat is good and working,
     #save it
-    message(Sys.time(), ": Saving nlStat '", nlStatName, "' ...")
+    message(Sys.time(), ": Saving nlStat '", nlStatSignature(nlStats[[1]]), "' ...")
     
-    statSaved <- saveNlStat(nlStatName = nlStatName)
+    statSaved <- saveNlStat(nlStat = nlStats[[i]])
     
     if(statSaved)
       message(Sys.time(), ": Saving nlStat '", nlStatName, "' ... DONE")

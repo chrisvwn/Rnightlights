@@ -56,8 +56,22 @@ validNlStats <- function(nlStats)
   return(matchedFuns)
 }
 
-uniqueParams <- function(nlStat)
+nlStatArgs <- function(nlStat)
 {
+  if(length(nlStat) == 0)
+    return("")
+    
+  if(length(nlStat) == 1)
+  {
+    if(!is.list(nlStat))
+      return("")
+    
+    nlStat <- nlStat[[1]]
+    
+    if(length(nlStat) == 1)
+      return("")
+  }
+  
   #1st param is the function name, the rest are params
   params <- paste(unlist(nlStat[2:length(nlStat)]), collapse = ",")
   
@@ -125,7 +139,16 @@ uniqueParams <- function(nlStat)
 
   matchedParams <- matchedParams[paramIdxs]
   
-  paste(names(matchedParams), matchedParams, sep="=", collapse=",")
+  uniqueParams <- paste(names(matchedParams), matchedParams, sep="=", collapse=",")
+  
+  uniqueParams
+}
+
+nlStatSignature <- function(nlStat)
+{
+  statArgs <- nlStatArgs(nlStat)
+  
+  paste0(nlStat[[1]], "(", statArgs, ")")
 }
 
 getSavedNlStatFname <- function()
@@ -138,30 +161,36 @@ getSavedNlStatFnamePath <- function()
   file.path(getNlDir("dirNlData"), getSavedNlStatFname())
 }
 
-saveNlStat <- function(nlStatName)
+saveNlStat <- function(nlStat)
 {
-  if(!validNlStats(nlStatName))
+  funcName <- nlStat[[1]]
+  
+  nlStatName <- nlStatSignature(nlStat = nlStat)
+  
+  nlStatArgs <- nlStatArgs(nlStat = nlStat)
+  
+  nlStatBody <- eval(parse(text=funcName))
+  
+  nlStatHash <- hashNlStat(nlStatName = funcName)
+  
+  if(!validNlStats(funcName))
   {
-    message(Sys.time(), ": Cannot find a function named ", nlStatName)
+    message(Sys.time(), ": Cannot find a function named ", funcName)
     
     return(FALSE)
   }
   
-  if(existsSavedNlStat(nlStatName))
+  if(existsSavedNlStat(nlStatName = nlStatName, nlStatHash = nlStatHash))
   {
     message(Sys.time(), ": ", nlStatName, " already saved")
     
-    return(FALSE)
-  }
-  
-  funcBody <- eval(parse(text=nlStatName))
-  
-  funcHash <- hashNlStat(nlStatName)
+    return(TRUE)
+  }  
   
   
-  
-  nlStatEntry <- stats::setNames(list(list("funcBody" = funcBody,
-                                        "funcHash" = funcHash)),
+  nlStatEntry <- stats::setNames(list(list("nlStatBody" = nlStatBody,
+                                           "nlStatArgs" = nlStatArgs,
+                                        "nlStatHash" = nlStatHash)),
                                  nlStatName)
   
   .RnightlightsEnv$savedNlStats <- append(x = .RnightlightsEnv$savedNlStats, values = nlStatEntry)
@@ -177,7 +206,7 @@ getSavedNlStat <- function(nlStatName)
   .RnightlightsEnv$savedNlStats[nlStatName]
 }
 
-listSavedNlStats <- function(nlStatNames = NULL, showBody = FALSE)
+listSavedNlStats <- function(nlStatNames = NULL, detail = FALSE)
 {
   if(is.null(.RnightlightsEnv$savedNlStats))
     loadSavedNlStats()
@@ -187,7 +216,7 @@ listSavedNlStats <- function(nlStatNames = NULL, showBody = FALSE)
   if(!is.null(nlStatNames))
     savedNlStats <- nlStatNames[savedNlStats %in% nlStatNames]
   
-  if(length(savedNlStats) > 0 && showBody)
+  if(length(savedNlStats) > 0 && detail)
     savedNlStats <- sapply(savedNlStats, function(x) getSavedNlStat(x), USE.NAMES = F)
   
   savedNlStats
@@ -218,33 +247,35 @@ loadSavedNlStats <- function()
 existsSavedNlStatName <- function(nlStatName)
 {
   if(is.null(.RnightlightsEnv$savedNlStats))
-    loadSavedNlStats()
+    return(FALSE)
   
-  existsStatName <- grepl(nlStatName, names(.RnightlightsEnv$savedNlStats))
+  existsStatName <- grep(nlStatName, names(.RnightlightsEnv$savedNlStats), fixed = T, value = T)
+  
+  existsStatName <- any(nchar(existsStatName) == nchar(nlStatName))
+  
+  return(existsStatName)
 }
 
-existsSavedNlStatHash <- function(nlStatName)
+existsSavedNlStatHash <- function(nlStatHash)
 {
   if(is.null(.RnightlightsEnv$savedNlStats))
-    loadSavedNlStats()
+    return(FALSE)
   
-  statHash <- hashNlStat(nlStatName = nlStatName)
-  
-  existsStatHash <- any(sapply(.RnightlightsEnv$savedNlStats, function(x) x == statHash))
+  existsStatHash <- any(sapply(.RnightlightsEnv$savedNlStats, function(x) x == nlStatHash))
   
   return(existsStatHash)
 }
 
-existsSavedNlStat <- function(nlStatName)
+existsSavedNlStat <- function(nlStatName, nlStatHash)
 {
   if(is.null(.RnightlightsEnv$savedNlStats))
-    loadSavedNlStats()
+    return(FALSE)
   
   existsStatName <- existsSavedNlStatName(nlStatName = nlStatName)
   
-  existsStatHash <- existsSavedNlStatHash(nlStatName = nlStatName)
+  existsStatHash <- existsSavedNlStatHash(nlStatHash = nlStatHash)
     
-  return(existsStatName || existsStatHash)
+  return(existsStatName && existsStatHash)
 }
 
 deleteSavedNlStat <- function(nlStatName)
