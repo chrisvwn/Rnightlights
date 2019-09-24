@@ -230,3 +230,43 @@ getAllNlPeriods <- function(nlTypes)
       return()
   }, simplify = FALSE)
 }
+
+nlPeriodToDate <- function(nlPeriod, nlType)
+{
+  nlPeriod <- gsub("-*$", "", paste(substr(nlPeriod, 1,4), substr(nlPeriod, 5,6),substr(nlPeriod, 7,8), sep = "-"))
+  
+  if(stringr::str_detect(nlType, "D"))
+  {
+    
+  }else if(stringr::str_detect(nlType, "M"))
+  {
+    nlPeriod <- paste0(nlPeriod, "-01")
+  }else if(stringr::str_detect(nlType, "Y"))
+  {
+    nlPeriod <- paste0(nlPeriod, "-01-01")
+  }
+  
+  tmFmt <- "%Y-%m-%d"
+  
+  dt <- as.Date(as.character(nlPeriod), tmFmt)
+  
+  dt
+}
+
+dateToNlPeriod <- function(dt, nlType)
+{
+  dt <- as.character(dt)
+  
+  dt <- gsub("-", "", dt)
+  
+  if(stringr::str_detect(nlType, "D"))
+  {
+    nlPeriod <- substr(dt, 1, 8)
+  }else if(stringr::str_detect(nlType, "M"))
+  {
+    nlPeriod <- substr(dt, 1, 6)
+  }else if(stringr::str_detect(nlType, "Y"))
+  {
+    nlPeriod <- substr(dt, 1, 4)
+  }
+}
