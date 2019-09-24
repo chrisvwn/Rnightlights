@@ -843,6 +843,10 @@ shiny::shinyServer(function(input, output, session){
       
       existingStats <- ctryDataStats()
       
+      savedStats <- Rnightlights:::listSavedNlStats()
+      
+      existingStats <- intersect(existingStats, savedStats)
+      
       #allStats from global environment coz ctryNlData refs it
       #put allStats second so that "other" comes last and closest
       #to the add function textAreaInput

@@ -196,7 +196,7 @@ saveNlStat <- function(nlStat)
   .RnightlightsEnv$savedNlStats <- append(x = .RnightlightsEnv$savedNlStats, values = nlStatEntry)
   
   #add fun to the package env and save to rds
-  saveRDS(object = .RnightlightsEnv$savedNlStats, getSavedNlStatFnamePath())
+  #saveRDS(object = .RnightlightsEnv$savedNlStats, getSavedNlStatFnamePath())
   
   return(TRUE)
 }
@@ -214,7 +214,7 @@ listSavedNlStats <- function(nlStatNames = NULL, detail = FALSE)
   savedNlStats <- names(.RnightlightsEnv$savedNlStats)
   
   if(!is.null(nlStatNames))
-    savedNlStats <- nlStatNames[savedNlStats %in% nlStatNames]
+    savedNlStats <- nlStatNames[nlStatNames %in% savedNlStats]
   
   if(length(savedNlStats) > 0 && detail)
     savedNlStats <- sapply(savedNlStats, function(x) getSavedNlStat(x), USE.NAMES = F)
@@ -244,9 +244,62 @@ loadSavedNlStats <- function()
   return(TRUE)
 }
 
+loadSavedNlStatsGlobalEnv <- function(statSig, newStatName = NULL, overwrite = FALSE)
+{
+  if(savedNlStatsIsLoaded() && is.null(.RnightlightsEnv$savedNlStats))
+    return(FALSE)
+  
+  if(is.null(newStatName))
+    newStatName <- gsub("(^.*)\\(.*", "\\1", statSig)
+  
+  statSigs <- names(.RnightlightsEnv$savedNlStats)
+  
+  matchIdxs <- grep(statSig, statSigs, fixed = T)
+  
+  if(length(matchIdxs)  == 0)
+  {
+    message(Sys.time(), ": ", newStatName, " not found in saved stats")
+    
+    return(FALSE)
+  }
+  
+  if(exists(newStatName, envir = .GlobalEnv) && !overwrite)
+  {
+    message(Sys.time(), ": ",
+            newStatName,
+            " exists in the global environment. Please set newStatName or set overwrite to TRUE")
+    
+    return(FALSE)
+  }
+
+  savedStat <- getSavedNlStat(nlStatName = statSigs[matchIdxs])
+  
+  assign(x = newStatName, value = savedStat[[1]]$nlStatBody, envir = .GlobalEnv)
+  
+  return(TRUE)
+}
+
+searchSavedNlStatName <- function(nlStatName)
+{
+  if(savedNlStatsIsLoaded() && is.null(.RnightlightsEnv$savedNlStats))
+    return(FALSE)
+  
+  statSigs <- names(.RnightlightsEnv$savedNlStats)
+  
+  statNames <- gsub("(^.*)\\(.*", "\\1", statSigs)
+  
+  matchIdxs <- grep(paste0("^",nlStatName,"$"), statNames)
+  
+  if(length(matchIdxs)  == 0)
+    return(NULL)
+  
+  return(statSigs[matchIdxs])
+}
+
+
 existsSavedNlStatName <- function(nlStatName)
 {
-  if(is.null(.RnightlightsEnv$savedNlStats))
+  if(savedNlStatsIsLoaded() && is.null(.RnightlightsEnv$savedNlStats))
     return(FALSE)
   
   existsStatName <- grep(nlStatName, names(.RnightlightsEnv$savedNlStats), fixed = T, value = T)
@@ -258,7 +311,7 @@ existsSavedNlStatName <- function(nlStatName)
 
 existsSavedNlStatHash <- function(nlStatHash)
 {
-  if(is.null(.RnightlightsEnv$savedNlStats))
+  if(savedNlStatsIsLoaded() && is.null(.RnightlightsEnv$savedNlStats))
     return(FALSE)
   
   existsStatHash <- any(sapply(.RnightlightsEnv$savedNlStats, function(x) x == nlStatHash))
@@ -268,7 +321,7 @@ existsSavedNlStatHash <- function(nlStatHash)
 
 existsSavedNlStat <- function(nlStatName, nlStatHash)
 {
-  if(is.null(.RnightlightsEnv$savedNlStats))
+  if(savedNlStatsIsLoaded() && is.null(.RnightlightsEnv$savedNlStats))
     return(FALSE)
   
   existsStatName <- existsSavedNlStatName(nlStatName = nlStatName)
@@ -296,9 +349,9 @@ hashNlStatBody <- function(nlStatBody)
 
 hashNlStat <- function(nlStatName)
 {
-  nlStatBody <- eval(expr = parse(text = nlStatName))
+  nlStatBody <- capture.output(eval(expr = parse(text = nlStatName)))
   
-  digest::sha1(nlStatBody)
+  hashNlStatBody(nlStatBody = nlStatBody)
 }
 
 equalNlStats <- function(nlStatName1, nlStatName2)

@@ -792,6 +792,7 @@ getCtryNlData <- function(ctryCode=NULL,
                           multiTileStrategy = pkgOptions("multiTileStrategy"),
                           multiTileMergeFun = pkgOptions("multiTileMergeFun"),
                           removeGasFlares = pkgOptions("removeGasFlares"),
+                          useSavedStats = FALSE,
                           source="local", ...)
 {
   if(source != "local")
@@ -842,7 +843,32 @@ getCtryNlData <- function(ctryCode=NULL,
     validStats <- validNlStats(nlStats)
     
     if(!all(validStats))
-      stop(Sys.time(), ": Invalid nlStats detected ", as.character(nlStats[!validStats]))
+    {
+      if(!useSavedStats) {
+        stop(Sys.time(), ": nlStats not found: ", paste(as.character(nlStats[!validStats]), collapse = ""), 
+             "\n Set useSavedStats to TRUE to search also in saved Stats")
+      } else {
+        message(Sys.time(), ": ", paste(as.character(nlStats[!validStats]), collapse = ""), " not found. Checking saved stats")
+        
+        foundSavedStatSigs <- sapply(nlStats[!validStats], function(x) searchSavedNlStatName(x[[1]]))
+        
+        numFoundMatches <- sapply(foundSavedStatSigs, length)
+        
+        if(any(numFoundMatches == 0))
+          stop(Sys.time(), ": Not found in saved stats: ", nlStats[!validStats][numFoundMatches == 0])
+        
+        if(any(numFoundMatches) > 1)
+        {
+          message(Sys.time(), ": Multiple matches in saved stats: ", foundSavedStatSigs[numFoundMatches > 1],
+          "\nRun searchSavedNlStatName and load")
+        }
+        
+        message(Sys.time(), ": Loading saved stats")
+        
+        for(foundSavedStatSig in foundSavedStatSigs)
+          loadSavedNlStatsGlobalEnv(foundSavedStatSig)
+      }
+    }
     
     #if(missing(ignoreMissing))
     #  ignoreMissing = TRUE
@@ -1546,12 +1572,15 @@ listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlTypes=NULL, configN
     
     lens <- sapply(stringr::str_extract_all(nlCtryHdr, "_"), length)
     
+    #configNames might have an underscore, replace with dash
     nlCtryHdr[lens == 5] <- gsub("(.*_.*_.*)_(.*_.*_.*)","\\1-\\2", nlCtryHdr[lens == 5])
     
     #split the NL colnames into their components e.g. "NL_OLS.Y_2012_MEAN"
     #= "NL"+nlType+nlPeriod+stat
+    #separate ctry and admLevel leaving indices for multiTileMergeStrategy, removeGasFlares etc
     nlCtryHdr <- reshape2::colsplit(nlCtryHdr, "_", c("V1", "V2","V3","V7", "V8"))
     
+    #name the parts with col indices to fit into nlCtryHdr
     parts <- stats::setNames(data.frame(t(sapply(strsplit(nlCtryHdr[,3], "-"),function(x){
     
       if(length(x) == 5)
@@ -1562,6 +1591,7 @@ listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlTypes=NULL, configN
         x
     })), stringsAsFactors = F), c("V3", "V4", "V5", "V6"))
     
+    #extract values where mixed with colName
     parts$V4 <- gsub("MTS", "", parts$V4)
     
     parts$V6 <- as.logical(gsub("RGF", "", parts$V6))
@@ -1573,7 +1603,7 @@ listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlTypes=NULL, configN
     {
       #aggregate (paste) the colnames into a single row with stats for each unique 
       #nlType+nlPeriod converted to a single field
-      nlCtryHdr <- stats::aggregate(V8 ~ V1 + V2 + V3 + V4 + V5 + V6 + V7, data=nlCtryHdr, FUN=paste, collapse=",")
+      nlCtryHdr <- stats::aggregate(V8 ~ V1 + V2 + V3 + V4 + V5 + V6 + V7, data=nlCtryHdr, FUN=paste, collapse=", ")
       
       #add a ctryCode column
       nlCtryHdr <- cbind.data.frame(rep(ctryCode, nrow(nlCtryHdr)), rep(admLevel, nrow(nlCtryHdr)), rep(polySrc, nrow(nlCtryHdr)), rep(polyVer, nrow(nlCtryHdr)), rep(polyType, nrow(nlCtryHdr)), nlCtryHdr)
