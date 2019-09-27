@@ -830,44 +830,63 @@ getCtryNlData <- function(ctryCode=NULL,
     if (!ignoreMissing)
       nlPeriods <- getAllNlPeriods(nlTypes = nlTypes)
     
-    #if(!allValid(nlPeriods, validNlPeriods, nlType))
-    if(!allValidNlPeriods(nlTypes = nlTypes, nlPeriods = nlPeriods))
-      stop(Sys.time(), ": Invalid nlPeriods detected")
+  #if(!allValid(nlPeriods, validNlPeriods, nlType))
+  if(!allValidNlPeriods(nlTypes = nlTypes, nlPeriods = nlPeriods))
+    stop(Sys.time(), ": Invalid nlPeriods detected")
     
     if(any(dupNlStats <- duplicated(nlStats)))
     {
-      message(Sys.time(), ": duplicate nlStat(s) detected: ", nlStats[dupNlStats], ". Continuing with unique nlStats")
+      message(Sys.time(), ": duplicate nlStat(s) detected: ", paste(as.character(nlStats[!validStats]), collapse = ", "), ". Continuing with unique nlStats")
       nlStats <- unique(nlStats)
     }
-    
+  
+    #if the nlStat is supplied as a single list with params encapsulate into
+    #a single list
+    if(is.list(nlStats) && length(nlStats) > 1 && all(sapply(2:length(nlStats), function(i) !is.list(nlStats[[i]]) && (grepl("=", nlStats[i]) || length(names(nlStats[i])) > 0))))
+    nlStats <- list(nlStats)
+  
     validStats <- validNlStats(nlStats)
     
     if(!all(validStats))
     {
       if(!useSavedStats) {
-        stop(Sys.time(), ": nlStats not found: ", paste(as.character(nlStats[!validStats]), collapse = ""), 
+        stop(Sys.time(), ": nlStats not found: ", paste(as.character(nlStats[!validStats]), collapse = ", "), 
              "\n Set useSavedStats to TRUE to search also in saved Stats")
       } else {
-        message(Sys.time(), ": ", paste(as.character(nlStats[!validStats]), collapse = ""), " not found. Checking saved stats")
+        message(Sys.time(), ": ", paste(as.character(nlStats[!validStats]), collapse = ", "), " not found. Checking saved stats")
         
         foundSavedStatSigs <- sapply(nlStats[!validStats], function(x) searchSavedNlStatName(x[[1]]))
         
         numFoundMatches <- sapply(foundSavedStatSigs, length)
         
         if(any(numFoundMatches == 0))
-          stop(Sys.time(), ": Not found in saved stats: ", nlStats[!validStats][numFoundMatches == 0])
+          stop(Sys.time(), ": Not found in saved stats: ", paste(nlStats[!validStats][numFoundMatches == 0], collapse=", "))
         
         if(any(numFoundMatches) > 1)
         {
-          message(Sys.time(), ": Multiple matches in saved stats: ", foundSavedStatSigs[numFoundMatches > 1],
-          "\nRun searchSavedNlStatName and load")
+          stop(Sys.time(), ": Multiple matches in saved stats: ", paste(foundSavedStatSigs[numFoundMatches > 1], collapse=", "),
+          "\nRun 'searchSavedNlStatName()' and 'loadSavedNlStat()' to load the corresponding stat")
         }
         
         message(Sys.time(), ": Loading saved stats")
         
-        for(foundSavedStatSig in foundSavedStatSigs)
-          loadSavedNlStatsGlobalEnv(foundSavedStatSig)
+        for(foundSavedStatSig in foundSavedStatSigs){
+         
+          message(Sys.time(), ": Found saved function: ", foundSavedStatSig, " ... Loading") 
+          
+          loadSavedNlStat(foundSavedStatSig)
+        }
       }
+    }
+    
+    statSigs <- NULL
+    
+    for(i in 1:length(nlStats))
+      statSigs <- c(statSigs, nlStatSignature(nlStats[i]))
+    
+    if(length(unMatchedSigs <- grep("xUnMatchedx", statSigs, value = T)) > 0)
+    {
+      stop(Sys.time(), ": Detected nlStats with incompatible arguments: ", unMatchedSigs)
     }
     
     #if(missing(ignoreMissing))
@@ -947,10 +966,9 @@ getCtryNlData <- function(ctryCode=NULL,
         a <- lapply(1:length(nlTypes), function(i) cbind(nlTypes[i], configNames[i], nlPeriods))
       
       a <- data.frame(do.call("rbind", a), stringsAsFactors = F, row.names = NULL)
-      
-      if(is.list(nlStats) && length(nlStats) > 1 && all(sapply(2:length(nlStats), function(i) !is.list(nlStats[[i]]) && (grepl("=", nlStats[i]) || length(names(nlStats[i])) > 0))))
-        nlStats <- list(nlStats)
-      
+
+      #get the names of the stats which will be the first elem of each
+      #sublist
       nlStatNames <- sapply(nlStats, function(x) x[[1]])
       
       if(length(nlStatNames) == 1)
@@ -1355,8 +1373,8 @@ existsCtryNlData <- function(ctryCode=NULL,
   if(!allValidNlPeriods(nlPeriods=nlPeriods, nlTypes=nlTypes))
     stop(Sys.time(), ": Invalid nlPeriod: ", nlPeriods, " for nlType: ", nlTypes)
   
-  #if(!all(validNlStats(nlStats)))
-  #  stop(Sys.time(), ": Invalid nlStat: ", nlStats)
+  if(!all(validNlStats(nlStats)))
+    stop(Sys.time(), ": Invalid nlStat: ", nlStats)
   
   if (existsCtryNlDataFile(ctryCode = ctryCode,
                            admLevel = admLevel,
@@ -1375,7 +1393,10 @@ existsCtryNlData <- function(ctryCode=NULL,
   
   hdrs <- names(dta)
   
-  statArgs <- sapply(nlStats, nlStatSignature)
+  statSigs <- NULL
+  
+  for(i in 1:length(nlStats))
+    statSigs <- c(statSigs, nlStatSignature(nlStats[i]))
   
   searchCols <- paste("NL", toupper(nlTypes),
                       paste(toupper(configNames),
@@ -1383,14 +1404,14 @@ existsCtryNlData <- function(ctryCode=NULL,
                             toupper(multiTileMergeFun),
                             paste0("RGF", toupper(substr(as.character(removeGasFlares),1,1))), sep = "-"),
                       toupper(nlPeriods),
-                      statArgs, sep="_")
+                      statSigs, sep="_")
   
   matchHdrs <- unlist(lapply(searchCols, function(x) grep(pattern = x, x = hdrs, fixed = T, value = T)))
   
   if(length(matchHdrs) == 0)
     return(FALSE)
   
-  return(any(nchar(matchHdrs) == nchar(searchCols)))
+  return(any(nchar(matchHdrs) %in% nchar(searchCols)))
 }
 
 ######################## allExistsCtryNlData ###################################
