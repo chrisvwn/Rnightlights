@@ -76,7 +76,7 @@ if(!is.null(missingPkgs))
       Please install missing packages: '", paste0(missingPkgs, collapse = ", "), "'", call. = FALSE)
  
 #stats to be 
-allStats <- c("MEAN", "SUM", "VAR", "SD", "other")
+defaultStats <- c("mean()", "sum()", "var()", "sd()")
 
 nlPeriodToDate <- function(nlPeriod, nlType)
 {
@@ -276,16 +276,6 @@ shiny::shinyServer(function(input, output, session){
     return(nlTypes)
   })
   
-  ######################## reactive ctryDataStats ###################################
-  
-  ctryDataStats <- shiny::reactive({
-    print(paste0("reactive: ctryDataStats"))
-
-    nlStats <- ctryNlDataListStats()
-
-    return(nlStats)
-  })
-  
   ######################## reactive ctryNlDataLvl2 ###################################
   
   ctryNlDataLvl2 <- shiny::reactive({
@@ -423,11 +413,13 @@ shiny::shinyServer(function(input, output, session){
       
       if(!is.null(nlStats))
       {
-        if(nlStats == "other")
+        if(nlStats == "Add New")
         {
           nlStats <- values$newStatFuncName
-        } else if(nlStats %in% setdiff(allStats, "other"))
-          nlStats <- list(tolower(nlStats), "na.rm=T")
+        }
+        
+        nlStats <- Rnightlights:::nlSignatureAddArg(nlStatSigs = nlStats, addArg = "na.rm=T")
+        nlStats <- Rnightlights:::nlSignatureStat(nlStatSignature = nlStats)
       } else
       {
         return()
@@ -557,7 +549,7 @@ shiny::shinyServer(function(input, output, session){
                                                multiTileStrategy = multiTileStrategy,
                                                multiTileMergeFun = multiTileMergeFun,
                                                removeGasFlares = removeGasFlares)
-          temp <- as.data.table(temp)
+          temp <- data.table::as.data.table(temp)
           
           # if(file.exists(ctryNlDataFile))
           #   temp <- data.table::fread(ctryNlDataFile)
@@ -626,7 +618,7 @@ shiny::shinyServer(function(input, output, session){
       
       #the cols with the stats we want
       
-      statCols <- grep(pattern = paste0("NL_.*_", ctryStat), x = names(ctryData), value = TRUE)
+      statCols <- grep(pattern = gsub("(", "\\(", paste0("NL_.*_", ctryStat), fixed = T), x = names(ctryData), value = TRUE)
       
       statCols <- grep(pattern = configName, x = statCols, value = TRUE)
 
@@ -650,20 +642,24 @@ shiny::shinyServer(function(input, output, session){
       
       ctryData <- data.table::data.table(reshape2::melt(ctryData, measure.vars=meltMeasureVars))
       
-      if(stringr::str_detect(input$nlType, "OLS"))
-      {
-        ctryData$variable <- paste0(gsub("[^[:digit:]]","", ctryData$variable))
-        
-        ctryData$variable <- as.numeric(ctryData$variable)
-      } else if(stringr::str_detect(input$nlType, "VIIRS"))
-      {
-        if(stringr::str_detect(input$nlType, "M"))
-          ctryData$variable <- paste0(gsub("[^[:digit:]]","", ctryData$variable),"01")
-        else if(stringr::str_detect(input$nlType, "Y"))
-          ctryData$variable <- paste0(gsub("[^[:digit:]]","", ctryData$variable),"0101")
-        
-        ctryData$variable <- as.Date(ctryData$variable, format="%Y%m%d")
-      }
+      ctryData$variable <- Rnightlights:::nlPeriodToDate(gsub("[^[:digit:]]","", ctryData$variable), input$nlType)
+      
+      # if(stringr::str_detect(input$nlType, "OLS"))
+      # {
+      #   ctryData$variable <- paste0(gsub("[^[:digit:]]","", ctryData$variable))
+      #   
+      #   ctryData$variable <- paste0(gsub("[^[:digit:]]","", ctryData$variable),"0101")
+      #   
+      #   ctryData$variable <- as.Date(ctryData$variable, format="%Y%m%d")
+      # } else if(stringr::str_detect(input$nlType, "VIIRS"))
+      # {
+      #   if(stringr::str_detect(input$nlType, "M"))
+      #     ctryData$variable <- paste0(gsub("[^[:digit:]]","", ctryData$variable),"01")
+      #   else if(stringr::str_detect(input$nlType, "Y"))
+      #     ctryData$variable <- paste0(gsub("[^[:digit:]]","", ctryData$variable),"0101")
+      #   
+      #   ctryData$variable <- as.Date(ctryData$variable, format="%Y%m%d")
+      # }
       
       return(ctryData)
     })
@@ -758,7 +754,13 @@ shiny::shinyServer(function(input, output, session){
     
     polySrcs <- allPolySrcs[!(allPolySrcs %in% existingPolySrcs)]
     
-    configNames <- list("Existing"=c(existingPolySrcs), "Process"=c(polySrcs))
+    if(length(existingPolySrcs) == 1)
+      existingPolySrcs <- list(existingPolySrcs)
+    
+    if(length(polySrcs) == 1)
+      polySrcs <- list(polySrcs)
+    
+    polySrcs <- list("Existing"=c(existingPolySrcs), "Process"=c(polySrcs))
     
     if(length(existingPolySrcs) == 0)
       selectedPolySrc <- "GADM"
@@ -829,7 +831,7 @@ shiny::shinyServer(function(input, output, session){
     if(length(existingPolyTypes) == 0)
       selectedPolyType <- Rnightlights::pkgOptions("gadmPolyType")
     else
-      selectedPolyType <- existingPolyTypes[1]
+      selectedPolyType <- "shpZip" #default
     
     shiny::selectInput(inputId = "polyType", label = "polyType", choices = polyTypes, selected = selectedPolyType)
   })
@@ -839,31 +841,97 @@ shiny::shinyServer(function(input, output, session){
     output$ctryStats <- shiny::renderUI({
       print(paste0("output: ctryStats"))
 
+      # if(is.null(getInputCountries()))
+      #   return()
+      
       ctryStat <- input$ctryStat
       
-      existingStats <- ctryDataStats()
+      optionNaRm <- input$optionNaRm
+      
+      ctryDtStats <- ctryNlDataListStats()
+      
+      #if(length(ctryDtStats) == 0)
+      #  return()
+      
+      existingStats <- trimws(ctryDtStats)
+      
+      existingStats <- unname(unlist(lapply(existingStats, function(x){
+        xStat <- Rnightlights:::nlSignatureStat(nlStatSignature = x)
+        
+        isFun <- suppressMessages(Rnightlights:::validNlStats(xStat)) || Rnightlights:::existsSavedNlStatName(x)
+        
+        if(isFun)
+        {
+          if(optionNaRm)
+            Rnightlights:::nlSignatureAddArg(nlStatSigs = x, addArg = "na.rm=T")
+          else
+            x 
+        }
+      })))
+      
+      existingStats <- sort(existingStats)
       
       savedStats <- Rnightlights:::listSavedNlStats()
       
-      existingStats <- intersect(existingStats, savedStats)
+      for(savedStat in savedStats)
+      {
+        if(!exists(Rnightlights:::nlSignatureStatName(savedStat), envir = .GlobalEnv))
+          Rnightlights:::loadSavedNlStat(savedStat)
+      }
       
-      #allStats from global environment coz ctryNlData refs it
-      #put allStats second so that "other" comes last and closest
-      #to the add function textAreaInput
-      statChoices <- unique(c(existingStats, allStats))
+      defaultStats <- unname(unlist(lapply(defaultStats, function(x){
+        isValidNlStat <- Rnightlights:::validNlStats(Rnightlights:::nlSignatureStat(x))
+        
+        existsSavedNlStatName <- Rnightlights:::existsSavedNlStatName(x)
+        
+        isFun <- suppressMessages(isValidNlStat || existsSavedNlStatName)
+        
+        if(isFun && optionNaRm)
+          Rnightlights:::nlSignatureAddArg(nlStatSigs = x, addArg = "na.rm=T")
+        else
+          x
+      })))
       
+      #defaultStats from global environment coz ctryNlData refs it
+      otherStats <- unique(c(savedStats, defaultStats))
+      
+      otherStats <- sort(setdiff(otherStats, existingStats))
+
+      if(length(existingStats) == 1)
+        existingStats <- list(existingStats)
+      
+      if(length(otherStats) == 1)
+        otherStats <- list(otherStats)
+      
+      statChoices <- list("Add New" = list("Add New"), "With Data" = existingStats, "Without Data" = otherStats)
+
       #memory
-      if(!is.null(ctryStat) && ctryStat %in% allStats)
+      if(!is.null(ctryStat) && ctryStat %in% c(existingStats))
+      {
         selectedStat <- input$ctryStat
+      }
       else
-        selectedStat <- existingStats[1]
+      {
+        if(length(existingStats) > 0)
+          selectedStat <- existingStats[1]
+        else if(length(otherStats) > 0)
+          selectedStat <- otherStats[1]
+        else
+          selectedStat <- "Add new"
+      }
       
-      shiny::radioButtons(inputId = "ctryStat",
-                          label = "Stats",
-                          choices = statChoices,
-                          inline = TRUE,
-                          selected = selectedStat
-      )
+      # shiny::radioButtons(inputId = "ctryStat",
+      #                     label = "Stats",
+      #                     choices = statChoices,
+      #                     inline = TRUE,
+      #                     selected = selectedStat
+      # )
+      
+      shiny::selectInput(inputId = "ctryStat",
+                         label = "Stats",
+                         choices = statChoices,
+                         selected = selectedStat)
+
     })
   
   ######################## renderUI newStatStatus ###################################
@@ -873,7 +941,7 @@ shiny::shinyServer(function(input, output, session){
     
     ctryStat <- input$ctryStat
     
-    if(is.null(ctryStat) || (!is.null(ctryStat) && ctryStat != "other"))
+    if(is.null(ctryStat) || (!is.null(ctryStat) && ctryStat != "Add New"))
       return()
     
     shiny::textInput(inputId = "newStatStatus", label = NULL)
@@ -886,7 +954,7 @@ shiny::shinyServer(function(input, output, session){
 
     ctryStat <- input$ctryStat
     
-    if(is.null(ctryStat) || (!is.null(ctryStat) && ctryStat != "other"))
+    if(is.null(ctryStat) || (!is.null(ctryStat) && ctryStat != "Add New"))
       return()
     
     shiny::textAreaInput(inputId = "newStat", label = "Function Name/Def", placeholder = "mySum <- function(x)\n sum(x, na.rm=TRUE)")
@@ -899,7 +967,7 @@ shiny::shinyServer(function(input, output, session){
     
     ctryStat <- input$ctryStat
     
-    if(is.null(ctryStat) || (!is.null(ctryStat) && ctryStat != "other"))
+    if(is.null(ctryStat) || (!is.null(ctryStat) && ctryStat != "Add New"))
       return()
     
     shiny::actionButton(inputId = "btnNewStat", label = "Add Function")
@@ -936,12 +1004,15 @@ shiny::shinyServer(function(input, output, session){
   ######################## reactive ctryNlDataList ###################################
   
   reactListCtryNlData <- shiny::reactive({
-    print(paste0("reactive: ctryNlDataList"))
+    print(paste0("reactive: reactListCtryNlData"))
     
     ctryCodes <- getInputCountries()
     
+    #if(is.null(ctryCodes))
+    #  return()
+
     if(is.null(ctryCodes))
-      return()
+      return(Rnightlights::listCtryNlData())
     
     Rnightlights::listCtryNlData(ctryCodes = ctryCodes)
   })
@@ -955,13 +1026,14 @@ shiny::shinyServer(function(input, output, session){
     
     admLevel <- selectedAdmLevel3()
     
-    if(is.null(ctryCodes) || (!is.null(ctryCodes) && length(ctryCodes)==1 && is.null(admLevel)))
-      return()
+    #if no country selected or one country selected but admLevel is NULL exit
+    # if(is.null(ctryCodes) || (!is.null(ctryCodes) && length(ctryCodes)==1 && is.null(admLevel)))
+    #   return()
 
     availData <- reactListCtryNlData()
     
     if(!is.null(admLevel))
-      availData[availData$ctryCode %in% ctryCodes, availData$admLevel == admLevel, ]
+      availData[availData$ctryCode %in% ctryCodes & availData$admLevel == admLevel, ]
     
     availData
   })
@@ -1058,8 +1130,17 @@ shiny::shinyServer(function(input, output, session){
     
     existingConfigNames <- unique(ctryNlDataListConfigName())
 
+    #keep only existing for this nlType
+    existingConfigNames <- existingConfigNames[existingConfigNames %in% allConfigNames]
+    
     allConfigNames <- allConfigNames[!(allConfigNames %in% existingConfigNames)]
-        
+    
+    if(length(existingConfigNames) == 1)
+      existingConfigNames <- list(existingConfigNames)
+    
+    if(length(allConfigNames) == 1)
+      allConfigNames <- list(allConfigNames)
+    
     configNames <- list("Existing"=c(existingConfigNames), "Process"=c(allConfigNames))
     
     if(length(existingConfigNames) == 0)
@@ -1224,12 +1305,9 @@ shiny::shinyServer(function(input, output, session){
     nlType <- input$nlType
     nlStat <- input$ctryStat
     
-    if(!is.null(nlStat) && nlStat == "other")
+    if(!is.null(nlStat) && nlStat == "Add New")
     {
       nlStat <- values$newStatFuncName
-    } else
-    {
-      nlStat <- tolower(nlStat)
     }
     
     nlPeriod <- input$nlPeriodRange
@@ -1264,17 +1342,21 @@ shiny::shinyServer(function(input, output, session){
     if(length(countries) == 0)
       return()
     
-    if((length(countries) == 1 && is.null(admLevel)) || is.null(nlType) || is.null(nlStat) || is.null(polySrc) ||
+    if((length(countries) == 1 && is.null(admLevel)) || is.null(nlType) || is.null(nlStat) ||
+       length(nlStat) == 0 || nlStat == "" || is.null(polySrc) ||
        is.null(polyVer) || is.null(polyType) || is.null(configName) || is.null(multiTileMergeStrategy) ||
        is.null(multiTileMergeFun) || is.null(removeGasFlares))
       return()
     
-    existsData <- sapply(countries, function(x)
+    existsData <- sapply(countries, function(x){
+      nlStatList <- Rnightlights:::nlSignatureStat(nlStat = nlStat)
+       
       Rnightlights:::existsCtryNlData(ctryCode = x, admLevel = admLevel, nlTypes = nlType,
                                       configNames = configName, multiTileStrategy = multiTileMergeStrategy,
                                       multiTileMergeFun = multiTileMergeFun, removeGasFlares = removeGasFlares,
-                                      nlPeriods = nlPeriod, nlStats = nlStat, gadmVersion = polyVer,
-                                      gadmPolyType = polyType, custPolyPath = custPolyPath))
+                                      nlPeriods = nlPeriod, nlStats = nlStatList, gadmVersion = polyVer,
+                                      gadmPolyType = polyType, custPolyPath = custPolyPath)
+    })
     
     if(any(!existsData))
     {
@@ -1312,10 +1394,14 @@ shiny::shinyServer(function(input, output, session){
     
     if(grepl("[a-zA-Z0-9_]\\s*(<-)|(=)\\s*function\\s*\\(.*\\).+", newStat))
     {
+      #if it is a function definition
+      
+      #split into function name and body based on assignment operator
       statParts <- unlist(strsplit(x = newStat, split = "<-"))
       newStatName <- trimws(statParts[1])
       newStatBody <- trimws(statParts[2])
       
+      #add the function into the global environment so we can access it later
       assign(x = newStatName, value = eval(parse(text=newStatBody)), envir = .GlobalEnv)
       newStat <- newStatName
     } else if(grepl("^list\\s*\\(", newStat))
@@ -1879,6 +1965,9 @@ shiny::shinyServer(function(input, output, session){
       
       nlType <- input$nlType
       
+      if(is.null(nlType))
+        return()
+      
       #shiny::isolate({
         nlPeriodRange <- input$nlPeriodRange
         
@@ -1924,7 +2013,8 @@ shiny::shinyServer(function(input, output, session){
           
           if(stringr::str_detect(nlType, "D"))
           {
-
+            startDate <- paste0(startDate)
+            endDate <- paste0(endDate)
           }else if(stringr::str_detect(nlType, "M"))
           {
             startDate <- paste0(startDate, "-01")
@@ -1959,6 +2049,28 @@ shiny::shinyServer(function(input, output, session){
           endDate <- max(ctryData$variable)
           #minDate <- startDate
           #maxDate <- endDate
+          
+          startDate <- gsub("-*$", "", paste(substr(startDate, 1,4), substr(startDate, 5,6),substr(startDate, 7,8), sep = "-"))
+          endDate <- gsub("-*$", "", paste(substr(endDate, 1,4), substr(endDate, 5,6),substr(endDate, 7,8), sep = "-"))
+          
+          if(stringr::str_detect(nlType, "D"))
+          {
+            startDate <- paste0(startDate)
+            endDate <- paste0(endDate)
+          }else if(stringr::str_detect(nlType, "M"))
+          {
+            startDate <- paste0(startDate, "-01")
+            endDate <- paste0(endDate, "-01")
+          }else if(stringr::str_detect(nlType, "Y"))
+          {
+            startDate <- paste0(startDate, "-01-01")
+            endDate <- paste0(endDate, "-01-01")
+          }
+          
+          tmFmt <- "%Y-%m-%d"
+          
+          startDate <- as.Date(as.character(startDate), tmFmt)
+          endDate <- as.Date(as.character(endDate), tmFmt)
         }
           
         if(stringr::str_detect(nlType, "D"))
@@ -1967,8 +2079,8 @@ shiny::shinyServer(function(input, output, session){
           
           if(!is.null(nlPeriodRange))
           {
-            nlRangeStart <- as.Date(as.character(nlPeriodRange[1]), tmFmt)
-            nlRangeEnd <- as.Date(as.character(nlPeriodRange[2]), tmFmt)
+            nlRangeStart <- nlPeriodRange[1]
+            nlRangeEnd <- nlPeriodRange[2]
           }
           
           step <- 1
@@ -1978,8 +2090,8 @@ shiny::shinyServer(function(input, output, session){
           
           if(!is.null(nlPeriodRange))
           {
-            nlRangeStart <- as.Date(as.character(nlPeriodRange[1]), tmFmt)
-            nlRangeEnd <- as.Date(as.character(nlPeriodRange[2]), tmFmt)
+            nlRangeStart <- nlPeriodRange[1]
+            nlRangeEnd <- nlPeriodRange[2]
           }
           
           step <- 31
@@ -1989,8 +2101,8 @@ shiny::shinyServer(function(input, output, session){
           
           if(!is.null(nlPeriodRange))
           {
-            nlRangeStart <- lubridate::year(as.Date(as.character(nlPeriodRange[1]), tmFmt))
-            nlRangeEnd <- lubridate::year(as.Date(as.character(nlPeriodRange[2]), tmFmt))
+            nlRangeStart <- nlPeriodRange[1]
+            nlRangeEnd <- nlPeriodRange[2]
           }
           
           step <- 1
@@ -2015,15 +2127,16 @@ shiny::shinyServer(function(input, output, session){
         minDate <- nlPeriodToDate(nlPeriod = allNlPeriods[1], nlType = nlType)
         maxDate <- nlPeriodToDate(nlPeriod = allNlPeriods[length(allNlPeriods)], nlType = nlType)
         
-        shiny::sliderInput(inputId = "nlPeriodRange",
-                    label = "Time",
-                    min = minDate,
-                    max = maxDate,
-                    timeFormat = tmFmt,
-                    step = step,
-                    value = c(startDate, endDate),
-                    animate = animationOptions(interval = 1000, loop = FALSE, playButton = NULL, pauseButton = NULL)
-        )
+        if(is.null(input$nlPeriodRange))
+          shiny::sliderInput(inputId = "nlPeriodRange",
+                      label = "Time",
+                      min = minDate,
+                      max = maxDate,
+                      timeFormat = tmFmt,
+                      step = step,
+                      value = c(startDate, endDate),
+                      animate = animationOptions(interval = 1000, loop = FALSE, playButton = NULL, pauseButton = NULL)
+          )
       #})
     })
     
@@ -2700,6 +2813,13 @@ shiny::shinyServer(function(input, output, session){
         if (!exists("admLevel") || is.null(admLevel) || length(admLevel)==0)
           admLevel <- "country"
         
+        xLabel <- if(stringr::str_detect(nlType, "\\.D"))
+          "Day"
+        else if(stringr::str_detect(nlType, "\\.M"))
+          "Month"
+        else if(stringr::str_detect(nlType, "\\.Y"))
+          "Year"
+        
         ctryData <- ctryNlDataMelted()
         
         if(is.null(ctryData))
@@ -2711,14 +2831,18 @@ shiny::shinyServer(function(input, output, session){
           geom_point()
             
           if(grepl("\\.D", nlType))
-            g <- g + ggplot2::scale_x_date(date_breaks = "1 month", date_labels = "%Y-%m")
+            g <- g + ggplot2::scale_x_date(date_breaks = "1 month", date_labels = "%Y-%m-%d")
           else if(grepl("\\.M", nlType))
             g <- g + ggplot2::scale_x_date(date_breaks = "1 month", date_labels = "%Y-%m")
           else if(grepl("\\.Y", nlType))
             g <- g + ggplot2::scale_x_date(date_breaks = "1 year", date_labels = "%Y")
             
           g <- g + ggplot2::xlim(nlPeriodRange[1], nlPeriodRange[2]) +
-          ggplot2::ylim(0, 100)
+          ggplot2::ylim(0, 100) +
+          ggplot2::labs(title="Nightlight Radiance",
+                        x = xLabel,
+                        y = bquote(paste("Avg Rad W" %.% "Sr" ^{-1} %.% "cm" ^{-2}))
+          )
           
           return(g)
         }
@@ -2748,13 +2872,14 @@ shiny::shinyServer(function(input, output, session){
         #print(paste0("ctrydata nrow:", nrow(ctryData)))
         
         if (normArea)
-          ctryData$value <- (ctryData$value)/ctryData$area_sq_km
+          ctryData$value <- ctryData$value/ctryData$area_sq_km
   
         if (graphType == "boxplot")
         {
           if (length(countries)==1)
           {
-            g <- ggplot2::ggplot(data=ctryData, ggplot2::aes(x=ctryData[[admLevel]], y=value, col=ctryData[[admLevel]])) + ggplot2::theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) + ggplot2::labs(col=admLevel) + facet_grid(lubridate::year(variable) ~ lubridate::month(x=variable, label=T, abbr=T))
+            g <- ggplot2::ggplot(data=ctryData, ggplot2::aes(x=ctryData[[admLevel]], y=value, col=ctryData[[admLevel]])) +
+              ggplot2::theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) + ggplot2::labs(col=admLevel) + facet_grid(lubridate::year(variable) ~ lubridate::month(x=variable, label=T, abbr=T))
           }
           else
           {
@@ -2775,8 +2900,12 @@ shiny::shinyServer(function(input, output, session){
             
             g <- ggplot2::ggplot(data=ctryData, aes(x=variable, y=value, col=ctryData[[admLevel]]))
             
-            if(stringr::str_detect(nlType, "VIIRS"))
+            if(stringr::str_detect(nlType, "\\.D"))
+              g <- g + ggplot2::scale_x_date(date_breaks = "1 day", date_labels = "%Y-%m-%d")
+            else if(stringr::str_detect(nlType, "\\.M"))
               g <- g + ggplot2::scale_x_date(date_breaks = "1 month", date_labels = "%Y-%m")
+            else if(stringr::str_detect(nlType, "\\.Y"))
+              g <- g + ggplot2::scale_x_date(date_breaks = "1 year", date_labels = "%Y")
           }
           else
           {
@@ -2789,7 +2918,9 @@ shiny::shinyServer(function(input, output, session){
               g <- g + ggplot2::scale_x_date(date_breaks = "1 month", date_labels = "%Y-%m")
           }
   
-          g <- g+ ggplot2::geom_line() + ggplot2::geom_point()+ ggplot2::theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) + ggplot2::labs(col=admLevel)
+          g <- g+ ggplot2::geom_line() + ggplot2::geom_point()+
+            ggplot2::theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) +
+            ggplot2::labs(col=admLevel)
         }
         else if (graphType == "histogram")
         {
@@ -2816,12 +2947,21 @@ shiny::shinyServer(function(input, output, session){
         if ("scale_x_log" %in% scale)
           g <- g + ggplot2::scale_x_log10()
         
-        plotTitle <- paste0("Nightlight Radiance (", ctryStat, ")")
+        plotTitle <- paste0("Nightlight Radiance (", Rnightlights:::nlSignatureStatName(statSig = ctryStat),
+                            ifelse(grepl(pattern = "na.rm", x = ctryStat), "*", ""), ")")
         
         if (normArea)
-          g <- g + ggplot2::labs(title=plotTitle, x = "Month", y = "Avg Rad (W.Sr^-1.cm^-2/Km2)") #y=expression(paste("Avg Rad W" %.% "Sr" ^{-1} %.% "cm" ^{-2}, "per Km" ^{2})))
+          g <- g + ggplot2::labs(title=plotTitle,
+                                 x = xLabel,
+                                 y = bquote(paste("Avg Rad W" %.% "Sr" ^{-1} %.% "cm" ^{-2}, " / Km" ^{2})), #"Avg Rad (W.Sr^-1.cm^-2/Km2)",
+                                 caption = ifelse(grepl(pattern = "na.rm", x = ctryStat),
+                                                  paste0(ctryStat, " NAs removed"),
+                                                  paste0(ctryStat, " NAs not removed"))
+                                 ) #y=expression(paste("Avg Rad W" %.% "Sr" ^{-1} %.% "cm" ^{-2}, "per Km" ^{2})))
         else
-          g <- g + ggplot2::labs(title=plotTitle, x = "Month", y = "Total Rad (W.Sr^-1.cm^-2)") #y=expression(~Total~Rad~W %.% Sr^{-1}%.%cm^{-2}))
+          g <- g + ggplot2::labs(title=plotTitle,
+                                 x = xLabel,
+                                 y = bquote(~Total~Rad~W %.% Sr^{-1}%.%cm^{-2})) #"Total Rad (W.Sr^-1.cm^-2)") #y=expression(~Total~Rad~W %.% Sr^{-1}%.%cm^{-2}))
         
         g
           # p <- plotly::ggplotly(g)
@@ -2881,6 +3021,19 @@ shiny::shinyServer(function(input, output, session){
     },
       
       options = list(scrollX = TRUE, scrolly = TRUE)
+    )
+    
+    ######################## renderDataTable dataset ###################################
+    
+    output$availableData <- DT::renderDataTable({
+      dt <- ctryNlDataList()
+      
+      names(dt) <- c("DT", "CCode", "ADM","NlType","CfgName","MTS", "MTF","RGF","NlPeriod","PolySrc","PolyVer","PolyType","NlStats" )
+
+      dt
+    },
+    
+      options = list(scrollX = TRUE, scrollY = FALSE, autoWidth = TRUE, columnDefs = list(list(width="100px")))
     )
     
     ######################## observe map ###################################

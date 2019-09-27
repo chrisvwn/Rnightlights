@@ -134,7 +134,7 @@ alignCenter <- function(el) {
 
                  shinydashboard::menuItem(text = "Options", tabName = "options",
 
-                          shiny::checkboxInput(inputId = "strict", label = "Strict", value = T),
+                          #shiny::checkboxInput(inputId = "strict", label = "Strict", value = T),
                           shiny::radioButtons(inputId = "graphType",
                                        label = "Graph type",
                                        choices = c("line", "boxplot", "histogram", "point"),
@@ -156,7 +156,7 @@ alignCenter <- function(el) {
           shiny::tabPanel(title = "Plot",
                           style = tags$style("overflow-y:auto; height: 76vh; position:relative;"),
                           
-                          shiny::plotOutput(outputId = "plotNightLights"),
+                          shinycssloaders::withSpinner(shiny::plotOutput(outputId = "plotNightLights")),
                           
                           shiny::uiOutput("sliderNlPeriodRange")
           ),
@@ -203,9 +203,14 @@ alignCenter <- function(el) {
                    shiny::textOutput("models")
                    ),
           
-          shiny::tabPanel(title = "data",
+          shiny::tabPanel(title = "Loaded Data",
                   DT::dataTableOutput("dataset")
-                   )
+                   ),
+          
+          shiny::tabPanel(title = "Available Data",
+                          tags$style("height: 80vh; position:relative;"),
+                          DT::dataTableOutput("availableData")
+          )
         )
       )
     )
