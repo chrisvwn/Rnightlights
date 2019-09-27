@@ -56,6 +56,29 @@ validNlStats <- function(nlStats)
   return(matchedFuns)
 }
 
+nlStatParams <- function(nlStatName)
+{
+  fmls <- names(formals(eval(parse(text=nlStatName))))
+  
+  #formals cannot inspect .Primitive functions
+  #so try args
+  if(is.null(fmls))
+  {
+    fmls <- trimws(capture.output(args(nlStatName)))
+    
+    #take out the last bracket which is the last char
+    fmls <- unlist(strsplit(fmls, "function\\s*\\("))[2]
+    fmls <- substr(fmls, 1, nchar(fmls)-1)
+    fmls <- trimws(unlist(strsplit(fmls, ",")))
+    fmls <- unlist(strsplit(fmls, ","))
+    
+    #split by = to separate name from value
+    fmls <- sapply(fmls, function(x)trimws(unlist(strsplit(x, "="))[1]))
+  }
+  
+  fmls
+}
+
 nlStatArgs <- function(nlStat)
 {
   if(length(nlStat) == 0)
@@ -87,23 +110,7 @@ nlStatArgs <- function(nlStat)
   
   paramValues <- sapply(params2, function(x)if(length(x)==1)x[[1]] else x[[2]])
   
-  fmls <- names(formals(eval(parse(text=nlStat[[1]]))))
-  
-  #formals cannot inspect .Primitive functions
-  #so try args
-  if(is.null(fmls))
-  {
-    fmls <- trimws(capture.output(args(nlStat[[1]]))[1])
-    
-    #take out the last bracket which is the last char
-    fmls <- unlist(strsplit(fmls, "function\\s*\\("))[2]
-    fmls <- substr(fmls, 1, nchar(fmls)-1)
-    fmls <- trimws(unlist(strsplit(fmls, ",")))
-    fmls <- unlist(strsplit(fmls, ","))
-    
-    #split by = to separate name from value
-    fmls <- sapply(fmls, function(x)trimws(unlist(strsplit(x, "="))[1]))
-  }
+  fmls <- nlStatParams(nlStat[[1]])
   
   unnamedParams <- paramValues[which(paramLengths==1)]
   
@@ -124,31 +131,92 @@ nlStatArgs <- function(nlStat)
 
   unMatchedNamedParams <- sapply(params2[paramNames!="" & !(paramNames%in%names(matchedNamedParams))], paste, collapse="=")
 
-  if(length(unMatchedNamedParams > 0) && "..." %in% fmls)
+  if(length(unMatchedNamedParams) > 0)
   {
-    unMatchedNamedParams <- setNames(unMatchedNamedParams, rep("...", length(unMatchedNamedParams)))
+    if("..." %in% fmls)
+    {
+      unMatchedNamedParams <- setNames(unMatchedNamedParams, rep("...", length(unMatchedNamedParams)))
+    } else
+    {
+      unMatchedNamedParams <- paste("xUnMatchedx", unMatchedNamedParams, sep = "=", collapse = ",")
+    }
   }
   
   #aim is to get a unique, consistent list of params that we can use
   #to match even if parameters are in a different order
-  matchedParams <- c(if(length(unnamedParams)>0) unnamedParams else NULL,
+  allParams <- c(if(length(unnamedParams)>0) unnamedParams else NULL,
                   if(length(matchedNamedParams)>0) matchedNamedParams else NULL,
                   if(length(unMatchedNamedParams)>0) unMatchedNamedParams else NULL)
   
-  paramIdxs <- unlist(sapply(fmls, function(x) which(names(matchedParams)==x), USE.NAMES = F, simplify = T))
+  dups <- duplicated(allParams)
+  
+  allParams <- allParams[!dups]
+  
+  #get order of args according to formal params
+  paramIdxs <- unlist(sapply(fmls, function(x) which(names(allParams)==x), USE.NAMES = F, simplify = T))
 
-  matchedParams <- matchedParams[paramIdxs]
+  #put the supplied args in order
+  if(length(paramIdxs) > 0)
+  {
+    allParams <- allParams[paramIdxs]
+
+    allParams <- paste(names(allParams), allParams, sep="=", collapse=",")
+  }
   
-  uniqueParams <- paste(names(matchedParams), matchedParams, sep="=", collapse=",")
+  #uniqueParams <- paste(uniqueParams, unMatchedNamedParams, collapse = ",", sep = "")
+    
+  allParams
+}
+
+nlSignatureAddArg <- function(nlStatSigs, addArg)
+{
+  sapply(nlStatSigs, function(nlStatSig)
+  {
+    nlStat <- nlSignatureStat(nlStatSignature = nlStatSig)
+    
+    if(length(nlStat) == 1 && length(unlist(nlStat)) == 1)
+      nlStat <- list(nlStat[[1]], addArg)
+    else if(length(nlStat) == 1 && length(unlist(nlStat) == 2))
+      nlStat <- list(list(nlStat[[1]][[1]], paste(nlStat[[1]][2], addArg, collapse = "", sep=",")))
+    else if(length(nlStat) == 2)
+      nlStat <- list(list(nlStat[[1]], paste(nlStat[[2]], addArg, collapse = "", sep=",")))
+    
+    newNlStatSig <- nlStatSignature(nlStat)
+    
+    if(any(grepl("xUnMatchedx", nlStat)))
+    {
+      message(Sys.time(),": Incompatible argument detected: ", nlStatSig)
+      return(nlStatSig)
+    }
   
-  uniqueParams
+    newNlStatSig
+  })
 }
 
 nlStatSignature <- function(nlStat)
 {
   statArgs <- nlStatArgs(nlStat)
   
-  paste0(nlStat[[1]], "(", statArgs, ")")
+  paste0(nlStat[[1]][[1]], "(", statArgs, ")")
+}
+
+nlSignatureStat <- function(nlStatSignature)
+{
+  nlStatName <- gsub("(^.*)\\(.*", "\\1", nlStatSignature)
+  
+  params <- gsub(nlStatName, "", nlStatSignature)
+  
+  nlStatArgs <- substr(x = params, 2, nchar(params)-1)
+  
+  if(nlStatArgs != "")
+    list(list(nlStatName, gsub("...=", "", nlStatArgs, fixed = T)))
+  else
+    list(nlStatName)
+}
+
+prettyNlSignature <- function(nlStatSig)
+{
+  gsub(pattern = "...=", replacement = "", nlStatSig, fixed = T)
 }
 
 getSavedNlStatFname <- function()
@@ -161,6 +229,7 @@ getSavedNlStatFnamePath <- function()
   file.path(getNlDir("dirNlData"), getSavedNlStatFname())
 }
 
+#' @export
 saveNlStat <- function(nlStat)
 {
   funcName <- nlStat[[1]]
@@ -206,10 +275,11 @@ getSavedNlStat <- function(nlStatName)
   .RnightlightsEnv$savedNlStats[nlStatName]
 }
 
+#' @export
 listSavedNlStats <- function(nlStatNames = NULL, detail = FALSE)
 {
   if(is.null(.RnightlightsEnv$savedNlStats))
-    loadSavedNlStats()
+    readSavedNlStats()
   
   savedNlStats <- names(.RnightlightsEnv$savedNlStats)
   
@@ -227,7 +297,7 @@ savedNlStatsIsLoaded <- function()
   exists(x = "savedNlStats", envir = .RnightlightsEnv)
 }
 
-loadSavedNlStats <- function()
+readSavedNlStats <- function()
 {
   nlStatPath <- getSavedNlStatFnamePath()
   
@@ -244,13 +314,20 @@ loadSavedNlStats <- function()
   return(TRUE)
 }
 
-loadSavedNlStatsGlobalEnv <- function(statSig, newStatName = NULL, overwrite = FALSE)
+#' @export
+nlSignatureStatName <- function(statSig)
+{
+  gsub("(^.*)\\(.*", "\\1", statSig)
+}
+
+#' @export
+loadSavedNlStat <- function(statSig, newStatName = NULL, envir = .GlobalEnv, overwrite = FALSE)
 {
   if(savedNlStatsIsLoaded() && is.null(.RnightlightsEnv$savedNlStats))
     return(FALSE)
   
   if(is.null(newStatName))
-    newStatName <- gsub("(^.*)\\(.*", "\\1", statSig)
+    newStatName <- nlSignatureStatName(statSig)
   
   statSigs <- names(.RnightlightsEnv$savedNlStats)
   
@@ -263,7 +340,7 @@ loadSavedNlStatsGlobalEnv <- function(statSig, newStatName = NULL, overwrite = F
     return(FALSE)
   }
   
-  if(exists(newStatName, envir = .GlobalEnv) && !overwrite)
+  if(exists(newStatName, envir = envir) && !overwrite)
   {
     message(Sys.time(), ": ",
             newStatName,
@@ -279,6 +356,7 @@ loadSavedNlStatsGlobalEnv <- function(statSig, newStatName = NULL, overwrite = F
   return(TRUE)
 }
 
+#' @export
 searchSavedNlStatName <- function(nlStatName)
 {
   if(savedNlStatsIsLoaded() && is.null(.RnightlightsEnv$savedNlStats))
@@ -296,7 +374,7 @@ searchSavedNlStatName <- function(nlStatName)
   return(statSigs[matchIdxs])
 }
 
-
+#' @export
 existsSavedNlStatName <- function(nlStatName)
 {
   if(savedNlStatsIsLoaded() && is.null(.RnightlightsEnv$savedNlStats))
@@ -331,6 +409,7 @@ existsSavedNlStat <- function(nlStatName, nlStatHash)
   return(existsStatName && existsStatHash)
 }
 
+#' @export
 deleteSavedNlStat <- function(nlStatName)
 {
   if(!existsSavedNlStat(nlStatName))

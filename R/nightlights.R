@@ -243,7 +243,7 @@ processNLCountry <- function(ctryCode,
     else
     {
       nlStats <- nlStats[!existStats]
-      message(Sys.time(), ": Processing stats: ", paste0(nlStats, collapse = ","))
+      message(Sys.time(), ": Processing stats: ", nlStatSignature(nlStats))
     }
     
     message(Sys.time(), ": Load country data file")

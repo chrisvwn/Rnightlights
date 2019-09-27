@@ -40,7 +40,7 @@ Maps distributed by GADM
   upgradeRnightlights()
   
   #load saved stats into memory
-  loadSavedNlStats()
+  readSavedNlStats()
 }
 
 .onUnload <- function(libpath)
