@@ -64,7 +64,7 @@ nlStatParams <- function(nlStatName)
   #so try args
   if(is.null(fmls))
   {
-    fmls <- trimws(capture.output(args(nlStatName)))
+    fmls <- trimws(utils::capture.output(args(nlStatName)))
     
     #take out the last bracket which is the last char
     fmls <- unlist(strsplit(fmls, "function\\s*\\("))[2]
@@ -116,18 +116,18 @@ nlStatArgs <- function(nlStat)
   
   #unnamedParamsPos <- sapply(unnamedParams, function(x) which(params1 == params2[x]))
   
-  unnamedParams <- setNames(unnamedParams, fmls[which(paramNames=="")])
+  unnamedParams <- stats::setNames(unnamedParams, fmls[which(paramNames=="")])
   
   namedParams <- which(paramLengths==2)
   
-  namedParams <- setNames(paramValues[namedParams],paramNames[namedParams]) 
+  namedParams <- stats::setNames(paramValues[namedParams],paramNames[namedParams]) 
   
   #match the first part (param) with the formal args
   #number is position, NA is not direct match so possibly ... but
   #if no ... found then keep in position
   matchFmls <- fmls[match(paramNames, fmls)]
   
-  matchedNamedParams <- setNames(paramValues[which(!is.na(matchFmls))], paramNames[which(!is.na(matchFmls))])
+  matchedNamedParams <- stats::setNames(paramValues[which(!is.na(matchFmls))], paramNames[which(!is.na(matchFmls))])
 
   unMatchedNamedParams <- sapply(params2[paramNames!="" & !(paramNames%in%names(matchedNamedParams))], paste, collapse="=")
 
@@ -135,7 +135,7 @@ nlStatArgs <- function(nlStat)
   {
     if("..." %in% fmls)
     {
-      unMatchedNamedParams <- setNames(unMatchedNamedParams, rep("...", length(unMatchedNamedParams)))
+      unMatchedNamedParams <- stats::setNames(unMatchedNamedParams, rep("...", length(unMatchedNamedParams)))
     } else
     {
       unMatchedNamedParams <- paste("xUnMatchedx", unMatchedNamedParams, sep = "=", collapse = ",")
@@ -221,7 +221,7 @@ prettyNlSignature <- function(nlStatSig)
 
 getSavedNlStatFname <- function()
 {
-  "savedNlStats.RDS"
+  "savedNlStats.rda"
 }
 
 getSavedNlStatFnamePath <- function()
@@ -262,10 +262,11 @@ saveNlStat <- function(nlStat)
                                         "nlStatHash" = nlStatHash)),
                                  nlStatName)
   
+  #add fun to the package env
   .RnightlightsEnv$savedNlStats <- append(x = .RnightlightsEnv$savedNlStats, values = nlStatEntry)
   
-  #add fun to the package env and save to rds
-  #saveRDS(object = .RnightlightsEnv$savedNlStats, getSavedNlStatFnamePath())
+  #and save to rda
+  save(savedNlStats, envir = .RnightlightsEnv, file = getSavedNlStatFnamePath())
   
   return(TRUE)
 }
@@ -303,14 +304,13 @@ readSavedNlStats <- function()
   
   savedStatList <- NULL
   
+  #if the file is found
   if(file.exists(nlStatPath))
   {
-    savedStatList <- readRDS(nlStatPath)
+    #read in all saved fns into the package env
+    savedStatList <- load(file = nlStatPath, envir = .RnightlightsEnv)
   }
 
-  #read in all saved fns into the package env
-  assign(x = "savedNlStats", savedStatList, envir = .RnightlightsEnv)
-  
   return(TRUE)
 }
 
@@ -428,7 +428,7 @@ hashNlStatBody <- function(nlStatBody)
 
 hashNlStat <- function(nlStatName)
 {
-  nlStatBody <- capture.output(eval(expr = parse(text = nlStatName)))
+  nlStatBody <- utils::capture.output(eval(expr = parse(text = nlStatName)))
   
   hashNlStatBody(nlStatBody = nlStatBody)
 }
