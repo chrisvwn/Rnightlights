@@ -720,6 +720,8 @@ getCtryNlDataFnamePath <- function(ctryCode=NULL,
 #' 
 #' @param removeGasFlares logical Whether to perform gas flare removal pre-processing
 #' 
+#' @param useSavedStats logical Whether to load saved stats and search them for nlStats
+#' 
 #' @param source "local" or "remote" Whether to download and process the
 #'     data locally or to download the pre-processed data from a remote 
 #'     source/repo
@@ -1406,12 +1408,9 @@ existsCtryNlData <- function(ctryCode=NULL,
                       toupper(nlPeriods),
                       statSigs, sep="_")
   
-  matchHdrs <- unlist(lapply(searchCols, function(x) grep(pattern = x, x = hdrs, fixed = T, value = T)))
-  
-  if(length(matchHdrs) == 0)
-    return(FALSE)
-  
-  return(any(nchar(matchHdrs) %in% nchar(searchCols)))
+  matchHdrs <- sapply(searchCols, function(x) any(grepl(pattern = x, x = hdrs, fixed = T)))
+
+  return(all(matchHdrs))
 }
 
 ######################## allExistsCtryNlData ###################################
@@ -1635,7 +1634,10 @@ listCtryNlData <- function(ctryCodes=NULL, admLevels=NULL, nlTypes=NULL, configN
   }
   
   if(is.null(dataList))
-    return(NULL)
+  {
+    dataList <- data.frame("ctryCode"=NA, "admLevel"=NA, "polySrc"=NA, "polyVer"=NA, "polyType"=NA, "dataType"=NA, "nlType"=NA, "configName"=NA, "multiTileMergeStrategy"=NA, "multiTileMergeFun"=NA, "removeGasFlares"=NA, "nlPeriod"=NA, "nlStats"=NA)
+    return(dataList[FALSE,])
+  }
   
   #convert into a dataframe with numbered rownames
   dataList <- data.frame(dataList, row.names = 1:nrow(dataList), stringsAsFactors=F)
