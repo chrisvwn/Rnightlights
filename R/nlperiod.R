@@ -231,6 +231,7 @@ getAllNlPeriods <- function(nlTypes)
   }, simplify = FALSE)
 }
 
+#' @export
 nlPeriodToDate <- function(nlPeriod, nlType)
 {
   nlPeriod <- gsub("-*$", "", paste(substr(nlPeriod, 1,4), substr(nlPeriod, 5,6),substr(nlPeriod, 7,8), sep = "-"))
@@ -253,6 +254,7 @@ nlPeriodToDate <- function(nlPeriod, nlType)
   dt
 }
 
+#' @export
 dateToNlPeriod <- function(dt, nlType)
 {
   dt <- as.character(dt)
