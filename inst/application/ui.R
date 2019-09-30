@@ -1,25 +1,4 @@
-
-# This is the user-interface definition of a Shiny web application.
-# You can find out more about building applications with Shiny here:
-#
-# http://shiny.rstudio.com
-#
-
-# if (!require("pacman")) install.packages('pacman', repos='http://cran.r-project.org')
-# 
-# pacman::p_load(shiny, shinydashboard, plotly)
-# 
-# pacman::p_load_gh("rstudio/leaflet", "cloudyr/aws.s3") #get the github version of leaflet
-# 
-# suppressMessages(library(shiny))
-# 
-# suppressMessages(library(shinydashboard))
-# 
-# suppressMessages(library(leaflet))
-# 
-
 suppressMessages(library(plotly)) #some functions don't work unless library is imported
-
 
 missingPkgs <- NULL
  
@@ -76,141 +55,142 @@ alignCenter <- function(el) {
   )
 }
 
-  shinydashboard::dashboardPage(
+shinydashboard::dashboardPage(
 
-    # Application title
-    shinydashboard::dashboardHeader(title="Nightlights"),
-  
-    # Sidebar with a slider input for number of bins
-    shinydashboard::dashboardSidebar(
-      shinydashboard::sidebarMenu(style = "overflow-y:auto; height: 92vh; position:relative;",
+  # Application title
+  shinydashboard::dashboardHeader(title="Nightlights"),
 
-        shiny::uiOutput(outputId = "textDate"),
-        
-        shiny::uiOutput(outputId = "countries"),
-        
-        shiny::uiOutput(outputId = "btnGo"),
-                                  
-        shinydashboard::menuItem("Inputs", selected = TRUE, startExpanded = TRUE, tabName = "inputs",
+  # Sidebar with a slider input for number of bins
+  shinydashboard::dashboardSidebar(
+    shinydashboard::sidebarMenu(style = "overflow-y:auto; height: 92vh; position:relative;",
 
-                 shiny::uiOutput(outputId = "selectAdmLevel"),
-                 
-                 shiny::uiOutput("radioAdmLevel")
-                 ),
+      shiny::uiOutput(outputId = "textDate"),
+      
+      shiny::uiOutput(outputId = "countries"),
+      
+      shiny::uiOutput(outputId = "btnGo"),
+                                
+      shinydashboard::menuItem("Inputs", selected = TRUE, startExpanded = TRUE, tabName = "inputs",
 
-        shinydashboard::menuItem("Stats", selected = FALSE, startExpanded = TRUE, tabName = "stats",
-                                 shiny::uiOutput(outputId = "nlType"),
-                                 
-                                 shiny::uiOutput(outputId = "ctryStats"),
-                                 
-                                 shiny::checkboxInput(inputId = "optionNaRm",
-                                                      label = "na.rm",
-                                                      value = TRUE
-                                 ),
+               shiny::uiOutput(outputId = "selectAdmLevel"),
+               
+               shiny::uiOutput("radioAdmLevel")
+               ),
 
-                                 shiny::uiOutput(outputId = "newStat"),
-                                 
-                                 shiny::uiOutput(outputId = "btnNewStat"),
-                                 
-                                 shiny::uiOutput(outputId = "polySrc"),
-                                 
-                                 shiny::uiOutput(outputId = "polyVer"),
-                                 
-                                 shiny::uiOutput(outputId = "polyType"),
-                                 
-                                 shiny::uiOutput(outputId = "configName"),
-                                 
-                                 shiny::uiOutput(outputId = "multiTileMergeStrategy"),
-                                 
-                                 shiny::uiOutput(outputId = "multiTileMergeFun"),
-                                 
-                                 shiny::uiOutput(outputId = "removeGasFlares"),
-                                 
-                                 shiny::checkboxInput(inputId = "norm_area",
-                                                           label = "norm_area",
-                                                           value = FALSE
-                                 )
-        ),
+      shinydashboard::menuItem("Stats", selected = FALSE, startExpanded = TRUE, tabName = "stats",
+                               shiny::uiOutput(outputId = "nlType"),
+                               
+                               shiny::uiOutput(outputId = "ctryStats"),
+                               
+                               shiny::checkboxInput(inputId = "optionNaRm",
+                                                    label = "na.rm",
+                                                    value = TRUE
+                               ),
 
-                 shinydashboard::menuItem(text = "Options", tabName = "options",
-
-                          #shiny::checkboxInput(inputId = "strict", label = "Strict", value = T),
-                          shiny::radioButtons(inputId = "graphType",
-                                       label = "Graph type",
-                                       choices = c("line", "boxplot", "histogram", "point"),
-                                       selected = "line",
-                                       inline = T
-                          ),
-                          
-                          shiny::checkboxGroupInput(inputId = "scale",
-                                        label = "Scale",
-                                        choices = c("scale_x_log", "scale_y_log")
-                          )
-                )
-        )
+                               shiny::uiOutput(outputId = "newStat"),
+                               
+                               shiny::uiOutput(outputId = "btnNewStat"),
+                               
+                               shiny::uiOutput(outputId = "polySrc"),
+                               
+                               shiny::uiOutput(outputId = "polyVer"),
+                               
+                               shiny::uiOutput(outputId = "polyType"),
+                               
+                               shiny::uiOutput(outputId = "configName"),
+                               
+                               shiny::uiOutput(outputId = "multiTileMergeStrategy"),
+                               
+                               shiny::uiOutput(outputId = "multiTileMergeFun"),
+                               
+                               shiny::uiOutput(outputId = "removeGasFlares"),
+                               
+                               shiny::checkboxInput(inputId = "norm_area",
+                                                         label = "norm_area",
+                                                         value = FALSE
+                               )
       ),
 
-      # body
-      shinydashboard::dashboardBody(
-        shinydashboard::tabBox(width = 12,
-          shiny::tabPanel(title = "Plot",
-                          style = tags$style("overflow-y:auto; height: 76vh; position:relative;"),
-                          
-                          shinycssloaders::withSpinner(shiny::plotOutput(outputId = "plotNightLights")),
-                          
-                          shiny::uiOutput("sliderNlPeriodRange")
-          ),
+               shinydashboard::menuItem(text = "Options", tabName = "options",
 
-          shiny::tabPanel(title = "Map",
-                          tags$style("overflow-y:auto; height: 80vh; position:relative;"),
-                          
-                          shinycssloaders::withSpinner(leaflet::leafletOutput("map")),
-                          
-                          shiny::uiOutput("sliderNlPeriod")
-          ),
+                        #shiny::checkboxInput(inputId = "strict", label = "Strict", value = T),
+                        shiny::radioButtons(inputId = "graphType",
+                                     label = "Graph type",
+                                     choices = c("line", "boxplot", "histogram", "point"),
+                                     selected = "line",
+                                     inline = T
+                        ),
+                        
+                        shiny::checkboxGroupInput(inputId = "scale",
+                                      label = "Scale",
+                                      choices = c("scale_x_log", "scale_y_log")
+                        )
+              )
+      )
+    ),
 
-          shiny::tabPanel(title = "Stats",
-                   shiny::fluidRow(
-                     shinydashboard::box(title = "Annual Trends", 
-                         shiny::plotOutput("plotYearly")),
+    # body
+    shinydashboard::dashboardBody(height="80vh",
+      shiny::tabsetPanel(id = "tabs",
+        shiny::tabPanel(title = "Plot",
+                        style = tags$style("overflow-y:auto; height: 76vh; position:relative;"),
+                        
+                        shinycssloaders::withSpinner(shiny::plotOutput(outputId = "plotNightLights", height = "82vh")),
+                        
+                        shiny::uiOutput(outputId = "sliderNlPeriodRange")
+        ),
+
+        shiny::tabPanel(title = "Map",
+                        style = tags$style("overflow-y:auto; height: 80vh; position:relative;"),
+                        
+                        shinycssloaders::withSpinner(leaflet::leafletOutput(outputId = "map", height = "82vh")),
+                        
+                        shiny::absolutePanel(draggable = T, top = "65vh", left = "7%",
+                                             shiny::uiOutput(outputId = "sliderNlPeriod"))
+        ),
+
+        shiny::tabPanel(title = "Stats",
+                 shiny::fluidRow(
+                   shinydashboard::box(title = "Annual Trends", 
+                       shiny::plotOutput(outputId = "plotYearly")),
+                   
+                   shinydashboard::tabBox(
+                     shiny::tabPanel(title = "Cluster Points",
+                                     shinycssloaders::withSpinner(plotly::plotlyOutput(outputId = "plotPointsCluster"))
+                              ),
                      
-                     shinydashboard::tabBox(
-                       shiny::tabPanel(title = "Cluster Points",
-                                       shinycssloaders::withSpinner(plotly::plotlyOutput("plotPointsCluster"))
-                                ),
-                       
-                       shiny::tabPanel(title = "Cluster Hierarchy",
-                                       shinycssloaders::withSpinner(shiny::plotOutput("plotHCluster"))
-                                ),
-                       shiny::tabPanel(title = "Cluster Map",
-                                       shinycssloaders::withSpinner(leaflet::leafletOutput("mapHCluster"))
-                       ),
-                       shiny::sliderInput("kClusters", "Num Clusters", min=1, max=10, value=2)
-                     )
-                   ),
-                  
-                  shiny::fluidRow(
-                    shinydashboard::tabBox(
-                      shiny::tabPanel(title = "Time Series",
-                                      shinycssloaders::withSpinner(shiny::plotOutput("plotTSDecomposed"))
-                      
-                      )
+                     shiny::tabPanel(title = "Cluster Hierarchy",
+                                     shinycssloaders::withSpinner(shiny::plotOutput(outputId = "plotHCluster"))
+                              ),
+                     shiny::tabPanel(title = "Cluster Map",
+                                     shinycssloaders::withSpinner(leaflet::leafletOutput(outputId = "mapHCluster"))
+                     ),
+                     shiny::sliderInput("kClusters", "Num Clusters", min=1, max=10, value=2)
+                   )
+                 ),
+                
+                shiny::fluidRow(
+                  shinydashboard::tabBox(
+                    shiny::tabPanel(title = "Time Series",
+                                    shinycssloaders::withSpinner(shiny::plotOutput(outputId = "plotTSDecomposed"))
+                    
                     )
                   )
-                ),
-          
-          shiny::tabPanel(title = "Models",
-                   shiny::textOutput("models")
-                   ),
-          
-          shiny::tabPanel(title = "Loaded Data",
-                  DT::dataTableOutput("dataset")
-                   ),
-          
-          shiny::tabPanel(title = "Available Data",
-                          tags$style("height: 80vh; position:relative;"),
-                          DT::dataTableOutput("availableData")
-          )
+                )
+              ),
+        
+        shiny::tabPanel(title = "Models",
+                 shiny::textOutput(outputId = "models")
+                 ),
+        
+        shiny::tabPanel(title = "Loaded Data",
+                DT::dataTableOutput(outputId = "dataset")
+                 ),
+        
+        shiny::tabPanel(title = "Available Data",
+                        tags$style("height: 80vh; position:relative;"),
+                        DT::dataTableOutput(outputId = "availableData")
         )
       )
     )
+  )
