@@ -135,7 +135,7 @@ shinydashboard::dashboardPage(
         shiny::tabPanel(title = "Plot",
                         style = tags$style("overflow-y:auto; height: 76vh; position:relative;"),
                         
-                        shinycssloaders::withSpinner(shiny::plotOutput(outputId = "plotNightLights", height = "82vh")),
+                        shinycssloaders::withSpinner(plotly::plotlyOutput(outputId = "plotNightLights", height = "82vh")),
                         
                         shiny::uiOutput(outputId = "sliderNlPeriodRange")
         ),

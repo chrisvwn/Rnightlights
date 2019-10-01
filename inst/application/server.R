@@ -2269,7 +2269,7 @@ shiny::shinyServer(function(input, output, session){
                                  y=value, col=clusters
                                  )) +
           geom_point(size=2) +
-          theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) + 
+          theme(axis.text.x=element_text(angle=0,hjust=1,vjust=0.5)) + 
           ggplot2::scale_colour_manual(values=cbPalette) +
           xlab(admLevel) +
           ylab("Radiance")
@@ -2676,9 +2676,9 @@ shiny::shinyServer(function(input, output, session){
           g <- g + ggplot2::scale_x_log10()
         
         if (normArea)
-          g <- g + ggplot2::labs(title="Radiance", x = "Time", y = "Avg Rad (W.Sr^-1.cm^-2/Km2)") #y=expression(paste("Avg Rad W" %.% "Sr" ^{-1} %.% "cm" ^{-2}, "per Km" ^{2})))
+          g <- g + ggplot2::labs(title="Radiance", x = "Time", y = "Rad (W.Sr^⁻¹.cm^⁻²/Km²)") #y=expression(paste("Avg Rad W" %.% "Sr" ^{-1} %.% "cm" ^{-2}, "per Km" ^{2})))
         else
-          g <- g + ggplot2::labs(title="Radiance", x = "Time", y = "Total Rad (W.Sr^-1.cm^-2)") #y=expression(~Total~Rad~W %.% Sr^{-1}%.%cm^{-2}))
+          g <- g + ggplot2::labs(title="Radiance", x = "Time", y = "Rad (W.Sr^⁻¹.cm^⁻²") #y=expression(~Total~Rad~W %.% Sr^{-1}%.%cm^{-2}))
           
           #plotly::ggplotly(g)
           g
@@ -2687,7 +2687,7 @@ shiny::shinyServer(function(input, output, session){
     
     ######################## plotNightLights ###################################
     
-    output$plotNightLights <- shiny::renderPlot({
+    output$plotNightLights <- plotly::renderPlotly({
       print(paste0("output: renderPlot"))
       input$btnGo
       
@@ -2778,10 +2778,10 @@ shiny::shinyServer(function(input, output, session){
           ggplot2::ylim(0, 100) +
           ggplot2::labs(title="Nightlight Radiance",
                         x = xLabel,
-                        y = bquote(paste("Radiance (W" %.% "Sr" ^{-1} %.% "cm" ^{-2}, ")"))
+                        y = "Radiance (W.Sr^⁻¹.cm^⁻²)" #bquote(paste("Radiance (W" %.% "Sr" ^{-1} %.% "cm" ^{-2}, ")"))
           )
           
-          return(g)
+          return(plotly::ggplotly(g))
         }
 
         ctryData <- subset(ctryData, variable >= nlPeriodRange[1] & variable <= nlPeriodRange[2])
@@ -2816,11 +2816,11 @@ shiny::shinyServer(function(input, output, session){
           if (length(countries)==1)
           {
             g <- ggplot2::ggplot(data=ctryData, ggplot2::aes(x=ctryData[[admLevel]], y=value, col=ctryData[[admLevel]])) +
-              ggplot2::theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) + ggplot2::labs(col=admLevel) + facet_grid(lubridate::year(variable) ~ lubridate::month(x=variable, label=T, abbr=T))
+              ggplot2::theme(axis.text.x=element_text(angle=0,hjust=1,vjust=0.5)) + ggplot2::labs(col=admLevel) + facet_grid(lubridate::year(variable) ~ lubridate::month(x=variable, label=T, abbr=T))
           }
           else
           {
-            g <- ggplot2::ggplot(data=ctryData, ggplot2::aes(x=country, y=value, col=country)) + ggplot2::theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5),panel.spacing.x=unit(0.1, "lines")) + ggplot2::labs(col=admLevel) + facet_grid(lubridate::year(variable) ~ lubridate::month(x=variable, label=T, abbr=T))
+            g <- ggplot2::ggplot(data=ctryData, ggplot2::aes(x=country, y=value, col=country)) + ggplot2::theme(axis.text.x=element_text(angle=0,hjust=1,vjust=0.5),panel.spacing.x=unit(0.1, "lines")) + ggplot2::labs(col=admLevel) + facet_grid(lubridate::year(variable) ~ lubridate::month(x=variable, label=T, abbr=T))
           }
           
           #ggplot2::ggplot(data = ctryData, ggplot2::aes(x = factor(variable), y = value, col = country)) + ggplot2::theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) + ggplot2::labs(col = admLevel) + geom_boxplot() + facet_grid(country ~ .)
@@ -2856,7 +2856,7 @@ shiny::shinyServer(function(input, output, session){
           }
   
           g <- g+ ggplot2::geom_line() + ggplot2::geom_point()+
-            ggplot2::theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) +
+            ggplot2::theme(axis.text.x=element_text(angle=0,hjust=1,vjust=0.5)) +
             ggplot2::labs(col=admLevel)
         }
         else if (graphType == "histogram")
@@ -2890,7 +2890,7 @@ shiny::shinyServer(function(input, output, session){
         if (normArea)
           g <- g + ggplot2::labs(title=plotTitle,
                                  x = xLabel,
-                                 y = bquote(paste("Avg Rad W" %.% "Sr" ^{-1} %.% "cm" ^{-2}, " / Km" ^{2})), #"Avg Rad (W.Sr^-1.cm^-2/Km2)",
+                                 y = "Avg Rad (W.Sr^⁻¹.cm^⁻²/Km²)", #bquote(paste("Avg Rad W" %.% "Sr" ^{-1} %.% "cm" ^{-2}, " / Km" ^{2}))
                                  caption = ifelse(grepl(pattern = "na.rm", x = ctryStat),
                                                   paste0(ctryStat, " NAs removed"),
                                                   paste0(ctryStat, " NAs not removed"))
@@ -2898,12 +2898,12 @@ shiny::shinyServer(function(input, output, session){
         else
           g <- g + ggplot2::labs(title=plotTitle,
                                  x = xLabel,
-                                 y = bquote(~Total~Rad~W %.% Sr^{-1}%.%cm^{-2})) #"Total Rad (W.Sr^-1.cm^-2)") #y=expression(~Total~Rad~W %.% Sr^{-1}%.%cm^{-2}))
+                                 y = "Total Rad (W.Sr^⁻¹.cm^⁻²)") #bquote(~Total~Rad~W %.% Sr^{-1}%.%cm^{-2})) #y=expression(~Total~Rad~W %.% Sr^{-1}%.%cm^{-2}))
         
-        g
-          # p <- plotly::ggplotly(g)
-          # p$elementId <- NULL
-          # p
+        #g
+          p <- plotly::ggplotly(g)
+          p$elementId <- NULL
+          p
       })
     })
     
