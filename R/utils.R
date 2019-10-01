@@ -299,7 +299,7 @@ writeNightlightsMap <- function()
     WEB
       METADATA
         \"wms_title\" \"Nightlight Rasters\"
-        \"wms_onlineresource\" \"http://localhost/cgi-bin/mapserv?map=test.map\"
+        \"wms_onlineresource\" \"http://localhost/cgi-bin/mapserv?map=<SHAPE_PATH>nightlights.map\"
         \"wms_description\" \"nightlights\"
         \"wms_name\" \"Nightlights\"
         \"wms_label\" \"Nightlights\"
@@ -473,9 +473,30 @@ writeNightlightsMap <- function()
 
   tplHead <- stringr::str_replace_all(tplHead,  "<SHAPE_PATH>", getNlDir("dirRasterOutput"))
   
+  tplHead <- stringr::str_replace_all(tplHead,  "<SHAPE_PATH>", getNlDir("dirRasterOutput"))
+  
   tplMap <- tplHead
 
   #gdaltindex NL_CTRYCODE_VIIRS.M_NLPERIOD_VCMCFG-MTSALL-MEAN-RGFT_GADM-3.6-SHPZIP.shp NL_*_VIIRS.M_*_VCMCFG-MTSALL-MEAN-RGFT_GADM-3.6-SHPZIP.tif
+  gdalUtils::gdaltindex(index_file = file.path(path.expand(Rnightlights::getNlDir("dirRasterOutput")),
+                                               "NL_CTRYCODE_VIIRS.M_NLPERIOD_VCMCFG-MTSALL-MEAN-RGFT_GADM-3.6-SHPZIP_tindex.shp"),
+                        gdal_file = list.files(path = file.path(path.expand(Rnightlights::getNlDir("dirRasterOutput"))),
+                                               pattern = "^NL_.*_VIIRS.M_.*_VCMCFG-MTSALL-MEAN-RGFT_GADM-3.6-SHPZIP.tif$",
+                                               full.names = T),
+                        write_absolute_path = T)
+  
+  polyTindex <- rgdal::readOGR(dsn = file.path(path.expand(Rnightlights::getNlDir("dirRasterOutput")),
+                                               "NL_CTRYCODE_VIIRS.M_NLPERIOD_VCMCFG-MTSALL-MEAN-RGFT_GADM-3.6-SHPZIP_tindex.shp"),
+                               layer = "NL_CTRYCODE_VIIRS.M_NLPERIOD_VCMCFG-MTSALL-MEAN-RGFT_GADM-3.6-SHPZIP_tindex")
+  
+  polyTindex@data$nlPeriod <- gsub(".*_(\\d{4,8})_.*", "\\1", polyTindex@data$location)
+  
+  rgdal::writeOGR(obj = polyTindex,
+                  dsn = file.path(path.expand(Rnightlights::getNlDir("dirRasterOutput")), "NL_CTRYCODE_VIIRS.M_NLPERIOD_VCMCFG-MTSALL-MEAN-RGFT_GADM-3.6-SHPZIP_tindex.shp"),
+                  layer = "NL_CTRYCODE_VIIRS.M_NLPERIOD_VCMCFG-MTSALL-MEAN-RGFT_GADM-3.6-SHPZIP_tindex",
+                  driver = "ESRI Shapefile",
+                  overwrite_layer = TRUE)
+            
   lyrName <- gsub("NL_[A-Z]{3}_", "NL_CTRYCODE_", tools::file_path_sans_ext(basename(fList[1])))
   lyrName <- gsub("_\\d{4,6}_", "_NLPERIOD_", lyrName)
 
@@ -516,7 +537,7 @@ writeNightlightsMap <- function()
                    "\n    END #END LAYER",
                    "\n  END #END MAP")
   
-  readr::write_file(tplMap, "test.map")
+  readr::write_file(tplMap, file.path(path.expand(Rnightlights::getNlDir("dirRasterOutput")), "nightlights.map"))
 }
 
 ######################## myquantile ###################################
