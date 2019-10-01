@@ -1532,18 +1532,18 @@ shiny::shinyServer(function(input, output, session){
     shiny::observe({
       print(paste0("observe: selectAdms"))
 
-      countries <- shiny::isolate(input$countries)
+      countries <- input$countries
       
       if(length(countries) == 0)
         return()
       
       #strict <- shiny::isolate(input$strict)
       
-      polySrc <- shiny::isolate(input$polySrc)
+      polySrc <- input$polySrc
       
-      polyVer <- shiny::isolate(input$polyVer)
+      polyVer <- input$polyVer
       
-      polyType <- shiny::isolate(input$polyType)
+      polyType <- input$polyType
       
       custPolyPath <- if(!is.null(polySrc) && polySrc == "CUST") polyVer else NULL
       
@@ -1630,11 +1630,11 @@ shiny::shinyServer(function(input, output, session){
       #print(paste0("lastupdated:", values$lastUpdated))
       
       #print(paste0("x:", x))
-      #print(paste0("lvlnum:", lvlNum))
+      print(paste0("lvlnum:", lvlNum))
       
       #set admLevel to match the selectizeInput level
       #if (length(input[[paste0("selectAdm", lvlNum)]]) > 0)
-      updateRadioButtons(session = session, inputId = "admLevel", selected = ctryAdmLevels[as.numeric(lowestSelected)])
+      updateRadioButtons(session = session, inputId = "radioAdmLevel", selected = ctryAdmLevels[as.numeric(lowestSelected)])
       
       multipleSelected <- FALSE
       
@@ -1835,7 +1835,7 @@ shiny::shinyServer(function(input, output, session){
     output$sliderNlPeriodRange <- shiny::renderUI({
       print(paste0("output: sliderNlPeriodRange"))
       
-      ctryData <- ctryNlDataMelted()
+      #ctryData <- ctryNlDataMelted()
       
       nlType <- input$nlType
       
@@ -1849,7 +1849,7 @@ shiny::shinyServer(function(input, output, session){
         {
           startDate <- nlPeriodRange[1]
           endDate <- nlPeriodRange[2]
-        } else if (is.null(ctryData))
+        } else #if (is.null(ctryData))
         {
           if(!is.null(nlType))
             nlP <- input$nlPeriodRange
@@ -1916,16 +1916,17 @@ shiny::shinyServer(function(input, output, session){
           #             step = 31,
           #             value = c(as.Date("2012-04-01","%Y-%m-%d"),as.Date("2017-10-31","%Y-%m-%d"))
           # )
-        } else
-        {
-          if(!is.null(nlPeriodRange))
-            nlPeriodRange <- NULL
-          
-          startDate <- min(ctryData$variable)
-          endDate <- max(ctryData$variable)
-          #minDate <- startDate
-          #maxDate <- endDate
         }
+        # else
+        # {
+        #   if(!is.null(nlPeriodRange))
+        #     nlPeriodRange <- NULL
+        #   
+        #   #startDate <- min(ctryData$variable)
+        #   #endDate <- max(ctryData$variable)
+        #   #minDate <- startDate
+        #   #maxDate <- endDate
+        # }
           
         if(stringr::str_detect(nlType, "D"))
         {
@@ -1999,16 +2000,16 @@ shiny::shinyServer(function(input, output, session){
     output$sliderNlPeriod <- shiny::renderUI({
       print(paste0("output: sliderNlPeriod"))
       
-      ctryData <- ctryNlDataMelted()
+      #ctryData <- ctryNlDataMelted()
       
-      shiny::isolate({
+      #shiny::isolate({
         nlType <- input$nlType
         nlPeriod <- input$nlPeriod
         
         if(!is.null(values$lastUpdated) && values$lastUpdated == "nlPeriod")
         {
           value <- nlPeriod
-        } else if (is.null(ctryData))
+        } else #if (is.null(ctryData))
         {
           if(!is.null(nlType))
             nlP <- input$nlPeriod
@@ -2057,11 +2058,11 @@ shiny::shinyServer(function(input, output, session){
           tmFmt <- "%Y-%m-%d"
           
           value <- as.Date(as.character(value), tmFmt)
-        }
-        else
-        {
-          value <- min(ctryData$variable)
-        }
+        } 
+        # else
+        # {
+        #   #value <- min(ctryData$variable)
+        # }
         
         if(stringr::str_detect(nlType, "D"))
         {
@@ -2113,7 +2114,7 @@ shiny::shinyServer(function(input, output, session){
                            value = value,
                            animate = animationOptions(interval = 1000, loop = FALSE, playButton = "Play", pauseButton = NULL)
         )
-      })
+      #})
     })
     
     ######################## textDate ###################################
@@ -2976,73 +2977,16 @@ shiny::shinyServer(function(input, output, session){
     )
     
     ######################## observe map ###################################
-#     observe({
-#       if(!exists("nlPeriod"))
-#         return()
-#       
-#       nlYm <- substr(gsub("-", "", nlPeriod[1]), 1, 6)
-#       ctryPeriod <- paste0(countries, "_", nlYm)
-#       
-#       leafletProxy("map") %>%
-#         clearTiles("nlRaster") %>%
-#         addWMSTiles(baseUrl = "http://localhost/cgi-bin/mapserv?map=test.map", layers = ctryPeriod, options = WMSTileOptions(format = "image/png", transparent = TRUE, opacity=0.5), layerId="nlRaster")
-#     })
     
-#     observeEvent(input$radioAdmLevel, {
-#       print(paste0("here: observe admLevel 2 update map"))
-#       admLevel <- input$radioAdmLevel
-#       countries <- input$countries
-#       
-#       if (input$drawMap == 0)
-#         return()
-#       
-#       lyrs <- unlist(ctryAdmLevels())
-#       
-#       lyrNum <- which(lyrs == admLevel) - 1
-#       
-#       ctryPoly <- Rnightlights::readCtryPolyAdmLayer(countries, ifelse(is.null(admLevel),  yes = Rnightlights::getCtryShpLyrNames(countries,0), no = Rnightlights::getCtryShpLyrName(countries,lyrNum)))
-#       s
-#       proxy <- leafletProxy("map", data=ctryPoly)
-#       
-#       print("drawing leaflet proxy")
-#       proxy %>% 
-#         clearShapes() %>% 
-#         addPolygons(fill = FALSE, stroke = TRUE, weight=3, smoothFactor = 0.7, opacity = 0.5, color="green")
-#     })
-    
-    ######################## map ###################################
-
-    output$map <- leaflet::renderLeaflet({
-      print(paste0("output: map"))
-      # Use leaflet() here, and only include aspects of the map that
-      # won't need to change dynamically (at least, not unless the
-      # entire map is being torn down and recreated).
+    observe({
+      #input$btnGo
       
-      input$btnGo
-
-      countries <- shiny::isolate(getInputCountries())
+      countries <- getInputCountries()
       
-      if(is.null(getInputCountries()) || is.null(input$nlPeriod) || is.null(input$nlType))
-      {
-        map <- leaflet::leaflet() %>%
-          leaflet::addTiles("http://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png") %>%
-          
-          leaflet::addWMSTiles(layerId = "nlRaster",
-                               baseUrl = paste0("http://localhost/cgi-bin/mapserv?map=",
-                                                file.path(path.expand(Rnightlights::getNlDir("dirRasterOutput")),
-                                                          "nightlights.map")),
-                               layers = "NL_CTRYCODE_VIIRS.M_NLPERIOD_VCMCFG-MTSALL-MEAN-RGFT_GADM-3.6-SHPZIP",
-                               group = "ctryRaster",
-                               options = leaflet::WMSTileOptions(format = "image/png",
-                                                                 transparent = TRUE,
-                                                                 opacity = 0.8,
-                                                                 TIME = Rnightlights::dateToNlPeriod(input$nlPeriod, input$nlType)))
-        
-        return(map)
-      }
+      if(is.null(countries) || is.null(input$nlPeriod) || is.null(input$nlType))
+        return()
       
       nlPeriod <- input$nlPeriod
-      admLevel <- shiny::isolate(input$radioAdmLevel)
       scale <- input$scale
       nlType <- shiny::isolate(input$nlType)
       normArea <- input$norm_area
@@ -3056,15 +3000,24 @@ shiny::shinyServer(function(input, output, session){
       if(is.null(polySrc) || is.null(polyVer) || polySrc == "" || polyVer == "")
         return()
       
+      admLevel <- shiny::isolate(input$radioAdmLevel)
+      
+      if(is.null(admLevel))
+        admLevel <- "country"
+      
       #shiny::isolate({
       # if (is.null(countries) || is.null(nlPeriod) || is.null(admLevel))
       #   return()
       
+      mapExtent <- NULL
+      selected <- NULL
+      
+      map <- leaflet::leafletProxy("map") %>%
+        leaflet::clearShapes() %>%
+        leaflet::clearControls()
+      
       if(length(countries) > 1){
         admLevel <- "country"
-
-        map <- leaflet::leaflet() %>%
-          leaflet::addTiles("http://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png")
         
         ctryPoly0 <- Rnightlights::readCtryPolyAdmLayer(ctryCode = countries[1],
                                                         admLevel = unlist(
@@ -3082,8 +3035,10 @@ shiny::shinyServer(function(input, output, session){
         
         ctryPoly0 <- sp::spTransform(ctryPoly0, wgs84)
         
+        mapExtent <- raster::extent(ctryPoly0)
+        
         ctryData <- ctryNlDataMelted()
-
+        
         if(is.null(ctryData))
           return()
         
@@ -3098,7 +3053,7 @@ shiny::shinyServer(function(input, output, session){
         bins <- rev(stats::quantile(lvlCtryData$value, seq(0,1,0.1), na.rm=T))
         brewerPal <- rev(RColorBrewer::brewer.pal(n = 10, name = "YlOrRd"))
         pal <- leaflet::colorBin(palette = brewerPal, domain = lvlCtryData$value, na.color = "grey", bins = bins)
-
+        
         mapLabels <- sprintf(
           paste0("<strong>%s:%s</strong>", "<br/>Area: %s km<superscript>2</superscript>","<br/>Date: %s", ifelse(normArea, paste0("<br/>Rad (", ctryStat, "): %s /sq.km"), paste0("<br/>Rad (", ctryStat, "): %s")), "<br/>Rank: %s/%s"),
           "country", lvlCtryData[["country"]], format(lvlCtryData[["area_sq_km"]],scientific = F,digits = 2), lvlCtryData[["variable"]], format(lvlCtryData[["value"]],scientific = F,digits = 2),  lvlCtryData[[paste0("rankcountry")]], nrow(lvlCtryData)
@@ -3132,235 +3087,131 @@ shiny::shinyServer(function(input, output, session){
             bringToFront = FALSE)
         )
       } else {
-      
-      map <- leaflet::leaflet() %>%
-        
-      leaflet::addTiles("http://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png") %>%
-      
-      leaflet::addWMSTiles(layerId = "nlRaster",
-                           baseUrl = paste0("http://localhost/cgi-bin/mapserv?map=",
-                                            file.path(path.expand(Rnightlights::getNlDir("dirRasterOutput")),
-                                                      "nightlights.map")),
-                           layers = "NL_CTRYCODE_VIIRS.M_NLPERIOD_VCMCFG-MTSALL-MEAN-RGFT_GADM-3.6-SHPZIP",
-                           group = "ctryRaster",
-                           options = leaflet::WMSTileOptions(format = "image/png",
-                                                             transparent = TRUE,
-                                                             opacity = 0.8,
-                                                             TIME = Rnightlights::dateToNlPeriod(nlPeriod, nlType))
-      )
-      
-      for(country in countries)
-      {
-        admLvlCtrlNames <- names(input)
-        
-        x <- admLvlCtrlNames[grep("selectAdm\\d+$", admLvlCtrlNames)]
-        
-        admLvlNums <- NULL
-        for (i in x)
-          if(length(input[[i]])>0)
-            admLvlNums <- c(admLvlNums, i)
-          
-          
-        #print(paste0("x", x))
-        #print(paste0("admlvlnums:", admLvlNums))
-  
-        admLvlNums <- as.numeric(gsub("[^[:digit:]]","",admLvlNums))
-        
-        #print(paste0("admlvlNums:", admLvlNums))
-  
-        #get the selected admLevel and convert to lyrnum
-        ctryAdmLevels <- Rnightlights:::getCtryStructAdmLevelNames(ctryCode = country,
-                                                                   gadmVersion = polyVer,
-                                                                   gadmPolyType = polyType,
-                                                                   custPolyPath = NULL)
-  
-        #ctryAdmLevels <- unlist(ctryAdmLevels[which(countries == country)])
-        if(!is.null(admLevel) || admLevel == "country")
-          lyrNum <- which(ctryAdmLevels == admLevel)
-        else
-          lyrNum <- 0
-        
-        #line weight increases. max=4 min=1
-        deltaLineWt <- (4 - 1) / as.numeric(lyrNum)
-        
-        #line color darkens
+       #if 1 country 
 
-        if(stringr::str_detect(nlType, "OLS"))
-          nlYm <- nlPeriod
-        else if (stringr::str_detect(nlType, "VIIRS"))
-          nlYm <- as.Date(nlPeriod, "%Y%m%d")
-  
-        ctryData <- ctryNlDataMelted()
-        
-        if (is.null(ctryData))
-          return()
-        
-        #get our data ready to match with polygons
-        #subset data based on level selections
-        if(stringr::str_detect(nlType, "OLS"))
-          ctryData <- subset(ctryData, variable == nlYm)
-        else if(stringr::str_detect(nlType, "VIIRS"))
-          ctryData <- subset(ctryData, lubridate::year(variable) == lubridate::year(nlYm) & lubridate::month(variable) == lubridate::month(nlYm))
-  
-        if (normArea)
-          ctryData$value <- ctryData$value/ctryData$area_sq_km
-  
-        #print(paste0("ctrydata nrow:", nrow(ctryData)))
-        
-        #print("drawing leaflet")
-        
-        #ctryPeriod <- paste0(country, "_", nlYm)
-        
-        #message(ctryPeriod)
-        
-        ctryPoly0 <- Rnightlights::readCtryPolyAdmLayer(ctryCode = country, admLevel = unlist(Rnightlights::getCtryShpLyrNames(country,0)))
-  
-        ctryPoly0 <- sp::spTransform(ctryPoly0, wgs84)
-        
-        if(stringr::str_detect(nlType, "OLS"))
-          nlPeriod <- substr(gsub("-","",nlYm),1,4)
-        else if(stringr::str_detect(nlType, "VIIRS"))
-          nlPeriod <- substr(gsub("-","",nlYm),1,6)
-        
-        # ctryRastFilename <- Rnightlights::getCtryRasterOutputFnamePath(ctryCode = country,nlType =  nlType, nlPeriod =  nlPeriod)
-        # 
-        # if(file.exists(ctryRastFilename))
-        # {
-        #   ctryRast <- raster::raster(ctryRastFilename)
-        #   
-        #   #raster::projection(ctryRast) <- wgs84
-        # }
-        # else
-        #   ctryRast <- NULL
-        # 
-        # if(country == countries[1])
-        #   map <- map %>% leaflet::addTiles()
-        #   
-        # if(inherits(ctryRast, "RasterLayer"))
-        # {
-        #   map <- map %>% leaflet::addRasterImage(x = ctryRast,layerId = c("ctryRasterLocal_", country), group = "ctryRaster", project = T)
-        # 
-        #   leaflet::projectRasterForLeaflet(x = ctryRast, method = "bilinear")
-        # }
-                
-        map <- map %>%  leaflet::addPolygons(layerId = country,
-                             fill = FALSE,
-                             fillColor = "#fefe40",
-                             stroke = TRUE,
-                             weight=4,
-                             smoothFactor = 0.7,
-                             opacity = 1,
-                             color="white",
-                             #dashArray = "5",
-                             group = "country",
-                             data=ctryPoly0)
-
-        selected <- NULL
-        
-        lineCol <- rev(hexbin::BTC(lyrNum+1, 200, 250))
-        
-        if(lyrNum > 1) #skip drawing the country level. avoid reverse seq (2:1)
-        for(iterAdmLevel in 2:lyrNum)
+        for(country in countries)
         {
-          #aggregate the data to the current level
-          iterAdmLevelName <- ctryAdmLevels[iterAdmLevel]
-
-          #data already in data.table form
-          lvlCtryData <- stats::setNames(ctryData[,list(mean(value,na.rm=T), sum(area_sq_km, na.rm=T)), by=list(ctryData[[iterAdmLevelName]], ctryData[["variable"]])], c(iterAdmLevelName, "variable", "value", "area_sq_km"))
-
-          #rank the data
-          varname <- paste0('rank',iterAdmLevel)
-          lvlCtryData[[varname]] <- with(lvlCtryData, rank(-value, ties.method = 'first'))
+          admLvlCtrlNames <- names(input)
           
-          #palette deciles for the layer
-          bins <- rev(stats::quantile(lvlCtryData$value, seq(0,1,0.1), na.rm=T))
-          brewerPal <- rev(RColorBrewer::brewer.pal(n = 10, name = "YlOrRd"))
-          pal <- leaflet::colorBin(palette = brewerPal, domain = lvlCtryData$value, na.color = "grey", bins = bins)
+          x <- admLvlCtrlNames[grep("selectAdm\\d+$", admLvlCtrlNames)]
           
-          #turn off previous layer? No point keeping it if it is hidden. Also we want to turn the current layer to transparent so that one can see through to the raster layer on hover
-          ctryPoly <- Rnightlights::readCtryPolyAdmLayer(country, unlist(Rnightlights::getCtryShpLyrNames(country, iterAdmLevel-1)))
+          admLvlNums <- NULL
+          for (i in x)
+            if(length(input[[i]])>0)
+              admLvlNums <- c(admLvlNums, i)
           
-          ctryPoly <- sp::spTransform(ctryPoly, wgs84)
           
-          if (length(admLvlNums) > 0)
-          if((iterAdmLevel) == data.table::last(admLvlNums)) #iterAdmLevel+1 %in% admLvlNums)
-            selected <- which(ctryPoly@data[[paste0("NAME_",iterAdmLevel-1)]] %in% input[[paste0("selectAdm", iterAdmLevel)]])
+          #print(paste0("x", x))
+          #print(paste0("admlvlnums:", admLvlNums))
+          
+          admLvlNums <- as.numeric(gsub("[^[:digit:]]","",admLvlNums))
+          
+          #print(paste0("admlvlNums:", admLvlNums))
+          
+          #get the selected admLevel and convert to lyrnum
+          ctryAdmLevels <- Rnightlights:::getCtryStructAdmLevelNames(ctryCode = country,
+                                                                     gadmVersion = polyVer,
+                                                                     gadmPolyType = polyType,
+                                                                     custPolyPath = NULL)
+          
+          #ctryAdmLevels <- unlist(ctryAdmLevels[which(countries == country)])
+          if(!is.null(admLevel) || admLevel == "country")
+            lyrNum <- which(ctryAdmLevels == admLevel)
           else
-            selected <- c()
+            lyrNum <- 0
+          
+          #line weight increases. max=4 min=1
+          deltaLineWt <- (4 - 1) / as.numeric(lyrNum)
+          
+          #line color darkens
+          
+          if(stringr::str_detect(nlType, "OLS"))
+            nlYm <- nlPeriod
+          else if (stringr::str_detect(nlType, "VIIRS"))
+            nlYm <- as.Date(nlPeriod, "%Y%m%d")
+          
+          ctryData <- ctryNlDataMelted()
+          
+          if (is.null(ctryData))
+            return()
+          
+          #get our data ready to match with polygons
+          #subset data based on level selections
+          if(stringr::str_detect(nlType, "OLS"))
+            ctryData <- subset(ctryData, variable == nlYm)
+          else if(stringr::str_detect(nlType, "VIIRS"))
+            ctryData <- subset(ctryData, lubridate::year(variable) == lubridate::year(nlYm) & lubridate::month(variable) == lubridate::month(nlYm))
+          
+          if (normArea)
+            ctryData$value <- ctryData$value/ctryData$area_sq_km
 
-          mapLabels <- sprintf(
-            paste0("<strong>%s:%s</strong>", "<br/>Area: %s km<superscript>2</superscript>","<br/>Date: %s", ifelse(normArea, paste0("<br/>Rad (", ctryStat, "): %s /sq.km"), paste0("<br/>Rad (", ctryStat, "): %s")), "<br/>Rank: %s/%s"),
-            ctryAdmLevels[iterAdmLevel], lvlCtryData[[ctryAdmLevels[iterAdmLevel]]], format(lvlCtryData[["area_sq_km"]],scientific = F,digits = 2), lvlCtryData[["variable"]], format(lvlCtryData[["value"]],scientific = F,digits = 2),  lvlCtryData[[paste0("rank",iterAdmLevel)]], nrow(lvlCtryData)
-          ) %>% lapply(htmltools::HTML)
-
-          #only the lowest layer will have fill, label, etc
-          if(iterAdmLevel == lyrNum)
+          ctryPoly0 <- Rnightlights::readCtryPolyAdmLayer(ctryCode = country, admLevel = unlist(Rnightlights::getCtryShpLyrNames(country,0)))
+          
+          ctryPoly0 <- sp::spTransform(ctryPoly0, wgs84)
+          
+          e <- raster::extent(ctryPoly0)
+          if (exists("mapExtent") && !is.null(mapExtent))
           {
-            map <- map %>% leaflet::addPolygons(
-              data = ctryPoly,
-              layerId = as.character(ctryPoly@data[,paste0('NAME_',iterAdmLevel-1)]),
-              fill = TRUE,
-              fillColor = ~pal(lvlCtryData[["value"]]),
-              fillOpacity = 0.9,
-              stroke = TRUE,
-              weight=4-(iterAdmLevel-1)*deltaLineWt,
-              #color=lineCol[iterAdmLevel],
-              color="white",
-              smoothFactor = 0.7,
-              opacity = 1,
-              #dashArray = "5",
-              group = ctryAdmLevels[iterAdmLevel],
-              popup = mapLabels,
-              popupOptions = leaflet::popupOptions(
-                keepInView = T,
-                closeOnClick = T,
-                closeButton = T
-              ),
-              highlightOptions = leaflet::highlightOptions(
-                weight = 5,
-                #color = "yellow",
-                #dashArray = "4",
-                fillOpacity = 0,
-                bringToFront = FALSE)
-              )
-          } else
-          {
-            map <- map %>% leaflet::addPolygons(
-              data = ctryPoly,
-              layerId = as.character(ctryPoly@data[,paste0('NAME_',iterAdmLevel-1)]),
-              stroke = TRUE,
-              weight=4-(iterAdmLevel-1)*deltaLineWt,
-              smoothFactor = 0.7,
-              opacity = 1,
-              #color=lineCol[iterAdmLevel],
-              color="white",
-              #dashArray = "5",
-              group = ctryAdmLevels[iterAdmLevel]
-            )
+            mapExtent@xmin <- min(mapExtent@xmin, e@xmin)
+            mapExtent@ymin <- min(mapExtent@ymin, e@ymin)
+            mapExtent@xmax <- max(mapExtent@xmax, e@xmax)
+            mapExtent@ymax <- max(mapExtent@ymax, e@ymax)
           }
-
-          for (iterPoly in selected)
+          else
           {
-              map <- map %>% leaflet::addPolygons(
-                data = ctryPoly[iterPoly,],
-                layerId = paste0(as.character(ctryPoly@data[iterPoly, paste0('NAME_',iterAdmLevel-1)]),"_selected"),
-                fill = FALSE,
-                stroke = TRUE,
-                weight=4-(iterAdmLevel-1)*deltaLineWt+0.5,
-                opacity = 1,
-                color="blue",
-                # dashArray = "5",
-                group = "selected",
-                highlightOptions = leaflet::highlightOptions(
-                  stroke = TRUE,
-                  weight=4-(iterAdmLevel-1)*deltaLineWt+0.5,
-                  opacity = 1,
-                  color="blue",
-                  bringToFront = TRUE)
-                )
+            mapExtent <- e
+          }
+          
+          if(stringr::str_detect(nlType, "OLS"))
+            nlPeriod <- substr(gsub("-","",nlYm),1,4)
+          else if(stringr::str_detect(nlType, "VIIRS"))
+            nlPeriod <- substr(gsub("-","",nlYm),1,6)
+          
+          map <- map %>% 
+            leaflet::clearShapes() %>%
+            leaflet::clearControls() %>%
+            leaflet::addPolygons(layerId = country,
+                                 fill = FALSE,
+                                 fillColor = "#fefe40",
+                                 stroke = TRUE,
+                                 weight=4,
+                                 smoothFactor = 0.7,
+                                 opacity = 1,
+                                 color="white",
+                                 #dashArray = "5",
+                                 group = "country",
+                                 data=ctryPoly0)
+          
+          selected <- NULL
+          
+          lineCol <- rev(hexbin::BTC(lyrNum+1, 200, 250))
+          
+          if(lyrNum > 1) #skip drawing the country level. avoid reverse seq (2:1)
+            for(iterAdmLevel in 2:lyrNum)
+            {
+              #aggregate the data to the current level
+              iterAdmLevelName <- ctryAdmLevels[iterAdmLevel]
               
-              e <- raster::extent(ctryPoly[iterPoly,])
-              if (exists("mapExtent"))
+              #data already in data.table form
+              lvlCtryData <- stats::setNames(ctryData[,list(mean(value,na.rm=T), sum(area_sq_km, na.rm=T)), by=list(ctryData[[iterAdmLevelName]], ctryData[["variable"]])], c(iterAdmLevelName, "variable", "value", "area_sq_km"))
+              
+              #rank the data
+              varname <- paste0('rank',iterAdmLevel)
+              lvlCtryData[[varname]] <- with(lvlCtryData, rank(-value, ties.method = 'first'))
+              
+              #palette deciles for the layer
+              bins <- rev(stats::quantile(lvlCtryData$value, seq(0,1,0.1), na.rm=T))
+              brewerPal <- rev(RColorBrewer::brewer.pal(n = 10, name = "YlOrRd"))
+              pal <- leaflet::colorBin(palette = brewerPal, domain = lvlCtryData$value, na.color = "grey", bins = bins)
+              
+              #turn off previous layer? No point keeping it if it is hidden. Also we want to turn the current layer to transparent so that one can see through to the raster layer on hover
+              ctryPoly <- Rnightlights::readCtryPolyAdmLayer(country, unlist(Rnightlights::getCtryShpLyrNames(country, iterAdmLevel-1)))
+              
+              ctryPoly <- sp::spTransform(ctryPoly, wgs84)
+              
+              e <- raster::extent(ctryPoly)
+              
+              if(exists("mapExtent") && !is.null(mapExtent))
               {
                 mapExtent@xmin <- min(mapExtent@xmin, e@xmin)
                 mapExtent@ymin <- min(mapExtent@ymin, e@ymin)
@@ -3371,37 +3222,532 @@ shiny::shinyServer(function(input, output, session){
               {
                 mapExtent <- e
               }
+              
+              if (length(admLvlNums) > 0)
+                if((iterAdmLevel) == data.table::last(admLvlNums)) #iterAdmLevel+1 %in% admLvlNums)
+                  selected <- which(ctryPoly@data[[paste0("NAME_",iterAdmLevel-1)]] %in% input[[paste0("selectAdm", iterAdmLevel)]])
+              else
+                selected <- c()
+              
+              mapLabels <- sprintf(
+                paste0("<strong>%s:%s</strong>", "<br/>Area: %s km<superscript>2</superscript>","<br/>Date: %s", ifelse(normArea, paste0("<br/>Rad (", ctryStat, "): %s /sq.km"), paste0("<br/>Rad (", ctryStat, "): %s")), "<br/>Rank: %s/%s"),
+                ctryAdmLevels[iterAdmLevel], lvlCtryData[[ctryAdmLevels[iterAdmLevel]]], format(lvlCtryData[["area_sq_km"]],scientific = F,digits = 2), lvlCtryData[["variable"]], format(lvlCtryData[["value"]],scientific = F,digits = 2),  lvlCtryData[[paste0("rank",iterAdmLevel)]], nrow(lvlCtryData)
+              ) %>% lapply(htmltools::HTML)
+              
+              #only the lowest layer will have fill, label, etc
+              if(iterAdmLevel == lyrNum)
+              {
+                map <- map %>% leaflet::addPolygons(
+                  data = ctryPoly,
+                  layerId = as.character(ctryPoly@data[,paste0('NAME_',iterAdmLevel-1)]),
+                  fill = TRUE,
+                  fillColor = ~pal(lvlCtryData[["value"]]),
+                  fillOpacity = 0.9,
+                  stroke = TRUE,
+                  weight=4-(iterAdmLevel-1)*deltaLineWt,
+                  #color=lineCol[iterAdmLevel],
+                  color="white",
+                  smoothFactor = 0.7,
+                  opacity = 1,
+                  #dashArray = "5",
+                  group = ctryAdmLevels[iterAdmLevel],
+                  popup = mapLabels,
+                  popupOptions = leaflet::popupOptions(
+                    keepInView = T,
+                    closeOnClick = T,
+                    closeButton = T
+                  ),
+                  highlightOptions = leaflet::highlightOptions(
+                    weight = 5,
+                    #color = "yellow",
+                    #dashArray = "4",
+                    fillOpacity = 0,
+                    bringToFront = FALSE)
+                )
+              } else
+              {
+                map <- map %>% leaflet::addPolygons(
+                  data = ctryPoly,
+                  layerId = as.character(ctryPoly@data[,paste0('NAME_',iterAdmLevel-1)]),
+                  stroke = TRUE,
+                  weight = 4-(iterAdmLevel-1)*deltaLineWt,
+                  smoothFactor = 0.7,
+                  opacity = 1,
+                  #color=lineCol[iterAdmLevel],
+                  color="white",
+                  #dashArray = "5",
+                  group = ctryAdmLevels[iterAdmLevel]
+                )
+              }
+              
+              if(length(selected) > 0)
+                mapExtent <- NULL
+              
+              for (iterPoly in selected)
+              {
+                map <- map %>% leaflet::addPolygons(
+                  data = ctryPoly[iterPoly,],
+                  layerId = paste0(as.character(ctryPoly@data[iterPoly, paste0('NAME_',iterAdmLevel-1)]),"_selected"),
+                  fill = FALSE,
+                  stroke = TRUE,
+                  weight=4-(iterAdmLevel-1)*deltaLineWt+0.5,
+                  opacity = 1,
+                  color="blue",
+                  # dashArray = "5",
+                  group = "selected",
+                  highlightOptions = leaflet::highlightOptions(
+                    stroke = TRUE,
+                    weight = 4-(iterAdmLevel-1)*deltaLineWt+0.5,
+                    opacity = 1,
+                    color = "blue",
+                    bringToFront = TRUE)
+                )
+                
+                e <- raster::extent(ctryPoly[iterPoly,])
+                
+                if (exists("mapExtent") && !is.null(mapExtent))
+                {
+                  mapExtent@xmin <- min(mapExtent@xmin, e@xmin)
+                  mapExtent@ymin <- min(mapExtent@ymin, e@ymin)
+                  mapExtent@xmax <- max(mapExtent@xmax, e@xmax)
+                  mapExtent@ymax <- max(mapExtent@ymax, e@ymax)
+                }
+                else
+                {
+                  mapExtent <- e
+                }
+              }
+              
             }
-
         }
-      }
       
-      if(length(selected)>0)
-      {
-        map <- map %>% leaflet::addLayersControl(overlayGroups = c("ctryRaster",
-                                                                 ctryAdmLevels[2:lyrNum],
-                                                                 "selected"))
+      
+        if(length(selected)>0)
+        {
+          map <- map %>% leaflet::addLayersControl(overlayGroups = c("ctryRaster",
+                                                                     ctryAdmLevels[2:lyrNum],
+                                                                     "selected"))
+          
+          map <- leaflet::flyToBounds(map = map, lng1 = mapExtent@xmin, lat1 = mapExtent@ymin, lng2 = mapExtent@xmax, lat2 = mapExtent@ymax)
+        }
+        else
+          map <- map %>% leaflet::addLayersControl(overlayGroups = c("ctryRaster",
+                                                                     ctryAdmLevels[2:lyrNum]))
         
-        map <- leaflet::fitBounds(map = map, lng1 = mapExtent@xmin, lat1 = mapExtent@ymin, lng2 = mapExtent@xmax, lat2 = mapExtent@ymax)
+        if (admLevel != "country")
+          map <- map %>% 
+        leaflet::addLegend(position = "bottomright", 
+                          pal = pal, 
+                          values = format(ctryData$value, scientific = T),
+                          labels = stats::quantile(ctryData$value, seq(1,0,-0.1), na.rm=T),
+                          #title = "Nightlight percentiles",
+                          title = ifelse(normArea, "Rad/sq. Km.", "Rad"),
+                          opacity = 1 )
       }
-      else
-        map <- map %>% leaflet::addLayersControl(overlayGroups = c("ctryRaster",
-                                                                   ctryAdmLevels[2:lyrNum]))
       
-      if (admLevel != "country")
-        map <- map %>% leaflet::addLegend(position = "bottomright", 
-                                 pal = pal, 
-                                 values = format(ctryData$value, scientific = T),
-                                 labels = stats::quantile(ctryData$value, seq(1,0,-0.1), na.rm=T),
-                                 #title = "Nightlight percentiles",
-                                 title = ifelse(normArea, "Rad/sq. Km.", "Rad"),
-                                 opacity = 1 )
-       #Zoom
-       if (exists("mapExtent"))
-         map <- map %>% leaflet::fitBounds(mapExtent@xmin, mapExtent@ymin, mapExtent@xmax, mapExtent@ymax)
-      }
+        #Zoom
+        if (exists("mapExtent"))
+          map <- map %>% 
+        leaflet::flyToBounds(mapExtent@xmin, mapExtent@ymin, mapExtent@xmax, mapExtent@ymax)
+      
       
       map
-      })
+    })
     #})
+    #})
+
+    
+    ######################## map ###################################
+
+    output$map <- leaflet::renderLeaflet({
+      print(paste0("output: map"))
+      # Use leaflet() here, and only include aspects of the map that
+      # won't need to change dynamically (at least, not unless the
+      # entire map is being torn down and recreated).
+      
+      #input$btnGo
+
+      if(is.null(input$nlType) || is.null(input$nlPeriod))
+        return()
+      
+      map <- leaflet::leaflet() %>%
+        leaflet::addTiles("http://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png") %>%
+        
+        leaflet::addWMSTiles(layerId = "nlRaster",
+                             baseUrl = paste0("http://localhost/cgi-bin/mapserv?map=",
+                                              file.path(path.expand(Rnightlights::getNlDir("dirRasterOutput")),
+                                                        "nightlights.map")),
+                             layers = "NL_CTRYCODE_VIIRS.M_NLPERIOD_VCMCFG-MTSALL-MEAN-RGFT_GADM-3.6-SHPZIP",
+                             group = "ctryRaster",
+                             options = leaflet::WMSTileOptions(format = "image/png",
+                                                               transparent = TRUE,
+                                                               opacity = 0.8,
+                                                               TIME = Rnightlights::dateToNlPeriod(input$nlPeriod, input$nlType)))
+      
+      return(map)
+    })
+
+    #   nlPeriod <- input$nlPeriod
+    #   admLevel <- shiny::isolate(input$radioAdmLevel)
+    #   scale <- input$scale
+    #   nlType <- shiny::isolate(input$nlType)
+    #   normArea <- input$norm_area
+    #   polySrc <- shiny::isolate(input$polySrc)
+    #   polyVer <- shiny::isolate(input$polyVer)
+    #   polyType <- shiny::isolate(input$polyType)
+    #   custPolyPath <- if(polySrc == "CUST") polyVer else NULL
+    #   ctryStat <- shiny::isolate(input$ctryStat)
+    #   
+    #   
+    #   if(is.null(polySrc) || is.null(polyVer) || polySrc == "" || polyVer == "")
+    #     return()
+    #   
+    #   #shiny::isolate({
+    #   # if (is.null(countries) || is.null(nlPeriod) || is.null(admLevel))
+    #   #   return()
+    #   
+    #   if(length(countries) > 1){
+    #     admLevel <- "country"
+    # 
+    #     map <- leaflet::leaflet() %>%
+    #       leaflet::addTiles("http://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png")
+    #     
+    #     ctryPoly0 <- Rnightlights::readCtryPolyAdmLayer(ctryCode = countries[1],
+    #                                                     admLevel = unlist(
+    #                                                       Rnightlights::getCtryShpLyrNames(ctryCodes = countries[1],
+    #                                                                                        lyrNums = 0)))
+    #     
+    #     for(country in countries[2:length(countries)])
+    #     {
+    #       ctryPoly0 <- sp::rbind.SpatialPolygonsDataFrame(ctryPoly0,
+    #                                                       Rnightlights::readCtryPolyAdmLayer(ctryCode = country,
+    #                                                                                          admLevel = unlist(Rnightlights::getCtryShpLyrNames(country,0))),
+    #                                                       makeUniqueIDs = T)
+    #       
+    #     }
+    #     
+    #     ctryPoly0 <- sp::spTransform(ctryPoly0, wgs84)
+    #     
+    #     ctryData <- ctryNlDataMelted()
+    # 
+    #     if(is.null(ctryData))
+    #       return()
+    #     
+    #     #data already in data.table form
+    #     lvlCtryData <- stats::setNames(ctryData[,list(mean(value,na.rm=T), sum(area_sq_km, na.rm=T)), by=list(ctryData[["country"]], ctryData[["variable"]])], c("country", "variable", "value", "area_sq_km"))
+    #     
+    #     #rank the data
+    #     varname <- paste0('rankcountry')
+    #     lvlCtryData[[varname]] <- with(lvlCtryData, rank(-value, ties.method = 'first'))
+    #     
+    #     #palette deciles for the layer
+    #     bins <- rev(stats::quantile(lvlCtryData$value, seq(0,1,0.1), na.rm=T))
+    #     brewerPal <- rev(RColorBrewer::brewer.pal(n = 10, name = "YlOrRd"))
+    #     pal <- leaflet::colorBin(palette = brewerPal, domain = lvlCtryData$value, na.color = "grey", bins = bins)
+    # 
+    #     mapLabels <- sprintf(
+    #       paste0("<strong>%s:%s</strong>", "<br/>Area: %s km<superscript>2</superscript>","<br/>Date: %s", ifelse(normArea, paste0("<br/>Rad (", ctryStat, "): %s /sq.km"), paste0("<br/>Rad (", ctryStat, "): %s")), "<br/>Rank: %s/%s"),
+    #       "country", lvlCtryData[["country"]], format(lvlCtryData[["area_sq_km"]],scientific = F,digits = 2), lvlCtryData[["variable"]], format(lvlCtryData[["value"]],scientific = F,digits = 2),  lvlCtryData[[paste0("rankcountry")]], nrow(lvlCtryData)
+    #     ) %>% lapply(htmltools::HTML)
+    #     
+    #     map <- map %>% leaflet::addPolygons(
+    #       data = ctryPoly0,
+    #       #layerId = "country",
+    #       fill = TRUE,
+    #       fillColor = ~pal(lvlCtryData[["value"]]),
+    #       fillOpacity = 0.9,
+    #       stroke = TRUE,
+    #       weight=1,
+    #       #color=lineCol[iterAdmLevel],
+    #       color="white",
+    #       smoothFactor = 0.7,
+    #       opacity = 1,
+    #       #dashArray = "5",
+    #       group = "country",
+    #       popup = mapLabels,
+    #       popupOptions = leaflet::popupOptions(
+    #         keepInView = T,
+    #         closeOnClick = T,
+    #         closeButton = T
+    #       ),
+    #       highlightOptions = leaflet::highlightOptions(
+    #         weight = 5,
+    #         #color = "yellow",
+    #         #dashArray = "4",
+    #         fillOpacity = 0,
+    #         bringToFront = FALSE)
+    #     )
+    #   } else {
+    #   
+    #   map <- leaflet::leaflet() %>%
+    #     
+    #   leaflet::addTiles("http://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png") %>%
+    #   
+    #   leaflet::addWMSTiles(layerId = "nlRaster",
+    #                        baseUrl = paste0("http://localhost/cgi-bin/mapserv?map=",
+    #                                         file.path(path.expand(Rnightlights::getNlDir("dirRasterOutput")),
+    #                                                   "nightlights.map")),
+    #                        layers = "NL_CTRYCODE_VIIRS.M_NLPERIOD_VCMCFG-MTSALL-MEAN-RGFT_GADM-3.6-SHPZIP",
+    #                        group = "ctryRaster",
+    #                        options = leaflet::WMSTileOptions(format = "image/png",
+    #                                                          transparent = TRUE,
+    #                                                          opacity = 0.8,
+    #                                                          TIME = Rnightlights::dateToNlPeriod(nlPeriod, nlType))
+    #   )
+    #   
+    #   for(country in countries)
+    #   {
+    #     admLvlCtrlNames <- names(input)
+    #     
+    #     x <- admLvlCtrlNames[grep("selectAdm\\d+$", admLvlCtrlNames)]
+    #     
+    #     admLvlNums <- NULL
+    #     for (i in x)
+    #       if(length(input[[i]])>0)
+    #         admLvlNums <- c(admLvlNums, i)
+    #       
+    #       
+    #     #print(paste0("x", x))
+    #     #print(paste0("admlvlnums:", admLvlNums))
+    # 
+    #     admLvlNums <- as.numeric(gsub("[^[:digit:]]","",admLvlNums))
+    #     
+    #     #print(paste0("admlvlNums:", admLvlNums))
+    # 
+    #     #get the selected admLevel and convert to lyrnum
+    #     ctryAdmLevels <- Rnightlights:::getCtryStructAdmLevelNames(ctryCode = country,
+    #                                                                gadmVersion = polyVer,
+    #                                                                gadmPolyType = polyType,
+    #                                                                custPolyPath = NULL)
+    # 
+    #     #ctryAdmLevels <- unlist(ctryAdmLevels[which(countries == country)])
+    #     if(!is.null(admLevel) || admLevel == "country")
+    #       lyrNum <- which(ctryAdmLevels == admLevel)
+    #     else
+    #       lyrNum <- 0
+    #     
+    #     #line weight increases. max=4 min=1
+    #     deltaLineWt <- (4 - 1) / as.numeric(lyrNum)
+    #     
+    #     #line color darkens
+    # 
+    #     if(stringr::str_detect(nlType, "OLS"))
+    #       nlYm <- nlPeriod
+    #     else if (stringr::str_detect(nlType, "VIIRS"))
+    #       nlYm <- as.Date(nlPeriod, "%Y%m%d")
+    # 
+    #     ctryData <- ctryNlDataMelted()
+    #     
+    #     if (is.null(ctryData))
+    #       return()
+    #     
+    #     #get our data ready to match with polygons
+    #     #subset data based on level selections
+    #     if(stringr::str_detect(nlType, "OLS"))
+    #       ctryData <- subset(ctryData, variable == nlYm)
+    #     else if(stringr::str_detect(nlType, "VIIRS"))
+    #       ctryData <- subset(ctryData, lubridate::year(variable) == lubridate::year(nlYm) & lubridate::month(variable) == lubridate::month(nlYm))
+    # 
+    #     if (normArea)
+    #       ctryData$value <- ctryData$value/ctryData$area_sq_km
+    # 
+    #     #print(paste0("ctrydata nrow:", nrow(ctryData)))
+    #     
+    #     #print("drawing leaflet")
+    #     
+    #     #ctryPeriod <- paste0(country, "_", nlYm)
+    #     
+    #     #message(ctryPeriod)
+    #     
+    #     ctryPoly0 <- Rnightlights::readCtryPolyAdmLayer(ctryCode = country, admLevel = unlist(Rnightlights::getCtryShpLyrNames(country,0)))
+    # 
+    #     ctryPoly0 <- sp::spTransform(ctryPoly0, wgs84)
+    #     
+    #     if(stringr::str_detect(nlType, "OLS"))
+    #       nlPeriod <- substr(gsub("-","",nlYm),1,4)
+    #     else if(stringr::str_detect(nlType, "VIIRS"))
+    #       nlPeriod <- substr(gsub("-","",nlYm),1,6)
+    #     
+    #     # ctryRastFilename <- Rnightlights::getCtryRasterOutputFnamePath(ctryCode = country,nlType =  nlType, nlPeriod =  nlPeriod)
+    #     # 
+    #     # if(file.exists(ctryRastFilename))
+    #     # {
+    #     #   ctryRast <- raster::raster(ctryRastFilename)
+    #     #   
+    #     #   #raster::projection(ctryRast) <- wgs84
+    #     # }
+    #     # else
+    #     #   ctryRast <- NULL
+    #     # 
+    #     # if(country == countries[1])
+    #     #   map <- map %>% leaflet::addTiles()
+    #     #   
+    #     # if(inherits(ctryRast, "RasterLayer"))
+    #     # {
+    #     #   map <- map %>% leaflet::addRasterImage(x = ctryRast,layerId = c("ctryRasterLocal_", country), group = "ctryRaster", project = T)
+    #     # 
+    #     #   leaflet::projectRasterForLeaflet(x = ctryRast, method = "bilinear")
+    #     # }
+    #             
+    #     map <- map %>%  leaflet::addPolygons(layerId = country,
+    #                          fill = FALSE,
+    #                          fillColor = "#fefe40",
+    #                          stroke = TRUE,
+    #                          weight=4,
+    #                          smoothFactor = 0.7,
+    #                          opacity = 1,
+    #                          color="white",
+    #                          #dashArray = "5",
+    #                          group = "country",
+    #                          data=ctryPoly0)
+    # 
+    #     selected <- NULL
+    #     
+    #     lineCol <- rev(hexbin::BTC(lyrNum+1, 200, 250))
+    #     
+    #     if(lyrNum > 1) #skip drawing the country level. avoid reverse seq (2:1)
+    #     for(iterAdmLevel in 2:lyrNum)
+    #     {
+    #       #aggregate the data to the current level
+    #       iterAdmLevelName <- ctryAdmLevels[iterAdmLevel]
+    # 
+    #       #data already in data.table form
+    #       lvlCtryData <- stats::setNames(ctryData[,list(mean(value,na.rm=T), sum(area_sq_km, na.rm=T)), by=list(ctryData[[iterAdmLevelName]], ctryData[["variable"]])], c(iterAdmLevelName, "variable", "value", "area_sq_km"))
+    # 
+    #       #rank the data
+    #       varname <- paste0('rank',iterAdmLevel)
+    #       lvlCtryData[[varname]] <- with(lvlCtryData, rank(-value, ties.method = 'first'))
+    #       
+    #       #palette deciles for the layer
+    #       bins <- rev(stats::quantile(lvlCtryData$value, seq(0,1,0.1), na.rm=T))
+    #       brewerPal <- rev(RColorBrewer::brewer.pal(n = 10, name = "YlOrRd"))
+    #       pal <- leaflet::colorBin(palette = brewerPal, domain = lvlCtryData$value, na.color = "grey", bins = bins)
+    #       
+    #       #turn off previous layer? No point keeping it if it is hidden. Also we want to turn the current layer to transparent so that one can see through to the raster layer on hover
+    #       ctryPoly <- Rnightlights::readCtryPolyAdmLayer(country, unlist(Rnightlights::getCtryShpLyrNames(country, iterAdmLevel-1)))
+    #       
+    #       ctryPoly <- sp::spTransform(ctryPoly, wgs84)
+    #       
+    #       if (length(admLvlNums) > 0)
+    #       if((iterAdmLevel) == data.table::last(admLvlNums)) #iterAdmLevel+1 %in% admLvlNums)
+    #         selected <- which(ctryPoly@data[[paste0("NAME_",iterAdmLevel-1)]] %in% input[[paste0("selectAdm", iterAdmLevel)]])
+    #       else
+    #         selected <- c()
+    # 
+    #       mapLabels <- sprintf(
+    #         paste0("<strong>%s:%s</strong>", "<br/>Area: %s km<superscript>2</superscript>","<br/>Date: %s", ifelse(normArea, paste0("<br/>Rad (", ctryStat, "): %s /sq.km"), paste0("<br/>Rad (", ctryStat, "): %s")), "<br/>Rank: %s/%s"),
+    #         ctryAdmLevels[iterAdmLevel], lvlCtryData[[ctryAdmLevels[iterAdmLevel]]], format(lvlCtryData[["area_sq_km"]],scientific = F,digits = 2), lvlCtryData[["variable"]], format(lvlCtryData[["value"]],scientific = F,digits = 2),  lvlCtryData[[paste0("rank",iterAdmLevel)]], nrow(lvlCtryData)
+    #       ) %>% lapply(htmltools::HTML)
+    # 
+    #       #only the lowest layer will have fill, label, etc
+    #       if(iterAdmLevel == lyrNum)
+    #       {
+    #         map <- map %>% leaflet::addPolygons(
+    #           data = ctryPoly,
+    #           layerId = as.character(ctryPoly@data[,paste0('NAME_',iterAdmLevel-1)]),
+    #           fill = TRUE,
+    #           fillColor = ~pal(lvlCtryData[["value"]]),
+    #           fillOpacity = 0.9,
+    #           stroke = TRUE,
+    #           weight=4-(iterAdmLevel-1)*deltaLineWt,
+    #           #color=lineCol[iterAdmLevel],
+    #           color="white",
+    #           smoothFactor = 0.7,
+    #           opacity = 1,
+    #           #dashArray = "5",
+    #           group = ctryAdmLevels[iterAdmLevel],
+    #           popup = mapLabels,
+    #           popupOptions = leaflet::popupOptions(
+    #             keepInView = T,
+    #             closeOnClick = T,
+    #             closeButton = T
+    #           ),
+    #           highlightOptions = leaflet::highlightOptions(
+    #             weight = 5,
+    #             #color = "yellow",
+    #             #dashArray = "4",
+    #             fillOpacity = 0,
+    #             bringToFront = FALSE)
+    #           )
+    #       } else
+    #       {
+    #         map <- map %>% leaflet::addPolygons(
+    #           data = ctryPoly,
+    #           layerId = as.character(ctryPoly@data[,paste0('NAME_',iterAdmLevel-1)]),
+    #           stroke = TRUE,
+    #           weight=4-(iterAdmLevel-1)*deltaLineWt,
+    #           smoothFactor = 0.7,
+    #           opacity = 1,
+    #           #color=lineCol[iterAdmLevel],
+    #           color="white",
+    #           #dashArray = "5",
+    #           group = ctryAdmLevels[iterAdmLevel]
+    #         )
+    #       }
+    # 
+    #       for (iterPoly in selected)
+    #       {
+    #           map <- map %>% leaflet::addPolygons(
+    #             data = ctryPoly[iterPoly,],
+    #             layerId = paste0(as.character(ctryPoly@data[iterPoly, paste0('NAME_',iterAdmLevel-1)]),"_selected"),
+    #             fill = FALSE,
+    #             stroke = TRUE,
+    #             weight=4-(iterAdmLevel-1)*deltaLineWt+0.5,
+    #             opacity = 1,
+    #             color="blue",
+    #             # dashArray = "5",
+    #             group = "selected",
+    #             highlightOptions = leaflet::highlightOptions(
+    #               stroke = TRUE,
+    #               weight=4-(iterAdmLevel-1)*deltaLineWt+0.5,
+    #               opacity = 1,
+    #               color="blue",
+    #               bringToFront = TRUE)
+    #             )
+    #           
+    #           e <- raster::extent(ctryPoly[iterPoly,])
+    #           if (exists("mapExtent"))
+    #           {
+    #             mapExtent@xmin <- min(mapExtent@xmin, e@xmin)
+    #             mapExtent@ymin <- min(mapExtent@ymin, e@ymin)
+    #             mapExtent@xmax <- max(mapExtent@xmax, e@xmax)
+    #             mapExtent@ymax <- max(mapExtent@ymax, e@ymax)
+    #           }
+    #           else
+    #           {
+    #             mapExtent <- e
+    #           }
+    #         }
+    # 
+    #     }
+    #   }
+    #   
+    #   if(length(selected)>0)
+    #   {
+    #     map <- map %>% leaflet::addLayersControl(overlayGroups = c("ctryRaster",
+    #                                                              ctryAdmLevels[2:lyrNum],
+    #                                                              "selected"))
+    #     
+    #     map <- leaflet::fitBounds(map = map, lng1 = mapExtent@xmin, lat1 = mapExtent@ymin, lng2 = mapExtent@xmax, lat2 = mapExtent@ymax)
+    #   }
+    #   else
+    #     map <- map %>% leaflet::addLayersControl(overlayGroups = c("ctryRaster",
+    #                                                                ctryAdmLevels[2:lyrNum]))
+    #   
+    #   if (admLevel != "country")
+    #     map <- map %>% leaflet::addLegend(position = "bottomright", 
+    #                              pal = pal, 
+    #                              values = format(ctryData$value, scientific = T),
+    #                              labels = stats::quantile(ctryData$value, seq(1,0,-0.1), na.rm=T),
+    #                              #title = "Nightlight percentiles",
+    #                              title = ifelse(normArea, "Rad/sq. Km.", "Rad"),
+    #                              opacity = 1 )
+    #    #Zoom
+    #    if (exists("mapExtent"))
+    #      map <- map %>% leaflet::fitBounds(mapExtent@xmin, mapExtent@ymin, mapExtent@xmax, mapExtent@ymax)
+    #   }
+    #   
+    #   map
+    #   })
+    # #})
 })
