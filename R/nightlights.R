@@ -886,16 +886,30 @@ processNlData <- function (ctryCodes,
   #Ensure we have all polygons before checking admLevels
   message(Sys.time(), ": Downloading country polygons ...")
   
+  cl <- snow::makeCluster(pkgOptions("numCores"))
+  
+  doSNOW::registerDoSNOW(cl = cl)
+  
+  pb <- utils::txtProgressBar(min=0, max=length(ctryCodes), style=3)
+  
+  progress <- function(n) utils::setTxtProgressBar(pb, n)
+  
   #download all country polygons if they don't already exist
-  for (ctryCode in ctryCodes)
+  foreach::foreach (ctryCode = ctryCodes,
+                    #.export = c("gadmVersion", "gadmPolyType", "custPolyPath", "downloadMethod"),
+                    .options.snow = list(progress=progress)) %dopar%
   {
     message(Sys.time(), ": Downloading polygon: ", ctryCode)
+    
     dnldCtryPoly(ctryCode = ctryCode,
                  gadmVersion = gadmVersion,
                  gadmPolyType = gadmPolyType,
                  custPolyPath = custPolyPath,
                  downloadMethod = downloadMethod)
   }
+  
+  close(pb)
+  snow::stopCluster(cl)
   
   message(Sys.time(), ": Downloading country polygons ... DONE")
   
