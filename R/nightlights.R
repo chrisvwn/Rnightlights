@@ -1159,6 +1159,8 @@ processNlData <- function (ctryCodes,
       #loop above checking existing stats. Premature exit allowed once all tiles listed
       for (idxCtryCode in 1:length(ctryCodes))
       {
+        message(Sys.time(), ": Processing ctryCode: ", ctryCodes[idxCtryCode])
+        
         ctryCode <- ctryCodes[idxCtryCode]
         
         if(is.list(admLevels))
@@ -1167,6 +1169,9 @@ processNlData <- function (ctryCodes,
           ctryAdmLevels <- admLevels[idxCtryCode]
         
         for(admLevel in ctryAdmLevels)
+        {
+          message(Sys.time(), ": Processing ctryCode: ", ctryCode, " AdmLevel: ", admLevel)
+          
           processNLCountry(ctryCode = ctryCode,
                            admLevel = admLevel,
                            nlType = nlType,
@@ -1182,6 +1187,7 @@ processNlData <- function (ctryCodes,
                            gadmVersion = gadmVersion,
                            gadmPolyType = gadmPolyType,
                            custPolyPath = custPolyPath)
+        }
       }
       
       #post-processing. Delete the downloaded tiles to release disk space
@@ -1211,8 +1217,8 @@ processNlData <- function (ctryCodes,
             unlink(x = file.path(tileZip), force = TRUE)
         }
       }
-      
-      message(Sys.time(), ": **** COMPLETED PROCESSING :", paste(names(funArgs), sapply(names(funArgs), function(x)eval(parse(text = x))), sep="=",collapse = ", "), "****")
     }
   }
+  
+  message(Sys.time(), ": **** COMPLETED PROCESSING :", paste(names(funArgs), sapply(names(funArgs), function(x)eval(parse(text = x))), sep="=",collapse = ", "), "****")
 }
