@@ -908,7 +908,7 @@ processNlData <- function (ctryCodes,
                  custPolyPath = custPolyPath,
                  downloadMethod = downloadMethod)
     
-    pb$up()
+    progress(n = 1)
   }
   
   close(pb)
