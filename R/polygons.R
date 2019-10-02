@@ -2408,6 +2408,13 @@ readCtryPolyAdmLayer <- function(ctryCode=NULL,
                                      gadmPolyType = gadmPolyType,
                                      custPolyPath = custPolyPath)
       
+      if(identical(layerNum, numeric(0)))
+      {
+        message(Sys.time(), ": Invalid layerNum received")
+        
+        return(NULL)
+      }
+      
       ctryPoly <- ctryPolys[[layerNum+1]]
     }
     else
