@@ -65,7 +65,7 @@ validNlPeriods <- function(nlPeriods, nlTypes)
   #   return(valid)
   #   }), nlTypes)
 
-  validPeriods <- stats::setNames(nlPeriods %in% unlist(getAllNlPeriods(nlTypes)), nlPeriods)
+  validPeriods <- stats::setNames(unlist(nlPeriods) %in% unlist(getAllNlPeriods(nlTypes)), nlPeriods)
   
   return(validPeriods)
 }
