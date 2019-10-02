@@ -496,6 +496,9 @@ writeNightlightsMap <- function()
                   layer = "NL_CTRYCODE_VIIRS.M_NLPERIOD_VCMCFG-MTSALL-MEAN-RGFT_GADM-3.6-SHPZIP_tindex",
                   driver = "ESRI Shapefile",
                   overwrite_layer = TRUE)
+  
+  res <- system2(command = "shptree", args = file.path(path.expand(Rnightlights::getNlDir("dirRasterOutput")),
+                                                "NL_CTRYCODE_VIIRS.M_NLPERIOD_VCMCFG-MTSALL-MEAN-RGFT_GADM-3.6-SHPZIP_tindex.shp"))
             
   lyrName <- gsub("NL_[A-Z]{3}_", "NL_CTRYCODE_", tools::file_path_sans_ext(basename(fList[1])))
   lyrName <- gsub("_\\d{4,6}_", "_NLPERIOD_", lyrName)
