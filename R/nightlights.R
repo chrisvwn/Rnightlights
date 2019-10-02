@@ -843,6 +843,9 @@ processNlData <- function (ctryCodes,
   if(missing(ctryCodes))
     ctryCodes <- getAllNlCtryCodes(omit = "error")
   
+  if(missing(admLevels))
+    admLevels <- "adm0"
+  
   if(missing(nlTypes))
     nlTypes <- getAllNlTypes()
   
@@ -856,16 +859,21 @@ processNlData <- function (ctryCodes,
   }
   
   if(!allValid(testData = ctryCodes, testFun = validCtryCodes))
-    stop(Sys.time(), "Invalid ctryCode detected")
+    stop(Sys.time(), ": Invalid ctryCode detected")
   
-  if(!missing(admLevels) && is.list(admLevels))
+  #try to understand admLevels provided  and put into a format
+  #that we can test later i.e. each ctryCode with corresponding admLevel entries
+  if(length(admLevels) != length(ctryCodes))
   {
-    if(length(ctryCodes) > 1 && length(ctryCodes) != length(admLevels))
-      stop(Sys.time(), "admLevels do not match ctryCodes")
-  } else
-  {
-    if(length(ctryCodes) > 1 && length(ctryCodes) != length(admLevels))
-      stop(Sys.time(), "admLevels do not match ctryCodes")
+    #if admLevels are named we expect each country to have an entry
+    #for admLevels. Simple check that lengths must be the same
+    if(!is.null(names(admLevels)))
+      stop(Sys.time(), ": AdmLevel names do not match ctryCodes")
+    
+    #otherwise assume the admLevels refer to each country
+    #combine the admLevels and repeat for each ctryCode
+    #any wrong matches should be caught later
+    admLevels <- stats::setNames(rep(list(unlist(admLevels)), length(ctryCodes)), ctryCodes)
   }
   
   funArgs <- match.call()[-1]
@@ -890,9 +898,6 @@ processNlData <- function (ctryCodes,
   }
   
   message(Sys.time(), ": Downloading country polygons ... DONE")
-  
-  if(missing(admLevels))
-    admLevels <- "lowest"
   
   admLevels <- sapply(1:length(unlist(ctryCodes)), function(cCodeIdx)
   {
