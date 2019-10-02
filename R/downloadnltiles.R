@@ -412,7 +412,7 @@ downloadNlTilesOLS <- function(nlPeriod,
                           a_srs = wgs84,
                           multi = TRUE,
                           wm = pkgOptions("gdalCacheMax"),
-                          wo = paste0("NUM_THREADS=", pkgOptions("numCores")))
+                          wo = paste0("NUM_THREADS=", pkgOptions("numThreads")))
       
       message(Sys.time(), ": gdal_translate converting VRT to TIFF ")
       gdalUtils::gdal_translate(#co = "LZW",

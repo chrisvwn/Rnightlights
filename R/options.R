@@ -104,7 +104,7 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   ntLtsIndexUrlVIIRS.Y = "https://eogdata.mines.edu/download_dnb_composites_iframe.html",
 
   #the number of cores to use for parallel processing
-  numCores = 2,
+  numThreads = 2,
   
   #the number of parallel connections to make per download
   #used by aria to possibly speed up downloads. 
@@ -256,7 +256,7 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
 #'      tile index }
 #'  \item{\code{ntLtsIndexUrlVIIRS}}{(\code{character}) The url with the 
 #'      VIIRS tile index }
-#'  \item{\code{numCores}}{(\code{integer}) The number of processor cores 
+#'  \item{\code{numThreads}}{(\code{integer}) The number of processing threads 
 #'      to use when extractMethod = "raster" }
 #'  \item{\code{omitCountries}}{(\code{character}) The countries to exclude 
 #'      in processing }

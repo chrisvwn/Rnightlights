@@ -424,7 +424,7 @@ processNLCountry <- function(ctryCode,
                           multi=TRUE,
                           wm=pkgOptions("gdalCacheMax"),
                           wo=paste0("NUM_THREADS=",
-                                    pkgOptions("numCores")),
+                                    pkgOptions("numThreads")),
                           q = FALSE)
 
       message(Sys.time(), ": gdal_translate converting VRT to TIFF ")
@@ -886,7 +886,7 @@ processNlData <- function (ctryCodes,
   #Ensure we have all polygons before checking admLevels
   message(Sys.time(), ": Downloading country polygons ...")
   
-  cl <- snow::makeCluster(pkgOptions("numCores"))
+  cl <- snow::makeCluster(pkgOptions("numThreads"))
   
   doSNOW::registerDoSNOW(cl = cl)
   

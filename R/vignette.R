@@ -88,6 +88,6 @@ myfun <- function(col, row, lon, lat, val, numPts=3) #function(dt, numPts=3)
   return(res$nbIdx)
 }
 
-#pkgReset();pkgOptions(numCores=6);system.time(rastGFT92 <-  getCtryNlData(ctryCode = "NGA", admLevel = "lowest", nlTypes = "OLS.Y", nlPeriods = "1992", removeGasFlares = F, ignoreMissing=FALSE, nlStats = list("myfun")))
+#pkgReset();pkgOptions(numThreads=6);system.time(rastGFT92 <-  getCtryNlData(ctryCode = "NGA", admLevel = "lowest", nlTypes = "OLS.Y", nlPeriods = "1992", removeGasFlares = F, ignoreMissing=FALSE, nlStats = list("myfun")))
 
 #pkgOptions(extractMethod="gdal",cropMaskMethod="gdal"); system.time(gdalGFT92 <-  getCtryNlData(ctryCode = "NGA", admLevel = "lowest", nlTypes = "OLS.Y", nlPeriods = "1992", removeGasFlares = F, ignoreMissing=FALSE, nlStats="myfun"))

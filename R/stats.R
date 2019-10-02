@@ -1158,7 +1158,7 @@ fnAggRadRast <- function(ctryPoly, ctryRastCropped, nlType, configName, nlStats,
 
   options(stringsAsFactors = FALSE)
   
-  cl <- snow::makeCluster(pkgOptions("numCores"))
+  cl <- snow::makeCluster(pkgOptions("numThreads"))
   
   doSNOW::registerDoSNOW(cl = cl)
   
