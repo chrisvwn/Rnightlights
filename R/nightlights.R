@@ -922,8 +922,8 @@ processNlData <- function (ctryCodes,
     ctryCode <- ctryCodes[[cCodeIdx]]
     
     #ctryAdmLevels <- admLevels[[cCodeIdx]]
-    if(!is.null(names(admLevels)[cCodeIdx]))
-      return(admLevels[ctryCode])
+    #if(!is.null(names(admLevels)[cCodeIdx]))
+    #  return(admLevels[ctryCode])
 
     ctryAdmLevels <- if(is.list(admLevels))
       unlist(admLevels[cCodeIdx])
@@ -969,15 +969,15 @@ processNlData <- function (ctryCodes,
           admLevel <- ifelse(is.na(tmpAdmLevel), admLevel, tmpAdmLevel)
         }
         
-        #after processing admLevels if any are not in proper format e.g. KEN_adm0
-        #check if they might have been supplied as e.g. adm0 or e.g. 0
-        if(!length(grep(paste0(ctryCode,"_adm\\d+"), admLevel, ignore.case = T)) == length(admLevel))
-        {
-          if(length(grep("^adm\\d+$", admLevel, ignore.case = T)) > 0)
-            admLevel <- paste(ctryCode, admLevel, sep="_")
-          else if(length(grep("^\\d+$", admLevels, ignore.case = T)) > 0)
-            admLevel <- paste(ctryCode, paste0("adm", admLevel), sep="_")
-        }
+        # #after processing admLevels if any are not in proper format e.g. KEN_adm0
+        # #check if they might have been supplied as e.g. adm0 or e.g. 0
+        # if(!length(grep(paste0(ctryCode,"_adm\\d+"), admLevel, ignore.case = T)) == length(admLevel))
+        # {
+        #   if(length(grep("^adm\\d+$", admLevel, ignore.case = T)) > 0)
+        #     admLevel <- paste(ctryCode, admLevel, sep="_")
+        #   else if(length(grep("^\\d+$", admLevels, ignore.case = T)) > 0)
+        #     admLevel <- paste(ctryCode, paste0("adm", admLevel), sep="_")
+        # }
       }
       
       admLevel
@@ -985,14 +985,14 @@ processNlData <- function (ctryCodes,
   })
 
   #if the admLevels are input as "adm0" convert to proper admLevel e.g. "KEN_adm0"
-  for(i in 1:length(ctryCodes))
-  if(!length(grep(paste0(ctryCodes[i],"_adm\\d+"), admLevels[i], ignore.case = T)) == length(admLevels[i]))
-  {
-    if(length(grep("^adm\\d+$", admLevels[i], ignore.case = T)) == length(admLevels[i]))
-      admLevels[i] <- paste(ctryCodes[i], admLevels[i], sep="_")
-    else if(length(grep("^\\d+$", admLevels[i], ignore.case = T)) == length(admLevels[i]))
-      admLevels[i] <- paste(ctryCode, paste0("adm", admLevels[i]), sep="_")
-  }
+  # for(i in 1:length(ctryCodes))
+  # if(!length(grep(paste0(ctryCodes[i],"_adm\\d+"), admLevels[i], ignore.case = T)) == length(admLevels[i]))
+  # {
+  #   if(length(grep("^adm\\d+$", admLevels[i], ignore.case = T)) == length(admLevels[i]))
+  #     admLevels[i] <- paste(ctryCodes[i], admLevels[i], sep="_")
+  #   else if(length(grep("^\\d+$", admLevels[i], ignore.case = T)) == length(admLevels[i]))
+  #     admLevels[i] <- paste(ctryCode, paste0("adm", admLevels[i]), sep="_")
+  # }
   
   # if(!allValidCtryAdmLvls(ctryCode = ctryCodes, admLevels = admLevels, gadmVersion = gadmVersion, custPolyPath = custPolyPath))
   #   stop(Sys.time(), "Invalid admLevels detected")

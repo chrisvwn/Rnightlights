@@ -933,15 +933,15 @@ getCtryNlData <- function(ctryCode=NULL,
       admLevel <- ifelse(is.na(tmpAdmLevel), admLevel, tmpAdmLevel)
     }
     
-    #after processing admLevels if any are not in proper format e.g. KEN_adm0
-    #check if they might have been supplied as e.g. adm0 or e.g. 0
-    if(!length(grep(paste0(ctryCode,"_adm\\d+"), admLevel, ignore.case = T)) == length(admLevel))
-    {
-      if(length(grep("^adm\\d+$", admLevel, ignore.case = T)) > 0)
-        admLevel <- paste(ctryCode, admLevel, sep="_")
-      else if(length(grep("^\\d+$", admLevel, ignore.case = T)) > 0)
-        admLevel <- paste(ctryCode, paste0("adm", admLevel), sep="_")
-    }
+    # #after processing admLevels if any are not in proper format e.g. KEN_adm0
+    # #check if they might have been supplied as e.g. adm0 or e.g. 0
+    # if(!length(grep(paste0(ctryCode,"_adm\\d+"), admLevel, ignore.case = T)) == length(admLevel))
+    # {
+    #   if(length(grep("^adm\\d+$", admLevel, ignore.case = T)) > 0)
+    #     admLevel <- paste(ctryCode, admLevel, sep="_")
+    #   else if(length(grep("^\\d+$", admLevel, ignore.case = T)) > 0)
+    #     admLevel <- paste(ctryCode, paste0("adm", admLevel), sep="_")
+    # }
     
     if(!allValidCtryAdmLvls(ctryCode = ctryCode,
                             admLevels = admLevel,
