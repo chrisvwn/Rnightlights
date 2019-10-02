@@ -126,8 +126,7 @@ createCtryNlDataDF <- function(ctryCode=NULL,
     polyColNames <- sapply(lyrNames, function(lyrName) 
     {
       #read in the polygon layer
-      ctryPoly <- rgdal::readOGR(dsn = polyFnamePath, layer = lyrName,
-                                 encoding = "UTF-8", use_iconv = TRUE)
+      ctryPoly <- rgdal::readOGR(dsn = polyFnamePath, layer = lyrName)
       
       #read in the column names of the data in the polygon
       colNames <- names(ctryPoly@data)

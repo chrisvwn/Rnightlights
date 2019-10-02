@@ -194,9 +194,7 @@ orderCustPolyLayers <- function(ctryCode, custPolyPath=NULL)
   {
     ctryPoly <- rgdal::readOGR(dsn = getPolyFnamePath(ctryCode = ctryCode,
                                                       custPolyPath = custPolyPath),
-                               layer = lyrName,
-                               encoding = "UTF-8",
-                               use_iconv = TRUE)
+                               layer = lyrName)
     
     return(nrow(ctryPoly@data))
   })
@@ -251,9 +249,7 @@ addCtryPolyIdx <- function(ctryCode,
                                                         gadmVersion = gadmVersion,
                                                         gadmPolyType = gadmPolyType,
                                                         custPolyPath = custPolyPath),
-                                 layer = admLevel,
-                                 encoding = "UTF-8",
-                                 use_iconv = TRUE)
+                                 layer = admLevel)
       
       #Create an integer col in the shapefile with unique GIDs
         message(Sys.time(), ": Creating integer zone attribute col for polygon")
@@ -285,9 +281,7 @@ addCtryPolyIdx <- function(ctryCode,
                                                         gadmVersion = gadmVersion,
                                                         gadmPolyType = gadmPolyType,
                                                         custPolyPath = custPolyPath),
-                                 layer = admLevel,
-                                 encoding = "UTF-8",
-                                 use_iconv = TRUE)
+                                 layer = admLevel)
       
       lowestIDCol <- paste0("GID_", stringr::str_extract(admLevel, "\\d+$"), "_IDX")
       
@@ -495,9 +489,7 @@ dnldGADMCtryShpZip <- function(ctryCode,
                                                gadmVersion = gadmVersion,
                                                gadmPolyType = gadmPolyType,
                                                custPolyPath = custPolyPath),
-                        layer = lvl,
-                        encoding = "UTF-8",
-                        use_iconv = TRUE)}))
+                        layer = lvl)}))
     
     message(Sys.time(), ": Saving admLevel polygons as RDS")
     saveRDS(object = listCtryPolys,
@@ -2443,7 +2435,7 @@ readCtryPolyAdmLayer <- function(ctryCode=NULL,
     
     if(dir.exists(shpPath))
     {
-      ctryPoly <- rgdal::readOGR(dsn = shpPath, layer = admLevel, encoding = "UTF-8", use_iconv = TRUE)
+      ctryPoly <- rgdal::readOGR(dsn = shpPath, layer = admLevel)
     }
     else
     {
