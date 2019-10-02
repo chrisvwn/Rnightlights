@@ -731,7 +731,7 @@ shiny::shinyServer(function(input, output, session){
           if(optionNaRm)
             Rnightlights:::nlSignatureAddArg(nlStatSigs = x, addArg = "na.rm=T")
           else
-            x 
+            x
         }
       })))
       
@@ -772,11 +772,10 @@ shiny::shinyServer(function(input, output, session){
       statChoices <- list("Add New" = list("Add New"), "With Data" = existingStats, "Without Data" = otherStats)
 
       #memory
-      if(!is.null(ctryStat) && ctryStat != "" && ctryStat %in% c(existingStats))
+      if(!is.null(ctryStat) && ctryStat != "")
       {
         selectedStat <- input$ctryStat
-      }
-      else
+      } else
       {
         if(length(existingStats) > 0)
           selectedStat <- existingStats[1]
@@ -2269,7 +2268,7 @@ shiny::shinyServer(function(input, output, session){
                                  y=value, col=clusters
                                  )) +
           geom_point(size=2) +
-          theme(axis.text.x=element_text(angle=0,hjust=1,vjust=0.5)) + 
+          theme(axis.text.x=element_text(angle=30,hjust=1,vjust=0.5)) + 
           ggplot2::scale_colour_manual(values=cbPalette) +
           xlab(admLevel) +
           ylab("Radiance")
@@ -2816,11 +2815,11 @@ shiny::shinyServer(function(input, output, session){
           if (length(countries)==1)
           {
             g <- ggplot2::ggplot(data=ctryData, ggplot2::aes(x=ctryData[[admLevel]], y=value, col=ctryData[[admLevel]])) +
-              ggplot2::theme(axis.text.x=element_text(angle=0,hjust=1,vjust=0.5)) + ggplot2::labs(col=admLevel) + facet_grid(lubridate::year(variable) ~ lubridate::month(x=variable, label=T, abbr=T))
+              ggplot2::theme(axis.text.x=element_text(angle=30,hjust=1,vjust=0.5)) + ggplot2::labs(col=admLevel) + facet_grid(lubridate::year(variable) ~ lubridate::month(x=variable, label=T, abbr=T))
           }
           else
           {
-            g <- ggplot2::ggplot(data=ctryData, ggplot2::aes(x=country, y=value, col=country)) + ggplot2::theme(axis.text.x=element_text(angle=0,hjust=1,vjust=0.5),panel.spacing.x=unit(0.1, "lines")) + ggplot2::labs(col=admLevel) + facet_grid(lubridate::year(variable) ~ lubridate::month(x=variable, label=T, abbr=T))
+            g <- ggplot2::ggplot(data=ctryData, ggplot2::aes(x=country, y=value, col=country)) + ggplot2::theme(axis.text.x=element_text(angle=30,hjust=1,vjust=0.5),panel.spacing.x=unit(0.1, "lines")) + ggplot2::labs(col=admLevel) + facet_grid(lubridate::year(variable) ~ lubridate::month(x=variable, label=T, abbr=T))
           }
           
           #ggplot2::ggplot(data = ctryData, ggplot2::aes(x = factor(variable), y = value, col = country)) + ggplot2::theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) + ggplot2::labs(col = admLevel) + geom_boxplot() + facet_grid(country ~ .)
@@ -2856,7 +2855,7 @@ shiny::shinyServer(function(input, output, session){
           }
   
           g <- g+ ggplot2::geom_line() + ggplot2::geom_point()+
-            ggplot2::theme(axis.text.x=element_text(angle=0,hjust=1,vjust=0.5)) +
+            ggplot2::theme(axis.text.x=element_text(angle=30,hjust=1,vjust=0.5)) +
             ggplot2::labs(col=admLevel)
         }
         else if (graphType == "histogram")

@@ -190,6 +190,11 @@ shinydashboard::dashboardPage(
         shiny::tabPanel(title = "Available Data",
                         tags$style("height: 80vh; position:relative;"),
                         DT::dataTableOutput(outputId = "availableData")
+        ),
+        
+        shiny::tabPanel(title = "Downloads",
+                        tags$style("height: 80vh; position:relative;"),
+                        DT::dataTableOutput(outputId = "downloadCart")
         )
       )
     )
