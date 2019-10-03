@@ -103,19 +103,30 @@ getWorldMap <- function()
   
   if(!exists(x = "map", envir = .RnightlightsEnv))
   {
-    #world map and clean it
-    #may take a sec or two so let's do it once
-    #clean now (2019) shows a progressbar which is not ideal
-    #we may move this back into the main code and maybe instantiate
-    #it globally the first time we need it
-    map <- rworldmap::getMap()
+    saveMapPath <- file.path(getNlDir("dirPolygon"), paste0("rworldmap_", utils::packageVersion("rworldmap"), "_map.rda"))
     
-    #capture cleangeo progressbar output
-    out <- utils::capture.output(map <- cleangeo::clgeo_Clean(map))
-    
-    rm(out)
-    
-    assign(x = "map", value = map, envir = .RnightlightsEnv)
+    if(!file.exists(saveMapPath))
+    {
+      #world map and clean it
+      #may take a sec or two so let's do it once
+      #clean now (2019) shows a progressbar which is not ideal
+      #we may move this back into the main code and maybe instantiate
+      #it globally the first time we need it
+      map <- rworldmap::getMap()
+      
+      #capture cleangeo progressbar output
+      out <- utils::capture.output(map <- cleangeo::clgeo_Clean(map))
+      
+      rm(out)
+      
+      assign(x = "map", value = map, envir = .RnightlightsEnv)
+      
+      #save the map to prevent the slow few seconds when it runs
+      save(map, file = saveMapPath)
+    } else
+    {
+      load(file = saveMapPath, envir = .RnightlightsEnv)
+    }
   }
   
   get(x = "map", envir = .RnightlightsEnv)
