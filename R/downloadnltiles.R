@@ -324,7 +324,7 @@ downloadNlTilesOLS <- function(nlPeriod,
           
           tgzFile <- tarFileList[grep(paste0(".*\\.", configName, ".*\\.tif(\\.gz)*$"), tarFileList, ignore.case = T)]
           
-          if(configName %in% toupper(c("cf_cvg", "avg_vis", "stable_lights")))
+          if(toupper(configName) %in% toupper(c("cf_cvg", "avg_vis", "stable_lights")))
           {
             #extract the nightlight gz data file
             utils::untar(tarfile = ntLtsZipLocalNamePathOLSTemp, files = tgzFile, exdir = getNlDir("dirNlTiles"), tar = "internal")
