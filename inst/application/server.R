@@ -132,6 +132,7 @@ shiny::shinyServer(function(input, output, session){
   output$countries <- shiny::renderUI({
     print("countries")
 
+    #c("Ashm", "CYN", "Gaza", "IDN", "IOA", "KAS", "KOS"))
     allCtryCodes <- Rnightlights::getAllNlCtryCodes()
     
     allCtryNames <- Rnightlights::ctryCodeToName(allCtryCodes)
