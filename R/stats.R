@@ -1002,12 +1002,13 @@ fnAggRadGdal <- function(ctryCode,
                                            gadmPolyType = gadmPolyType,
                                            custPolyPath = custPolyPath)
   
+  #only one zonal raster per country required across all time
   if(is.null(custPolyPath))
     path.out.r<- file.path(getNlDir("dirZonals"), paste0("NL_ZONAL_",
                                                          ctryCode,"_",
                                                          "ADM", substr(x = admLevel, start = nchar(admLevel), stop = nchar(admLevel)), "_",
                                                          nlType, "_",
-                                                         nlPeriod, "_",
+                                                         # nlPeriod, "_",
                                                          "GF", substr(as.character(removeGasFlares),1,1), "_",
                                                          "GADM-", gadmVersion, "-",toupper(gadmPolyType),
                                                          ".tif"))
@@ -1016,7 +1017,7 @@ fnAggRadGdal <- function(ctryCode,
                                                          ctryCode,"_",
                                                          "ADM", gsub("[^[:INTEGER:]]", "", admLevel),"_",
                                                          nlType, "_",
-                                                         nlPeriod, "_",
+                                                         # nlPeriod, "_",
                                                          "GF", substr(as.character(removeGasFlares),1,1), "_",
                                                          basename(custPolyPath),"-SHPZIP.tif"))
   
@@ -1158,6 +1159,10 @@ fnAggRadRast <- function(ctryPoly, ctryRastCropped, nlType, configName, nlStats,
 
   options(stringsAsFactors = FALSE)
   
+  on.exit({
+    
+  })
+  
   cl <- snow::makeCluster(pkgOptions("numThreads"))
   
   doSNOW::registerDoSNOW(cl = cl)
@@ -1268,11 +1273,14 @@ fnAggRadRast <- function(ctryPoly, ctryRastCropped, nlType, configName, nlStats,
   result <- result[, nlStatNames]
   
   close(pb)
-  snow::stopCluster(cl)
   
-  raster::removeTmpFiles(h=0)
-  
-  gc()
+  on.exit({
+    snow::stopCluster(cl)
+    
+    raster::removeTmpFiles(h=0)
+    
+    gc()
+  })
   
   return(stats::setNames(data.frame(result), nlStatNames))
 }
