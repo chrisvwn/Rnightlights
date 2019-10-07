@@ -236,16 +236,6 @@ processNLCountry <- function(ctryCode,
       message(Sys.time(), ": Processing stats: ", nlStatSignature(nlStats))
     }
     
-    message(Sys.time(), ": Load polygon layer for crop")
-    ctryPolyAdm0 <- readCtryPolyAdmLayer(ctryCode = ctryCode,
-                                         admLevel = unlist(getCtryShpLyrNames(ctryCodes = ctryCode,
-                                                                              lyrNums = 0,
-                                                                              gadmVersion = gadmVersion,
-                                                                              gadmPolyType = gadmPolyType,
-                                                                              custPolyPath = custPolyPath)),
-                                         gadmVersion = gadmVersion,
-                                         custPolyPath = custPolyPath)
-    
     message(Sys.time(), ": Load country data file")
     ctryNlDataDF <- utils::read.csv(ctryNlDataFnamePath, header = TRUE, check.names = FALSE, encoding = "UTF-8")
     
@@ -285,6 +275,16 @@ processNLCountry <- function(ctryCode,
   if(!file.exists(ctryRasterOutputFnamePath))
   {
     message(Sys.time(), ": Country output raster not found. Creating")
+    
+    message(Sys.time(), ": Load polygon layer for crop")
+    ctryPolyAdm0 <- readCtryPolyAdmLayer(ctryCode = ctryCode,
+                                         admLevel = unlist(getCtryShpLyrNames(ctryCodes = ctryCode,
+                                                                              lyrNums = 0,
+                                                                              gadmVersion = gadmVersion,
+                                                                              gadmPolyType = gadmPolyType,
+                                                                              custPolyPath = custPolyPath)),
+                                         gadmVersion = gadmVersion,
+                                         custPolyPath = custPolyPath)
     
     message(Sys.time(), ": Reading in the raster tiles")
     
