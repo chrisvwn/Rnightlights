@@ -196,16 +196,6 @@ processNLCountry <- function(ctryCode,
                                                    gadmPolyType = gadmPolyType,
                                                    custPolyPath = custPolyPath)
 
-  message(Sys.time(), ": Load polygon layer for crop")
-  ctryPolyAdm0 <- readCtryPolyAdmLayer(ctryCode = ctryCode,
-                                       admLevel = unlist(getCtryShpLyrNames(ctryCodes = ctryCode,
-                                                                            lyrNums = 0,
-                                                                            gadmVersion = gadmVersion,
-                                                                            gadmPolyType = gadmPolyType,
-                                                                            custPolyPath = custPolyPath)),
-                                       gadmVersion = gadmVersion,
-                                       custPolyPath = custPolyPath)
-  
   if (existsCtryNlDataFile(ctryCode = ctryCode,
                            admLevel = admLevel,
                            gadmVersion = gadmVersion,
@@ -245,6 +235,16 @@ processNLCountry <- function(ctryCode,
       nlStats <- nlStats[!existStats]
       message(Sys.time(), ": Processing stats: ", nlStatSignature(nlStats))
     }
+    
+    message(Sys.time(), ": Load polygon layer for crop")
+    ctryPolyAdm0 <- readCtryPolyAdmLayer(ctryCode = ctryCode,
+                                         admLevel = unlist(getCtryShpLyrNames(ctryCodes = ctryCode,
+                                                                              lyrNums = 0,
+                                                                              gadmVersion = gadmVersion,
+                                                                              gadmPolyType = gadmPolyType,
+                                                                              custPolyPath = custPolyPath)),
+                                         gadmVersion = gadmVersion,
+                                         custPolyPath = custPolyPath)
     
     message(Sys.time(), ": Load country data file")
     ctryNlDataDF <- utils::read.csv(ctryNlDataFnamePath, header = TRUE, check.names = FALSE, encoding = "UTF-8")
@@ -1115,12 +1115,32 @@ processNlData <- function (ctryCodes,
                                                                 gadmPolyType = gadmPolyType,
                                                                 custPolyPath = custPolyPath)))
         
+        
         #Check if all stats exist for the ctryCode
         if (all(existAdmLvlStats))
         {
            message (Sys.time(), ": **", ctryCode, ": All stats exist")
          
            next
+        }
+        
+        rasterOutputFnamePath <- getCtryRasterOutputFnamePath(ctryCode = ctryCode,
+                                                              nlType = nlType,
+                                                              configName = configName,
+                                                              multiTileStrategy = multiTileStrategy,
+                                                              multiTileMergeFun = multiTileMergeFun,
+                                                              removeGasFlares = removeGasFlares,
+                                                              nlPeriod = nlPeriod,
+                                                              gadmVersion = gadmVersion,
+                                                              gadmPolyType = gadmPolyType,
+                                                              custPolyPath = custPolyPath)
+        
+        #if the cropped raster is found do not list tile
+        if (file.exists(rasterOutputFnamePath))
+        {
+          message(Sys.time(), ": ", ctryCode, ": cropped raster exists. Tile not required")
+          
+          next
         }
         
         message(Sys.time(), ": ", ctryCode, ": Stats missing. Adding tiles")
@@ -1150,30 +1170,12 @@ processNlData <- function (ctryCodes,
       }
       else
       {
-        rasterOutputFnamePath <- getCtryRasterOutputFnamePath(ctryCode = ctryCode,
-                                                              nlType = nlType,
-                                                              configName = configName,
-                                                              multiTileStrategy = multiTileStrategy,
-                                                              multiTileMergeFun = multiTileMergeFun,
-                                                              removeGasFlares = removeGasFlares,
-                                                              nlPeriod = nlPeriod,
-                                                              gadmVersion = gadmVersion,
-                                                              gadmPolyType = gadmPolyType,
-                                                              custPolyPath = custPolyPath)
-        
-        #tile not found. if the cropped raster is not found try to download
-        if (!file.exists(rasterOutputFnamePath))
+        #download all required tiles
+        if(!downloadNlTiles(nlType = nlType, configName = configName, multiTileStrategy = multiTileStrategy, nlPeriod = nlPeriod, tileList = tileList))
         {
-          if(!downloadNlTiles(nlType = nlType, configName = configName, multiTileStrategy = multiTileStrategy, nlPeriod = nlPeriod, tileList = tileList))
-          {
-            message(Sys.time(), ": Something went wrong with the tile downloads. Aborting ...")
-            
-            break
-          }
-        }
-        else
-        {
-          message(Sys.time(), ": Cropped raster ", rasterOutputFnamePath, " already exists. Skipping tile download")
+          message(Sys.time(), ": Something went wrong with the tile downloads. Aborting ...")
+          
+          break
         }
       }
       
