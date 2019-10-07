@@ -391,19 +391,20 @@ shiny::shinyServer(function(input, output, session){
                                                              gadmPolyType = polyType,
                                                              custPolyPath = custPolyPath))
         
-          ctryData <- Rnightlights::getCtryNlData(ctryCode = countries,
-                                               admLevel = admLevel,
-                                               gadmVersion = polyVer,
-                                               gadmPolyType = polyType,
-                                               custPolyPath = custPolyPath,
-                                               nlTypes = nlType,
-                                               nlPeriods = nlPeriod,
-                                               nlStats = nlStats,
-                                               extractMethod = "gdal",
-                                               configNames = configName,
-                                               multiTileStrategy = multiTileStrategy,
-                                               multiTileMergeFun = multiTileMergeFun,
-                                               removeGasFlares = removeGasFlares)
+        data.table::data.table(
+          Rnightlights::getCtryNlData(ctryCode = countries,
+                                      admLevel = admLevel,
+                                      gadmVersion = polyVer,
+                                      gadmPolyType = polyType,
+                                      custPolyPath = custPolyPath,
+                                      nlTypes = nlType,
+                                      nlPeriods = nlPeriod,
+                                      nlStats = nlStats,
+                                      extractMethod = "gdal",
+                                      configNames = configName,
+                                      multiTileStrategy = multiTileStrategy,
+                                      multiTileMergeFun = multiTileMergeFun,
+                                      removeGasFlares = removeGasFlares))
 
       } else if(length(countries) > 1) #remove subcountry admin levels
       {
@@ -440,21 +441,9 @@ shiny::shinyServer(function(input, output, session){
             ctryData <- merge(ctryData, temp, all=TRUE)
           }
         }
+        
+        ctryData
       }
-      
-      ctryData <- data.table::as.data.table(ctryData)
-      
-      #get the nlType columns
-      ctryCols <- names(ctryData)
-      
-      ctryNonNLCols <- grep("NL_", ctryCols, invert = T, value = T)
-      ctryNLCols <- grep("NL_", ctryCols, value = T)
-      
-      ctryNLColsNlType <- grep(nlType, ctryNLCols, value = T)
-      
-      ctryData <- ctryData[, c(ctryNonNLCols, ctryNLColsNlType), with=F]
-      
-      return(ctryData)
     })
   
   ######################## reactive ctryNlDataMelted ###################################
