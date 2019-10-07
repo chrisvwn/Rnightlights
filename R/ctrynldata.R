@@ -1092,7 +1092,7 @@ getCtryNlData <- function(ctryCode=NULL,
     if(is.null(ignoreMissing) || ignoreMissing) #shortcircuit if ignoreMissing is NULL to avoid crash
     {
       if(any(existnlPeriodStats))
-        existingCols <- apply(X = nlPeriodStats[existnlPeriodStats,],
+        existingNlCols <- apply(X = nlPeriodStats[existnlPeriodStats,],
                               MARGIN =  1,
                               FUN = function(x)
                               {
@@ -1103,7 +1103,7 @@ getCtryNlData <- function(ctryCode=NULL,
                                                      removeGasFlares = removeGasFlares)
                               })
       else
-        existingCols <- NULL
+        existingNlCols <- NULL
     }
     else 
     {
