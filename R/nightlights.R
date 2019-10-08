@@ -1164,9 +1164,9 @@ processNlData <- function (ctryCodes,
       
       if (length(tileList) == 0)
       {
-        message(Sys.time(), ": No tiles needed for ", nlPeriod, ". Process next nlPeriod")
+        message(Sys.time(), ": No tiles needed for ", nlPeriod, ". Processing countries with missing stats and existing cropped rasters")
         
-        next
+        #next
       }
       else
       {
