@@ -170,8 +170,11 @@ nlStatArgs <- function(nlStat)
 
 nlSignatureAddArg <- function(nlStatSigs, addArg)
 {
+  addArg <- nlStatArgsStandardize(addArg)
+  
   sapply(nlStatSigs, function(nlStatSig)
   {
+    #convert the signature into an nlStat list
     nlStat <- nlSignatureStat(nlStatSignature = nlStatSig)
     
     if(length(nlStat) == 1 && length(unlist(nlStat)) == 1)
@@ -181,6 +184,7 @@ nlSignatureAddArg <- function(nlStatSigs, addArg)
     else if(length(nlStat) == 2)
       nlStat <- list(list(nlStat[[1]], paste(nlStat[[2]], addArg, collapse = "", sep=",")))
     
+    #convert back to a signature. this should also remove duplicate args
     newNlStatSig <- nlStatSignature(nlStat)
     
     if(any(grepl("xUnMatchedx", nlStat)))
@@ -197,21 +201,49 @@ nlStatSignature <- function(nlStat)
 {
   statArgs <- nlStatArgs(nlStat)
   
+  statArgs <- nlStatArgsStandardize(statArgs)
+  
   paste0(nlStat[[1]][[1]], "(", statArgs, ")")
+}
+
+nlStatArgsStandardize <- function(nlStatArg)
+{
+  #standardize TRUE/FALSE
+  #replace any standalone T ie not single or double quoted, not preceded or followed by any
+  #alnum; may have space before and/or after; may be at the beginning or end of string
+  nlStatArg <- gsub("(^|[^'\"a-zA-Z0-9])\\s*T\\s*([^'\"a-zA-Z0-9]|$)", "\\1TRUE\\2", nlStatArg)
+  
+  nlStatArg <- gsub("(^|[^'\"a-zA-Z0-9])\\s*F\\s*([^'\"a-zA-Z0-9]|$)", "\\1FALSE\\2", nlStatArg)
+  
+  nlStatArg
 }
 
 nlSignatureStat <- function(nlStatSignature)
 {
+  #the stat name is the first part before first bracket
   nlStatName <- gsub("(^.*)\\(.*", "\\1", nlStatSignature)
   
+  #params are the rest of the signature
   params <- gsub(nlStatName, "", nlStatSignature)
   
+  #remove the brackets
   nlStatArgs <- substr(x = params, 2, nchar(params)-1)
   
+  #if there are args
   if(nlStatArgs != "")
-    list(list(nlStatName, gsub("...=", "", nlStatArgs, fixed = T)))
-  else
+  {
+    #remove ...= which is not a legit arg
+    statArgs <- gsub("...=", "", nlStatArgs, fixed = T)
+    
+    #standardize TRUE/FALSE
+    statArgs <- nlStatArgsStandardize(statArgs)
+    
+    list(list(nlStatName, statArgs))
+  } else
+  {
+    #if no args just return the func name as a list
     list(nlStatName)
+  }
 }
 
 prettyNlSignature <- function(nlStatSig)
@@ -317,6 +349,7 @@ readSavedNlStats <- function()
 #' @export
 nlSignatureStatName <- function(statSig)
 {
+  #get the name of the function i.e. part before the first bracket
   gsub("(^.*)\\(.*", "\\1", statSig)
 }
 
