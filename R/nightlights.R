@@ -241,9 +241,9 @@ processNLCountry <- function(ctryCode,
     
     message(Sys.time(), ": Load country polygon admin level")
     
-    ctryExtent <- raster::extent(x = ctryPolyAdm0)
-    
-    raster::projection(ctryPolyAdm0) <- sp::CRS(projargs = wgs84)
+    # ctryExtent <- raster::extent(x = ctryPolyAdm0)
+    # 
+    # raster::projection(ctryPolyAdm0) <- sp::CRS(projargs = wgs84)
     
   } else
   {
