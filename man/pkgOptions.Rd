@@ -128,7 +128,7 @@ The following options are supported
      tile index }
  \item{\code{ntLtsIndexUrlVIIRS}}{(\code{character}) The url with the 
      VIIRS tile index }
- \item{\code{numCores}}{(\code{integer}) The number of processor cores 
+ \item{\code{numThreads}}{(\code{integer}) The number of processing threads 
      to use when extractMethod = "raster" }
  \item{\code{omitCountries}}{(\code{character}) The countries to exclude 
      in processing }
