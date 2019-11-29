@@ -1334,7 +1334,7 @@ getCtryShpLowestLyrNames <- function(ctryCodes=NULL,
                                               gadmPolyType = gadmPolyType,
                                               custPolyPath = custPolyPath))))
     stop(Sys.time(), ": Unable to find/download ctry polygon")
-  
+
   lowestAdmLyrNames <- sapply(ctryCodes,
                               function(ctryCode)
   {
@@ -2122,7 +2122,8 @@ getPolyFname <- function(ctryCode=NULL,
     fName <- basename(custPolyPath)
     
     #format of shapefiles is CTR_adm_shp e.g. KEN_adm_shp
-    polyFname <- paste0("SHP_", ifelse(is.null(ctryCode), "", paste0(ctryCode,"_")), "CUST-", fName)
+    #polyFname <- paste0("SHP_", ifelse(is.null(ctryCode), "", paste0(ctryCode,"_")), "CUST-", fName)
+    polyFname <- paste0("POLY_", ifelse(is.null(ctryCode), "", paste0(ctryCode,"_")), "CUST-", fName, "-SHPZIP")
   }else
   {
     #format of shapefiles is CTR_adm_shp e.g. KEN_adm_shp
