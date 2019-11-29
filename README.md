@@ -6,6 +6,8 @@ The Rnightlights package extracts country rasters and zonal statistics from sate
 
 The package supports DMSP-OLS annual and SNPP-VIIRS daily, monthly and annual (yearly) nightlight raster data. Satellite nightlight raster tiles are downloaded and cropped to the country boundaries using shapefiles from the GADM database of Global Administrative Areas (<http://gadm.org>). Specified zonal statistics are then calculated at the selected administrative level(s) for the selected country(ies) and cached locally for future retrieval. Finally, a simple data explorer/browser is included that allows one to visualize the cached data e.g. graphing, mapping and clustering regional data.
 
+**NOTE: Rnightlights is still in beta and may change drastically in ways that may break previous functionality and interfaces**
+
 ## Installation
 
 R package Rnightlights is available on CRAN and can be installed in R as:
