@@ -455,6 +455,9 @@ deleteSavedNlStat <- function(nlStatName)
 
 hashNlStatBody <- function(nlStatBody)
 {
+  #remove <bytecode: ...> which will change per session
+  nlStatBody <- gsub("<bytecode: .*>", "", nlStatBody)
+  
   #remove whitespace and hash
   digest::sha1(digest::sha1(gsub("\\s*","", nlStatBody)))
 }
@@ -462,6 +465,8 @@ hashNlStatBody <- function(nlStatBody)
 hashNlStat <- function(nlStatName)
 {
   nlStatBody <- utils::capture.output(eval(expr = parse(text = nlStatName)))
+  
+  nlStatBody <- paste(nlStatBody, collapse = "", sep = "")
   
   hashNlStatBody(nlStatBody = nlStatBody)
 }
@@ -1048,7 +1053,8 @@ fnAggRadGdal <- function(ctryCode,
   else
     path.out.r<- file.path(getNlDir("dirZonals"), paste0("NL_ZONAL_",
                                                          ctryCode,"_",
-                                                         "ADM", gsub("[^[:INTEGER:]]", "", admLevel),"_",
+                                                         #cust layers are prefixed with layer number
+                                                         "ADM", substr(x = admLevel, start = 1, stop = 1),"_",
                                                          nlType, "_",
                                                          # nlPeriod, "_",
                                                          "GF", substr(as.character(removeGasFlares),1,1), "_",
