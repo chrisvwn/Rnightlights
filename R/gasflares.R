@@ -249,7 +249,7 @@ hasNlCtryGasFlares <- function(ctryCode,
                                        custPolyPath = custPolyPath)
   gasFlarePoly <- getNlGasFlaresRds()
   
-  return(rgeos::gIntersects(ctryPolyAdm0, gasFlarePoly))
+  return(any(rgeos::gIntersects(ctryPolyAdm0, gasFlarePoly, byid = TRUE, prepared = FALSE)))
 }
 
 ######################## hasNlCtryGasFlares ###################################
