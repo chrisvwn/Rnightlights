@@ -55,7 +55,9 @@ Suggests:
     plotly,
     RColorBrewer,
     shiny,
+    shinycssloaders,
     shinydashboard,
+    shinyjs,
     testthat
 SystemRequirements:
     aria2,
