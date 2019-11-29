@@ -89,25 +89,6 @@ shiny::shinyServer(function(input, output, session){
   shiny::outputOptions(output, "selectAdmLevel", suspendWhenHidden = FALSE)
   #shinyjs::useShinyjs()
 
-  ######################## actionButton btnGo ###################################
-  
-  output$btnGo <- shiny::renderUI({
-    print("output: btnGo")
-    
-    if(values$needsDataUpdate || values$needsDataProcessing)
-    {
-      if(values$needsDataUpdate)
-        btn <- shiny::actionButton("btnGo", "LOAD", style="background-color:orange")
-    
-      #give precedence to process. if both set let process override load
-      if(values$needsDataProcessing)
-        btn <- shiny::actionButton("btnGo", "PROCESS", style="background-color:orange")
-    } else
-      btn <- shiny::actionButton("btnGo", "LOAD", style="background-color:lightblue")
-    
-    btn
-  })
-  
   ######################## reactive ctryCodesWithData ###################################
   
   ctryCodesWithData <- shiny::reactive({
@@ -127,9 +108,9 @@ shiny::shinyServer(function(input, output, session){
     ctryCodesWithData
   })
   
-  ######################## renderUI countries ###################################
+  ######################## update countries ###################################
   
-  output$countries <- shiny::renderUI({
+  observe({
     print("countries")
 
     #c("Ashm", "CYN", "Gaza", "IDN", "IOA", "KAS", "KOS"))
@@ -145,10 +126,30 @@ shiny::shinyServer(function(input, output, session){
     
     ctryCodes <- list("Have Data"=ctryCodesWithData, "Without Data"=diffCtryCodes)
     
-    shiny::selectizeInput(inputId = "countries",
-                          label = "Select Country(ies)",
-                          choices = ctryCodes,
-                          multiple = TRUE)
+    shiny::updateSelectizeInput(session = session,
+                                inputId = "countries",
+                                label = "Select Country(ies)",
+                                choices = ctryCodes,
+                                server = TRUE)
+  })
+
+  ######################## actionButton btnGo ###################################
+  
+  output$btnGo <- shiny::renderUI({
+    print("output: btnGo")
+    
+    if(values$needsDataUpdate || values$needsDataProcessing)
+    {
+      if(values$needsDataUpdate)
+        btn <- shiny::actionButton("btnGo", "LOAD", style="background-color:orange")
+      
+      #give precedence to process. if both set let process override load
+      if(values$needsDataProcessing)
+        btn <- shiny::actionButton("btnGo", "PROCESS", style="background-color:orange")
+    } else
+      btn <- shiny::actionButton("btnGo", "LOAD", style="background-color:lightblue")
+    
+    btn
   })
   
   ######################## reactive getInputCountries ###########################
@@ -168,32 +169,32 @@ shiny::shinyServer(function(input, output, session){
   
   ######################## reactive ctryAdmLevels ###################################
   
-    ctryAdmLevels <- shiny::reactive({
-      print(paste0("reactive:ctryAdmLevels"))
-      
-      countries <- getInputCountries()
-      
-      if(length(countries) == 0 || length(countries) > 1)
-        return()
-      
-      admLevelNames <- Rnightlights:::getCtryStructAdmLevelNames(ctryCode = countries)
-      
-      admLevelNames
-    })
+  ctryAdmLevels <- shiny::reactive({
+    print(paste0("reactive:ctryAdmLevels"))
+    
+    countries <- getInputCountries()
+    
+    if(length(countries) == 0 || length(countries) > 1)
+      return()
+    
+    admLevelNames <- Rnightlights:::getCtryStructAdmLevelNames(ctryCode = countries)
+    
+    admLevelNames
+  })
     
   ######################## reactive ctryAdmLevelNames ###################################
   
-    ctryAdmLevelNames <- shiny::reactive({
-      print(paste0("reactive:ctryAdmLevelNames"))
-      
-      countries <- getInputCountries()
-      
-      if (length(countries) != 1)
-        return()
-
-      Rnightlights:::readCtryStruct(ctryCode = countries)
+  ctryAdmLevelNames <- shiny::reactive({
+    print(paste0("reactive:ctryAdmLevelNames"))
     
-    })
+    countries <- getInputCountries()
+    
+    if (length(countries) != 1)
+      return()
+
+    Rnightlights:::readCtryStruct(ctryCode = countries)
+  
+  })
   
   ######################## reactive ctryNlTypes ###################################
   
@@ -461,49 +462,51 @@ shiny::shinyServer(function(input, output, session){
 
     if(is.null(ctryStat))
       return()
-    
+
     configName <- input$configName
-    
+
     multiTileMergeStrategy <- input$multiTileMergeStrategy
-    
+
     multiTileMergeFun <- input$multiTileMergeFun
-    
+
     removeGasFlares <- input$removeGasFlares
 
     if(is.null(configName) || is.null(multiTileMergeStrategy) || is.null(multiTileMergeFun)  || is.null(removeGasFlares))
       return()
-    
+
     shiny::isolate({
       #the nightlight cols
       nlCols <- names(ctryData)[grep("NL_", names(ctryData))]
-      
+
       #the cols with the stats we want
-      
+
       statCols <- grep(pattern = gsub("(", "\\(", paste0("NL_.*_", ctryStat), fixed = T), x = names(ctryData), value = TRUE)
-      
+
       statCols <- grep(pattern = configName, x = statCols, value = TRUE)
 
       statCols <- grep(pattern = paste0("GF", substr(removeGasFlares, 1, 1)), x = statCols, value = TRUE)
-      
+
       statCols <- grep(pattern = paste0("MTS", multiTileMergeStrategy), x = statCols, value = TRUE)
-      
+
       statCols <- grep(pattern = multiTileMergeFun, x = statCols, value = TRUE)
 
       #the non nightlight cols
       ctryDataCols <- setdiff(names(ctryData), nlCols)
-      
+
       #the cols to melt by
       meltMeasureVars <- statCols
-      
+    
+      nlType <- shiny::isolate(input$nlType)  
+    
       #combine the non-nightlight cols and the cols with the stats we want
-      ctryData <- subset(ctryData, select=c(ctryDataCols, meltMeasureVars))
+      #ctryData <- subset(ctryData, select=c(ctryDataCols, meltMeasureVars))
       
       #remove non-digits to get only stat cols
-      meltVarNames <- gsub("[^[:digit:]]", "", meltMeasureVars)
+      #meltVarNames <- gsub("[^[:digit:]]", "", meltMeasureVars)
       
       ctryData <- data.table::data.table(reshape2::melt(ctryData, measure.vars=meltMeasureVars))
       
-      ctryData$variable <- Rnightlights::nlPeriodToDate(gsub("[^[:digit:]]","", ctryData$variable), input$nlType)
+      ctryData$variable <- Rnightlights::nlPeriodToDate(gsub("[^[:digit:]]","", ctryData$variable), nlType)
       
       return(ctryData)
     })
@@ -577,7 +580,7 @@ shiny::shinyServer(function(input, output, session){
   
   ######################## renderUI polySrc ###################################
   
-  output$polySrc <- shiny::renderUI({
+  observe({
     print(paste0("output: polySrc"))
     
     countries <- getInputCountries()
@@ -611,12 +614,12 @@ shiny::shinyServer(function(input, output, session){
     else
       selectedPolySrc <- existingPolySrcs[1]
     
-    shiny::selectInput(inputId = "polySrc", label = "polySrc", choices = polySrcs, selected = selectedPolySrc)
+    shiny::updateSelectInput(session = session, inputId = "polySrc", label = "polySrc", choices = polySrcs, selected = selectedPolySrc)
   })
   
   ######################## renderUI polyVer ###################################
   
-  output$polyVer <- shiny::renderUI({
+  observe({
     print(paste0("output: polyVer"))
 
     allPolyVers <- Rnightlights::getAllGadmVersions()
@@ -650,12 +653,12 @@ shiny::shinyServer(function(input, output, session){
     else
       selectedPolyVer <- existingPolyVers[1]
     
-    shiny::selectInput(inputId = "polyVer", label = "polyVer", choices = polyVers, selected = selectedPolyVer)
+    shiny::updateSelectInput(session = session, inputId = "polyVer", label = "polyVer", choices = polyVers, selected = selectedPolyVer)
   })
   
   ######################## renderUI polySrc ###################################
   
-  output$polyType <- shiny::renderUI({
+  observe({
     print(paste0("output: polyType"))
     
     allPolyTypes <- Rnightlights::getAllGadmPolyTypes()
@@ -689,12 +692,16 @@ shiny::shinyServer(function(input, output, session){
     else
       selectedPolyType <- "shpZip" #default
     
-    shiny::selectInput(inputId = "polyType", label = "polyType", choices = polyTypes, selected = selectedPolyType)
+    shiny::updateSelectInput(session = session,
+                             inputId = "polyType",
+                             label = "polyType",
+                             choices = polyTypes,
+                             selected = selectedPolyType)
   })
   
   ######################## renderUI ctryStats ###################################
     
-    output$ctryStats <- shiny::renderUI({
+    observe({
       print(paste0("output: ctryStats"))
 
       # if(is.null(getInputCountries()))
@@ -782,10 +789,11 @@ shiny::shinyServer(function(input, output, session){
       #                     selected = selectedStat
       # )
       
-      shiny::selectInput(inputId = "ctryStat",
-                         label = "Stats",
-                         choices = statChoices,
-                         selected = selectedStat)
+      shiny::updateSelectInput(session = session,
+                               inputId = "ctryStat",
+                               label = "Stats",
+                               choices = statChoices,
+                               selected = selectedStat)
 
     })
   
@@ -830,7 +838,7 @@ shiny::shinyServer(function(input, output, session){
   
   ######################## renderUI nlType ###################################
   
-  output$nlType <- shiny::renderUI({
+  observe({
     print(paste0("output: nlType"))
 
     existingNlTypes <- unique(ctryNlTypes())
@@ -848,11 +856,12 @@ shiny::shinyServer(function(input, output, session){
     else
       selectedNlType <- "VIIRS.M"
     
-    shiny::radioButtons(inputId = "nlType",
-                        label = "NL Type",
-                        choices = allNlTypes,
-                        selected = selectedNlType,
-                        inline = TRUE
+    shiny::updateRadioButtons(session = session,
+                              inputId = "nlType",
+                              label = "NL Type",
+                              choices = allNlTypes,
+                              selected = selectedNlType,
+                              inline = TRUE
     )
   })
 
@@ -973,7 +982,7 @@ shiny::shinyServer(function(input, output, session){
   
   ######################## renderUI configName ###################################
   
-  output$configName <- shiny::renderUI({
+  observe({
     print("output: configName")
 
     nlType <- input$nlType
@@ -1005,12 +1014,16 @@ shiny::shinyServer(function(input, output, session){
     else
       selectedConfigName <- existingConfigNames[1]
     
-    shiny::selectInput(inputId = "configName", label = "configName", choices = configNames, selected = selectedConfigName)
+    shiny::updateSelectInput(session = session,
+                             inputId = "configName",
+                             label = "configName",
+                             choices = configNames,
+                             selected = selectedConfigName)
   })
   
   ######################## renderUI multiTileMergeStrategy ###################################
   
-  output$multiTileMergeStrategy <- shiny::renderUI({
+  observe({
     print("output: multiTileStrategy")
 
     allMultiTileMergeStrategys <- c("ALL", "FIRST", "LAST")
@@ -1044,12 +1057,16 @@ shiny::shinyServer(function(input, output, session){
     else
       selectedMultiTileMergeStrategy <- existingMultiTileMergeStrategys[1]
     
-    shiny::selectInput(inputId = "multiTileMergeStrategy", label = "multiTileStrategy", choices = multiTileMergeStrategys, selected = selectedMultiTileMergeStrategy)
+    shiny::updateSelectInput(session = session,
+                             inputId = "multiTileMergeStrategy",
+                             label = "multiTileStrategy",
+                             choices = multiTileMergeStrategys,
+                             selected = selectedMultiTileMergeStrategy)
   })
   
   ######################## renderUI multiTileMergeFun ###################################
   
-  output$multiTileMergeFun <- shiny::renderUI({
+  observe({
     print("output: multiTileMergeFun")
 
     allMultiTileMergeFuns <- c("MEAN", "MEDIAN")
@@ -1084,12 +1101,16 @@ shiny::shinyServer(function(input, output, session){
     else
       selectedMultiTileMergeFun <- existingMultiTileMergeFuns[1]
     
-    shiny::selectInput(inputId = "multiTileMergeFun", label = "multiTileMergeFun", choices = multiTileMergeFuns, selected = selectedMultiTileMergeFun)
+    shiny::updateSelectInput(session = session,
+                             inputId = "multiTileMergeFun",
+                             label = "multiTileMergeFun",
+                             choices = multiTileMergeFuns,
+                             selected = selectedMultiTileMergeFun)
   })
   
   ######################## renderUI removeGasFlares ###################################
   
-  output$removeGasFlares <- shiny::renderUI({
+  observe({
     print("output: removeGasFlares")
 
     allRemoveGasFlares <- c(TRUE, FALSE)
@@ -1128,7 +1149,11 @@ shiny::shinyServer(function(input, output, session){
     else
       selectedRemoveGasFlare <- existingRemoveGasFlares[1]
     
-    shiny::selectInput(inputId = "removeGasFlares", label = "removeGasFlares", choices = removeGasFlares, selected = selectedRemoveGasFlare)
+    shiny::updateSelectInput(session = session,
+                             inputId = "removeGasFlares",
+                             label = "removeGasFlares",
+                             choices = removeGasFlares,
+                             selected = selectedRemoveGasFlare)
   })
   
   ######################## reactiveValues values ###################################
@@ -1138,7 +1163,9 @@ shiny::shinyServer(function(input, output, session){
       needsDataUpdate = FALSE,
       needsDataProcessing = FALSE,
       newStatFuncName = NULL,
-      newStatFuncBody = NULL
+      newStatFuncBody = NULL,
+      updateNeededPlot = FALSE,
+      updateNeededMap = FALSE
     )
 
   ######################## observe lastUpdated ###################################
@@ -2305,6 +2332,9 @@ shiny::shinyServer(function(input, output, session){
         
         clusts <- hCluster()
         
+        if(is.null(clusts))
+          return()
+        
         cutClusts <- stats::cutree(clusts, k=numClusters)
         
         admLevel <- input$radioAdmLevel #unlist(ctryAdmLevels())[2]
@@ -2678,13 +2708,15 @@ shiny::shinyServer(function(input, output, session){
     
     output$plotNightLights <- plotly::renderPlotly({
       print(paste0("output: renderPlot"))
-      input$btnGo
-      
+      #input$btnGo
+      values$updateNeededPlot
+     
+      shiny::isolate({ 
       countries <- shiny::isolate(getInputCountries())
 
       radioAdmLevel <- shiny::isolate(input$radioAdmLevel)
 
-      nlPeriodRange <- input$nlPeriodRange
+      nlPeriodRange <- shiny::isolate(input$nlPeriodRange)
 
       if(is.null(nlPeriodRange))
         return()
@@ -2709,8 +2741,7 @@ shiny::shinyServer(function(input, output, session){
       
       x <- admLvlCtrlNames[grep("selectAdm\\d+$", admLvlCtrlNames)]
       
-      shiny::isolate({
-        
+     
         admLvlNums <- NULL
         for (i in x)
           if(length(input[[i]]) > 0)
@@ -2763,6 +2794,13 @@ shiny::shinyServer(function(input, output, session){
           else if(grepl("\\.Y", nlType))
             g <- g + ggplot2::scale_x_date(date_breaks = "1 year", date_labels = "%Y")
             
+          # if(!exists("nlPeriodRange") || is.null(nlPeriodRange))
+          # {
+          #   nlPeriodRange <- Rnightlights::getAllNlPeriods(nlTypes = nlType)
+          #   nlPeriodRange <- c(nlPeriodRange[1], nlPeriodRange[length(nlPeriodRange)])
+          #   nlPeriodRange <- Rnightlights::nlPeriodToDate(nlPeriod = nlPeriodRange, nlType = nlType)
+          # }
+          
           g <- g + ggplot2::xlim(nlPeriodRange[1], nlPeriodRange[2]) +
           ggplot2::ylim(0, 100) +
           ggplot2::labs(title="Nightlight Radiance",

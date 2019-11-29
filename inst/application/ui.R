@@ -66,21 +66,32 @@ shinydashboard::dashboardPage(
 
       shiny::uiOutput(outputId = "textDate"),
       
-      shiny::uiOutput(outputId = "countries"),
+      shiny::selectizeInput(inputId = "countries",
+                            label = "Select Country(ies)",
+                            choices = NULL,
+                            multiple = TRUE),
       
-      shiny::uiOutput(outputId = "btnGo"),
+      shiny::actionButton(inputId = "btnGo",
+                          label = "LOAD",
+                          style = "background-color:lightblue"),
                                 
       shinydashboard::menuItem("Inputs", selected = TRUE, startExpanded = TRUE, tabName = "inputs",
-
-               shiny::uiOutput(outputId = "selectAdmLevel"),
-               
-               shiny::uiOutput("radioAdmLevel")
+                               shiny::uiOutput(outputId = "selectAdmLevel"),
+                               
+                               shiny::uiOutput(outputId = "radioAdmLevel")
                ),
 
       shinydashboard::menuItem("Stats", selected = FALSE, startExpanded = TRUE, tabName = "stats",
-                               shiny::uiOutput(outputId = "nlType"),
+                               shiny::radioButtons(inputId = "nlType",
+                                                   label = "NL Type",
+                                                   choices = Rnightlights::getAllNlTypes(),
+                                                   selected = NULL,
+                                                   inline = TRUE),
                                
-                               shiny::uiOutput(outputId = "ctryStats"),
+                               shiny::selectInput(inputId = "ctryStat",
+                                                  label = "Stats",
+                                                  choices = NULL,
+                                                  selected = NULL),
                                
                                shiny::checkboxInput(inputId = "optionNaRm",
                                                     label = "na.rm",
@@ -91,19 +102,40 @@ shinydashboard::dashboardPage(
                                
                                shiny::uiOutput(outputId = "btnNewStat"),
                                
-                               shiny::uiOutput(outputId = "polySrc"),
+                               shiny::selectInput(inputId = "polySrc",
+                                                  label = "polySrc",
+                                                  choices = NULL,
+                                                  selected = NULL),
                                
-                               shiny::uiOutput(outputId = "polyVer"),
+                               shiny::selectInput(inputId = "polyVer",
+                                                  label = "polyVer",
+                                                  choices = NULL,
+                                                  selected = NULL),
                                
-                               shiny::uiOutput(outputId = "polyType"),
+                               shiny::selectInput(inputId = "polyType",
+                                                  label = "polyType",
+                                                  choices = NULL,
+                                                  selected = NULL),
                                
-                               shiny::uiOutput(outputId = "configName"),
+                               shiny::selectInput(inputId = "configName",
+                                                  label = "configName",
+                                                  choices = NULL,
+                                                  selected = NULL),
                                
-                               shiny::uiOutput(outputId = "multiTileMergeStrategy"),
+                               shiny::selectInput(inputId = "multiTileMergeStrategy",
+                                                  label = "multiTileStrategy",
+                                                  choices = NULL,
+                                                  selected = NULL),
                                
-                               shiny::uiOutput(outputId = "multiTileMergeFun"),
+                               shiny::selectInput(inputId = "multiTileMergeFun",
+                                                  label = "multiTileMergeFun",
+                                                  choices = NULL,
+                                                  selected = NULL),
                                
-                               shiny::uiOutput(outputId = "removeGasFlares"),
+                               shiny::selectInput(inputId = "removeGasFlares",
+                                                  label = "removeGasFlares",
+                                                  choices = NULL,
+                                                  selected = NULL),
                                
                                shiny::checkboxInput(inputId = "norm_area",
                                                          label = "norm_area",
@@ -152,7 +184,7 @@ shinydashboard::dashboardPage(
         shiny::tabPanel(title = "Stats",
                  shiny::fluidRow(
                    shinydashboard::box(title = "Annual Trends", 
-                       shiny::plotOutput(outputId = "plotYearly")),
+                                       shinycssloaders::withSpinner(shiny::plotOutput(outputId = "plotYearly"))),
                    
                    shinydashboard::tabBox(
                      shiny::tabPanel(title = "Cluster Points",
