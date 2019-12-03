@@ -394,7 +394,7 @@ dnldGADMCtryShpZip <- function(ctryCode,
                                                                     gadmVersion = gadmVersion,
                                                                     gadmPolyType = gadmPolyType,
                                                                     custPolyPath = custPolyPath),
-                                         method = "auto",
+                                         method = "curl",
                                          mode = "wb",
                                          extra = "-c")
       else if (downloadMethod == "aria")
