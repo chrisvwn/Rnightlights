@@ -395,7 +395,7 @@ dnldGADMCtryShpZip <- function(ctryCode,
                                                                     gadmPolyType = gadmPolyType,
                                                                     custPolyPath = custPolyPath),
                                          method = "curl",
-                                         mode = "wb",
+                                         #mode = "wb",
                                          extra = "-c")
       else if (downloadMethod == "aria")
         rsltDnld <- system(paste0("aria2c -c -x", pkgOptions("numParDnldConns"), " --show-console-readout=false --summary-interval=10 ", fullPolyUrl,
