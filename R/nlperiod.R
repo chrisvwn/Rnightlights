@@ -231,6 +231,22 @@ getAllNlPeriods <- function(nlTypes)
   }, simplify = FALSE)
 }
 
+######################## nlPeriodToDate ###################################
+
+#' Convert nlPeriod to date
+#'
+#' Convert nlPeriod to date
+#'
+#' @param nlPeriod the nlPeriod to convert
+#' 
+#' @param nlType the nlType to use
+#'
+#' @return a date vector
+#'
+#' @examples
+#' nlPeriodToDate(nlPeriod = "201204", nlType = "VIIRS.M")
+#' #returns "2012-04-01"
+#' 
 #' @export
 nlPeriodToDate <- function(nlPeriod, nlType)
 {
@@ -254,6 +270,22 @@ nlPeriodToDate <- function(nlPeriod, nlType)
   dt
 }
 
+######################## dateToNlPeriod ###################################
+
+#' Convert date to nlPeriod
+#'
+#' Convert date to nlPeriod
+#'
+#' @param dt the date to convert
+#' 
+#' @param nlType the nlType to use
+#'
+#' @return an nlPeriod vector
+#'
+#' @examples
+#' dateToNlPeriod(dt = "2012-04-01", nlType = "VIIRS.M")
+#' #returns "201204"
+#' 
 #' @export
 dateToNlPeriod <- function(dt, nlType)
 {

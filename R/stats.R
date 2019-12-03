@@ -56,6 +56,24 @@ validNlStats <- function(nlStats)
   return(matchedFuns)
 }
 
+######################## nlStatParams ###################################
+
+#' Get the parameters of an nlStat
+#'
+#' Get the parameters of an nlStat
+#'
+#' @param nlStatName the name of the nlStat to process
+#'
+#' @return named character A vector of parameters
+#'
+#' @examples
+#'
+#' Rnightlights:::nlStatParams("sum")
+#' 
+#' #returns
+#' #...   na.rm = FALSE 
+#' #"..."       "na.rm"
+#'
 nlStatParams <- function(nlStatName)
 {
   fmls <- names(formals(eval(parse(text=nlStatName))))
@@ -79,6 +97,24 @@ nlStatParams <- function(nlStatName)
   fmls
 }
 
+######################## nlStatArgs ###################################
+
+#' Get the arguments passed to an nlStat
+#'
+#' Get the arguments passed to an nlStat when specifying it
+#'
+#' @param nlStat the name of the nlStat to process
+#'
+#' @return named character A vector of arguments passed to the nlStat
+#'
+#' @examples
+#'
+#' nlStat <- list("sum", "na.rm=TRUE")
+#' 
+#' Rnightlights:::nlStatArgs(nlStat = nlStat)
+#' 
+#' #returns "na.rm=TRUE"
+#'
 nlStatArgs <- function(nlStat)
 {
   if(length(nlStat) == 0)
@@ -168,6 +204,31 @@ nlStatArgs <- function(nlStat)
   allParams
 }
 
+######################## nlSignatureAddArg ###################################
+
+#' Add an argument to an nlSignature
+#'
+#' Add an argument to an nlSignature
+#'
+#' @param nlStatSigs character A vector of nlStat signatures to which to add
+#'     the argument
+#'     
+#' @param addArg character The argument to add to the signatures
+#'
+#' @return named character A vector of modified nlStat signatures
+#'
+#' @examples
+#'
+#' nlStat <- list("sum")
+#' 
+#' nlSig <- Rnightlights:::nlStatSignature(nlStat)
+#' 
+#' Rnightlights:::nlSignatureAddArg(nlStatSigs = nlSig, addArg = "na.rm = TRUE")
+#' 
+#' #returns
+#' #            sum() 
+#' # "sum(na.rm=TRUE)" 
+#'
 nlSignatureAddArg <- function(nlStatSigs, addArg)
 {
   addArg <- nlStatArgsStandardize(addArg)
@@ -197,6 +258,33 @@ nlSignatureAddArg <- function(nlStatSigs, addArg)
   })
 }
 
+######################## nlStatSignature ###################################
+
+#' Get the signature of an nlStat
+#'
+#' Get the signature of an nlStat i.e. the nlStat function with all arguments
+#'     passed in by the user. Used to uniquely identify an nlStat function call
+#'     i.e. the same function called with different arguments results in a
+#'     different signature
+#'
+#' @param nlStat character The name of an nlStat
+#'
+#' @return named character The signature of the nlStat
+#'
+#' @examples
+#'
+#' nlStat <- list("sum")
+#' 
+#' nlSig <- Rnightlights:::nlStatSignature(nlStat)
+#' 
+#' #returns "sum()"
+#' 
+#' nlStat <- list("sum", "na.rm=TRUE")
+#' 
+#' nlSig <- Rnightlights:::nlStatSignature(nlStat)
+#' 
+#' #returns "sum(na.rm=TRUE)"
+#'
 nlStatSignature <- function(nlStat)
 {
   statArgs <- nlStatArgs(nlStat)
@@ -206,6 +294,24 @@ nlStatSignature <- function(nlStat)
   paste0(nlStat[[1]][[1]], "(", statArgs, ")")
 }
 
+######################## nlStatArgsStandardize ###################################
+
+#' Standardize the arguments of an nlStat
+#'
+#' Standardize the arguments of an nlStat to ensure signatures can be
+#'     compared. Currently this entails converting
+#'     logical `T` to TRUE and `F` to FALSE
+#' 
+#' @param nlStatArg character The argument of an nlStat
+#'
+#' @return named character The signature of the nlStat
+#'
+#' @examples
+#'
+#' Rnightlights:::nlStatArgsStandardize("na.rm=T")
+#' 
+#' #returns "na.rm=TRUE"
+#'
 nlStatArgsStandardize <- function(nlStatArg)
 {
   #standardize TRUE/FALSE
@@ -218,6 +324,36 @@ nlStatArgsStandardize <- function(nlStatArg)
   nlStatArg
 }
 
+######################## nlSignatureStat ###################################
+
+#' Convert a signature into an nlStat
+#'
+#' Convert a signature into an nlStat
+#'  
+#' @param nlStatSignature character The signature of an nlStat
+#'
+#' @return named character An nlStat
+#'
+#' @examples
+#'
+#' nlSignature <- "sum(na.rm=T)"
+#' 
+#' Rnightlights:::nlSignatureStat(nlStatSignature = nlSignature)
+#' 
+#' #returns an nlStat list
+#' #[[1]]
+#' #[[1]][[1]]
+#' #[1] "sum"
+#' # 
+#' #[[1]][[2]]
+#' #[1] "na.rm=TRUE"
+#' #
+#' #list structure
+#' #List of 1
+#' #$ :List of 2
+#' #..$ : chr "sum"
+#' #..$ : chr "na.rm=TRUE"
+#' 
 nlSignatureStat <- function(nlStatSignature)
 {
   #the stat name is the first part before first bracket
@@ -246,21 +382,72 @@ nlSignatureStat <- function(nlStatSignature)
   }
 }
 
+######################## prettyNlSignature ###################################
+
+#' Remove triple-dots (...) from names of arguments in a signature
+#'
+#' Remove triple-dots (...) from names of arguments in a signature
+#'  
+#' @param nlStatSig character The signature of an nlStat
+#'
+#' @return named character An nlStat signature without the triple-dots
+#'
+#' @examples
+#'
+#' nlStat <- list("sum", "x=10", "na.rm=T")
+#' 
+#' nlStatSig <- Rnightlights:::nlStatSignature(nlStat) #"sum(...=x=10,na.rm=TRUE)"
+#' 
+#' Rnightlights:::prettyNlSignature(nlStatSig = nlStatSig)
+#' #returns "sum(x=10,na.rm=TRUE)"
+#' 
 prettyNlSignature <- function(nlStatSig)
 {
   gsub(pattern = "...=", replacement = "", nlStatSig, fixed = T)
 }
 
+######################## getSavedNlStatFname ###################################
+
+#' The name of the file in which the saved nlStats are stored
+#'
+#' The name of the file in which the saved nlStats are stored
+#'  
+#' @return character The name of the saved nlStats file
+#' 
 getSavedNlStatFname <- function()
 {
   "savedNlStats.rda"
 }
 
+######################## getSavedNlStatFname ###################################
+
+#' The path tos the file in which the saved nlStats are stored
+#'
+#' The path to the file in which the saved nlStats are stored
+#'  
+#' @return character The path to the saved nlStats file
+#'
 getSavedNlStatFnamePath <- function()
 {
   file.path(getNlDir("dirNlData"), getSavedNlStatFname())
 }
 
+######################## prettyNlSignature ###################################
+
+#' Remove triple-dots (...) from names of arguments in a signature
+#'
+#' Remove triple-dots (...) from names of arguments in a signature
+#'  
+#' @param nlStat character An nlStat
+#'
+#' @return logical Whether the process was successful
+#'
+#' @examples
+#' 
+#' nlStat <- list("sum", "na.rm=TRUE")
+#' 
+#' saveNlStat(nlStat)
+#' 
 #' @export
 saveNlStat <- function(nlStat)
 {
@@ -298,16 +485,64 @@ saveNlStat <- function(nlStat)
   .RnightlightsEnv$savedNlStats <- append(x = .RnightlightsEnv$savedNlStats, values = nlStatEntry)
   
   #and save to rda
-  save(savedNlStats, envir = .RnightlightsEnv, file = getSavedNlStatFnamePath())
+  save("savedNlStats", envir = .RnightlightsEnv, file = getSavedNlStatFnamePath())
   
   return(TRUE)
 }
 
-getSavedNlStat <- function(nlStatName)
+######################## getSavedNlStat ###################################
+
+#' Retrieve a saved nlStat function
+#'
+#' Retrieve a saved nlStat function
+#'  
+#' @param nlStatSignature character The signature of the nlStat to retrieve which
+#'     is used as the key of the saved nlStats
+#'
+#' @return list A list representing the saved nlStat
+#'
+#' @examples
+#'
+#' Rnightlights:::getSavedNlStat("sum()")
+#' 
+getSavedNlStat <- function(nlStatSignature)
 {
-  .RnightlightsEnv$savedNlStats[nlStatName]
+  .RnightlightsEnv$savedNlStats[nlStatSignature]
 }
 
+######################## listSavedNlStats ###################################
+
+#' List saved nlStats
+#'
+#' List saved nlStats
+#'  
+#' @param nlStatNames character The signatures of the nlStats to retrieve
+#' 
+#' @param detail logical Whether to print out the whole saved nlStat including
+#'     the signature, body, arguments and hash
+#'
+#' @return list A list of lists representing the saved nlStats
+#'
+#' @examples
+#' listSavedNlStats("sum()")
+#' 
+#' #returns
+#' #"sum()"
+#' 
+#' 
+#' listSavedNlStats("sum()", detail = TRUE)
+#' 
+#' #returns
+#' #$`sum()`
+#' #$`sum()`$nlStatBody
+#' #function (..., na.rm = FALSE)  .Primitive("sum")
+#' #
+#' #$`sum()`$nlStatArgs
+#' #[1] ""
+#' #
+#' #$`sum()`$nlStatHash
+#' #[1] "f0fbe35d81578311ba8f362137832e779b7b4f39"
+#' 
 #' @export
 listSavedNlStats <- function(nlStatNames = NULL, detail = FALSE)
 {
@@ -325,11 +560,39 @@ listSavedNlStats <- function(nlStatNames = NULL, detail = FALSE)
   savedNlStats
 }
 
+######################## savedNlStatsIsLoaded ###################################
+
+#' Check if saved nlStats have been loaded into memory from disk
+#'
+#' Check if saved nlStats have been loaded into memory from disk
+#'  
+#' @return logical If the saved nlStats have been loaded
+#'
+#' @examples
+#' 
+#' Rnightlights:::savedNlStatsIsLoaded()
+#' 
+#' #returns TRUE/FALSE
+#' 
 savedNlStatsIsLoaded <- function()
 {
   exists(x = "savedNlStats", envir = .RnightlightsEnv)
 }
 
+######################## readSavedNlStats ###################################
+
+#' Read saved nlStats from disk to memory
+#'
+#' Read saved nlStats from disk to memory and save them into the Rnightlights
+#'     environment
+#'  
+#' @return none
+#'
+#' @examples
+#' \dontrun{
+#'   readSavedNlStats()
+#' }
+#' 
 readSavedNlStats <- function()
 {
   nlStatPath <- getSavedNlStatFnamePath()
@@ -346,6 +609,22 @@ readSavedNlStats <- function()
   return(TRUE)
 }
 
+######################## nlSignatureStatName ###################################
+
+#' get the name of the nlStat from the signature
+#'
+#' get the name of the nlStat from the signature i.e. the part before the
+#'     first bracket
+#'   
+#' @param statSig character The nlStat signature
+#' 
+#' @return character the name of the nlStat
+#'
+#' @examples
+#' nlSignatureStatName("sum()")
+#' 
+#' #returns "sum"
+#' 
 #' @export
 nlSignatureStatName <- function(statSig)
 {
@@ -353,6 +632,34 @@ nlSignatureStatName <- function(statSig)
   gsub("(^.*)\\(.*", "\\1", statSig)
 }
 
+######################## loadSavedNlStat ###################################
+
+#' Load the saved nlStat into an accessible environment
+#'
+#' Load the saved nlStat into an accessible environment e.g. the global
+#'     environment. This is especially required if the function is saved
+#'     but not present in the Global environment or an environment where
+#'     the package functions can access it
+#'    
+#' @param statSig character The nlStat signature
+#' 
+#' @param newStatName character The name to give the nlStat in the environment
+#'     in case one does not want to use the name it is saved with
+#'     
+#' @param envir character The environment in which to append the nlStat
+#' 
+#' @param overwrite logical Whether to overwrite a function with the same name
+#'     if it is present
+#' 
+#' @return logical Whether the process was successful
+#'
+#' @examples
+#' \dontrun{
+#'   loadSavedNlStat(statSig = "sum()", newStatName = "mySum", overwrite = TRUE)
+#' }
+#' 
+#' #returns "sum"
+#' 
 #' @export
 loadSavedNlStat <- function(statSig, newStatName = NULL, envir = .GlobalEnv, overwrite = FALSE)
 {
@@ -382,13 +689,28 @@ loadSavedNlStat <- function(statSig, newStatName = NULL, envir = .GlobalEnv, ove
     return(FALSE)
   }
 
-  savedStat <- getSavedNlStat(nlStatName = statSigs[matchIdxs])
+  savedStat <- getSavedNlStat(nlStatSignature = statSigs[matchIdxs])
   
   assign(x = newStatName, value = savedStat[[1]]$nlStatBody, envir = .GlobalEnv)
   
   return(TRUE)
 }
 
+######################## searchSavedNlStatName ###################################
+
+#' Check if an nlStat has been saved using the nlStatName
+#'
+#' Check if an nlStat has been saved using the nlStatName
+#' 
+#' @param nlStatName character The name of the nlStat to search for
+#'     
+#' @return character The signatures of nlStat that match or NULL if not found
+#'
+#' @examples
+#' nlSignatureStatName("sum()")
+#' 
+#' #returns "sum"
+#' 
 #' @export
 searchSavedNlStatName <- function(nlStatName)
 {
@@ -407,6 +729,22 @@ searchSavedNlStatName <- function(nlStatName)
   return(statSigs[matchIdxs])
 }
 
+######################## existsSavedNlStatName ###################################
+
+#' Check whether an nlStat exists in the saved nlStats
+#'
+#' Check whether an nlStat exists in the saved nlStats
+#'     
+#' @param nlStatName character The name of the nlStat to check
+#' 
+#' @return logical Whether the nlStat was found in the saved nlStats
+#'
+#' @examples
+#' \dontrun{
+#'   existsSavedNlStatName(nlStatName = "sum")
+#'   #returns TRUE/FALSE
+#' }
+#' 
 #' @export
 existsSavedNlStatName <- function(nlStatName)
 {
@@ -420,6 +758,22 @@ existsSavedNlStatName <- function(nlStatName)
   return(existsStatName)
 }
 
+######################## existsSavedNlStatHash ###################################
+
+#' Check whether an nlStat exists in the saved nlStats given the nlStatHash
+#'
+#' Check whether an nlStat exists in the saved nlStats given the nlStatHash
+#'     
+#' @param nlStatHash character The hash of the nlStat to check
+#' 
+#' @return logical Whether the nlStatHash was found in the saved nlStats
+#'
+#' @examples
+#' \dontrun{
+#'   existsSavedNlStatHash(nlStatHash = "f0fbe35d81578311ba8f362137832e779b7b4f39")
+#'   #returns TRUE/FALSE
+#' }
+#' 
 existsSavedNlStatHash <- function(nlStatHash)
 {
   if(savedNlStatsIsLoaded() && is.null(.RnightlightsEnv$savedNlStats))
@@ -430,6 +784,25 @@ existsSavedNlStatHash <- function(nlStatHash)
   return(existsStatHash)
 }
 
+######################## existsSavedNlStat ###################################
+
+#' Check whether an nlStat exists in the saved nlStats
+#'
+#' Check whether an nlStat exists in the saved nlStats given the nlStat
+#'     signature and the nlStatHash to ensure a unique hit
+#'
+#' @param nlStatName character The signature of the nlStat to check
+#' 
+#' @param nlStatHash character The hash of the nlStat to check
+#' 
+#' @return logical Whether the nlStat was found in the saved nlStats
+#'
+#' @examples
+#' \dontrun{
+#'   existsSavedNlStat(nlStatName = "sum()", nlStatHash = "f0fbe35d81578311ba8f362137832e779b7b4f39")
+#'   #returns TRUE/FALSE
+#' }
+#' 
 existsSavedNlStat <- function(nlStatName, nlStatHash)
 {
   if(savedNlStatsIsLoaded() && is.null(.RnightlightsEnv$savedNlStats))
@@ -442,6 +815,20 @@ existsSavedNlStat <- function(nlStatName, nlStatHash)
   return(existsStatName && existsStatHash)
 }
 
+######################## deleteSavedNlStat ###################################
+
+#' Delete a previously saved nlStat
+#'
+#' Delete a previously saved nlStat
+#'
+#' @param nlStatName The name of the nlStat to delete
+#' 
+#' @return an nlPeriod vector
+#'
+#' @examples
+#' dateToNlPeriod(dt = "2012-04-01", nlType = "VIIRS.M")
+#' #returns "201204"
+#' 
 #' @export
 deleteSavedNlStat <- function(nlStatName)
 {
@@ -453,6 +840,22 @@ deleteSavedNlStat <- function(nlStatName)
   return(TRUE)
 }
 
+######################## hashNlStatBody ###################################
+
+#' Return the hash of an nlStat function body
+#'
+#' Return the hash of an nlStat function body with whitespace removed. This
+#'     is to help uniquely identify a function
+#'
+#' @param nlStatBody The function body of the nlStat
+#' 
+#' @return a character vector
+#'
+#' @examples
+#' Rnightlights:::hashNlStatBody(nlStatBody = 'function (..., na.rm = FALSE)  .Primitive("sum")')
+#' #returns "f0fbe35d81578311ba8f362137832e779b7b4f39"
+#' 
+#' @export
 hashNlStatBody <- function(nlStatBody)
 {
   #remove <bytecode: ...> which will change per session
@@ -462,6 +865,22 @@ hashNlStatBody <- function(nlStatBody)
   digest::sha1(digest::sha1(gsub("\\s*","", nlStatBody)))
 }
 
+######################## hashNlStat ###################################
+
+#' Return the hash of an nlStat function
+#'
+#' Retrieve the body of an nlStat function and return the hash of an nlStat
+#'     function.
+#'
+#' @param nlStatName The name of the nlStat function
+#' 
+#' @return a character vector
+#'
+#' @examples
+#' Rnightlights:::hashNlStat(nlStatName = "sum")
+#' #returns "f0fbe35d81578311ba8f362137832e779b7b4f39"
+#' 
+#' @export
 hashNlStat <- function(nlStatName)
 {
   nlStatBody <- utils::capture.output(eval(expr = parse(text = nlStatName)))
@@ -471,6 +890,24 @@ hashNlStat <- function(nlStatName)
   hashNlStatBody(nlStatBody = nlStatBody)
 }
 
+######################## equalNlStats ###################################
+
+#' Check if two nlStats are equal
+#'
+#' Check if two nlStats are equal
+#' 
+#' @param nlStatName1 The name of the first nlStat function to compare
+#' 
+#' @param nlStatName2 The name of the second nlStat function to compare
+#' 
+#' @return logical if the two nStats are equal
+#'
+#' @examples
+#' fn1 <- function(x) sum(x)
+#' fn2 <- function(x) sum(x, na.rm=T)
+#' Rnightlights:::equalNlStats("fn1", "fn2")
+#' #returns FALSE
+#' 
 equalNlStats <- function(nlStatName1, nlStatName2)
 {
   if(!allValid(list(nlStatName1, nlStatName2), validNlStats))
