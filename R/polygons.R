@@ -1067,10 +1067,16 @@ getCtryPolyUrl <- function(ctryCode=NULL,
   }else
   {
     #starts with a / (*nix) or c:/ or c:\\
-    hasFullPathPrefix <- substr(custPolyPath,1,1) == "/" | grepl("^.?:[\\|/]", custPolyPath)
+    linuxFullPathPrefix <- substr(custPolyPath,1,1) == "/" 
+    windowsFullPathPrefix <- grepl("^.?:[\\|/]", custPolyPath)
     
     #return custPolyPath as a url taking into account whether it is a relative path
-    ctryPolyUrl <- paste0(ifelse(hasFullPathPrefix, "file://", paste0("file:///", getwd(), "/")), custPolyPath)
+    ctryPolyUrl <- if(linuxFullPathPrefix)
+      paste0("file://", custPolyPath) #/home/xxx/... -> file:///home/xxx/...
+    else if(windowsFullPathPrefix)
+      paste0("file:///", custPolyPath) #c://users/... -> file:///c://users/...
+    else
+      paste0("file:///", getwd(), "/", custPolyPath) #../downloads/... -> file:///../downloads/...
   }
 
   return (ctryPolyUrl)
