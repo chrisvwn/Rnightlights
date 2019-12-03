@@ -1066,8 +1066,11 @@ getCtryPolyUrl <- function(ctryCode=NULL,
       stop(Sys.time(), ": Invalid gadmVersion")
   }else
   {
+    #starts with a / (*nix) or c:/ or c:\\
+    hasFullPathPrefix <- substr(custPolyPath,1,1) == "/" | grepl("^.?:[\\|/]", custPolyPath)
+    
     #return custPolyPath as a url taking into account whether it is a relative path
-    ctryPolyUrl <- paste0(ifelse(substr(custPolyPath,1,1) == "/", "file://", paste0("file:///", getwd(), "/")), custPolyPath)
+    ctryPolyUrl <- paste0(ifelse(hasFullPathPrefix, "file://", paste0("file:///", getwd(), "/")), custPolyPath)
   }
 
   return (ctryPolyUrl)
