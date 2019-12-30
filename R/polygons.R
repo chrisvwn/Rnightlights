@@ -394,7 +394,7 @@ dnldGADMCtryShpZip <- function(ctryCode,
                                                                     gadmVersion = gadmVersion,
                                                                     gadmPolyType = gadmPolyType,
                                                                     custPolyPath = custPolyPath),
-                                         method = "curl")
+                                         method = downloadMethod)
       else if (downloadMethod == "aria")
         rsltDnld <- system(paste0("aria2c -c -x", pkgOptions("numParDnldConns"), " --show-console-readout=false --summary-interval=10 ", fullPolyUrl,
                                   " -d ", getNlDir("dirPolygon"),
@@ -614,7 +614,7 @@ dnldGADMCtrySpRds <- function(ctryCode,
     tempFname <- file.path(getNlDir("dirNlTemp"), fName)
     
     if(!file.exists(tempFname))
-      res <- try(utils::download.file(url = dnldUrl, destfile = tempFname, method = "auto"), TRUE)
+      res <- try(utils::download.file(url = dnldUrl, destfile = tempFname, method = downloadMethod), TRUE)
     
     #the url doesn't exist so we assume we are done
     if(inherits(res, "try-error"))
