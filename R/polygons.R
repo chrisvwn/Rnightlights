@@ -147,7 +147,8 @@ getCRS <- function()
   
   if(!exists(x = "CRS", envir = .RnightlightsEnv))
   {
-    assign(x = "CRS", value = "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0 +no_defs", envir = .RnightlightsEnv)
+    #assign(x = "CRS", value = "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0 +no_defs", envir = .RnightlightsEnv)
+    assign(x = "CRS", value = "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0", envir = .RnightlightsEnv)
   }
   
   get(x = "CRS", envir = .RnightlightsEnv)
