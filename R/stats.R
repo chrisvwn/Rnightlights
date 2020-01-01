@@ -1657,7 +1657,7 @@ fnAggRadRast <- function(ctryPoly, ctryRastCropped, nlType, configName, nlStats,
                               .export = c("masqOLS", "masqVIIRS", nlStatNames),
                               .packages = c("raster"),
                               .options.snow = list(progress=progress)) %dopar% {
-    # for(i in 1:nrow(ctryPoly@data)){
+  # for(i in 1:nrow(ctryPoly@data)){
                                 
                                   options(stringsAsFactors = FALSE)
                                 

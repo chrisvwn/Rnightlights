@@ -79,13 +79,13 @@ masqVIIRS <- function(ctryPoly, ctryRast, idx, retVal=NULL, configName)
     lonlats <- data.frame(lats=NA,lons=NA)
     vals <- NA
   }
-  
+
   #any negative values are either recording problems or error values as per:
   #... Negative values would distort most calculations.
   vals[vals < 0] <- NA
 
   if(!is.null(retVal))
-    dta <- stats::setNames(data.frame(colrows, lonlats, vals), c("cols","rows","lons","lats","vals"))
+    dta <- stats::setNames(data.frame(matrix(colrows, ncol=2), matrix(lonlats, ncol=2), vals), c("cols","rows","lons","lats","vals"))
   else
     dta <- vals
   
