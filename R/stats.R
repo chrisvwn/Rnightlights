@@ -117,6 +117,10 @@ nlStatParams <- function(nlStatName)
 #'
 nlStatArgs <- function(nlStat)
 {
+  #TODO:
+  #unmatched arg when only one left out e.g. rnorm(mean=0,sd=1,5)
+  #unmatched args where ... can take multiple e.g. sum(1,2,3,4,5)
+  
   if(length(nlStat) == 0)
     return("")
     
@@ -129,6 +133,20 @@ nlStatArgs <- function(nlStat)
     
     if(length(nlStat) == 1)
       return("")
+  }
+  
+  #if args are passed as named lists e.g. list("sum", na.rm=TRUE) convert each named argument
+  #to the string format "arg=value"
+  if(!is.null(names(nlStat)))
+  {
+    args <- paste(names(nlStat)[2:length(nlStat)], nlStat[2:length(nlStat)], sep = "=")
+    
+    #cater for empty names in args where you have a mix of named and explicit args
+    #empty names result in args starting with "=" e.g. "=na.rm=TRUE"
+    #removing "=" prefix
+    args <- gsub("(^|,)=", "\\1", args)
+    
+    nlStat <- list(nlStat[[1]], args)
   }
   
   #1st param is the function name, the rest are params
