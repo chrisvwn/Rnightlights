@@ -1594,6 +1594,109 @@ getCtryStructAdmLevelNames <- function(ctryCode=NULL,
   return (admLevels)
 }
 
+######################## searchAdmLevelMembers ###################################
+
+#' Search for names of members of admLevels
+#'
+#' Search for the admLevels in the admLevels of a particular country
+#' 
+#' @param ctryCodes \code{character} The ctryCodes of the country of interest
+#' 
+#' @param admLevels \code{character} The admLevel to search
+#' 
+#' @param admLevelMembers The names to search for within the admLevels
+#' 
+#' @param dnldPoly \code{logical} If the country polygon doesn't exist 
+#'     should we download it?
+#'     
+#' @param downloadMethod The method used to download polygons
+#' 
+#' @param gadmVersion The GADM version to use
+#' 
+#' @param gadmPolyType The format of polygons to download from GADM
+#' 
+#' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
+#' 
+#' @return character vector of admin level names
+#'
+#' @examples
+#' \dontrun{
+#' searchAdmLevelMembers("KEN", "county", "nai")
+#' #returns "Nairobi"
+#' }
+#'
+#' @export
+searchAdmLevelMembers <- function(ctryCode=NULL,
+                               admLevels,
+                               admLevelMembers,
+                               dnldPoly=TRUE,
+                               downloadMethod=pkgOptions("downloadMethod"),
+                               gadmVersion=pkgOptions("gadmVersion"),
+                               gadmPolyType=pkgOptions("gadmPolyType"),
+                               custPolyPath=NULL)
+{
+  if(is.null(custPolyPath) && is.null(ctryCode))
+    stop(Sys.time(), ": Missing required parameter ctryCode")
+  
+  if(!is.null(ctryCode) && !allValidCtryCodes(ctryCodes = ctryCode))
+    stop(Sys.time(), ": Invalid ctryCode detected ")
+  
+  if(missing(admLevels))
+    admLevels <- searchAdmLevelName(ctryCodes = ctryCode,
+                                downloadMethod = downloadMethod,
+                                dnldPoly = dnldPoly,
+                                gadmVersion = gadmVersion,
+                                gadmPolyType = gadmPolyType,
+                                custPolyPath = custPolyPath)
+  
+  #  stop(Sys.time(), ": Missing required parameter admLevelName")
+  
+  if(missing(admLevelMembers))
+    admLevelMembers <- NULL
+  
+  if(missing(dnldPoly))
+    dnldPoly <- TRUE
+
+  ctryStruct <- readCtryStruct(ctryCode = ctryCode,
+                               gadmVersion = gadmVersion,
+                               gadmPolyType = gadmPolyType,
+                               custPolyPath = custPolyPath)
+  
+  ctryStruct <- ctryStruct[,1:(ncol(ctryStruct)-1)]
+  
+  admLvlMembers <- setNames(lapply(admLevels, function(admLevel)
+  {
+    if(is.null(admLevelMembers))
+    {
+      return(as.list(unique(ctryStruct[, ..admLevel])))
+    }
+    
+    z <- setNames(lapply(admLevelMembers, FUN = function(admLevelMember)
+    {
+      #search for an exact match
+      idxFound <- grep(pattern = paste0("^", admLevelMember, "$"), x = ctryStruct[,..admLevel], fixed = TRUE)
+      
+      #if not found search anywhere
+      if(length(idxFound) == 0)
+        idxFound <- grep(pattern = admLevelMember, x = unlist(ctryStruct[,..admLevel]), ignore.case = TRUE)
+
+      if(length(idxFound) == 0)
+      {
+        return(NA)
+      }
+      
+      #foundMembers <- as.character(ctryStruct[idxFound, 1:grep(admLevel, admLevels)])
+      foundMembers <- unique(as.character(unlist(ctryStruct[idxFound, ..admLevel])))
+      
+      return(foundMembers)
+    }), admLevelMembers)
+    
+    z
+  }), admLevels)
+  
+  admLvlMembers
+}
+
 ######################## searchAdmLevelName ###################################
 
 #' Search for the admLevelName
@@ -1620,8 +1723,8 @@ getCtryStructAdmLevelNames <- function(ctryCode=NULL,
 #'
 #' @examples
 #' \dontrun{
-#' searchAdmLevel("KEN", "county")
-#' #returns "KEN_adm1"
+#' searchAdmLevelName("KEN", "county")
+#' #returns "county"
 #' }
 #'
 #' @export
