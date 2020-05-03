@@ -216,7 +216,7 @@ masqOLS <- function(ctryPoly, ctryRast, idx, retVal=NULL, configName)
   
   if(!is.null(retVal))
   {
-    dta <- stats::setNames(data.frame(colrows, lonlats, vals), c("cols","rows","lons","lats","vals"))
+    dta <- stats::setNames(data.frame(matrix(colrows, ncol = 2), matrix(lonlats, ncol = 2), vals), c("cols","rows","lons","lats","vals"))
 
     #dta <- dta[!is.na(dta$vals), ]
   } else
