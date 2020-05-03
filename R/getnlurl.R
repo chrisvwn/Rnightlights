@@ -34,7 +34,7 @@ getNlUrlOLS <- function(nlPeriod, configName=pkgOptions("configName_OLS.Y"))
   
   #if the file does not exist or is older than a day download it afresh
   #not working. download.file does not seem to update mtime
-  if (!file.exists(ntLtsPageLocalName) || (lubridate::date(lubridate::now()) - lubridate::date(file.mtime(ntLtsPageLocalName)) > lubridate::as.difftime(lubridate::period("1 day"))))
+  if (!file.exists(ntLtsPageLocalName) || (Sys.Date() - lubridate::date(file.mtime(ntLtsPageLocalName)) > lubridate::as.difftime(lubridate::period("1 day"))))
   {
     utils::download.file(url = ntLtsPageHtml, destfile = ntLtsPageLocalName, method = "auto", extra = "-N")
   }
@@ -140,7 +140,7 @@ getNlUrlVIIRS <- function(nlPeriod, tileNum, nlType, configName=pkgOptions(paste
   ntLtsPageLocalName <- file.path(getNlDir("dirNlTemp"),paste0("ntltspage", nlType, ".html"))
   
   #if the file does not exist or is older than a week download it afresh
-  if (!file.exists(ntLtsPageLocalName) || (lubridate::date(lubridate::now()) - lubridate::date(file.mtime(ntLtsPageLocalName)) > lubridate::as.difftime(lubridate::period("1 day"))) || file.size(ntLtsPageLocalName) == 0)
+  if (!file.exists(ntLtsPageLocalName) || (Sys.Date() - lubridate::date(file.mtime(ntLtsPageLocalName)) > lubridate::as.difftime(lubridate::period("1 day"))) || file.size(ntLtsPageLocalName) == 0)
   {
     utils::download.file(url = ntLtsIndexUrlVIIRS, destfile = ntLtsPageLocalName, method = "auto", extra = " -N --timestamping --no-use-server-timestamps")
   }
@@ -200,7 +200,7 @@ getNlUrl <- function(nlPeriod)
   
   #if the file does not exist or is older than a day download it afresh
   #not working. download.file does not seem to update mtime
-  if (!file.exists(ntLtsPageLocalName) || (lubridate::date(lubridate::now()) - lubridate::date(file.mtime(ntLtsPageLocalName)) > lubridate::as.difftime(lubridate::period("1 day"))))
+  if (!file.exists(ntLtsPageLocalName) || (Sys.Date() - lubridate::date(file.mtime(ntLtsPageLocalName)) > lubridate::as.difftime(lubridate::period("1 day"))))
   {
     utils::download.file(url = ntLtsPageHtml, destfile = ntLtsPageLocalName, method = "auto", extra = "-N")
   } else

@@ -203,7 +203,7 @@ getAllNlPeriods <- function(nlTypes)
       {
         startDate <- "2017-11-20"
         
-        nlYrMthDys <- gsub("-", "", seq(as.Date(startDate), as.Date(date(), "%c"), by = "day"))
+        nlYrMthDys <- gsub("-", "", seq(as.Date(startDate), as.Date(Sys.Date(), "%c"), by = "day"))
         
         return (nlYrMthDys)
       }
@@ -211,7 +211,7 @@ getAllNlPeriods <- function(nlTypes)
       {
         startDate <- "2012-04-01"
         
-        nlYrMths <- substr(gsub("-", "", seq(as.Date(startDate), as.Date(date(), "%c"), by = "month")), 1, 6)
+        nlYrMths <- substr(gsub("-", "", seq(as.Date(startDate), as.Date(Sys.Date(), "%c"), by = "month")), 1, 6)
     
         return (nlYrMths)
       }
@@ -219,7 +219,7 @@ getAllNlPeriods <- function(nlTypes)
       {
         startDate <- "2012-04-01"
         
-        nlYrs <- substr(gsub("-", "", seq(as.Date(startDate), as.Date(date(), "%c"), by = "year")), 1, 4)
+        nlYrs <- substr(gsub("-", "", seq(as.Date(startDate), as.Date(Sys.Date(), "%c"), by = "year")), 1, 4)
         
         return (nlYrs)
       }

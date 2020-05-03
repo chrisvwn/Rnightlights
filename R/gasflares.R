@@ -68,7 +68,7 @@ createNlGasFlares <- function()
     
     #if the file does not exist or is older than a day download it afresh
     #not working. download.file does not seem to update mtime
-    if (!file.exists(gasFlarePageLocalName) || (lubridate::date(lubridate::now()) - lubridate::date(file.mtime(gasFlarePageLocalName)) > lubridate::as.difftime(lubridate::period("1 day"))))
+    if (!file.exists(gasFlarePageLocalName) || (Sys.Date() - lubridate::date(file.mtime(gasFlarePageLocalName)) > lubridate::as.difftime(lubridate::period("1 day"))))
     {
       utils::download.file(url = gasFlarePageHtml, destfile = gasFlarePageLocalName, method = "auto", extra = "-N")
     }
