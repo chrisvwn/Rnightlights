@@ -395,31 +395,36 @@ deleteNlDataCol <- function (ctryCode=NULL,
   if(missing(nlStat))
     stop(Sys.time(), ": Missing required parameter nlStat")
   
-  ctryNlDataDF <- suppressMessages(getCtryNlData(ctryCode = ctryCode,
-                                admLevel = admLevel,
-                                nlTypes = nlType,
-                                configNames = configName,
-                                multiTileStrategy = multiTileStrategy,
-                                multiTileMergeFun = multiTileMergeFun,
-                                removeGasFlares = removeGasFlares,
-                                nlPeriods = getAllNlPeriods(nlTypes = nlType), 
-                                ignoreMissing = TRUE,
-                                gadmVersion = gadmVersion,
-                                gadmPolyType = gadmPolyType,
-                                custPolyPath = custPolyPath))
+  #Read in all the data for the ctryCode, admLevel
+  ctryNlDataDF <- as.data.frame(
+    data.table::fread(
+      getCtryNlDataFnamePath(ctryCode = ctryCode,
+                             admLevel = admLevel,
+                             gadmVersion = gadmVersion,
+                             gadmPolyType = gadmPolyType,
+                             custPolyPath = custPolyPath),
+      encoding = "UTF-8"))
   
   #read in all column names in the dataframe
   cols <- names(ctryNlDataDF)
   
   #colName <- paste("NL", nlType, nlPeriod, toupper(nlStat), sep = "_")
   
-  colName <- paste0("NL_", nlType, "_", toupper(configName),
-                    "-MTS", toupper(multiTileStrategy), "-", toupper(multiTileMergeFun),
-                    "-RGF", substr(as.character(removeGasFlares),1,1), "_",
-                    nlPeriod, "_", nlStat)
+  # colName <- paste0("NL_", nlType, "_", toupper(configName),
+  #                   "-MTS", toupper(multiTileStrategy), "-", toupper(multiTileMergeFun),
+  #                   "-RGF", substr(as.character(removeGasFlares),1,1), "_",
+  #                   nlPeriod, "_", nlStat)
+  
+  colName <- getCtryNlDataColName(nlPeriod = nlPeriod,
+                                  nlStat = nlStat,
+                                  nlType = nlType,
+                                  configName = configName,
+                                  multiTileStrategy = multiTileStrategy,
+                                  multiTileMergeFun = multiTileMergeFun,
+                                  removeGasFlares = removeGasFlares)
   
   #get only the named nightlight data column(s)
-  nlDataColIdx <- grep(colName, cols)
+  nlDataColIdx <- grep(colName, cols, fixed = TRUE)
   
   if(length(nlDataColIdx) == 0)
     stop(Sys.time(), ": Specified column not found")

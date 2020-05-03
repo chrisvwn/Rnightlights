@@ -22,19 +22,19 @@ if(.runThisTest)
     expect_equal(nlTilesVIIRS, nlTilesOrigVIIRS)
     expect_equal(nlTilesOLS, nlTilesOrigOLS)
     
-    nlConfigNames <- list("OLS.Y" = c("cf_cvg", "avg_vis", "stable_lights"),
-                          "VIIRS.D" = c("vcmcfg", "vcmsl"),
-                          "VIIRS.M" = c("vcmcfg", "vcmsl"),
-                          "VIIRS.Y" = c("vcm-orm", "vcm-orm-ntl", "vcm-ntl"))
+    nlConfigNames <- list("OLS.Y" = c("cf_cvg", "avg_vis", "stable_lights", "pct_lights", "avg_lights_x_pct"),
+                          "VIIRS.D" = c("vcmcfg", "vcmslcfg"),
+                          "VIIRS.M" = c("cf_cvg", "vcmcfg", "vcmslcfg"),
+                          "VIIRS.Y" = c("cf_cvg", "vcm-orm", "vcm-orm-ntl", "vcm-ntl"))
     
     expect_equal(getAllNlConfigNames(), nlConfigNames)
     
     for(nlType in getAllNlTypes())
       expect_equal(getAllNlConfigNames(nlType = nlType), nlConfigNames[nlType])
     
-    expect_equal(getAllNlConfigNames("Unknown"), NA)
+    expect_error(getAllNlConfigNames("Unknown"), "Invalid nlTypes detected")
     
-    expect_true(Rnightlights:::validNlConfigName(configName = "cf_cvg"))
+    expect_true(Rnightlights:::validNlConfigName(configName = "cf_cvg", "VIIRS.M"))
     
     expect_equal(Rnightlights:::validNlConfigName(configName = unlist(nlConfigNames)), rep(TRUE, length(unlist(nlConfigNames))))
     
@@ -43,7 +43,7 @@ if(.runThisTest)
     
     expect_equal(Rnightlights:::validNlConfigName(configName = unlist(nlConfigNames)), rep(TRUE, length(unlist(nlConfigNames))))
     
-    expect_false(Rnightlights:::validNlConfigName(configName = "Unknown"))
+    expect_false(Rnightlights:::validNlConfigName(configName = "Unknown", "VIIRS.M"))
     
     expect_true(Rnightlights:::validNlConfigName(configName = "cf_cvg", nlType = "OLS.Y"))
     

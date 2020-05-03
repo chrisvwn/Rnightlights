@@ -450,11 +450,15 @@ getSavedNlStatFnamePath <- function()
   file.path(getNlDir("dirNlData"), getSavedNlStatFname())
 }
 
-######################## prettyNlSignature ###################################
+######################## saveNlStat ###################################
 
-#' Remove triple-dots (...) from names of arguments in a signature
+#' Save an nlStat function
 #'
-#' Remove triple-dots (...) from names of arguments in a signature
+#' Save an nlStat function to the persistent storage so that it can be
+#'     retrieved and reused later even if the user no longer has its
+#'     definition. Especially useful when saving the results from an
+#'     nlStat so that the function used to retrieve the data is always
+#'     available.
 #'  
 #' @param nlStat character An nlStat
 #'
@@ -471,7 +475,7 @@ saveNlStat <- function(nlStat)
 {
   funcName <- nlStat[[1]]
   
-  nlStatName <- nlStatSignature(nlStat = nlStat)
+  nlStatSig <- nlStatSignature(nlStat = nlStat)
   
   nlStatArgs <- nlStatArgs(nlStat = nlStat)
   
@@ -486,9 +490,9 @@ saveNlStat <- function(nlStat)
     return(FALSE)
   }
   
-  if(existsSavedNlStat(nlStatName = nlStatName, nlStatHash = nlStatHash))
+  if(existsSavedNlStat(nlStatSig = nlStatSig, nlStatHash = nlStatHash))
   {
-    message(Sys.time(), ": ", nlStatName, " already saved")
+    message(Sys.time(), ": ", nlStatSig, " already saved")
     
     return(TRUE)
   }  
@@ -497,7 +501,7 @@ saveNlStat <- function(nlStat)
   nlStatEntry <- stats::setNames(list(list("nlStatBody" = nlStatBody,
                                            "nlStatArgs" = nlStatArgs,
                                         "nlStatHash" = nlStatHash)),
-                                 nlStatName)
+                                 nlStatSig)
   
   #add fun to the package env
   .RnightlightsEnv$savedNlStats <- append(x = .RnightlightsEnv$savedNlStats, values = nlStatEntry)
@@ -747,33 +751,30 @@ searchSavedNlStatName <- function(nlStatName)
   return(statSigs[matchIdxs])
 }
 
-######################## existsSavedNlStatName ###################################
+######################## existsSavedNlStatSig ###################################
 
 #' Check whether an nlStat exists in the saved nlStats
 #'
-#' Check whether an nlStat exists in the saved nlStats
+#' Check whether an nlStat exists in the saved nlStats given the signature
 #'     
-#' @param nlStatName character The name of the nlStat to check
+#' @param nlStatSig character The name of the nlStat to check
 #' 
 #' @return logical Whether the nlStat was found in the saved nlStats
 #'
 #' @examples
 #' \dontrun{
-#'   existsSavedNlStatName(nlStatName = "sum")
+#'   existsSavedNlStatSig(nlStatSig = "sum()")
 #'   #returns TRUE/FALSE
 #' }
 #' 
-#' @export
-existsSavedNlStatName <- function(nlStatName)
+existsSavedNlStatSig <- function(nlStatSig)
 {
   if(savedNlStatsIsLoaded() && is.null(.RnightlightsEnv$savedNlStats))
     return(FALSE)
   
-  existsStatName <- grep(nlStatName, names(.RnightlightsEnv$savedNlStats), fixed = T, value = T)
+  existsStatSig <- any(grepl(nlStatSig, names(.RnightlightsEnv$savedNlStats), fixed = T))
   
-  existsStatName <- any(nchar(existsStatName) == nchar(nlStatName))
-  
-  return(existsStatName)
+  return(existsStatSig)
 }
 
 ######################## existsSavedNlStatHash ###################################
@@ -821,16 +822,17 @@ existsSavedNlStatHash <- function(nlStatHash)
 #'   #returns TRUE/FALSE
 #' }
 #' 
-existsSavedNlStat <- function(nlStatName, nlStatHash)
+#' @export
+existsSavedNlStat <- function(nlStatSig, nlStatHash)
 {
   if(savedNlStatsIsLoaded() && is.null(.RnightlightsEnv$savedNlStats))
     return(FALSE)
   
-  existsStatName <- existsSavedNlStatName(nlStatName = nlStatName)
+  existsStatSig <- existsSavedNlStatSig(nlStatSig = nlStatSig)
   
   existsStatHash <- existsSavedNlStatHash(nlStatHash = nlStatHash)
     
-  return(existsStatName && existsStatHash)
+  return(existsStatSig && existsStatHash)
 }
 
 ######################## deleteSavedNlStat ###################################
@@ -844,16 +846,25 @@ existsSavedNlStat <- function(nlStatName, nlStatHash)
 #' @return an nlPeriod vector
 #'
 #' @examples
-#' dateToNlPeriod(dt = "2012-04-01", nlType = "VIIRS.M")
+#' deleteSavedNlStat(nlStat)
 #' #returns "201204"
 #' 
 #' @export
-deleteSavedNlStat <- function(nlStatName)
+deleteSavedNlStat <- function(nlStat)
 {
-  if(!existsSavedNlStat(nlStatName))
+  nlStatName <- Rnightlights:::nlSignatureStatName(nlStat)
+  nlStatArgs <- nlStatArgs(nlStat)
+  nlStatHash <- hashNlStat(nlStatName)
+  nlStatSig <- nlStatSignature(nlStat = nlStat)
+  
+  
+  if(!existsSavedNlStat(nlStatSig = nlStatSig, nlStatHash = hashNlStat(nlStatName)))
     return(FALSE)
   
-  .RnightlightsEnv$savedNlStats[.RnightlightsEnv$savedNlStats == nlStatName] <- NULL
+  .RnightlightsEnv$savedNlStats[names(.RnightlightsEnv$savedNlStats) == nlStatSig] <- NULL
+  
+  #save the new state of savedNlStats
+  save("savedNlStats", envir = .RnightlightsEnv, file = getSavedNlStatFnamePath())  
   
   return(TRUE)
 }
@@ -1494,6 +1505,8 @@ fnAggRadGdal <- function(ctryCode,
                                            gadmVersion = gadmVersion,
                                            gadmPolyType = gadmPolyType,
                                            custPolyPath = custPolyPath)
+
+  #cloud coverage raster
   
   #only one zonal raster per country required across all time
   if(is.null(custPolyPath))
@@ -1670,12 +1683,12 @@ fnAggRadRast <- function(ctryPoly, ctryRastCropped, nlType, configName, nlStats,
   
   nlStatNames <- sapply(nlStats, function(x) x[[1]])
   
-  result <- foreach::foreach(i=1:nrow(ctryPoly@data),
-                              .combine=rbind,
-                              .export = c("masqOLS", "masqVIIRS", nlStatNames),
-                              .packages = c("raster"),
-                              .options.snow = list(progress=progress)) %dopar% {
-  # for(i in 1:nrow(ctryPoly@data)){
+ result <- foreach::foreach(i=1:nrow(ctryPoly@data),
+                             .combine=rbind,
+                             .export = c("masqOLS", "masqVIIRS", nlStatNames),
+                             .packages = c("raster"),
+                             .options.snow = list(progress=progress)) %dopar% {
+   # for(i in 1:nrow(ctryPoly@data)){
                                 
                                   options(stringsAsFactors = FALSE)
                                 

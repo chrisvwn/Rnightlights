@@ -1,59 +1,3 @@
-#TODO:
-#+ gzip all outputrasters and extract/delete tifs as required/alt compress :V3
-#+ delete the 2nd tif in the tiles (avg_rad_...). :Cancelled
-#+ keep tiles gzipped until required. extract/delete as needed: V3
-#+ modularize everything, processNlData especially: DONE
-#+ give functions better names more descriptive: DONE
-#+ validation of inputs, error handling: PARTIALLY DONE
-#+ give temp files unique names to avoid problems in case of parallelization: DONE
-#+ settings and default settings list/DF: DONE
-#+ optimize download of tiles: PARTIALLY DONE aria2
-#+     Check available methods and try in prioritized order : shelved
-#+     Retry number of times, resume downloads: retry-shelved, resume-aria
-#+ zone files functions: DONE
-#+ logging: Not yet
-#+ debug mode: combined with logging
-#+ do not export internal functions?: DONE
-#+ remove dependency on rworldmap?: Shelved
-#+ aggregating by date e.g. quarterly, semi-annually, annually :V3
-#+ verify treatment of ATA i.e. single adm level countries: DONE
-#+ logic of getCtryPolyAdmLevelNames esp lvlEngName assignment needs scrutiny: DONE
-#+ OLS : DONE
-#+ store data in RDS/json format instead of CSV(?): Required?
-#+ Name all parameters in function calls to future proof code: 90%
-#+ Save shapefiles as RDS for quicker access?: DONE
-
-#Notes: gdalwarp is not used for cropping because the crop_to_cutline option
-#causes a shift in the cell locations which then affects the stats extracted.
-#A gdal-based crop to extent would be highly desirable for performance reasons
-#though so seeking other gdal-based workarounds
-
-# if (!require("pacman")) install.packages('pacman', repos='http://cran.r-project.org')
-#
-# pacman::p_load(readr, dplyr, lubridate, rgdal, raster, sp, rgeos, rworldmap, cleangeo, foreach, doParallel, compiler, gdalUtils, data.table, ff, validate)
-#
-# require(readr)
-# require(dplyr)
-# library(data.table)
-# require(ff)
-# require(validate)
-# 
-# require(lubridate)
-#
-# require(rgdal)
-# require(gdalUtils)
-# require(raster)
-#
-# require(sp)
-# require(rgeos)
-# require(rworldmap)
-# require(cleangeo)
-#
-# require(foreach) #Enables for-each statements to be used for parallel processing
-# require(doParallel) #Allows for parallel processing using multiple cores
-#
-# require(compiler)
-
 ######################## processNLCountry ###################################
 
 #' Processes nightlights for an individual country in a particular nlPeriod 
@@ -340,6 +284,10 @@ processNLCountry <- function(ctryCode,
       message(Sys.time(), ": Cropping tile = ", tile)
       
       #we crop using raster for both rast and gdal
+      #Note: gdalwarp is not used for cropping because the crop_to_cutline option
+      #causes a shift in the cell locations which then affects the stats extracted.
+      #A gdal-based crop to extent would be highly desirable for performance reasons
+      #though so seeking other gdal-based workarounds
       tempCrop <- raster::crop(x = rastTile, y = ctryPolyAdm0, progress='text')
       
       #will only be non-null if there are multiple tiles to be mosaiced i.e. a country

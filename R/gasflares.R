@@ -9,7 +9,7 @@
 #' @examples
 #' \dontrun{
 #'   getNlGasFlaresRdsFnamePath(ctryCode="NGA")
-#' #returns path to the world RDS
+#'   #returns path to the world RDS
 #' }
 #'
 getNlGasFlaresRdsFnamePath <- function()
@@ -30,7 +30,7 @@ getNlGasFlaresRdsFnamePath <- function()
 #' @examples
 #' \dontrun{
 #'   getNlCtryGasFlaresRdsFnamePath(ctryCode="NGA")
-#' #returns path to the world RDS
+#'   #returns path to the world RDS
 #' }
 #'
 getNlCtryGasFlaresRdsFnamePath <- function(ctryCode)
@@ -49,7 +49,7 @@ getNlCtryGasFlaresRdsFnamePath <- function(ctryCode)
 #' @examples
 #' \dontrun{
 #'   getNlGasFlaresRdsFnamePath(ctryCode="NGA")
-#' #returns path to the world RDS
+#'   #returns path to the world RDS
 #' }
 #'
 createNlGasFlares <- function()
@@ -179,7 +179,7 @@ createNlGasFlares <- function()
 #' @examples
 #' \dontrun{
 #'   existsNlGasFlaresRds()
-#' #returns TRUE/FALSE
+#'   #returns TRUE/FALSE
 #' }
 #'
 existsNlGasFlaresRds <- function()
@@ -200,7 +200,7 @@ existsNlGasFlaresRds <- function()
 #' @examples
 #' \dontrun{
 #'   getNlGasFlaresRds()
-#' #returns mosaiced gasflare polygon
+#'   #returns mosaiced gasflare polygon
 #' }
 #'
 getNlGasFlaresRds <- function()
@@ -230,7 +230,7 @@ getNlGasFlaresRds <- function()
 #' @examples
 #' \dontrun{
 #'   hasNlCtryGasFlares(ctryCode="NGA")
-#' #returns TRUE
+#'   #returns TRUE
 #' }
 #'
 #' @export
@@ -249,7 +249,7 @@ hasNlCtryGasFlares <- function(ctryCode,
                                        custPolyPath = custPolyPath)
   gasFlarePoly <- getNlGasFlaresRds()
   
-  return(any(rgeos::gIntersects(ctryPolyAdm0, gasFlarePoly, byid = TRUE, prepared = FALSE)))
+  return(any(rgeos::gIntersects(ctryPolyAdm0, gasFlarePoly, byid = TRUE)))
 }
 
 ######################## hasNlCtryGasFlares ###################################
@@ -271,7 +271,7 @@ hasNlCtryGasFlares <- function(ctryCode,
 #' @examples
 #' \dontrun{
 #'   hasNlCtryGasFlares(ctryCode="NGA")
-#' #returns TRUE
+#'   #returns TRUE
 #' }
 #'
 createNlCtryGasFlares <- function(ctryCode, 
@@ -299,9 +299,10 @@ createNlCtryGasFlares <- function(ctryCode,
       if(!file.exists(getNlCtryGasFlaresRdsFnamePath(ctryCode)))
       {
         message(Sys.time(), ": Creating country gas flare removal polygon. Approx time 2 mins")
-        
-        
-        ctryPolyAdm0GFRemoved <- rgeos::gDifference(ctryPolyAdm0, gasFlarePoly)
+
+        gasFlarePoly <- rgeos::gUnionCascaded(gasFlarePoly)    
+
+        ctryPolyAdm0GFRemoved <- rgeos::gDifference(spgeom1 = ctryPolyAdm0, spgeom2 = gasFlarePoly, byid = FALSE)
         
         saveRDS(object = ctryPolyAdm0GFRemoved, file = getNlCtryGasFlaresRdsFnamePath(ctryCode))
         
@@ -334,7 +335,7 @@ createNlCtryGasFlares <- function(ctryCode,
 #' @examples
 #' \dontrun{
 #'   existsNlCtryGasFlaresRds(ctryCode="NGA")
-#' #returns TRUE
+#'   #returns TRUE
 #' }
 #'
 existsNlCtryGasFlaresRds <- function(ctryCode)
@@ -363,7 +364,7 @@ existsNlCtryGasFlaresRds <- function(ctryCode)
 #' @examples
 #' \dontrun{
 #'   getNlCtryGasFlaresRds(ctryCode="NGA")
-#' #returns gasflare polygon
+#'   #returns gasflare polygon
 #' }
 #'
 getNlCtryGasFlaresRds <- function(ctryCode = ctryCode, 
@@ -404,7 +405,7 @@ getNlCtryGasFlaresRds <- function(ctryCode = ctryCode,
 #' @examples
 #' \dontrun{
 #'   getNlCtryGasFlaresPoly(ctryCode="NGA")
-#' #returns gasflare polygon
+#'   #returns gasflare polygon
 #' }
 #'
 getNlCtryGasFlaresPoly <- function(ctryCode = ctryCode, 

@@ -4,12 +4,12 @@
 \alias{existsSavedNlStat}
 \title{Check whether an nlStat exists in the saved nlStats}
 \usage{
-existsSavedNlStat(nlStatName, nlStatHash)
+existsSavedNlStat(nlStatSig, nlStatHash)
 }
 \arguments{
-\item{nlStatName}{character The signature of the nlStat to check}
-
 \item{nlStatHash}{character The hash of the nlStat to check}
+
+\item{nlStatName}{character The signature of the nlStat to check}
 }
 \value{
 logical Whether the nlStat was found in the saved nlStats

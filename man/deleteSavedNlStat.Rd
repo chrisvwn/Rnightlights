@@ -4,7 +4,7 @@
 \alias{deleteSavedNlStat}
 \title{Delete a previously saved nlStat}
 \usage{
-deleteSavedNlStat(nlStatName)
+deleteSavedNlStat(nlStat)
 }
 \arguments{
 \item{nlStatName}{The name of the nlStat to delete}
@@ -16,7 +16,7 @@ an nlPeriod vector
 Delete a previously saved nlStat
 }
 \examples{
-dateToNlPeriod(dt = "2012-04-01", nlType = "VIIRS.M")
+deleteSavedNlStat(nlStat)
 #returns "201204"
 
 }

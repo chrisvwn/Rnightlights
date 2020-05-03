@@ -2,7 +2,7 @@
 % Please edit documentation in R/polygons.R
 \name{searchAdmLevelMembers}
 \alias{searchAdmLevelMembers}
-\title{Search for the admLevelName}
+\title{Search for names of members of admLevels}
 \usage{
 searchAdmLevelMembers(ctryCode = NULL, admLevels, admLevelMembers,
   dnldPoly = TRUE, downloadMethod = pkgOptions("downloadMethod"),
@@ -10,6 +10,10 @@ searchAdmLevelMembers(ctryCode = NULL, admLevels, admLevelMembers,
   gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
 }
 \arguments{
+\item{admLevels}{\code{character} The admLevel to search}
+
+\item{admLevelMembers}{The names to search for within the admLevels}
+
 \item{dnldPoly}{\code{logical} If the country polygon doesn't exist 
 should we download it?}
 
@@ -22,20 +26,17 @@ should we download it?}
 \item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
 
 \item{ctryCodes}{\code{character} The ctryCodes of the country of interest}
-
-\item{admLevelNames}{\code{character} The names to search for}
 }
 \value{
 character vector of admin level names
 }
 \description{
-Search for the admLevelName by official name. Expects the shapefile
-    to already exist.
+Search for the admLevels in the admLevels of a particular country
 }
 \examples{
 \dontrun{
-searchAdmLevel("KEN", "county")
-#returns "KEN_adm1"
+searchAdmLevelMembers("KEN", "county", "nai")
+#returns "Nairobi"
 }
 
 }

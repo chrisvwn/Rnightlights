@@ -2,7 +2,7 @@
 % Please edit documentation in R/stats.R
 \name{saveNlStat}
 \alias{saveNlStat}
-\title{Remove triple-dots (...) from names of arguments in a signature}
+\title{Save an nlStat function}
 \usage{
 saveNlStat(nlStat)
 }
@@ -13,7 +13,11 @@ saveNlStat(nlStat)
 logical Whether the process was successful
 }
 \description{
-Remove triple-dots (...) from names of arguments in a signature
+Save an nlStat function to the persistent storage so that it can be
+    retrieved and reused later even if the user no longer has its
+    definition. Especially useful when saving the results from an
+    nlStat so that the function used to retrieve the data is always
+    available.
 }
 \examples{
 

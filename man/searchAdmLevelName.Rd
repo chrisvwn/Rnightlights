@@ -34,8 +34,8 @@ Search for the admLevelName by official name. Expects the shapefile
 }
 \examples{
 \dontrun{
-searchAdmLevel("KEN", "county")
-#returns "KEN_adm1"
+searchAdmLevelName("KEN", "county")
+#returns "county"
 }
 
 }
