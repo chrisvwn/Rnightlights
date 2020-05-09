@@ -332,7 +332,6 @@ processNLCountry <- function(ctryCode,
       # Convert sf object to raster
 
       ctryPolyAdm0_raster <- fasterize::fasterize(sf = sf::st_as_sf(ctryPolyAdm0), raster = ctryRastCropped)
-      ctryPolyAdm0_raster <- sf::st_transform(ctryPolyAdm0_raster, raster::projection(ctryRastCropped))
       message(Sys.time(), ": Masking ")
 
       ctryRastCropped <- raster::mask(x = ctryRastCropped, mask = ctryPolyAdm0_raster)
