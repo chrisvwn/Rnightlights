@@ -99,9 +99,9 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   
   ntLtsIndexUrlVIIRS.Y_OLD = "https://www.ngdc.noaa.gov/eog/viirs/download_dnb_composites_iframe.html",
   
-  ntLtsIndexUrlVIIRS.M = "https://eogdata.mines.edu/download_dnb_composites_iframe.html",
+  ntLtsIndexUrlVIIRS.M = "https://eogdata.mines.edu/pages/download_dnb_composites_iframe.html",
   
-  ntLtsIndexUrlVIIRS.Y = "https://eogdata.mines.edu/download_dnb_composites_iframe.html",
+  ntLtsIndexUrlVIIRS.Y = "https://eogdata.mines.edu/pages/download_dnb_composites_iframe.html",
 
   #the number of cores to use for parallel processing
   numThreads = 2,
