@@ -39,11 +39,13 @@ Imports:
     rworldmap,
     settings,
     snow,
+    sf,
     sp,
     stats,
     stringr,
     utils,
-    xml2
+    xml2,
+    fasterize
 Suggests:
     curl,
     dendextend,

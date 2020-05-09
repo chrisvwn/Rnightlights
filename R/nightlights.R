@@ -325,10 +325,17 @@ processNLCountry <- function(ctryCode,
     if (cropMaskMethod == "rast")
     {
       #RASTERIZE
-      message(Sys.time(), ": Mask using rasterize ")
+      message(Sys.time(), ": Convert to raster object using fasterize ")
       
-      ctryRastCropped <- raster::rasterize(x = ctryPolyAdm0, y = ctryRastCropped, mask=TRUE, progress="text") #crops to polygon edge & converts to raster
       
+      # Use fasterize to mask
+      # Convert sf object to raster
+
+      ctryPolyAdm0_raster <- fasterize::fasterize(sf = sf::st_as_sf(ctryPolyAdm0), raster = ctryRastCropped)
+      message(Sys.time(), ": Masking ")
+
+      ctryRastCropped <- raster::mask(x = ctryRastCropped, mask = ctryPolyAdm0_raster)
+
       message(Sys.time(), ": Writing the raster to disk ")
       
       raster::writeRaster(x = ctryRastCropped,
@@ -336,6 +343,7 @@ processNLCountry <- function(ctryCode,
                           overwrite=TRUE, progress="text")
       
       message(Sys.time(), ": Crop and mask using rasterize ... Done")
+
     }
     else if (cropMaskMethod == "gdal")
     {
