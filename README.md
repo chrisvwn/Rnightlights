@@ -4,12 +4,12 @@
 
 <hr>
 ##### **NOTE:**
-###### **This package is still in beta and crucially has two main missing parts:**
-##### **1. Background removal**
-**The problem is that, from my understanding, background removal depends on all the tiles for a time period. This requires that for each nlPeriod we download ALL the tiles that make up the global coverage. This is not a problem per se but means approx 2GB per month for VIIRS.M. Deciding whether to have this as an option especially for users with limited bandwidth or to have this as a cloud service.**
+###### This package is still in beta and crucially has two main missing parts:
+##### 1. Background removal
+The problem is that, from my understanding, background removal depends on all the tiles for a time period. This requires that for each nlPeriod we download ALL the tiles that make up the global coverage. This is not a problem per se but means approx 2GB per month for VIIRS.M. Deciding whether to have this as an option especially for users with limited bandwidth or to have this as a cloud service.
 
-##### **2. Updated gas flare removal for VIIRS**
-**Need to understand how to implement this**
+##### 2. Updated gas flare removal for VIIRS
+Need to understand how to implement this
 
 ###### **The package will remain pulled from CRAN until these issues are resolved. The package remains available on github for use as is and will continue to be supported**
 <hr>
