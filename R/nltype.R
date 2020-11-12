@@ -63,5 +63,5 @@ validNlTypes <- function(nlTypes)
 #'
 allValidNlTypes <- function(nlTypes)
 {
-  return(all(sapply(nlTypes, function(nlType)validNlTypes(nlType))))
+  return(all(vapply(nlTypes, function(nlType)validNlTypes(nlType))))
 }

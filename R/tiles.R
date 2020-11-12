@@ -5,65 +5,79 @@
 #' Generate a list of all possible configNames for a given nlType
 #'
 #' @param nlTypes if present show only configNames matching the nlTypes
-#' 
+#'
 #' @param configNames if present show only configNames matching the configNames
-#' 
-#' @param description \code{(character)} whether to print the long or 
+#'
+#' @param description \code{(character)} whether to print the long or
 #'     short description. Possible values are:
 #'     \itemize{
 #'         \item NULL Do not show descriptions
 #'         \item short Show short descriptions
 #'         \item long Show long descriptions
 #'     }
-#' 
+#'
 #' @param pretty Whether to prettify the output. Prints one line per nlType.
 #'     Only available if description is NULL
-#' 
+#'
 #' @examples
 #' getAllNlConfigNames("OLS.Y")
 #'  #returns '"cf_cvg", "avg_vis", "stable_lights"'
-#'  
+#'
 #' @export
-getAllNlConfigNames <- function(nlTypes=NULL, configNames=NULL, description=NULL, pretty=FALSE)
-{
-  if(!is.null(nlTypes) && !all(validNlTypes(nlTypes = nlTypes)))
-    stop(Sys.time(), ": Invalid nlTypes detected")
-
-  if(!is.null(description) && !description %in% c("long", "short"))
-    stop(Sys.time(), ": Invalid description. Only 'long' and 'short' allowed")
-  
-  allConfigNames <- list(
-    list(nlType="OLS.Y",
-         configName="cf_cvg",
-         shortDescription="Cloud-free coverages",
-         longDescription="Tally of the total number of observations that went into 
-      each 30 arc second grid cell. This image can be used to identify 
-      areas with low numbers of observations where the quality is reduced. 
-      In some years there are areas with zero cloud- free observations in 
-      certain locations"),
-    list(nlType="OLS.Y",
-         configName="avg_vis",
-         shortDescription="Raw average visible band",
-         longDescription="Contains the average of the visible band digital number 
-      values with no further filtering. Data values range from 0-63. Areas 
-      with zero cloud-free observations are represented by the value 255."),
-    list(nlType="OLS.Y",
-         configName="stable_lights",
-         shortDescription="Cleaned up avg_vis",
-         longDescription="Contains the lights from cities, towns, and other sites with persistent 
+getAllNlConfigNames <-
+  function(nlTypes = NULL,
+           configNames = NULL,
+           description = NULL,
+           pretty = FALSE)
+  {
+    if (!is.null(nlTypes) && !all(validNlTypes(nlTypes = nlTypes)))
+      stop(Sys.time(), ": Invalid nlTypes detected")
+    
+    if (!is.null(description) && !description %in% c("long", "short"))
+      stop(Sys.time(),
+           ": Invalid description. Only 'long' and 'short' allowed")
+    
+    allConfigNames <- list(
+      list(
+        nlType = "OLS.Y",
+        configName = "cf_cvg",
+        shortDescription = "Cloud-free coverages",
+        longDescription = "Tally of the total number of observations that went into
+      each 30 arc second grid cell. This image can be used to identify
+      areas with low numbers of observations where the quality is reduced.
+      In some years there are areas with zero cloud- free observations in
+      certain locations"
+      ),
+      list(
+        nlType = "OLS.Y",
+        configName = "avg_vis",
+        shortDescription = "Raw average visible band",
+        longDescription = "Contains the average of the visible band digital number
+      values with no further filtering. Data values range from 0-63. Areas
+      with zero cloud-free observations are represented by the value 255."
+      ),
+      list(
+        nlType = "OLS.Y",
+        configName = "stable_lights",
+        shortDescription = "Cleaned up avg_vis",
+        longDescription = "Contains the lights from cities, towns, and other sites with persistent
           lighting, including gas flares. Ephemeral events, such as fires
           have been discarded. Then the background noise was identified and
           replaced with values of zero. Data values range from 1-63. Areas
-          with zero cloud-free observations are represented by the value 255."),
-    list(nlType="OLS.Y",
-         configName="pct_lights",
-         shortDescription="Percent detection freq",
-         longDescription="the percentage of
-         observations where light is detected per grid cell."),
-    list(nlType="OLS.Y",
-         configName="avg_lights_x_pct",
-         shortDescription="Avg vis band x percent detection freq",
-         longDescription="Derived from the average visible band digital number(DN) of
+          with zero cloud-free observations are represented by the value 255."
+      ),
+      list(
+        nlType = "OLS.Y",
+        configName = "pct_lights",
+        shortDescription = "Percent detection freq",
+        longDescription = "the percentage of
+         observations where light is detected per grid cell."
+      ),
+      list(
+        nlType = "OLS.Y",
+        configName = "avg_lights_x_pct",
+        shortDescription = "Avg vis band x percent detection freq",
+        longDescription = "Derived from the average visible band digital number(DN) of
            cloud-free light detections multiplied by the percent frequency
            of light detection. The inclusion of the percent frequency
            of detection term normalizes the resulting digital values for
@@ -71,96 +85,130 @@ getAllNlConfigNames <- function(nlTypes=NULL, configNames=NULL, description=NULL
            value for a light only detected half the time is discounted by 50%.
            Note that this product contains detections from fires and a
            variable amount of background noise. This is the product used
-           to infer gas flaring volumes from the nighttime lights."),
-    list(nlType="VIIRS.D",
-         configName="vcmcfg",
-         shortDescription="Stray Light Removed",
-         longDescription="Excludes any data impacted by stray light."),
-    list(nlType="VIIRS.D",
-         configName="vcmslcfg",
-         shortDescription="Stray Light Corrected",
-         longDescription=" Includes data impacted by stray light if the radiance values 
-      have undergone the stray-light correction procedure. The 'vcmslcfg' version, 
-      that includes the stray-light corrected data, will have more data coverage 
-      toward the poles, but will be of reduced quality."),
-    list(nlType="VIIRS.M",
-         configName="cf_cvg",
-         shortDescription="Cloud-free coverages",
-         longDescription="Tally of the total number of observations that went into 
-      each grid cell. This image can be used to identify areas with low numbers of 
-      observations where the quality is reduced. In some time periods there are areas 
-      with zero cloud-free observations in certain locations"),
-    list(nlType="VIIRS.M",
-         configName="vcmcfg",
-         shortDescription="Stray Light Removed",
-         longDescription="Excludes any data impacted by stray light."),
-    list(nlType="VIIRS.M",
-         configName="vcmslcfg",
-         shortDescription="Stray Light Corrected",
-         longDescription="Includes data impacted by stray light if the radiance 
-      values have undergone the stray-light correction procedure. The 
-      'vcmslcfg' version, that includes the stray-light corrected data, will 
-      have more data coverage toward the poles, but will be of reduced 
-      quality."),
-    list(nlType="VIIRS.Y",
-         configName="cf_cvg",
-         shortDescription="Cloud-free coverages",
-         longDescription="Tally of the total number of observations that went into 
-      each grid cell. This image can be used to identify areas with low numbers of 
-      observations where the quality is reduced. In some time periods there are areas 
-      with zero cloud-free observations in certain locations"),
-    list(nlType="VIIRS.Y",
-         configName="vcm-orm",
-         shortDescription="VIIRS Cloud Mask - Outlier Removed",
-         longDescription="This product contains cloud-free average radiance values 
-      that have undergone an outlier removal process to filter out fires 
-      and other ephemeral lights."),
-    list(nlType="VIIRS.Y",
-         configName="vcm-ntl",
-         shortDescription="VIIRS Cloud Mask - Outlier Removed - Nighttime Light",
-         longDescription="This product contains the 'vcm-orm' average, 
-      with background (non-lights) set to zero."),
-    list(nlType="VIIRS.Y",
-         configName="vcm-orm-ntl",
-         shortDescription="VIIRS Cloud Mask - Nighttime Lights",
-         longDescription="This product contains the 'vcm' average, with background 
-      (non-lights) set to zero"))
-  
-  res <- do.call(rbind.data.frame, allConfigNames)
-  
-  res$longDescription <- gsub("\\s*\\n\\s*", " ", res$longDescription)
-  
-  if(!is.null(nlTypes))
-    res <- res[res$nlType %in% nlTypes, ]
-
-  if(!is.null(configNames))
-    res <- res[res$configName %in% configNames, ]
-
-  if(!is.null(description))
-  {
-    if(description == "short")
-      res$longDescription <- NULL
-  } else
-  {
-    res$shortDescription <- NULL
-    res$longDescription <- NULL
-  }
+           to infer gas flaring volumes from the nighttime lights."
+      ),
+      list(
+        nlType = "VIIRS.D",
+        configName = "vcmcfg",
+        shortDescription = "Stray Light Removed",
+        longDescription = "Excludes any data impacted by stray light."
+      ),
+      list(
+        nlType = "VIIRS.D",
+        configName = "vcmslcfg",
+        shortDescription = "Stray Light Corrected",
+        longDescription = " Includes data impacted by stray light if the radiance values
+      have undergone the stray-light correction procedure. The 'vcmslcfg' version,
+      that includes the stray-light corrected data, will have more data coverage
+      toward the poles, but will be of reduced quality."
+      ),
+      list(
+        nlType = "VIIRS.M",
+        configName = "cf_cvg",
+        shortDescription = "Cloud-free coverages",
+        longDescription = "Tally of the total number of observations that went into
+      each grid cell. This image can be used to identify areas with low numbers of
+      observations where the quality is reduced. In some time periods there are areas
+      with zero cloud-free observations in certain locations"
+      ),
+      list(
+        nlType = "VIIRS.M",
+        configName = "vcmcfg",
+        shortDescription = "Stray Light Removed",
+        longDescription = "Excludes any data impacted by stray light."
+      ),
+      list(
+        nlType = "VIIRS.M",
+        configName = "vcmslcfg",
+        shortDescription = "Stray Light Corrected",
+        longDescription = "Includes data impacted by stray light if the radiance
+      values have undergone the stray-light correction procedure. The
+      'vcmslcfg' version, that includes the stray-light corrected data, will
+      have more data coverage toward the poles, but will be of reduced
+      quality."
+      ),
+      list(
+        nlType = "VIIRS.Y",
+        configName = "cf_cvg",
+        shortDescription = "Cloud-free coverages",
+        longDescription = "Tally of the total number of observations that went into
+      each grid cell. This image can be used to identify areas with low numbers of
+      observations where the quality is reduced. In some time periods there are areas
+      with zero cloud-free observations in certain locations"
+      ),
+      list(
+        nlType = "VIIRS.Y",
+        configName = "vcm-orm",
+        shortDescription = "VIIRS Cloud Mask - Outlier Removed",
+        longDescription = "This product contains cloud-free average radiance values
+      that have undergone an outlier removal process to filter out fires
+      and other ephemeral lights."
+      ),
+      list(
+        nlType = "VIIRS.Y",
+        configName = "vcm-ntl",
+        shortDescription = "VIIRS Cloud Mask - Outlier Removed - Nighttime Light",
+        longDescription = "This product contains the 'vcm-orm' average,
+      with background (non-lights) set to zero."
+      ),
+      list(
+        nlType = "VIIRS.Y",
+        configName = "vcm-orm-ntl",
+        shortDescription = "VIIRS Cloud Mask - Nighttime Lights",
+        longDescription = "This product contains the 'vcm' average, with background
+      (non-lights) set to zero"
+      )
+    )
     
-  if(pretty)
-    if(is.null(description))
-      res <- stats::aggregate(configName ~ nlType, res, paste, collapse=", ")
-    else if(description == "long")
-      res$longDescription <- sapply(strwrap(res$longDescription, width = getOption("width")-50, simplify = F), paste, sep="", collapse= "\n", USE.NAMES = F, simplify = T)
-  
-  return(res)
-}
+    res <- do.call(rbind.data.frame, allConfigNames)
+    
+    res$longDescription <-
+      gsub("\\s*\\n\\s*", " ", res$longDescription)
+    
+    if (!is.null(nlTypes))
+      res <- res[res$nlType %in% nlTypes,]
+    
+    if (!is.null(configNames))
+      res <- res[res$configName %in% configNames,]
+    
+    if (!is.null(description))
+    {
+      if (description == "short")
+        res$longDescription <- NULL
+    } else
+    {
+      res$shortDescription <- NULL
+      res$longDescription <- NULL
+    }
+    
+    if (pretty)
+      if (is.null(description))
+        res <-
+      stats::aggregate(configName ~ nlType, res, paste, collapse = ", ")
+    else if (description == "long")
+      res$longDescription <-
+      sapply(
+        strwrap(
+          res$longDescription,
+          width = getOption("width") - 50,
+          simplify = F
+        ),
+        paste,
+        sep = "",
+        collapse = "\n",
+        USE.NAMES = F,
+        simplify = T
+      )
+    
+    return(res)
+  }
 
 ######################## validNlConfigName ###################################
 
 #' Check if a configName is valid for a given nlType
 #'
 #' Check if a configName is valid for a given nlType
-#' 
+#'
 #' @param configName the raster in use
 #'
 #' @param nlType types of nightlight to check
@@ -170,7 +218,7 @@ getAllNlConfigNames <- function(nlTypes=NULL, configNames=NULL, description=NULL
 #' @examples
 #' Rnightlights:::validNlConfigName("VCMCFG", "OLS.Y")
 #'  #returns FALSE
-#'  
+#'
 #' Rnightlights:::validNlConfigName("VCMCFG", "VIIRS.M")
 #'  #returns TRUE
 #'
@@ -186,20 +234,20 @@ validNlConfigName <- function(configName, nlType)
 #' Download the listed tiles for a given nlType in a given nlPeriod
 #'
 #' @param nlType character The nightlight type
-#' 
+#'
 #' @param configName character the type of raster being processed
 #'
-#' @param nlPeriod character The nlPeriod to process in the appropriate 
+#' @param nlPeriod character The nlPeriod to process in the appropriate
 #'     format
 #'
-#' @param tileList integer vector or character vector of digits containing 
-#'     valid tile numbers as obtained by tileName2Idx for VIIRS. Ignore for 
+#' @param tileList integer vector or character vector of digits containing
+#'     valid tile numbers as obtained by tileName2Idx for VIIRS. Ignore for
 #'     nlType=="OLS"
-#'     
+#'
 #' @param multiTileStrategy character How to handle multiple tiles per nlPeriod
-#' 
+#'
 #' @return TRUE/FALSE if the download was successful
-#' 
+#'
 #' @examples
 #' #download VIIRS tiles for "KEN" which are tiles 2 and 5 for the specified
 #'     #time periods
@@ -209,57 +257,72 @@ validNlConfigName <- function(configName, nlType)
 #'
 #' #same as above but getting the tileList automatically
 #' \dontrun{
-#' Rnightlights:::downloadNlTiles(nlType="VIIRS.M", 
-#'     nlPeriod="201401", 
-#'     tileList=Rnightlights:::getCtryTileList(ctryCodes="KEN", 
+#' Rnightlights:::downloadNlTiles(nlType="VIIRS.M",
+#'     nlPeriod="201401",
+#'     tileList=Rnightlights:::getCtryTileList(ctryCodes="KEN",
 #'         nlType="VIIRS.M")
 #' )
 #' }
-#' 
+#'
 #' #returns TRUE if the download was successful or tile is cached locally
 #'
-downloadNlTiles <- function(nlType, configName=pkgOptions(paste0("configName_", nlType)), nlPeriod, tileList, multiTileStrategy = pkgOptions("multiTileStrategy"))
-{
-  if(missing(nlType))
-    stop(Sys.time(), ": Missing required parameter nlType")
-  
-  if(missing(nlPeriod))
-    stop(Sys.time(), ": Missing required parameter nlPeriod")
-  
-  if(stringr::str_detect(nlType, "VIIRS") && missing(tileList))
-    stop(Sys.time(), ": Missing required parameter tileList")
-  
-  if(!validNlTypes(nlType))
-    stop(Sys.time(), ": Invalid nlType detected")
-  
-  if(!allValidNlPeriods(nlPeriods = nlPeriod, nlTypes = nlType))
-    stop(Sys.time(), ": Invalid nlPeriod: ", nlPeriod)
-  
-  if(stringr::str_detect(nlType, "VIIRS") && !allValid(tileList, validNlTileNameVIIRS, nlType))
-    stop(Sys.time(), ": Invalid tile detected")
-  
-  success <- TRUE
-  
-  #ensure we have all required tiles
-  if(stringr::str_detect(nlType, "OLS"))
-    success <- success && downloadNlTilesOLS(nlPeriod = nlPeriod,
-                                             downloadMethod = pkgOptions("downloadMethod"),
-                                             nlType = nlType,
-                                             configName = configName,
-                                             multiTileStrategy = multiTileStrategy)
-  else if(stringr::str_detect(nlType, "VIIRS"))
-    for (tile in tileList)
-    {
-      nlTile <- tileName2Idx(tile, nlType)
-      
-      message(Sys.time(), ": Downloading tile: ", paste0(nlPeriod, nlTile))
-      
-      #download tile
-      success <- success && downloadNlTilesVIIRS(nlPeriod = nlPeriod, tileNum = nlTile, nlType = nlType, configName = configName)
-    }
-  
-  return (success)
-}
+downloadNlTiles <-
+  function(nlType,
+           configName = pkgOptions(paste0("configName_", nlType)),
+           nlPeriod,
+           tileList,
+           multiTileStrategy = pkgOptions("multiTileStrategy"))
+  {
+    if (missing(nlType))
+      stop(Sys.time(), ": Missing required parameter nlType")
+    
+    if (missing(nlPeriod))
+      stop(Sys.time(), ": Missing required parameter nlPeriod")
+    
+    if (stringr::str_detect(nlType, "VIIRS") && missing(tileList))
+      stop(Sys.time(), ": Missing required parameter tileList")
+    
+    if (!validNlTypes(nlType))
+      stop(Sys.time(), ": Invalid nlType detected")
+    
+    if (!allValidNlPeriods(nlPeriods = nlPeriod, nlTypes = nlType))
+      stop(Sys.time(), ": Invalid nlPeriod: ", nlPeriod)
+    
+    if (stringr::str_detect(nlType, "VIIRS") &&
+        !allValid(tileList, validNlTileNameVIIRS, nlType))
+      stop(Sys.time(), ": Invalid tile detected")
+    
+    success <- TRUE
+    
+    #ensure we have all required tiles
+    if (stringr::str_detect(nlType, "OLS"))
+      success <- success && downloadNlTilesOLS(
+        nlPeriod = nlPeriod,
+        downloadMethod = pkgOptions("downloadMethod"),
+        nlType = nlType,
+        configName = configName,
+        multiTileStrategy = multiTileStrategy
+      )
+    else if (stringr::str_detect(nlType, "VIIRS"))
+      for (tile in tileList)
+      {
+        nlTile <- tileName2Idx(tile, nlType)
+        
+        message(Sys.time(), ": Downloading tile: ", paste0(nlPeriod, nlTile))
+        
+        #download tile
+        success <-
+          success &&
+          downloadNlTilesVIIRS(
+            nlPeriod = nlPeriod,
+            tileNum = nlTile,
+            nlType = nlType,
+            configName = configName
+          )
+      }
+    
+    return (success)
+  }
 
 ######################## getCtryTileList ###################################
 
@@ -273,44 +336,45 @@ downloadNlTiles <- function(nlType, configName=pkgOptions(paste0("configName_", 
 #'     processing. Note all VIIRS_* nlTypes have the same nlTiles.
 #'
 #' @param ctryCodes character vector of country codes to process
-#' 
+#'
 #' @param nlType character string The nlType of interest
 #'
 #' @param omitCountries countries to exclude from processing. This is
 #'     helpful when the number of countries to exclude is smaller than
 #'     the number to process e.g. when one wants to process all countries
-#'     and exclude countries that take long to process i.e. 
+#'     and exclude countries that take long to process i.e.
 #'     omitCountries = "long"
 #'
 #' @return TRUE/FALSE
 #'
 #' @examples
-#' Rnightlights:::getCtryTileList(ctryCodes=c("BDI", "KEN", "RWA", "TZA", "UGA"), 
+#' Rnightlights:::getCtryTileList(ctryCodes=c("BDI", "KEN", "RWA", "TZA", "UGA"),
 #'     nlType="VIIRS.M", omitCountries="none")
-#' 
+#'
 #' #only 1 tile for OLS
-#' Rnightlights:::getCtryTileList(ctryCodes=c("BDI", "KEN", "RWA", "TZA", "UGA"), 
+#' Rnightlights:::getCtryTileList(ctryCodes=c("BDI", "KEN", "RWA", "TZA", "UGA"),
 #'     nlType="OLS.Y", omitCountries="none")
 #'     #returns "DUMMY"
 #'
-getCtryTileList <- function(ctryCodes, nlType, omitCountries="none")
+getCtryTileList <- function(ctryCodes, nlType, omitCountries = "none")
 {
-  if(missing(ctryCodes))
+  if (missing(ctryCodes))
     stop(Sys.time(), ": Missing required parameter ctryCodes")
   
-  if(missing(nlType))
+  if (missing(nlType))
     stop(Sys.time(), ": Missing required parameter nlType")
   
-  if(!allValid(ctryCodes, validCtryCodes))
+  if (!allValid(ctryCodes, validCtryCodes))
     stop(Sys.time(), ": Invalid ctryCode(s) detected")
   
-  if(!validNlTypes(nlType))
+  if (!validNlTypes(nlType))
     stop(Sys.time(), ": Invalid nlType: ", nlType)
   
-  if(stringr::str_detect(nlType, "OLS"))
+  if (stringr::str_detect(nlType, "OLS"))
     ctryTiles <- "DUMMY"
-  else if(stringr::str_detect(nlType, "VIIRS"))
-    ctryTiles <- unlist(mapCtryPolyToTilesVIIRS(ctryCodes, omitCountries)$tiles)
+  else if (stringr::str_detect(nlType, "VIIRS"))
+    ctryTiles <-
+      unlist(mapCtryPolyToTilesVIIRS(ctryCodes, omitCountries)$tiles)
   
   return (ctryTiles)
 }
@@ -325,12 +389,12 @@ getCtryTileList <- function(ctryCodes, nlType, omitCountries="none")
 #'     prevent code duplication by writing separate functions for OLS.
 #'
 #' @param nlType the nlType of interest
-#' 
+#'
 #' @return A data.frame of names of tiles and lon-lat coordinate of top-left corner of each
 #'
 #' @examples
 #' Rnightlights:::getNlTiles("VIIRS.M")
-#' 
+#'
 #' Rnightlights:::getNlTiles("OLS.Y")
 #'
 getNlTiles <- function(nlType)
@@ -338,24 +402,35 @@ getNlTiles <- function(nlType)
   #6 nightlight tiles named by top-left geo coordinate numbered from left-right & top-bottom
   #creates columns as strings. createSpPolysDF converts relevant columns to numeric
   nlTiles <- data.frame(
-    id=c(1,1,2,3,4,5,6),
-          type=c("OLS","VIIRS","VIIRS","VIIRS","VIIRS","VIIRS","VIIRS"),
-          name=c("DUMMY", "75N180W", "75N060W", "75N060E", "00N180W", "00N060W", "00N060E"),
-          minx=c(-1, -180, -60, 60, -180, -60, 60), maxx=c(-1, -60, 60, 180, -60, 60, 180),
-          miny=c(-1, 0, 0, 0, -75, -75, -75), maxy=c(-1, 75, 75, 75, 0, 0, 0), 
-    stringsAsFactors=FALSE)
+    id = c(1, 1, 2, 3, 4, 5, 6),
+    type = c("OLS", "VIIRS", "VIIRS", "VIIRS", "VIIRS", "VIIRS", "VIIRS"),
+    name = c(
+      "DUMMY",
+      "75N180W",
+      "75N060W",
+      "75N060E",
+      "00N180W",
+      "00N060W",
+      "00N060E"
+    ),
+    minx = c(-1,-180,-60, 60,-180,-60, 60),
+    maxx = c(-1,-60, 60, 180,-60, 60, 180),
+    miny = c(-1, 0, 0, 0,-75,-75,-75),
+    maxy = c(-1, 75, 75, 75, 0, 0, 0),
+    stringsAsFactors = FALSE
+  )
   
-  if(!missing(nlType))
+  if (!missing(nlType))
   {
-    if(!validNlTypes(nlType))
+    if (!validNlTypes(nlType))
       stop(Sys.time(), ": Invalid nlType")
     
-    if(length(grep("VIIRS", nlType)) > 0)
+    if (length(grep("VIIRS", nlType)) > 0)
       nlType <- "VIIRS"
-    else if(length(grep("OLS", nlType)) > 0)
+    else if (length(grep("OLS", nlType)) > 0)
       nlType <- "OLS"
     
-    nlTiles <- nlTiles[grepl(nlType, nlTiles$type),]
+    nlTiles <- nlTiles[grepl(nlType, nlTiles$type), ]
   }
   
   return (nlTiles)
@@ -382,20 +457,25 @@ createNlTilesSpPolysDF <- function()
   wgs84 <- getCRS()
   
   #convert nlTiles min/max columns to numeric
-  for (cIdx in grep("id|min|max", names(nlTiles))) nlTiles[,cIdx] <- as.numeric(as.character(nlTiles[, cIdx]))
+  for (cIdx in grep("id|min|max", names(nlTiles)))
+    nlTiles[, cIdx] <- as.numeric(as.character(nlTiles[, cIdx]))
   
   #create the empty obj to hold the data frame of tile PolygonsDataFrams
   tilesSpPolysDFs <- NULL
   
   #for each row in nlTiles
-  for (i in 1:nrow(nlTiles))
+  for (i in seq_len(nrow(nlTiles)))
   {
     #grab the row containing the tile
-    t <- nlTiles[i,]
+    t <- nlTiles[i, ]
     
     #convert the tile x,y extents to a matrix
     #format is 2 cols x & y
-    tMat <- as.matrix(cbind(rbind(t$minx, t$maxx, t$maxx, t$minx), rbind(t$maxy, t$maxy, t$miny, t$miny)))
+    tMat <-
+      as.matrix(cbind(
+        rbind(t$minx, t$maxx, t$maxx, t$minx),
+        rbind(t$maxy, t$maxy, t$miny, t$miny)
+      ))
     
     #create a Polygon object from the tile extents matrix
     tPoly <- list(sp::Polygon(tMat))
@@ -413,13 +493,20 @@ createNlTilesSpPolysDF <- function()
     #tilesSpPolysDF <- methods::as(tilesSpPolys, "SpatialPolygonsDataFrame")
     
     #z used for plotCtryWithTilesVIIRS to color the tiles
-    tilesSpPolysDF <- sp::SpatialPolygonsDataFrame(tilesSpPolys, data.frame(z=factor(i), name=nlTiles[i,"name"], row.names=i))
+    tilesSpPolysDF <-
+      sp::SpatialPolygonsDataFrame(tilesSpPolys,
+                                   data.frame(
+                                     z = factor(i),
+                                     name = nlTiles[i, "name"],
+                                     row.names = i
+                                   ))
     
     #append the SPDF into a dataframe of SPDFs
     if (is.null(tilesSpPolysDFs))
       tilesSpPolysDFs <- tilesSpPolysDF
     else
-      tilesSpPolysDFs <- sp::rbind.SpatialPolygonsDataFrame(tilesSpPolysDFs, tilesSpPolysDF)
+      tilesSpPolysDFs <-
+      sp::rbind.SpatialPolygonsDataFrame(tilesSpPolysDFs, tilesSpPolysDF)
   }
   return (tilesSpPolysDFs)
 }
@@ -429,15 +516,15 @@ createNlTilesSpPolysDF <- function()
 #' Plot a country boundary with the VIIRS tiles and world map
 #'
 #' Plot a country boundary as defined in the \pkg{rworldmap} package along
-#'     with the VIIRS nightlight tiles for a visual inspection of the tiles 
-#'     required for download in order to process a country's nightlight 
+#'     with the VIIRS nightlight tiles for a visual inspection of the tiles
+#'     required for download in order to process a country's nightlight
 #'     data. Output corresponds to that of \code{getCtryNlTiles()}
-#'     
-#'     It utilizes \code{rworldmap::rwmgetISO3()} to resolve country 
+#'
+#'     It utilizes \code{rworldmap::rwmgetISO3()} to resolve country
 #'     codes as well as names.
 #'
 #' @param ctry \code{character} the 3-letter ISO3 country code e.g. "KEN"
-#'     or a common name of the country e.g. "Kenya" as found valid by 
+#'     or a common name of the country e.g. "Kenya" as found valid by
 #'     \code{rworldmap::rwmgetISO3()}
 #'
 #' @return None
@@ -449,11 +536,12 @@ createNlTilesSpPolysDF <- function()
 #' @export
 plotCtryWithTilesVIIRS <- function(ctry)
 {
-  if(missing(ctry))
+  if (missing(ctry))
     stop(Sys.time(), ": You must supply a country code or index")
   
-  if(!is.character(ctry))
-    stop(Sys.time(), ": The parameter you supplied needs to be type character")
+  if (!is.character(ctry))
+    stop(Sys.time(),
+         ": The parameter you supplied needs to be type character")
   
   wgs84 <- getCRS()
   
@@ -461,18 +549,18 @@ plotCtryWithTilesVIIRS <- function(ctry)
   map <- getWorldMap()
   
   #if the tiles spatial polygons dataframe does not exist create it
-  if(!exists("tilesSpPolysDFs"))
+  if (!exists("tilesSpPolysDFs"))
     tilesSpPolysDFs <- createNlTilesSpPolysDF()
-
+  
   ctryISO3 <- ctryNameToCode(ctry)
   
-  if(is.na(ctryISO3))
+  if (is.na(ctryISO3))
     ctryName <- ctryCodeToName(ctry)
   
-  if(is.na(ctryISO3) && !is.na(ctryName))
+  if (is.na(ctryISO3) && !is.na(ctryName))
     ctryISO3 <- ctryNameToCode(ctryName)
   
-  if(is.na(ctryISO3))
+  if (is.na(ctryISO3))
     stop(Sys.time(), ": Invalid ctryCode/Name ", ctry)
   
   #if ctryISO3 is empty then the country was not found
@@ -481,12 +569,17 @@ plotCtryWithTilesVIIRS <- function(ctry)
   
   #otherwise we have a valid country ISO3 code. get its index
   idx <- which(as.character(map@data$ISO3) == ctryISO3)
-
+  
   #get the polygon that matches the index
   ctryPolys <- map@polygons[[idx]]
   
   #get the name of the polygon
-  ctryPolyTitle <- paste0("VIIRS Nightlight Tiles Required for:\n", map@data$ADMIN[[idx]], " (", map@data$ISO3[[idx]], ")")
+  ctryPolyTitle <-
+    paste0("VIIRS Nightlight Tiles Required for:\n",
+           map@data$ADMIN[[idx]],
+           " (",
+           map@data$ISO3[[idx]],
+           ")")
   
   #create a SpatialPolygons object with the list of Polygons
   ctrySpPolys <- sp::SpatialPolygons(Srl = list(ctryPolys))
@@ -495,7 +588,8 @@ plotCtryWithTilesVIIRS <- function(ctry)
   raster::projection(ctrySpPolys) <- sp::CRS(wgs84)
   
   #convert the spatial polygons to an SPsDF
-  ctrySpPolysDF <- methods::as(ctrySpPolys, "SpatialPolygonsDataFrame")
+  ctrySpPolysDF <-
+    methods::as(ctrySpPolys, "SpatialPolygonsDataFrame")
   
   #set the 4 margins to 2 inches from the border to avoid boundary errors
   #graphics::par(mar=rep(2,4))
@@ -520,23 +614,60 @@ plotCtryWithTilesVIIRS <- function(ctry)
   extents <- methods::as(e, 'SpatialLines')
   
   #get a list of the intersecting tiles. Used to highlight tiles which intersect with plotted country
-  tilesIntersected <- tileName2Idx(tileName = getTilesCtryIntersectVIIRS(map@data$ISO3[[idx]]), nlType=grep("VIIRS", getAllNlTypes(), value = TRUE)[1])
+  tilesIntersected <-
+    tileName2Idx(
+      tileName = getTilesCtryIntersectVIIRS(map@data$ISO3[[idx]]),
+      nlType = grep("VIIRS", getAllNlTypes(), value = TRUE)[1]
+    )
   
   #create a list which serves as a subtitle showing the mapping of tile index to tile name
-  tileIdxNames <- paste(tilesSpPolysDFs@data$z, tilesSpPolysDFs@data$name, sep = "=")
+  tileIdxNames <-
+    paste(tilesSpPolysDFs@data$z, tilesSpPolysDFs@data$name, sep = "=")
   
   #plot the map
-  sp::spplot(tilesSpPolysDFs, #the tiles SPDF
-             zcol = "z", #the col in the tiles SPDF which determines their color
-             col.regions = as.vector(ifelse(1:nrow(tilesSpPolysDFs) %in% tilesIntersected, "lightblue", "transparent")), #colors of the tiles. intersected tiles are lightblue, otherwise transparent
-             colorkey = FALSE,
-             sp.layout = list(list(map, col='grey', fill='transparent', first=FALSE), #plot the world map from rworldmap
-                              list(ctrySpPolysDF, col='black', fill='blue', first=FALSE), #plot the selected country
-                              list('sp.lines', extents, col='green', lwd=2), #plot the bounding box
-                              list('sp.text', sp::coordinates(tilesSpPolysDFs), 1:nrow(tilesSpPolysDFs), col='black', cex=2) #label the tiles with their index numbers
-             ),
-             main = ctryPolyTitle, #the main title
-             sub = tileIdxNames #the sub title 
+  sp::spplot(
+    tilesSpPolysDFs,
+    #the tiles SPDF
+    zcol = "z",
+    #the col in the tiles SPDF which determines their color
+    col.regions = as.vector(
+      ifelse(
+        seq_len(nrow(tilesSpPolysDFs)) %in% tilesIntersected,
+        "lightblue",
+        "transparent"
+      )
+    ),
+    #colors of the tiles. intersected tiles are lightblue, otherwise transparent
+    colorkey = FALSE,
+    sp.layout = list(
+      list(
+        map,
+        col = 'grey',
+        fill = 'transparent',
+        first = FALSE
+      ),
+      #plot the world map from rworldmap
+      list(
+        ctrySpPolysDF,
+        col = 'black',
+        fill = 'blue',
+        first = FALSE
+      ),
+      #plot the selected country
+      list('sp.lines', extents, col = 'green', lwd =
+             2),
+      #plot the bounding box
+      list(
+        'sp.text',
+        sp::coordinates(tilesSpPolysDFs),
+        seq_len(nrow(tilesSpPolysDFs)),
+        col = 'black',
+        cex = 2
+      ) #label the tiles with their index numbers
+    ),
+    main = ctryPolyTitle,
+    #the main title
+    sub = tileIdxNames #the sub title
   )
   
   #ggplot(tilesSpPolysDFs, aes(x=long,y=lat))+geom_polygon(col="black", fill="white", alpha=0.5)#+geom_polygon(data=ctrySpPolysDF, alpha=0.5)
@@ -575,28 +706,29 @@ plotCtryWithTilesVIIRS <- function(ctry)
 #' tileMap <- Rnightlights:::mapAllCtryPolyToTilesVIIRS(omitCountries=c("error", "long"))
 #' }
 #'
-mapAllCtryPolyToTilesVIIRS <- function(omitCountries=pkgOptions("omitCountries"))
-{
-  mapCtryPolyToTilesVIIRS(ctryCodes="all", omitCountries)
-}
+mapAllCtryPolyToTilesVIIRS <-
+  function(omitCountries = pkgOptions("omitCountries"))
+  {
+    mapCtryPolyToTilesVIIRS(ctryCodes = "all", omitCountries)
+  }
 
 ######################## mapCtryPolyToTilesVIIRS ###################################
 
 #' Create a mapping of all countries and the tiles they intersect
 #'
 #' Create a dataframe mapping each country in the rworldmap to the VIIRS
-#'     tiles which they intersect with and thus need to be retrieved to 
+#'     tiles which they intersect with and thus need to be retrieved to
 #'     process their nightlight imagery. Since some functions use this
-#'     dataframe for long-term processing, omitCountries can eliminate 
-#'     countries that should be excluded from the list hence from processing. 
+#'     dataframe for long-term processing, omitCountries can eliminate
+#'     countries that should be excluded from the list hence from processing.
 #'     Countries can be added in the omitCountries function. Default is "none".
 #'
-#' @param ctryCodes A character vector or list of countries to map. Default 
+#' @param ctryCodes A character vector or list of countries to map. Default
 #'     is \code{"all"}
 #' @param omitCountries A character vector or list of countries to leave out.
 #'     Default is \code{"none"}
 #'
-#' @return ctryCodeTiles A data frame of countries and the tiles they 
+#' @return ctryCodeTiles A data frame of countries and the tiles they
 #'     intersect with as give by \code{getNlTiles}
 #'
 #' @examples
@@ -615,56 +747,61 @@ mapAllCtryPolyToTilesVIIRS <- function(omitCountries=pkgOptions("omitCountries")
 #' tileMap <- Rnightlights:::mapCtryPolyToTilesVIIRS(omitCountries=c("error", "missing"))
 #' }
 #'
-mapCtryPolyToTilesVIIRS <- function(ctryCodes="all", omitCountries=pkgOptions("omitCountries"))
-{
-  #if ctryCodes is "all" otherwise consider ctryCodes to be a list of countries
-  if (length(ctryCodes) == 1 && tolower(ctryCodes) == "all")
+mapCtryPolyToTilesVIIRS <-
+  function(ctryCodes = "all",
+           omitCountries = pkgOptions("omitCountries"))
   {
-    #get list of all country codes
-    ctryCodes <- getAllNlCtryCodes(omitCountries)
+    #if ctryCodes is "all" otherwise consider ctryCodes to be a list of countries
+    if (length(ctryCodes) == 1 && tolower(ctryCodes) == "all")
+    {
+      #get list of all country codes
+      ctryCodes <- getAllNlCtryCodes(omitCountries)
+    }
+    
+    #if the rworldmap::getMap() hasn't been loaded, load it
+    map <- getWorldMap()
+    
+    wgs84 <- getCRS()
+    
+    #get the indices of the country polygons from the rworldmap
+    ctryCodeIdx <- which(map@data$ISO3 %in% ctryCodes)
+    
+    ctryCodeTiles <- NULL
+    
+    #for each ctryCode index
+    for (i in ctryCodeIdx)
+    {
+      #get the matching polygon
+      ctryPolys <- map@polygons[[i]]
+      
+      #create a SpatialPolygons object with a list of 1 list of Polygons
+      ctrySpPolys <- sp::SpatialPolygons(Srl = list(ctryPolys))
+      
+      #set the CRS
+      raster::projection(ctrySpPolys) <- sp::CRS(wgs84)
+      
+      #convert the SpatialPolygons to a SpatialPolygonsDataFrame
+      ctrySpPolysDF <-
+        methods::as(ctrySpPolys, "SpatialPolygonsDataFrame")
+      
+      #find the tiles the SPDF intersects with and add to the list of tiles
+      ctryCodeTiles <-
+        rbind(ctryCodeTiles, list(tilesPolygonIntersectVIIRS(ctrySpPolys)))
+    }
+    
+    #combine the ctryCodes and intersecting tile columns into a dataframe
+    ctryCodeTiles <-
+      as.data.frame(cbind(code = as.character(ctryCodes), tiles = ctryCodeTiles))
+    
+    #name the columns
+    names(ctryCodeTiles) <- c("code", "tiles")
+    
+    #convert the code column to character since it is picked as factor
+    ctryCodeTiles$code <- as.character(ctryCodeTiles$code)
+    
+    #return the data frame
+    return(ctryCodeTiles)
   }
-  
-  #if the rworldmap::getMap() hasn't been loaded, load it
-  map <- getWorldMap()
-  
-  wgs84 <- getCRS()
-  
-  #get the indices of the country polygons from the rworldmap
-  ctryCodeIdx <- which(map@data$ISO3 %in% ctryCodes)
-  
-  ctryCodeTiles <- NULL
-  
-  #for each ctryCode index
-  for (i in ctryCodeIdx)
-  {
-    #get the matching polygon
-    ctryPolys <- map@polygons[[i]]
-    
-    #create a SpatialPolygons object with a list of 1 list of Polygons
-    ctrySpPolys <- sp::SpatialPolygons(Srl = list(ctryPolys))
-    
-    #set the CRS
-    raster::projection(ctrySpPolys) <- sp::CRS(wgs84)
-    
-    #convert the SpatialPolygons to a SpatialPolygonsDataFrame
-    ctrySpPolysDF <- methods::as(ctrySpPolys, "SpatialPolygonsDataFrame")
-    
-    #find the tiles the SPDF intersects with and add to the list of tiles
-    ctryCodeTiles <- rbind(ctryCodeTiles, list(tilesPolygonIntersectVIIRS(ctrySpPolys)))
-  }
-  
-  #combine the ctryCodes and intersecting tile columns into a dataframe
-  ctryCodeTiles <- as.data.frame(cbind(code = as.character(ctryCodes), tiles = ctryCodeTiles))
-  
-  #name the columns
-  names(ctryCodeTiles) <- c("code", "tiles")
-  
-  #convert the code column to character since it is picked as factor
-  ctryCodeTiles$code <- as.character(ctryCodeTiles$code)
-  
-  #return the data frame
-  return(ctryCodeTiles)
-}
 
 ######################## getTilesCtryIntersectVIIRS ###################################
 
@@ -673,7 +810,7 @@ mapCtryPolyToTilesVIIRS <- function(ctryCodes="all", omitCountries=pkgOptions("o
 #' Create a dataframe mapping each country in the rworldmap to the VIIRS
 #'     tiles which they intersect with and thus need to be retrieved to
 #'     process their nightlight imagery. Since some functions use this
-#'     dataframe for long-term processing, omitCountries can eliminate 
+#'     dataframe for long-term processing, omitCountries can eliminate
 #'     countries that should be excluded from the list hence from processing.
 #'     Countries can be added in the omitCountries function.
 #'     Default is "none".
@@ -683,24 +820,24 @@ mapCtryPolyToTilesVIIRS <- function(ctryCodes="all", omitCountries=pkgOptions("o
 #' @return None
 #'
 #' @examples
-#' 
+#'
 #' Rnightlights:::getTilesCtryIntersectVIIRS("KEN")
 #'
 getTilesCtryIntersectVIIRS <- function(ctryCode)
 {
-  if(missing(ctryCode))
+  if (missing(ctryCode))
     stop(Sys.time(), ": Missing equired parameter ctryCode")
   
   ctryCode <- as.character(ctryCode)
   
-  if(!validCtryCodes(ctryCode))
+  if (!validCtryCodes(ctryCode))
   {
     warning("Invalid/Unknown ctryCode: ", ctryCode)
     return(NA)
   }
-
+  
   ctryISO3 <- ctryCode
- 
+  
   map <- getWorldMap()
   
   wgs84 <- getCRS()
@@ -721,7 +858,8 @@ getTilesCtryIntersectVIIRS <- function(ctryCode)
   
   raster::projection(ctrySpPolys) <- sp::CRS(wgs84)
   
-  ctrySpPolysDF <- methods::as(ctrySpPolys, "SpatialPolygonsDataFrame")
+  ctrySpPolysDF <-
+    methods::as(ctrySpPolys, "SpatialPolygonsDataFrame")
   
   ctryCodeTiles <- tilesPolygonIntersectVIIRS(ctrySpPolys)
   
@@ -739,7 +877,7 @@ getTilesCtryIntersectVIIRS <- function(ctryCode)
 #' Check if a tile name is valid for a given VIIRS nightlight type.
 #'
 #' @param tileName the name of the tile
-#' 
+#'
 #' @param nlType character the nlType
 #'
 #' @return TRUE/FALSE
@@ -750,13 +888,14 @@ getTilesCtryIntersectVIIRS <- function(ctryCode)
 #'
 validNlTileNameVIIRS <- function(tileName, nlType)
 {
-  if(missing(tileName))
+  if (missing(tileName))
     stop(Sys.time(), ": Missing required parameter tileName")
   
-  if(!is.character(tileName) || is.null(tileName) || is.na(tileName) || tileName == "")
+  if (!is.character(tileName) ||
+      is.null(tileName) || is.na(tileName) || tileName == "")
     stop(Sys.time(), ": Invalid tileName: ", tileName)
   
-  if(length(tileName2Idx(tileName, nlType)) != 0)
+  if (length(tileName2Idx(tileName, nlType)) != 0)
     return(TRUE)
   else
     return(FALSE)
@@ -769,7 +908,7 @@ validNlTileNameVIIRS <- function(tileName, nlType)
 #' Get the index of a VIIRS tile as given by getNlTiles() given its name
 #'
 #' @param tileName name as given by getNlTiles()
-#' 
+#'
 #' @param nlType the nlType of interest
 #'
 #' @return Integer index of the tile
@@ -785,7 +924,8 @@ tileName2Idx <- function(tileName, nlType)
   if (missing(nlType))
     stop(Sys.time(), ": Missing required parameter nlType")
   
-  if(!is.character(tileName) || is.null(tileName) || is.na(tileName) || tileName == "")
+  if (!is.character(tileName) ||
+      is.null(tileName) || is.na(tileName) || tileName == "")
     stop(Sys.time(), ": Invalid tileName: ", tileName)
   
   nlType <- toupper(nlType)
@@ -805,7 +945,7 @@ tileName2Idx <- function(tileName, nlType)
 #' Get the name of a VIIRS tile as given by getNlTiles() given its index
 #'
 #' @param tileNum index as given by getNlTiles()
-#' 
+#'
 #' @param nlType the nlType of interest
 #'
 #' @return Character name of the tile
@@ -815,16 +955,16 @@ tileName2Idx <- function(tileName, nlType)
 #'
 tileIdx2Name <- function(tileNum, nlType)
 {
-  if(missing(tileNum))
+  if (missing(tileNum))
     stop(Sys.time(), ": Missing required parameter tileNum")
-
-  if(missing(nlType))
+  
+  if (missing(nlType))
     stop(Sys.time(), ": Missing required parameter nlType")
   
-  if(!validNlTypes(nlType))
+  if (!validNlTypes(nlType))
     stop(Sys.time(), ": Invalid nlType: ", nlType)
-    
-  if(!validNlTileNumVIIRS(tileNum, nlType))
+  
+  if (!validNlTileNumVIIRS(tileNum, nlType))
     stop(Sys.time(), ": Invalid tileNum: ", tileNum)
   
   if (!exists("nlTiles"))
@@ -850,18 +990,18 @@ tileIdx2Name <- function(tileNum, nlType)
 #' \dontrun{
 #' #download shapefile if it doesn't exist
 #' ctryShapefile <- Rnightlights:::dnldCtryPoly("KEN")
-#' 
+#'
 #' #read in shapefile top layer
-#' ctryPoly <- readCtryPolyAdmLayer("KEN", 
+#' ctryPoly <- readCtryPolyAdmLayer("KEN",
 #'     Rnightlights:::getCtryShpLyrNames("KEN",0))
-#' 
+#'
 #' #get list of intersecting tiles
 #' tileList <- Rnightlights:::tilesPolygonIntersectVIIRS(ctryPoly)
 #' }
 #'
 tilesPolygonIntersectVIIRS <- function(shpPolygon)
 {
-  if(missing(shpPolygon))
+  if (missing(shpPolygon))
     stop(Sys.time(), ": Missing required parameter shpPolygon")
   
   #given a polygon this function returns a list of the names of the viirs tiles
@@ -875,7 +1015,8 @@ tilesPolygonIntersectVIIRS <- function(shpPolygon)
   }
   
   if (!exists("nlTiles"))
-    nlTiles <- getNlTiles(grep("VIIRS", getAllNlTypes(), value = TRUE)[1])
+    nlTiles <-
+      getNlTiles(grep("VIIRS", getAllNlTypes(), value = TRUE)[1])
   
   wgs84 <- getCRS()
   
@@ -885,10 +1026,11 @@ tilesPolygonIntersectVIIRS <- function(shpPolygon)
   tileIdx <- NULL
   
   #loop through the 6 tile rows in our SpatialPolygonsDataFrame
-  for (i in 1:nrow(tilesSpPolysDFs))
+  for (i in seq_len(nrow(tilesSpPolysDFs)))
   {
     #check whether the polygon intersects with the current tile
-    tileIdx[i] <- rgeos::gIntersects(tilesSpPolysDFs[i,], shpPolygon)
+    tileIdx[i] <-
+      rgeos::gIntersects(tilesSpPolysDFs[i, ], shpPolygon)
   }
   
   #return a list of tiles that intersected with the SpatialPolygon
@@ -902,7 +1044,7 @@ tilesPolygonIntersectVIIRS <- function(shpPolygon)
 #' Check if a tile number is valid for a given VIIRS nightlight type.
 #'
 #' @param nlTileNum the index of the tile
-#' 
+#'
 #' @param nlType A character string of nlType
 #'
 #' @return TRUE/FALSE
@@ -924,10 +1066,13 @@ validNlTileNumVIIRS <- function(nlTileNum, nlType)
   if (missing(nlType))
     stop(Sys.time(), ": Missing parameter nlType")
   
-  if (class(nlTileNum) != "character" || nlTileNum =="" || length(nlTileNum)==0 || length(grep("[^[:digit:]]", nlTileNum) > 0))
+  if (class(nlTileNum) != "character" ||
+      nlTileNum == "" ||
+      length(nlTileNum) == 0 ||
+      length(grep("[^[:digit:]]", nlTileNum) > 0))
     return(FALSE)
   
-  if(!exists("nlTiles"))
+  if (!exists("nlTiles"))
     nlTiles <- getNlTiles(nlType)
   
   nlT <- as.numeric(nlTileNum)

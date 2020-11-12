@@ -3,7 +3,7 @@
 #' Get the path to the saved world gasflare RDS
 #'
 #' Get the path to the saved world gasflare RDS
-#' 
+#'
 #' @return \code{character} the path to the world gasflare RDS
 #'
 #' @examples
@@ -22,9 +22,9 @@ getNlGasFlaresRdsFnamePath <- function()
 #' Get the path to the saved country gasflare RDS
 #'
 #' Get the path to the saved country gasflare RDS
-#' 
+#'
 #' @param ctryCode \code{character} The ctryCode of the country of interest
-#' 
+#'
 #' @return \code{character} the path to the world gasflare RDS
 #'
 #' @examples
@@ -35,7 +35,10 @@ getNlGasFlaresRdsFnamePath <- function()
 #'
 getNlCtryGasFlaresRdsFnamePath <- function(ctryCode)
 {
-  return(file.path(getNlDir("dirNlGasFlares"), paste0("gasflares_", ctryCode, ".rds")))
+  return(file.path(
+    getNlDir("dirNlGasFlares"),
+    paste0("gasflares_", ctryCode, ".rds")
+  ))
 }
 
 ######################## getNlGasFlaresRdsFnamePath ###################################
@@ -43,7 +46,7 @@ getNlCtryGasFlaresRdsFnamePath <- function(ctryCode)
 #' Get the path to the saved world gasflare RDS
 #'
 #' Get the path to the saved world gasflare RDS
-#' 
+#'
 #' @return None
 #'
 #' @examples
@@ -54,23 +57,36 @@ getNlCtryGasFlaresRdsFnamePath <- function(ctryCode)
 #'
 createNlGasFlares <- function()
 {
-  message(Sys.time(), ": removeGasFlares = TRUE. Downloading gas flare country polygons. This will take a while")
+  message(
+    Sys.time(),
+    ": removeGasFlares = TRUE. Downloading gas flare country polygons. This will take a while"
+  )
   
   gasFlareRdsFnamePath <- getNlGasFlaresRdsFnamePath()
   
-  if(!file.exists(gasFlareRdsFnamePath))
+  if (!file.exists(gasFlareRdsFnamePath))
   {
     #the page that lists all available nightlight files
-    gasFlarePageHtml <- "https://www.ngdc.noaa.gov/eog/interest/gas_flares_countries_shapefiles.html"
+    gasFlarePageHtml <-
+      "https://www.ngdc.noaa.gov/eog/interest/gas_flares_countries_shapefiles.html"
     
     #the local name of the file once downloaded
-    gasFlarePageLocalName <- file.path(getNlDir("dirNlTemp"), basename(gasFlarePageHtml))
+    gasFlarePageLocalName <-
+      file.path(getNlDir("dirNlTemp"), basename(gasFlarePageHtml))
     
     #if the file does not exist or is older than a day download it afresh
     #not working. download.file does not seem to update mtime
-    if (!file.exists(gasFlarePageLocalName) || (Sys.Date() - lubridate::date(file.mtime(gasFlarePageLocalName)) > lubridate::as.difftime(lubridate::period("1 day"))))
+    if (!file.exists(gasFlarePageLocalName) ||
+        (
+          Sys.Date() - lubridate::date(file.mtime(gasFlarePageLocalName)) > lubridate::as.difftime(lubridate::period("1 day"))
+        ))
     {
-      utils::download.file(url = gasFlarePageHtml, destfile = gasFlarePageLocalName, method = "auto", extra = "-N")
+      utils::download.file(
+        url = gasFlarePageHtml,
+        destfile = gasFlarePageLocalName,
+        method = "auto",
+        extra = "-N"
+      )
     }
     #else
     #  message(paste0(ntLtsPageHtml, " already downloaded"))
@@ -82,18 +98,26 @@ createNlGasFlares <- function()
     
     gasFlareRgxp <- paste0("Flares_.*\\.tgz")
     
-    gasFlareNodes <- gasFlarePage[grep(pattern = gasFlareRgxp, x=gasFlarePage)]
+    gasFlareNodes <-
+      gasFlarePage[grep(pattern = gasFlareRgxp, x = gasFlarePage)]
     
-    gasFlareUrls <- rvest::html_attr(gasFlareNodes,name = "href")
+    gasFlareUrls <- rvest::html_attr(gasFlareNodes, name = "href")
     
-    for(gasFlareUrl in gasFlareUrls)
+    for (gasFlareUrl in gasFlareUrls)
     {
-      message(Sys.time(), ": Downloading gas flare polygon ", basename(gasFlareUrl))
+      message(Sys.time(),
+              ": Downloading gas flare polygon ",
+              basename(gasFlareUrl))
       
-      gfTgzLclFnamePath <- file.path(getNlDir("dirNlGasFlares"), basename(gasFlareUrl))
+      gfTgzLclFnamePath <-
+        file.path(getNlDir("dirNlGasFlares"), basename(gasFlareUrl))
       
-      if(!file.exists(gfTgzLclFnamePath))
-        res <- try(utils::download.file(url = gasFlareUrl, destfile = gfTgzLclFnamePath, method = "auto"), TRUE)
+      if (!file.exists(gfTgzLclFnamePath))
+        res <-
+        try(utils::download.file(url = gasFlareUrl,
+                                 destfile = gfTgzLclFnamePath,
+                                 method = "auto"),
+            TRUE)
       else
       {
         message(Sys.time(), ": Exists")
@@ -101,26 +125,30 @@ createNlGasFlares <- function()
         res <- 0
       }
       
-      if(res == 0)
+      if (res == 0)
       {
         message(Sys.time(), ": Extracting ", basename(gasFlareUrl))
         
-        gfShpDirLclFnamePath <- tools::file_path_sans_ext(gfTgzLclFnamePath)
+        gfShpDirLclFnamePath <-
+          tools::file_path_sans_ext(gfTgzLclFnamePath)
         
-        if(!dir.exists(gfShpDirLclFnamePath))
+        if (!dir.exists(gfShpDirLclFnamePath))
         {
           dir.create(gfShpDirLclFnamePath)
-        
+          
           utils::untar(tarfile = gfTgzLclFnamePath, exdir = gfShpDirLclFnamePath)
         } else
         {
-          message(Sys.time(), ": ", gfShpDirLclFnamePath, " already exists")
+          message(Sys.time(),
+                  ": ",
+                  gfShpDirLclFnamePath,
+                  " already exists")
         }
       }
       
     }
     
-    if(res == 0)
+    if (res == 0)
     {
       #all shapefiles downloaded
       message(Sys.time(), ": Creating global gas flare shapefile")
@@ -129,13 +157,16 @@ createNlGasFlares <- function()
       
       message(Sys.time(), ": Reading in the downloaded gas flare polygons")
       
-      for(gasFlareUrl in gasFlareUrls)
+      for (gasFlareUrl in gasFlareUrls)
       {
-        gfTgzLclFnamePath <- file.path(getNlDir("dirNlGasFlares"), basename(gasFlareUrl))
+        gfTgzLclFnamePath <-
+          file.path(getNlDir("dirNlGasFlares"), basename(gasFlareUrl))
         
-        gfShpDirLclFnamePath <- tools::file_path_sans_ext(x = gfTgzLclFnamePath)
+        gfShpDirLclFnamePath <-
+          tools::file_path_sans_ext(x = gfTgzLclFnamePath)
         
-        gfPoly <- append(gfPoly, rgdal::readOGR(dsn = gfShpDirLclFnamePath))
+        gfPoly <-
+          append(gfPoly, rgdal::readOGR(dsn = gfShpDirLclFnamePath))
       }
       
       message(Sys.time(), ": mosaicing")
@@ -173,7 +204,7 @@ createNlGasFlares <- function()
 #' Check if the world gasflare RDS exists
 #'
 #' Check if the world gasflare RDS exists
-#' 
+#'
 #' @return \code{logical} if the gasflare rds exists
 #'
 #' @examples
@@ -194,7 +225,7 @@ existsNlGasFlaresRds <- function()
 #' Returns the world gasflares polygon if it exists
 #'
 #' Returns the world gasflares polygon if it exists
-#' 
+#'
 #' @return \code{spPolygons} the country gasflare polygon
 #'
 #' @examples
@@ -205,7 +236,7 @@ existsNlGasFlaresRds <- function()
 #'
 getNlGasFlaresRds <- function()
 {
-  if(!existsNlGasFlaresRds())
+  if (!existsNlGasFlaresRds())
     createNlGasFlares()
   
   readRDS(getNlGasFlaresRdsFnamePath())
@@ -216,15 +247,15 @@ getNlGasFlaresRds <- function()
 #' Checks if a country has gasflares
 #'
 #' Checks if a country has gasflares
-#' 
+#'
 #' @param ctryCode \code{character} The ctryCode of the country of interest
-#' 
+#'
 #' @param gadmVersion The GADM version to use
-#' 
+#'
 #' @param gadmPolyType The format of polygons to download from GADM
-#' 
+#'
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
-#' 
+#'
 #' @return \code{logical} whether the country has gasflares
 #'
 #' @examples
@@ -235,18 +266,24 @@ getNlGasFlaresRds <- function()
 #'
 #' @export
 hasNlCtryGasFlares <- function(ctryCode,
-                               gadmVersion=pkgOptions("gadmVersion"),
-                               gadmPolyType=pkgOptions("gadmPolyType"),
-                               custPolyPath=NULL)
+                               gadmVersion = pkgOptions("gadmVersion"),
+                               gadmPolyType = pkgOptions("gadmPolyType"),
+                               custPolyPath = NULL)
 {
-  ctryPolyAdm0 <- readCtryPolyAdmLayer(ctryCode = ctryCode,
-                                       admLevel = unlist(getCtryShpLyrNames(ctryCodes = ctryCode,
-                                                                            lyrNums = 0,
-                                                                            gadmVersion = gadmVersion,
-                                                                            gadmPolyType = gadmPolyType,
-                                                                            custPolyPath = custPolyPath)),
-                                       gadmVersion = gadmVersion,
-                                       custPolyPath = custPolyPath)
+  ctryPolyAdm0 <- readCtryPolyAdmLayer(
+    ctryCode = ctryCode,
+    admLevel = unlist(
+      getCtryShpLyrNames(
+        ctryCodes = ctryCode,
+        lyrNums = 0,
+        gadmVersion = gadmVersion,
+        gadmPolyType = gadmPolyType,
+        custPolyPath = custPolyPath
+      )
+    ),
+    gadmVersion = gadmVersion,
+    custPolyPath = custPolyPath
+  )
   gasFlarePoly <- getNlGasFlaresRds()
   
   return(any(rgeos::gIntersects(ctryPolyAdm0, gasFlarePoly, byid = TRUE)))
@@ -257,15 +294,15 @@ hasNlCtryGasFlares <- function(ctryCode,
 #' Checks if a country has gasflares
 #'
 #' Checks if a country has gasflares
-#' 
+#'
 #' @param ctryCode \code{character} The ctryCode of the country of interest
-#' 
+#'
 #' @param gadmVersion The GADM version to use
-#' 
+#'
 #' @param gadmPolyType The format of polygons to download from GADM
-#' 
+#'
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
-#' 
+#'
 #' @return \code{logical} whether the country has gasflares
 #'
 #' @examples
@@ -274,35 +311,47 @@ hasNlCtryGasFlares <- function(ctryCode,
 #'   #returns TRUE
 #' }
 #'
-createNlCtryGasFlares <- function(ctryCode, 
+createNlCtryGasFlares <- function(ctryCode,
                                   gadmVersion = pkgOptions("gadmVersion"),
                                   gadmPolyType = pkgOptions("gadmPolyType"),
                                   custPolyPath = NULL)
 {
-  if(!existsNlCtryGasFlaresRds(ctryCode))
-  {  
-    ctryPolyAdm0 <- readCtryPolyAdmLayer(ctryCode = ctryCode,
-                                         admLevel = unlist(getCtryShpLyrNames(ctryCodes = ctryCode,
-                                                                              lyrNums = 0,
-                                                                              gadmVersion = gadmVersion,
-                                                                              gadmPolyType = gadmPolyType,
-                                                                              custPolyPath = custPolyPath)),
-                                         gadmVersion = gadmVersion,
-                                         custPolyPath = custPolyPath)
+  if (!existsNlCtryGasFlaresRds(ctryCode))
+  {
+    ctryPolyAdm0 <- readCtryPolyAdmLayer(
+      ctryCode = ctryCode,
+      admLevel = unlist(
+        getCtryShpLyrNames(
+          ctryCodes = ctryCode,
+          lyrNums = 0,
+          gadmVersion = gadmVersion,
+          gadmPolyType = gadmPolyType,
+          custPolyPath = custPolyPath
+        )
+      ),
+      gadmVersion = gadmVersion,
+      custPolyPath = custPolyPath
+    )
     gasFlarePoly <- getNlGasFlaresRds()
     
-    if(hasNlCtryGasFlares(ctryCode = ctryCode,
-                          gadmVersion = gadmVersion,
-                          gadmPolyType = gadmPolyType,
-                          custPolyPath = custPolyPath))
+    if (hasNlCtryGasFlares(
+      ctryCode = ctryCode,
+      gadmVersion = gadmVersion,
+      gadmPolyType = gadmPolyType,
+      custPolyPath = custPolyPath
+    ))
     {
-      if(!file.exists(getNlCtryGasFlaresRdsFnamePath(ctryCode)))
+      if (!file.exists(getNlCtryGasFlaresRdsFnamePath(ctryCode)))
       {
-        message(Sys.time(), ": Creating country gas flare removal polygon. Approx time 2 mins")
-
-        gasFlarePoly <- rgeos::gUnionCascaded(gasFlarePoly)    
-
-        ctryPolyAdm0GFRemoved <- rgeos::gDifference(spgeom1 = ctryPolyAdm0, spgeom2 = gasFlarePoly, byid = FALSE)
+        message(Sys.time(),
+                ": Creating country gas flare removal polygon. Approx time 2 mins")
+        
+        gasFlarePoly <- rgeos::gUnionCascaded(gasFlarePoly)
+        
+        ctryPolyAdm0GFRemoved <-
+          rgeos::gDifference(spgeom1 = ctryPolyAdm0,
+                             spgeom2 = gasFlarePoly,
+                             byid = FALSE)
         
         saveRDS(object = ctryPolyAdm0GFRemoved, file = getNlCtryGasFlaresRdsFnamePath(ctryCode))
         
@@ -327,9 +376,9 @@ createNlCtryGasFlares <- function(ctryCode,
 #' Checks if the country gasflares rds exists
 #'
 #' Checks if the country gasflares rds exists
-#' 
+#'
 #' @param ctryCode \code{character} The ctryCode of the country of interest
-#' 
+#'
 #' @return \code{logical} whether the country has gasflares
 #'
 #' @examples
@@ -350,15 +399,15 @@ existsNlCtryGasFlaresRds <- function(ctryCode)
 #' Creates and returns a country's gasflares polygon
 #'
 #' Creates and returns a country's gasflares polygon
-#' 
+#'
 #' @param ctryCode \code{character} The ctryCode of the country of interest
-#' 
+#'
 #' @param gadmVersion The GADM version to use
-#' 
+#'
 #' @param gadmPolyType The format of polygons to download from GADM
-#' 
+#'
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
-#' 
+#'
 #' @return \code{spPolygons} the country gasflare polygon
 #'
 #' @examples
@@ -367,18 +416,20 @@ existsNlCtryGasFlaresRds <- function(ctryCode)
 #'   #returns gasflare polygon
 #' }
 #'
-getNlCtryGasFlaresRds <- function(ctryCode = ctryCode, 
+getNlCtryGasFlaresRds <- function(ctryCode = ctryCode,
                                   gadmVersion = pkgOptions("gadmVersion"),
                                   gadmPolyType = pkgOptions("gadmPolyType"),
                                   custPolyPath = NULL)
 {
-  if(!existsNlCtryGasFlaresRds(ctryCode))
-    createNlCtryGasFlares(ctryCode = ctryCode,
-                          gadmVersion = gadmVersion,
-                          gadmPolyType = gadmPolyType,
-                          custPolyPath = custPolyPath)
+  if (!existsNlCtryGasFlaresRds(ctryCode))
+    createNlCtryGasFlares(
+      ctryCode = ctryCode,
+      gadmVersion = gadmVersion,
+      gadmPolyType = gadmPolyType,
+      custPolyPath = custPolyPath
+    )
   
-  if(existsNlCtryGasFlaresRds(ctryCode))
+  if (existsNlCtryGasFlaresRds(ctryCode))
     res <- readRDS(file = getNlCtryGasFlaresRdsFnamePath(ctryCode))
   else
     res <- NULL
@@ -391,15 +442,15 @@ getNlCtryGasFlaresRds <- function(ctryCode = ctryCode,
 #' Returns a country's gasflares polygon if it exists
 #'
 #' Returns a country's gasflares polygon if it exists
-#' 
+#'
 #' @param ctryCode \code{character} The ctryCode of the country of interest
-#' 
+#'
 #' @param gadmVersion The GADM version to use
-#' 
+#'
 #' @param gadmPolyType The format of polygons to download from GADM
-#' 
+#'
 #' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
-#' 
+#'
 #' @return \code{spPolygons} the country gasflare polygon
 #'
 #' @examples
@@ -408,13 +459,17 @@ getNlCtryGasFlaresRds <- function(ctryCode = ctryCode,
 #'   #returns gasflare polygon
 #' }
 #'
-getNlCtryGasFlaresPoly <- function(ctryCode = ctryCode, 
+getNlCtryGasFlaresPoly <- function(ctryCode = ctryCode,
                                    gadmVersion = pkgOptions("gadmVersion"),
                                    gadmPolyType = pkgOptions("gadmPolyType"),
                                    custPolyPath = NULL)
 {
-  return(getNlCtryGasFlaresRds(ctryCode = ctryCode,
-                               gadmVersion = gadmVersion,
-                               gadmPolyType = gadmPolyType,
-                               custPolyPath = custPolyPath))
+  return(
+    getNlCtryGasFlaresRds(
+      ctryCode = ctryCode,
+      gadmVersion = gadmVersion,
+      gadmPolyType = gadmPolyType,
+      custPolyPath = custPolyPath
+    )
+  )
 }

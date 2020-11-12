@@ -7,7 +7,7 @@
 #'     a single nlType is given all nlPeriods are checked in that nlType.
 #'     If multiple nlTypes are given, then a corresponding number of
 #'     nlPeriods is expected e.g. if nlPeriods is a vector each entry
-#'     must correspond to the nlType. If multiple nlPeriods are to be 
+#'     must correspond to the nlType. If multiple nlPeriods are to be
 #'     tested per nlType then a list of vectors is expected, one for
 #'     each nlType.
 #'
@@ -21,7 +21,7 @@
 #' validNlPeriods(c("201401", "201402"),"VIIRS.M")
 #'  #returns
 #'  #$VIIRS.M
-#'  #201401 201402 
+#'  #201401 201402
 #'  #  TRUE   TRUE
 #'
 #' validNlPeriods("201203","VIIRS.M")
@@ -39,15 +39,15 @@ validNlPeriods <- function(nlPeriods, nlTypes)
   if (missing(nlTypes))
     stop(Sys.time(), ": Missing required parameter nlTypes")
   
-  if(!all(validNlTypes(nlTypes)))
+  if (!all(validNlTypes(nlTypes)))
     stop(Sys.time(), ": Missing or Invalid nlType")
-
+  
   #nlPeriods <- as.character(nlPeriods)
   #nlTypes <- as.character(nlTypes)
-
+  
   # if(length(nlTypes) == 1)
   #   return(stats::setNames(list(stats::setNames(nlPeriods %in% unlist(getAllNlPeriods(nlTypes)), nlPeriods)),nlTypes))
-
+  
   # if(is.list(nlPeriods)length(nlPeriods) != length(nlTypes))
   #   stop(Sys.time(), ": nlPeriods and nlTypes are not same length")
   
@@ -57,15 +57,16 @@ validNlPeriods <- function(nlPeriods, nlTypes)
   #   nlT <- nlTypes[i]
   #   nlPs <- unlist(nlPeriods[i])
   #   allNlPeriods <- unlist(getAllNlPeriods(nlT))
-  #   
+  #
   #   valid <- stats::setNames(nlPs %in% allNlPeriods, nlPs)
-  #   
+  #
   #   if(!all(valid))
   #     message(Sys.time(), "Invalid nlPeriods:: ", nlT,":",paste0(nlPs[!valid], sep=","))
   #   return(valid)
   #   }), nlTypes)
-
-  validPeriods <- stats::setNames(unlist(nlPeriods) %in% unlist(getAllNlPeriods(nlTypes)), nlPeriods)
+  
+  validPeriods <-
+    stats::setNames(unlist(nlPeriods) %in% unlist(getAllNlPeriods(nlTypes)), nlPeriods)
   
   return(validPeriods)
 }
@@ -75,7 +76,7 @@ validNlPeriods <- function(nlPeriods, nlTypes)
 #' Check if all nlPeriods are valid for given nlTypes
 #'
 #' Check if all nlPeriods are valid for given nlTypes
-#' 
+#'
 #' @param nlPeriods \code{vector or list of character vectors} The nlPeriods of interest
 #'
 #' @param nlTypes \code{vector or list of character vectors} type of nightlight
@@ -94,7 +95,9 @@ validNlPeriods <- function(nlPeriods, nlTypes)
 #'
 allValidNlPeriods <- function(nlPeriods, nlTypes)
 {
-  return(all(unlist(validNlPeriods(nlTypes = nlTypes, nlPeriods = nlPeriods))))
+  return(all(unlist(
+    validNlPeriods(nlTypes = nlTypes, nlPeriods = nlPeriods)
+  )))
 }
 
 ######################## nlRange ###################################
@@ -104,11 +107,11 @@ allValidNlPeriods <- function(nlPeriods, nlTypes)
 #' Create a range of nlPeriods. Returns a list of character vectors of
 #'     nlPeriods filling in the intermediate nlPeriods.
 #'     NOTE: Both start and end range must be valid and of the same type.
-#' 
+#'
 #' @param startNlPeriod the nlPeriod start
 #'
 #' @param endNlPeriod the nlPeriod end
-#' 
+#'
 #' @param nlType the nlType
 #'
 #' @return character vector of nlPeriods
@@ -123,38 +126,44 @@ allValidNlPeriods <- function(nlPeriods, nlTypes)
 #' @export
 nlRange <- function(startNlPeriod, endNlPeriod, nlType)
 {
-  if(missing(startNlPeriod))
+  if (missing(startNlPeriod))
     stop(Sys.time(), ": Missing required parameter startNlPeriod")
   
-  if(missing(endNlPeriod))
+  if (missing(endNlPeriod))
     stop(Sys.time(), ": Missing required parameter endNlPeriod")
- 
-  if(!missing(nlType))
+  
+  if (!missing(nlType))
   {
-    if(length(nlType) > 1)
+    if (length(nlType) > 1)
       stop(Sys.time(), ": Only 1 nlType accepted")
     
     #if(!allValid(c(startNlPeriod, endNlPeriod), validNlPeriods, nlType))
-    if(!allValidNlPeriods(nlTypes = nlType, nlPeriods = c(startNlPeriod, endNlPeriod)))
-       stop(Sys.time(), ": Invalid nlPeriod detected for nlType ", nlType)
+    if (!allValidNlPeriods(nlTypes = nlType,
+                           nlPeriods = c(startNlPeriod, endNlPeriod)))
+      stop(Sys.time(), ": Invalid nlPeriod detected for nlType ", nlType)
   }
   else
   {
-    for(x in getAllNlTypes())
+    for (x in getAllNlTypes())
     {
-      if(unlist(suppressMessages(validNlPeriods(nlPeriods = startNlPeriod, nlTypes = x))) && unlist(suppressMessages(validNlPeriods(nlPeriods = endNlPeriod, nlTypes = x))))
+      if (unlist(suppressMessages(validNlPeriods(
+        nlPeriods = startNlPeriod, nlTypes = x
+      ))) &&
+      unlist(suppressMessages(validNlPeriods(
+        nlPeriods = endNlPeriod, nlTypes = x
+      ))))
       {
         message(Sys.time(), ": NlRange autodetected nlType: ", x)
         nlType <- x
       }
     }
     
-    if(is.null(nlType))
+    if (is.null(nlType))
       stop(Sys.time(), ": Invalid start/end nlPeriod")
   }
-
+  
   allNlPeriods <- unname(unlist(getAllNlPeriods(nlType)))
-    
+  
   start <- grep(startNlPeriod, allNlPeriods)
   
   end <- grep(endNlPeriod, allNlPeriods)
@@ -191,35 +200,45 @@ getAllNlPeriods <- function(nlTypes)
   if (!allValidNlTypes(nlTypes))
     stop(Sys.time(), ": Invalid nlType: ", nlTypes)
   
-  sapply(nlTypes, function(nlType)
+  vapply(nlTypes, function(nlType)
   {
     if (stringr::str_detect(nlType, "OLS"))
     {
       return (1992:2013)
     }
-    else if(stringr::str_detect(nlType, "VIIRS"))
+    else if (stringr::str_detect(nlType, "VIIRS"))
     {
-      if (stringr::str_detect(nlType, "D")) #D=daily
+      if (stringr::str_detect(nlType, "D"))
+        #D=daily
       {
         startDate <- "2017-11-20"
         
-        nlYrMthDys <- gsub("-", "", seq(as.Date(startDate), as.Date(Sys.Date(), "%c"), by = "day"))
+        nlYrMthDys <-
+          gsub("-", "", seq(as.Date(startDate), as.Date(Sys.Date(), "%c"), by = "day"))
         
         return (nlYrMthDys)
       }
-      else if (stringr::str_detect(nlType, "M")) #M=monthly
+      else if (stringr::str_detect(nlType, "M"))
+        #M=monthly
       {
         startDate <- "2012-04-01"
         
-        nlYrMths <- substr(gsub("-", "", seq(as.Date(startDate), as.Date(Sys.Date(), "%c"), by = "month")), 1, 6)
-    
+        nlYrMths <-
+          substr(gsub("-", "", seq(
+            as.Date(startDate), as.Date(Sys.Date(), "%c"), by = "month"
+          )), 1, 6)
+        
         return (nlYrMths)
       }
-      else if (stringr::str_detect(nlType, "Y")) #Y=yearly
+      else if (stringr::str_detect(nlType, "Y"))
+        #Y=yearly
       {
         startDate <- "2012-04-01"
         
-        nlYrs <- substr(gsub("-", "", seq(as.Date(startDate), as.Date(Sys.Date(), "%c"), by = "year")), 1, 4)
+        nlYrs <-
+          substr(gsub("-", "", seq(
+            as.Date(startDate), as.Date(Sys.Date(), "%c"), by = "year"
+          )), 1, 4)
         
         return (nlYrs)
       }
@@ -238,7 +257,7 @@ getAllNlPeriods <- function(nlTypes)
 #' Convert nlPeriod to date
 #'
 #' @param nlPeriod the nlPeriod to convert
-#' 
+#'
 #' @param nlType the nlType to use
 #'
 #' @return a date vector
@@ -246,19 +265,25 @@ getAllNlPeriods <- function(nlTypes)
 #' @examples
 #' nlPeriodToDate(nlPeriod = "201204", nlType = "VIIRS.M")
 #' #returns "2012-04-01"
-#' 
+#'
 #' @export
 nlPeriodToDate <- function(nlPeriod, nlType)
 {
-  nlPeriod <- gsub("-*$", "", paste(substr(nlPeriod, 1,4), substr(nlPeriod, 5,6),substr(nlPeriod, 7,8), sep = "-"))
+  nlPeriod <-
+    gsub("-*$", "", paste(
+      substr(nlPeriod, 1, 4),
+      substr(nlPeriod, 5, 6),
+      substr(nlPeriod, 7, 8),
+      sep = "-"
+    ))
   
-  if(stringr::str_detect(nlType, "D"))
+  if (stringr::str_detect(nlType, "D"))
   {
     
-  }else if(stringr::str_detect(nlType, "M"))
+  } else if (stringr::str_detect(nlType, "M"))
   {
     nlPeriod <- paste0(nlPeriod, "-01")
-  }else if(stringr::str_detect(nlType, "Y"))
+  } else if (stringr::str_detect(nlType, "Y"))
   {
     nlPeriod <- paste0(nlPeriod, "-01-01")
   }
@@ -277,7 +302,7 @@ nlPeriodToDate <- function(nlPeriod, nlType)
 #' Convert date to nlPeriod
 #'
 #' @param dt the date to convert
-#' 
+#'
 #' @param nlType the nlType to use
 #'
 #' @return an nlPeriod vector
@@ -285,7 +310,7 @@ nlPeriodToDate <- function(nlPeriod, nlType)
 #' @examples
 #' dateToNlPeriod(dt = "2012-04-01", nlType = "VIIRS.M")
 #' #returns "201204"
-#' 
+#'
 #' @export
 dateToNlPeriod <- function(dt, nlType)
 {
@@ -293,13 +318,13 @@ dateToNlPeriod <- function(dt, nlType)
   
   dt <- gsub("-", "", dt)
   
-  if(stringr::str_detect(nlType, "D"))
+  if (stringr::str_detect(nlType, "D"))
   {
     nlPeriod <- substr(dt, 1, 8)
-  }else if(stringr::str_detect(nlType, "M"))
+  } else if (stringr::str_detect(nlType, "M"))
   {
     nlPeriod <- substr(dt, 1, 6)
-  }else if(stringr::str_detect(nlType, "Y"))
+  } else if (stringr::str_detect(nlType, "Y"))
   {
     nlPeriod <- substr(dt, 1, 4)
   }

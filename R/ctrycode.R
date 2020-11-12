@@ -14,20 +14,20 @@
 #' ctryNameToCode("kenya") #returns "KEN"
 #'
 #' ctryNameToCode("ken") #returns "KEN"
-#'   
+#'
 #' ctryNameToCode("jamaica") #returns JAM
 #'
 #' @export
 ctryNameToCode <- function(ctryNames)
 {
   ADMIN <- NULL #to avoid global variable note in CRAN
-
+  
   map <- getWorldMap()
   
-  if(missing(ctryNames))
+  if (missing(ctryNames))
   {
-    ctryList <- map@data[,c("ADMIN", "ISO3")]
-
+    ctryList <- map@data[, c("ADMIN", "ISO3")]
+    
     ctryList$ISO3 <- as.character(ctryList$ISO3)
     ctryList$ADMIN <- as.character(ctryList$ADMIN)
     
@@ -36,42 +36,49 @@ ctryNameToCode <- function(ctryNames)
     return(ctryList)
   }
   
-  if (class(ctryNames) != "character" || is.null(ctryNames) || is.na(ctryNames) || ctryNames =="")
+  if (class(ctryNames) != "character" ||
+      is.null(ctryNames) || is.na(ctryNames) || ctryNames == "")
     stop(Sys.time(), ": Invalid ctryName: ", ctryNames)
-
-  hasNonAlpha <- sapply(ctryNames, function(ctryName) stringr::str_detect(ctryName, "[^[:alpha:]| ]"))
   
-  if(any(hasNonAlpha))
-    stop(Sys.time(), ": Invalid ctryNames detected: ", paste0(ctryNames[hasNonAlpha], sep=","))
+  hasNonAlpha <-
+    vapply(ctryNames, function(ctryName)
+      stringr::str_detect(ctryName, "[^[:alpha:]| ]"))
   
-  ctryList <- map@data[,c("ISO3", "ADMIN")]
+  if (any(hasNonAlpha))
+    stop(Sys.time(),
+         ": Invalid ctryNames detected: ",
+         paste0(ctryNames[hasNonAlpha], sep = ","))
   
-  idx <- unlist(sapply(ctryNames, function(ctryName)
-    {
-      idxRes <- which(tolower(ctryList$ADMIN) == tolower(ctryName))
-      
-      #mark not found names with -1
-      if(identical(idxRes, integer(0)))
-        idxRes <- -1
-      
-      return(idxRes)
-    })
-  )
-
+  ctryList <- map@data[, c("ISO3", "ADMIN")]
+  
+  idx <- unlist(vapply(ctryNames, function(ctryName)
+  {
+    idxRes <- which(tolower(ctryList$ADMIN) == tolower(ctryName))
+    
+    #mark not found names with -1
+    if (identical(idxRes, integer(0)))
+      idxRes <- -1
+    
+    return(idxRes)
+  }))
+  
   foundIdx <- which(idx != -1)
   notFoundIdx <- which(idx == -1)
-
-  #init result to the idx  
+  
+  #init result to the idx
   result <- idx
   
   #for the idxs we found retrieve the name
-  if(length(foundIdx)>0)
-    result[foundIdx] <- as.character(ctryList[idx[foundIdx], "ISO3"])
+  if (length(foundIdx) > 0)
+    result[foundIdx] <-
+    as.character(ctryList[idx[foundIdx], "ISO3"])
   
-  #for the idxs not found try using rwmGetISO3 which does a more 
+  #for the idxs not found try using rwmGetISO3 which does a more
   #in-depth search for country names
-  if(length(notFoundIdx) > 0)
-    result[notFoundIdx] <- unlist(sapply(ctryNames[notFoundIdx], function(cName)rworldmap::rwmGetISO3(cName)))
+  if (length(notFoundIdx) > 0)
+    result[notFoundIdx] <-
+    unlist(vapply(ctryNames[notFoundIdx], function(cName)
+      rworldmap::rwmGetISO3(cName)))
   
   return(result)
 }
@@ -80,8 +87,8 @@ ctryNameToCode <- function(ctryNames)
 
 #' Convert a country ISO3 code to the full name
 #'
-#' Convert a country ISO3 code to the full name. Exposes the rworldmap function 
-#'     isoToName(ctryCode). #rworldmap::isoToName can resolve 2-letter ctryCodes 
+#' Convert a country ISO3 code to the full name. Exposes the rworldmap function
+#'     isoToName(ctryCode). #rworldmap::isoToName can resolve 2-letter ctryCodes
 #'     but we only want 3-letter ISO3 codes.  With no parameters returns a list
 #'     of ctryCodes and their corresponding names as given by rworldMap::getMap@data
 #'
@@ -93,11 +100,11 @@ ctryNameToCode <- function(ctryNames)
 #'
 #' @examples
 #' ctryCodeToName("KEN") #returns Kenya
-#' 
+#'
 #' ctryCodeToName("ARE") #returns United Arab Emirates
-#' 
+#'
 #' ctryCodeToName("USA") #returns United States of America
-#' 
+#'
 #' ctryCodeToName("JAM") #returns Jamaica
 #'
 #' @export
@@ -107,10 +114,10 @@ ctryCodeToName <- function(ctryCodes)
   
   map <- getWorldMap()
   
-  if(missing(ctryCodes))
+  if (missing(ctryCodes))
   {
-    ctryList <- map@data[,c("ISO3", "ADMIN")]
-
+    ctryList <- map@data[, c("ISO3", "ADMIN")]
+    
     ctryList$ISO3 <- as.character(ctryList$ISO3)
     ctryList$ADMIN <- as.character(ctryList$ADMIN)
     
@@ -120,20 +127,20 @@ ctryCodeToName <- function(ctryCodes)
   }
   
   #if (class(ctryCodes) != "character" || is.null(ctryCodes) || is.na(ctryCodes) || ctryCodes =="" || ctryCodes == " ")
-   # stop(Sys.time(), ": Invalid ctryCode: ", ctryCodes)
+  # stop(Sys.time(), ": Invalid ctryCode: ", ctryCodes)
   
-  ctryList <- map@data[,c("ISO3", "ADMIN")]
-
-  idx <- sapply(ctryCodes, function(ctryCode)
+  ctryList <- map@data[, c("ISO3", "ADMIN")]
+  
+  idx <- vapply(ctryCodes, function(ctryCode)
   {
-      idxRes <- which(toupper(ctryList$ISO3) == toupper(ctryCode))
-               
-      if(identical(idxRes, integer(0)))
-        idxRes <- -1
-      
-      idxRes
-  })
+    idxRes <- which(toupper(ctryList$ISO3) == toupper(ctryCode))
     
+    if (identical(idxRes, integer(0)))
+      idxRes <- -1
+    
+    idxRes
+  })
+  
   foundIdx <- which(idx != -1)
   notFoundIdx <- which(idx == -1)
   
@@ -154,7 +161,7 @@ ctryCodeToName <- function(ctryCodes)
 #'     in one.
 #'
 #' @param searchTerms The country code/name to search for
-#' 
+#'
 #' @param extended Whether to do partial searches
 #'
 #' @return data.frame A mapping of the ctryCode to ctryName if the supplied
@@ -163,66 +170,75 @@ ctryCodeToName <- function(ctryCodes)
 #'
 #' @examples
 #' searchCountry("KEN") #returns Kenya
-#' 
+#'
 #' searchCountry("Tanzania") #returns United Republic of Tanzania
-#' 
+#'
 #' searchCountry("uk", TRUE) #returns United Kingdom and Ukraine
-#' 
+#'
 #' searchCountry("rwa", TRUE) #returns Rwanda and Norway
 #'
 #' @export
-searchCountry <- function(searchTerms, extended=FALSE)
+searchCountry <- function(searchTerms, extended = FALSE)
 {
-  resCountry <- do.call("rbind.data.frame", lapply(searchTerms, function(searchTerm)
-  {
-    ctryName <- ctryCodeToName(searchTerm)
-    
-    if(length(ctryName)>1 || !is.na(ctryName))
+  resCountry <-
+    do.call("rbind.data.frame", lapply(searchTerms, function(searchTerm)
     {
-      allCtryNames <- ctryCodeToName()
-      resCountry <- allCtryNames[which(allCtryNames$ADMIN %in% ctryName),]
-    }else
-      resCountry <- stats::setNames(data.frame(matrix(ncol = 2, nrow = 0)), c("ISO3", "ADMIN"))
-  
-    #if not extended only check country names if we did not find a matching
-    #country  code
-    if(nrow(resCountry) == 0 || extended)
-    {
-      ctryCode <- ctryNameToCode(searchTerm)
+      ctryName <- ctryCodeToName(searchTerm)
       
-      if(length(ctryCode) > 1 || !is.na(ctryCode))
+      if (length(ctryName) > 1 || !is.na(ctryName))
       {
-        allCtryCodes <- ctryNameToCode()
-        resCountry <- allCtryCodes[which(allCtryCodes$ISO3 %in% ctryCode),]
-      }else
-        resCountry <- stats::setNames(data.frame(matrix(ncol = 2, nrow = 0)), c("ADMIN", "ISO3"))
-    }
-    
-    if(extended)
-    {
-      #if extended only partial search is sufficient since it searches
-      #partial search
-      allCtryNames <- ctryNameToCode()
+        allCtryNames <- ctryCodeToName()
+        resCountry <-
+          allCtryNames[which(allCtryNames$ADMIN %in% ctryName), ]
+      } else
+        resCountry <-
+          stats::setNames(data.frame(matrix(ncol = 2, nrow = 0)), c("ISO3", "ADMIN"))
       
-      partialNameIdx <- unlist(sapply(searchTerm, function(x) grep(x, allCtryNames$ADMIN, ignore.case = T)))
-      partialCodeIdx <- unlist(sapply(searchTerm, function(x) grep(x, allCtryNames$ISO3, ignore.case = T)))
-      
-      partialIdx <- c(partialNameIdx, partialCodeIdx)
-      
-      if(length(partialIdx) > 0)
+      #if not extended only check country names if we did not find a matching
+      #country  code
+      if (nrow(resCountry) == 0 || extended)
       {
-        partialCountry <- allCtryNames[partialIdx, ]
+        ctryCode <- ctryNameToCode(searchTerm)
         
-        #scalar if resCountry is NA
-        if(nrow(resCountry) == 0)
-          resCountry <- partialCountry
-        else
-          resCountry <- rbind.data.frame(resCountry, partialCountry)
+        if (length(ctryCode) > 1 || !is.na(ctryCode))
+        {
+          allCtryCodes <- ctryNameToCode()
+          resCountry <-
+            allCtryCodes[which(allCtryCodes$ISO3 %in% ctryCode), ]
+        } else
+          resCountry <-
+            stats::setNames(data.frame(matrix(ncol = 2, nrow = 0)), c("ADMIN", "ISO3"))
       }
-    }
-    
-    resCountry
-  }))
+      
+      if (extended)
+      {
+        #if extended only partial search is sufficient since it searches
+        #partial search
+        allCtryNames <- ctryNameToCode()
+        
+        partialNameIdx <-
+          unlist(vapply(searchTerm, function(x)
+            grep(x, allCtryNames$ADMIN, ignore.case = T)))
+        partialCodeIdx <-
+          unlist(vapply(searchTerm, function(x)
+            grep(x, allCtryNames$ISO3, ignore.case = T)))
+        
+        partialIdx <- c(partialNameIdx, partialCodeIdx)
+        
+        if (length(partialIdx) > 0)
+        {
+          partialCountry <- allCtryNames[partialIdx,]
+          
+          #scalar if resCountry is NA
+          if (nrow(resCountry) == 0)
+            resCountry <- partialCountry
+          else
+            resCountry <- rbind.data.frame(resCountry, partialCountry)
+        }
+      }
+      
+      resCountry
+    }))
   
   #remove duplicates if results found
   resCountry <- unique.data.frame(resCountry)
@@ -248,7 +264,7 @@ searchCountry <- function(searchTerms, extended=FALSE)
 #'@export
 validCtryCodes <- function(ctryCodes)
 {
-  if(missing(ctryCodes))
+  if (missing(ctryCodes))
     stop(Sys.time(), ": Missing required parameter ctryCode")
   
   #if the format is invalid return FALSE no need to return an error
@@ -290,10 +306,10 @@ allValidCtryCodes <- function(ctryCodes)
 #'     \itemize{
 #'         \item{\code{missing}} ctryCodes that are in \code{rworldmap} but not on \code{GADM}
 #'         \item{\code{long}} ctryCodes that take very long to process using 'rast'
-#'             options. May improve using more processors or using 'gdal' 
+#'             options. May improve using more processors or using 'gdal'
 #'             options.
 #'         \item{\code{error}} ctryCodes whose polygons have caused processing to crash
-#'             in tests. Not extensively tested and may work fine on other 
+#'             in tests. Not extensively tested and may work fine on other
 #'             systems.
 #'         \item{\code{all}} Omit a combination of all the above options
 #'         \item{\code{none}} Do not omit any ctryCodes
@@ -302,7 +318,7 @@ allValidCtryCodes <- function(ctryCodes)
 #' @return character vector of country codes
 #'
 #'@export
-getAllNlCtryCodes <- function(omit="none")
+getAllNlCtryCodes <- function(omit = "none")
 {
   #omit is a vector and can contain "long", "missing" or "error"
   #if omit is "none" do not exclude any countries
@@ -310,7 +326,9 @@ getAllNlCtryCodes <- function(omit="none")
   
   omit <- tolower(omit)
   
-  if(omit != "none" && (omit == "all" || !(omit %in% c("long", "missing", "error")) || is.na(omit)))
+  if (omit != "none" &&
+      (omit == "all" ||
+       !(omit %in% c("long", "missing", "error")) || is.na(omit)))
     omit <- c("long", "missing", "error")
   
   tooLongProcessing <- ""
@@ -327,17 +345,18 @@ getAllNlCtryCodes <- function(omit="none")
     errorProcessing <- c("ATF", "GNQ", "KIR", "NZL", "CAN", "MUS")
   
   #consolidate the list of countries to omit
-  omitCountries <- unlist(c(tooLongProcessing, missingPolygon, errorProcessing))
+  omitCountries <-
+    unlist(c(tooLongProcessing, missingPolygon, errorProcessing))
   
   #rworldmap has more country codes in countryRegions$ISO3 than in the map itself
   #select ctryCodes from the map data itself
   map <- getWorldMap()
-
+  
   #get the list of country codes from the rworldmap
   ctryCodes <- as.character(map@data$ISO3)
   
   #remove all omitCountries from the list
-  ctryCodes <- subset(ctryCodes, !(ctryCodes %in% omitCountries))
+  ctryCodes <- subset(ctryCodes,!(ctryCodes %in% omitCountries))
   
   #sort the country codes in ascending alphabetical order
   ctryCodes <- ctryCodes[order(ctryCodes)]
