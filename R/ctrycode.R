@@ -41,7 +41,7 @@ ctryNameToCode <- function(ctryNames)
     stop(Sys.time(), ": Invalid ctryName: ", ctryNames)
   
   hasNonAlpha <-
-    vapply(ctryNames, function(ctryName)
+    sapply(ctryNames, function(ctryName)
       stringr::str_detect(ctryName, "[^[:alpha:]| ]"))
   
   if (any(hasNonAlpha))
@@ -51,7 +51,7 @@ ctryNameToCode <- function(ctryNames)
   
   ctryList <- map@data[, c("ISO3", "ADMIN")]
   
-  idx <- unlist(vapply(ctryNames, function(ctryName)
+  idx <- unlist(sapply(ctryNames, function(ctryName)
   {
     idxRes <- which(tolower(ctryList$ADMIN) == tolower(ctryName))
     
@@ -77,7 +77,7 @@ ctryNameToCode <- function(ctryNames)
   #in-depth search for country names
   if (length(notFoundIdx) > 0)
     result[notFoundIdx] <-
-    unlist(vapply(ctryNames[notFoundIdx], function(cName)
+    unlist(sapply(ctryNames[notFoundIdx], function(cName)
       rworldmap::rwmGetISO3(cName)))
   
   return(result)
@@ -131,7 +131,7 @@ ctryCodeToName <- function(ctryCodes)
   
   ctryList <- map@data[, c("ISO3", "ADMIN")]
   
-  idx <- vapply(ctryCodes, function(ctryCode)
+  idx <- sapply(ctryCodes, function(ctryCode)
   {
     idxRes <- which(toupper(ctryList$ISO3) == toupper(ctryCode))
     
@@ -217,10 +217,10 @@ searchCountry <- function(searchTerms, extended = FALSE)
         allCtryNames <- ctryNameToCode()
         
         partialNameIdx <-
-          unlist(vapply(searchTerm, function(x)
+          unlist(sapply(searchTerm, function(x)
             grep(x, allCtryNames$ADMIN, ignore.case = T)))
         partialCodeIdx <-
-          unlist(vapply(searchTerm, function(x)
+          unlist(sapply(searchTerm, function(x)
             grep(x, allCtryNames$ISO3, ignore.case = T)))
         
         partialIdx <- c(partialNameIdx, partialCodeIdx)

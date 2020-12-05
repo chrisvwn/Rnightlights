@@ -65,7 +65,7 @@ createCtryNlDataDF <- function(ctryCode = NULL,
   
   ctryExtent <- raster::extent(ctryPoly)
   
-  raster::projection(ctryPoly) <- sp::CRS(wgs84)
+  raster::projection(ctryPoly) <- sp::CRS(SRS_string = wgs84)
   
   #get the list of admin levels in the polygon shapefile
   ctryPolyAdmLevels <- getCtryPolyAdmLevelNames(
@@ -138,7 +138,7 @@ createCtryNlDataDF <- function(ctryCode = NULL,
     lyrNames <- rgdal::ogrListLayers(polyFnamePath)
     
     #find columns to use as names
-    polyColNames <- vapply(lyrNames, function(lyrName)
+    polyColNames <- sapply(lyrNames, function(lyrName)
     {
       #read in the polygon layer
       ctryPoly <-
@@ -149,7 +149,7 @@ createCtryNlDataDF <- function(ctryCode = NULL,
       
       #find cols with the most unique values
       uniqueColVals <-
-        nrow(ctryPoly@data) / vapply(colNames, function(x)
+        nrow(ctryPoly@data) / sapply(colNames, function(x)
           length(unique(ctryPoly@data[[x]])))
       
       uniqueColValRatios <-
@@ -157,7 +157,7 @@ createCtryNlDataDF <- function(ctryCode = NULL,
       
       #find cols which are not purely numeric
       intColVals <-
-        vapply(colNames, function(x)
+        sapply(colNames, function(x)
           length(grep("^\\d+$", ctryPoly@data[[x]])))
       
       minIntColVals <-
@@ -165,7 +165,7 @@ createCtryNlDataDF <- function(ctryCode = NULL,
       
       #find cols containing the word "name"
       nameCols <-
-        vapply(colNames, function(x)
+        sapply(colNames, function(x)
           length(grep("name", x, ignore.case = T)))
       
       nameColNames <- colNames[which(nameCols > 0)]
@@ -192,7 +192,7 @@ createCtryNlDataDF <- function(ctryCode = NULL,
       
       #how much missing data in the cols
       missingColVals <-
-        vapply(possibleColNames, function(x)
+        sapply(possibleColNames, function(x)
           sum(is.na(ctryPoly@data[[x]]) | ctryPoly@data[[x]] == ""))
       
       #choose cols with the fewest missing values
@@ -207,7 +207,7 @@ createCtryNlDataDF <- function(ctryCode = NULL,
         possibleColNames <- colNames
       
       partIntColVals <-
-        vapply(possibleColNames, function(x)
+        sapply(possibleColNames, function(x)
           length(grep("\\d+", ctryPoly@data[[x]])))
       
       possibleColNames <-
@@ -227,7 +227,7 @@ createCtryNlDataDF <- function(ctryCode = NULL,
       
       #do any cols contain the layer nam parts
       partialMatchColNames <-
-        unlist(vapply(lyrNameParts, function(x)
+        unlist(sapply(lyrNameParts, function(x)
           grep(x, colNames, ignore.case = T, value = T)))
       
       a <- intersect(possibleColNames, partialMatchColNames)
@@ -916,7 +916,7 @@ getCtryNlData <- function(ctryCode = NULL,
   
   if (missing(configNames))
     configNames <-
-      vapply(paste0("configName_", nlTypes), pkgOptions)
+      sapply(paste0("configName_", nlTypes), pkgOptions)
   
   configNames <- toupper(configNames)
   
@@ -953,7 +953,7 @@ getCtryNlData <- function(ctryCode = NULL,
   #a single list
   if (is.list(nlStats) &&
       length(nlStats) > 1 &&
-      all(vapply(2:length(nlStats), function(i)
+      all(sapply(2:length(nlStats), function(i)
         ! is.list(nlStats[[i]]) &&
         (grepl("=", nlStats[i]) || length(names(nlStats[i])) > 0))))
     nlStats <- list(nlStats)
@@ -978,10 +978,10 @@ getCtryNlData <- function(ctryCode = NULL,
       )
       
       foundSavedStatSigs <-
-        vapply(nlStats[!validStats], function(x)
+        sapply(nlStats[!validStats], function(x)
           searchSavedNlStatName(x[[1]]))
       
-      numFoundMatches <- vapply(foundSavedStatSigs, length)
+      numFoundMatches <- sapply(foundSavedStatSigs, length)
       
       if (any(numFoundMatches == 0))
         stop(Sys.time(),
@@ -1133,7 +1133,7 @@ getCtryNlData <- function(ctryCode = NULL,
     
     #get the names of the stats which will be the first elem of each
     #sublist
-    nlStatNames <- vapply(nlStats, function(x)
+    nlStatNames <- sapply(nlStats, function(x)
       x[[1]])
     
     if (length(nlStatNames) == 1)
@@ -1150,7 +1150,7 @@ getCtryNlData <- function(ctryCode = NULL,
           FUN = function(x)
             rep(x, length(nlStatNames))
         ),
-        X3 = as.vector(vapply(nlStatNames, rep, nrow(a))),
+        X3 = as.vector(sapply(nlStatNames, rep, nrow(a))),
         stringsAsFactors = F
       )
     
@@ -1502,7 +1502,7 @@ getCtryNlDataColName <-
       )
     
     colName <-
-      paste0(colName, vapply(nlPeriod, function(x)
+      paste0(colName, sapply(nlPeriod, function(x)
         paste0(x, "_", nlStat)))
     
     #colName <- sort(colName)
@@ -1637,7 +1637,7 @@ existsCtryNlData <- function(ctryCode = NULL,
   
   if (missing(configNames))
     configNames <-
-      vapply(paste0("configName_", nlTypes), pkgOptions)
+      sapply(paste0("configName_", nlTypes), pkgOptions)
   
   if (length(ctryCode) > 1 || length(admLevel) > 1)
     stop(Sys.time(),
@@ -1704,7 +1704,7 @@ existsCtryNlData <- function(ctryCode = NULL,
   )
   
   matchHdrs <-
-    vapply(searchCols, function(x)
+    sapply(searchCols, function(x)
       any(grepl(
         pattern = x,
         x = hdrs,
@@ -1761,7 +1761,7 @@ allExistsCtryNlData <- function(ctryCodes,
 {
   if (missing(configNames))
     configNames <-
-      vapply(paste0("configName_", nlTypes), pkgOptions)
+      sapply(paste0("configName_", nlTypes), pkgOptions)
   
   all(unlist(
     existsCtryNlData(
@@ -1930,7 +1930,7 @@ listCtryNlData <-
       #grab only the NL cols
       nlCtryHdr <- grep("^NL", ctryHdr, value = T)
       
-      lens <- vapply(stringr::str_extract_all(nlCtryHdr, "_"), length)
+      lens <- sapply(stringr::str_extract_all(nlCtryHdr, "_"), length)
       
       #configNames might have an underscore, replace with dash
       nlCtryHdr[lens == 5] <-
@@ -1944,7 +1944,7 @@ listCtryNlData <-
       
       #name the parts with col indices to fit into nlCtryHdr
       parts <-
-        stats::setNames(data.frame(t(vapply(strsplit(nlCtryHdr[, 3], "-"), function(x) {
+        stats::setNames(data.frame(t(sapply(strsplit(nlCtryHdr[, 3], "-"), function(x) {
           if (length(x) == 5)
           {
             x[1] <- paste(x[1:2], collapse = "_")
@@ -2086,7 +2086,7 @@ listCtryNlData <-
     #filter by polyVer if supplied
     if (length(nlStats) > 0)
       dataList <-
-      dataList[unique(unlist(vapply(nlStats, function(nlStat)
+      dataList[unique(unlist(sapply(nlStats, function(nlStat)
         grep(nlStat, dataList[, "nlStats"], ignore.case = T)))), ]
     
     #Reorder the columns
@@ -2188,14 +2188,14 @@ listCtryNlRasters <-
     
     rasterList <- gsub("_(CUST|GADM).*\\.tif$", "", rasterList)
     
-    lens <- vapply(stringr::str_extract_all(rasterList, "_"), length)
+    lens <- sapply(stringr::str_extract_all(rasterList, "_"), length)
     
     rasterList[lens == 5] <-
       gsub("(.*_.*_.*_.*)_(.*)", "\\1-\\2", rasterList[lens == 5])
     
     rasterList <- strsplit(gsub(".tif", "", rasterList), "_")
     
-    rasterList <- t(unlist(vapply(rasterList, rbind)))
+    rasterList <- t(unlist(sapply(rasterList, rbind)))
     
     #convert into a dataframe with numbered rownames
     rasterList <- as.data.frame(rasterList)
@@ -2315,14 +2315,14 @@ listNlTiles <-
     if (length(rasterList) == 0)
       return(NULL)
     
-    lens <- vapply(stringr::str_extract_all(rasterList, "_"), length)
+    lens <- sapply(stringr::str_extract_all(rasterList, "_"), length)
     
     rasterList[lens == 6] <-
       gsub("(.*_.*_.*)_(.*_.*_.*)", "\\1-\\2", rasterList[lens == 6])
     
     rasterList <- strsplit(gsub("TILE_|.tif", "", rasterList), "_")
     
-    rasterList <- t(unlist(vapply(rasterList, rbind)))
+    rasterList <- t(unlist(sapply(rasterList, rbind)))
     
     #convert into a dataframe with numbered rownames
     rasterList <- as.data.frame(rasterList)

@@ -487,7 +487,7 @@ createNlTilesSpPolysDF <- function()
     tilesSpPolys <- sp::SpatialPolygons(Srl = list(tPolys))
     
     #we assign the CRS at this point (note other objects cannot be assigned CRS)
-    raster::projection(tilesSpPolys) <- sp::CRS(wgs84)
+    raster::projection(tilesSpPolys) <- sp::CRS(projargs = wgs84)
     
     #convert the SpatialPolygons object into a SpatialPolygonsDataFrame
     #tilesSpPolysDF <- methods::as(tilesSpPolys, "SpatialPolygonsDataFrame")
@@ -585,7 +585,7 @@ plotCtryWithTilesVIIRS <- function(ctry)
   ctrySpPolys <- sp::SpatialPolygons(Srl = list(ctryPolys))
   
   #set the coordinate reference system
-  raster::projection(ctrySpPolys) <- sp::CRS(wgs84)
+  raster::projection(ctrySpPolys) <- sp::CRS(projargs = wgs84)
   
   #convert the spatial polygons to an SPsDF
   ctrySpPolysDF <-
@@ -778,7 +778,7 @@ mapCtryPolyToTilesVIIRS <-
       ctrySpPolys <- sp::SpatialPolygons(Srl = list(ctryPolys))
       
       #set the CRS
-      raster::projection(ctrySpPolys) <- sp::CRS(wgs84)
+      raster::projection(ctrySpPolys) <- sp::CRS(SRS_string = wgs84)
       
       #convert the SpatialPolygons to a SpatialPolygonsDataFrame
       ctrySpPolysDF <-
@@ -856,7 +856,7 @@ getTilesCtryIntersectVIIRS <- function(ctryCode)
   #create a SpatialPolygons object with a list of 1 list of Polygons
   ctrySpPolys <- sp::SpatialPolygons(Srl = list(ctryPolys))
   
-  raster::projection(ctrySpPolys) <- sp::CRS(wgs84)
+  raster::projection(ctrySpPolys) <- sp::CRS(SRS_string = wgs84)
   
   ctrySpPolysDF <-
     methods::as(ctrySpPolys, "SpatialPolygonsDataFrame")
@@ -1020,7 +1020,7 @@ tilesPolygonIntersectVIIRS <- function(shpPolygon)
   
   wgs84 <- getCRS()
   
-  raster::projection(shpPolygon) <- sp::CRS(wgs84)
+  raster::projection(shpPolygon) <- sp::CRS(projargs = wgs84)
   
   #init list to hold tile indices
   tileIdx <- NULL

@@ -126,7 +126,7 @@ processNLCountry <- function(ctryCode,
   
   if (is.list(nlStats) &&
       length(nlStats) > 1 &&
-      all(vapply(2:length(nlStats),
+      all(sapply(2:length(nlStats),
                  function(i)
                    ! is.list(nlStats[[i]]) &&
                  (grepl("=", nlStats[i]) ||
@@ -140,7 +140,7 @@ processNLCountry <- function(ctryCode,
     ": ProcessNlCountry: ",
     paste(
       names(funArgs),
-      vapply(names(funArgs), function(x)
+      sapply(names(funArgs), function(x)
         eval(parse(text = x))),
       sep = "=",
       collapse = ", "
@@ -299,7 +299,7 @@ processNLCountry <- function(ctryCode,
       
       raster::projection(rastTile) <- sp::CRS(projargs = wgs84)
       
-      ctryPolyAdm0 <- sp::spTransform(ctryPolyAdm0, sp::CRS(wgs84))
+      ctryPolyAdm0 <- sp::spTransform(ctryPolyAdm0, sp::CRS(SRS_string = wgs84))
       
       message(Sys.time(), ": Cropping the raster tiles ")
       
@@ -496,7 +496,7 @@ processNLCountry <- function(ctryCode,
     ctryRastCropped <- raster::raster(x = rastFilename)
     
     raster::projection(x = ctryRastCropped) <-
-      sp::CRS(projargs = wgs84)
+      sp::CRS(SRS_string = wgs84)
   }
   
   #message(Sys.time(), ": Create web version of raster")
@@ -982,7 +982,7 @@ processNlData <- function (ctryCodes,
     ": **** START PROCESSING: ",
     paste(
       names(funArgs),
-      vapply(names(funArgs), function(x)
+      sapply(names(funArgs), function(x)
         eval(parse(text = x))),
       sep = "=",
       collapse = ", "
@@ -1033,7 +1033,7 @@ processNlData <- function (ctryCodes,
   message(Sys.time(), ": Downloading country polygons ... DONE")
   
   admLevels <-
-    vapply(seq_along(unlist(ctryCodes)), function(cCodeIdx)
+    sapply(seq_along(unlist(ctryCodes)), function(cCodeIdx)
     {
       ctryCode <- ctryCodes[[cCodeIdx]]
       
@@ -1046,7 +1046,7 @@ processNlData <- function (ctryCodes,
       else
         admLevels[cCodeIdx]
       
-      unlist(vapply(ctryAdmLevels, function(admLevel)
+      unlist(sapply(ctryAdmLevels, function(admLevel)
       {
         #allow keywords/aliases instead of admLevels
         if (length(admLevel) == 1)
@@ -1125,7 +1125,7 @@ processNlData <- function (ctryCodes,
   #   stop(Sys.time(), "Invalid admLevels detected")
   
   #traverse and check all admLevel component lists/vectors
-  if (!all(vapply(seq_along(ctryCodes),
+  if (!all(sapply(seq_along(ctryCodes),
                   function(i)
                   {
                     if (is.list(admLevels))
@@ -1439,7 +1439,7 @@ processNlData <- function (ctryCodes,
     ": **** COMPLETED PROCESSING :",
     paste(
       names(funArgs),
-      vapply(names(funArgs), function(x)
+      sapply(names(funArgs), function(x)
         eval(parse(text = x))),
       sep = "=",
       collapse = ", "

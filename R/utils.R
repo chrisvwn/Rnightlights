@@ -243,6 +243,10 @@ printCredits <-
     header <- rep(fullHorzFrame, vertWidth)
     
     footer <- header
+
+    header <- c(header, rep(emptyHorzFrame, vertPadding))
+    
+    footer <- c(rep(emptyHorzFrame, vertPadding), footer)
     
     mainBody <- sapply(credits, USE.NAMES = F, function(x) {
       leftPad <- floor((longestLine - nchar(x)) / 2)
@@ -263,7 +267,7 @@ printCredits <-
       } else
       {
         if (vertWidth > 0)
-          c(emptyHorzFrame, fullHorzFrame, emptyHorzFrame)
+          c(rep(emptyHorzFrame, vertPadding), fullHorzFrame, rep(emptyHorzFrame, vertPadding))
         else
           fullHorzFrame
       }
@@ -276,9 +280,7 @@ printCredits <-
     
     credits <-
       c(header,
-        emptyHorzFrame,
         unlist(mainBody),
-        emptyHorzFrame,
         footer)
     
     #cat(paste(credits, collapse = "\n"))

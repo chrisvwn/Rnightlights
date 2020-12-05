@@ -160,7 +160,7 @@ getCRS <- function()
   {
     #assign(x = "CRS", value = "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0 +no_defs", envir = .RnightlightsEnv)
     assign(x = "CRS",
-           value = "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0",
+           value = "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84",
            envir = .RnightlightsEnv)
   }
   
@@ -170,7 +170,7 @@ getCRS <- function()
 gadmLayerToAlias <-
   function(layerNames, gadmVersion = pkgOptions("gadmVersion"))
   {
-    admLevels <- vapply(layerNames, function(layerName)
+    admLevels <- sapply(layerNames, function(layerName)
     {
       ctryCode <-
         toupper(gsub("_", "", stringr::str_extract(tolower(layerName), "_*[a-z]{3}_+")))
@@ -219,7 +219,7 @@ orderCustPolyLayers <- function(ctryCode, custPolyPath = NULL)
   
   lyrNames <- rgdal::ogrListLayers(polyFnamePath)
   
-  ctryPolyNRows <- vapply(lyrNames, function(lyrName)
+  ctryPolyNRows <- sapply(lyrNames, function(lyrName)
   {
     ctryPoly <-
       rgdal::readOGR(
@@ -306,7 +306,7 @@ addCtryPolyIdx <- function(ctryCode,
         seq_along(ctryPoly@data)  # Make new attribute
       
       #project to wgs84
-      ctryPoly <- sp::spTransform(ctryPoly, sp::CRS(wgs84))
+      ctryPoly <- sp::spTransform(ctryPoly, sp::CRS(projargs = wgs84))
       
       message(Sys.time(), ": Writing layer with new idx col")
       rgdal::writeOGR(
@@ -1578,7 +1578,7 @@ getCtryShpLyrNames <- function(ctryCodes = NULL,
           admLayers <- layers[grep(pattern = "adm", x = layers)]
         
         admLayerNums <-
-          vapply(
+          sapply(
             X = lyrNums,
             FUN = function(lyrNum)
               grep(paste0(lyrNum, "$"), admLayers)
@@ -1650,7 +1650,7 @@ getCtryShpLowestLyrNames <- function(ctryCodes = NULL,
   )))
     stop(Sys.time(), ": Unable to find/download ctry polygon")
   
-  lowestAdmLyrNames <- vapply(ctryCodes,
+  lowestAdmLyrNames <- sapply(ctryCodes,
                               function(ctryCode)
                               {
                                 layers <- as.character(rgdal::ogrListLayers(path.expand(
@@ -2119,7 +2119,7 @@ searchAdmLevelName <- function(ctryCodes = NULL,
   if (numLoops < 1)
     return(NULL)
   
-  admLevels <- vapply(1:numLoops, function(cCodeIdx)
+  admLevels <- sapply(1:numLoops, function(cCodeIdx)
   {
     if (!existsCtryPoly(
       ctryCode = ctryCodes[[cCodeIdx]],
@@ -2157,7 +2157,7 @@ searchAdmLevelName <- function(ctryCodes = NULL,
     
     ctryAdmLevelNames <- admLevelNames[[cCodeIdx]]
     
-    vapply(
+    sapply(
       ctryAdmLevelNames,
       simplify = TRUE,
       FUN = function(admLevelName)
@@ -2293,7 +2293,7 @@ searchAdmLevel <- function(ctryCodes = NULL,
   if (numLoops < 1)
     return(NULL)
   
-  admLevels <- vapply(1:numLoops, function(cCodeIdx)
+  admLevels <- sapply(1:numLoops, function(cCodeIdx)
   {
     if (!existsCtryPoly(
       ctryCode = ctryCodes[[cCodeIdx]],
@@ -2339,7 +2339,7 @@ searchAdmLevel <- function(ctryCodes = NULL,
     
     ctryAdmLevelNames <- admLevelNames[[cCodeIdx]]
     
-    vapply(ctryAdmLevelNames, function(admLevelName)
+    sapply(ctryAdmLevelNames, function(admLevelName)
     {
       ctryShpLyrNames <- if (admLevelName == "country")
         getCtryShpLyrNames(
@@ -2473,7 +2473,7 @@ validCtryAdmLvls <- function(ctryCode = NULL,
   )
   
   validAdmLvls <-
-    vapply(admLevels, function(x)
+    sapply(admLevels, function(x)
       toupper(x) %in% toupper(ctryAdmLvls))
   
   if (!all(validAdmLvls))
@@ -2527,7 +2527,7 @@ allValidCtryAdmLvls <- function(ctryCode = NULL,
                                 custPolyPath = NULL)
 {
   return(all(unlist(
-    vapply(seq_along(ctryCode),
+    sapply(seq_along(ctryCode),
            function(cCodeIdx)
              validCtryAdmLvls(
                ctryCode = ctryCode[[cCodeIdx]],

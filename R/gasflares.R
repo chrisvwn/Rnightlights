@@ -177,7 +177,7 @@ createNlGasFlares <- function()
       
       wgs84 <- getCRS()
       
-      raster::projection(gfPolyMosaic) <- sp::CRS(wgs84)
+      raster::projection(gfPolyMosaic) <- sp::CRS(projargs = wgs84)
       
       #clean the geometries
       message(Sys.time(), ": cleaning the mosaiced polygon")

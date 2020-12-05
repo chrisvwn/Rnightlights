@@ -7,7 +7,7 @@ Image and data processing by NOAA's National Geophysical Data Center
 Maps distributed by GADM
 (https://gadm.org)"
   
-  #printCredits(credits)
+  printCredits(credits)
 }
 
 ######################## .RnightlightsENV ###################################

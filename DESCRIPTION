@@ -66,6 +66,6 @@ SystemRequirements:
     curl,
     gdal,
     wget
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.1
 BugReports: https://github.com/chrisvwn/Rnightlights/issues
 URL: https://github.com/chrisvwn/Rnightlights

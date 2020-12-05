@@ -44,7 +44,7 @@ if (.runThisTest)
   
   admSumMasqVIIRS <- NULL
   
-  for (i in 1:length(ctryPoly@polygons))
+  for (i in seq_along(ctryPoly@polygons))
   {
     temp$name <- as.character(ctryPoly@data$NAME_2[i])
     temp$sum <-

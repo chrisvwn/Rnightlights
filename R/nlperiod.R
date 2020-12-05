@@ -200,7 +200,7 @@ getAllNlPeriods <- function(nlTypes)
   if (!allValidNlTypes(nlTypes))
     stop(Sys.time(), ": Invalid nlType: ", nlTypes)
   
-  vapply(nlTypes, function(nlType)
+  sapply(nlTypes, function(nlType)
   {
     if (stringr::str_detect(nlType, "OLS"))
     {

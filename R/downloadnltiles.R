@@ -542,7 +542,7 @@ downloadNlTilesOLS <- function(nlPeriod,
                                 nlPeriod = nlPeriod,
                                 configName = configName)
       
-      ntLtsTifList <- vapply(seq_along(nlUrlsOLS), function(i) {
+      ntLtsTifList <- sapply(seq_along(nlUrlsOLS), function(i) {
         #get the zip and tif local names
         
         ntLtsTifLocalNamePathOLS <-

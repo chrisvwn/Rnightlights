@@ -3,6 +3,13 @@ library(Rnightlights)
 
 context("ctryCodes")
 
+test_that("ctryNameToCode input is valid", {
+  expect_error(ctryNameToCode(7), "Invalid ctryName")
+  expect_error(ctryNameToCode(NULL), "Invalid ctryName")
+  expect_error(ctryNameToCode(NA), "Invalid ctryName")
+  expect_error(ctryNameToCode(""), "Invalid ctryName")
+})
+
 test_that("ctryCode lookups work", {
   #ctryCodeToName
   expect_match(ctryCodeToName("KEN"), "Kenya", fixed=TRUE)

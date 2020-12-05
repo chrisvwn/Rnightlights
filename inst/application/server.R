@@ -69,34 +69,19 @@ defaultStats <- c("mean()", "sum()", "var()", "sd()")
 options(shiny.reactlog = TRUE)
 
 shiny::shinyServer(function(input, output, session) {
-  #Since renderUI does not like selectAdmLevel returning NULL we init with an empty renderUI,
-  #set suspendWhenHidden = FALSE to force it to recheck selectAdmLevel even if null
+  #Since renderUI does not like selectAdmLevel returning NULL we init with an
+  # empty renderUI, set suspendWhenHidden = FALSE to force it to recheck 
+  # selectAdmLevel even if null
   output$selectAdmLevel <- shiny::renderUI({
   })
   
   shiny::outputOptions(output, "selectAdmLevel", suspendWhenHidden = FALSE)
   #shinyjs::useShinyjs()
   
-  ######################## reactive ctryCodesWithData ###################################
+  ################## reactive ctryCodesWithData #######################
   
   ctryCodesWithData <- shiny::reactive({
-    print("ctryCodesWithData")
-    
-    existingData <- Rnightlights::listCtryNlData()
-    
-    ctryCodesWithData <- unique(existingData$ctryCode)
-    
-    ctryCodeNames <-
-      lapply(ctryCodesWithData, function(x)
-        Rnightlights::ctryCodeToName(x))
-    
-    ctryCodeNames[is.na(ctryCodeNames)] <- "---"
-    
-    if (!is.null(ctryCodesWithData))
-      ctryCodesWithData <-
-      stats::setNames(ctryCodesWithData, ctryCodeNames)
-    
-    ctryCodesWithData
+    getCryCodesWithData()
   })
   
   ######################## update countries ###################################
@@ -128,7 +113,7 @@ shiny::shinyServer(function(input, output, session) {
     )
   })
   
-  ######################## actionButton btnGo ###################################
+  ######################## actionButton btnGo ###########################
   
   output$btnGo <- shiny::renderUI({
     print("output: btnGo")
@@ -137,15 +122,18 @@ shiny::shinyServer(function(input, output, session) {
     {
       if (values$needsDataUpdate)
         btn <-
-          shiny::actionButton("btnGo", "LOAD", style = "background-color:orange")
+          shiny::actionButton(inputId = "btnGo", label = "LOAD",
+                              style = "background-color:orange")
       
       #give precedence to process. if both set let process override load
       if (values$needsDataProcessing)
         btn <-
-          shiny::actionButton("btnGo", "PROCESS", style = "background-color:orange")
+          shiny::actionButton(inputId = "btnGo", label = "PROCESS",
+                              style = "background-color:orange")
     } else
       btn <-
-        shiny::actionButton("btnGo", "LOAD", style = "background-color:lightblue")
+        shiny::actionButton(inputId = "btnGo", label = "LOAD",
+                            style = "background-color:lightblue")
     
     btn
   })
@@ -165,7 +153,7 @@ shiny::shinyServer(function(input, output, session) {
     countries
   })
   
-  ######################## reactive ctryAdmLevels ###################################
+  ######################## reactive ctryAdmLevels ######################
   
   ctryAdmLevels <- shiny::reactive({
     print(paste0("reactive:ctryAdmLevels"))
@@ -215,37 +203,9 @@ shiny::shinyServer(function(input, output, session) {
     polyVer <- input$polyVer
     
     polyType <- input$polyType
-    
-    if ((length(countries) == 0 ||
-         grepl("^\\s*$", countries)) &&
-        (is.null(polySrc) ||
-         polySrc == "" || is.null(polyVer) || polyVer == ""))
-      return()
-    
-    if (!(length(countries) == 0 || grepl("^\\s*$", countries)))
-      if (is.null(polySrc) ||
-          polySrc == "" ||
-          is.null(polyVer) ||
-          polyVer == "" || is.null(polyType) || polyType == "")
-        return()
-    
-    custPolyPath <- if (polySrc == "CUST")
-      polyVer
-    else
-      NULL
-    
-    nlTypes <-
-      unique(
-        Rnightlights::listCtryNlData(
-          ctryCodes = countries,
-          admLevels = admLevel,
-          polySrcs = polySrc,
-          polyVers = polyVer,
-          polyTypes = polyType
-        )$nlType
-      )
-    
-    return(nlTypes)
+
+    getCtryNlTypes(countries = countries, admLevel = admLevel, polySrc = polySrc, polyVer = polyVer, polyType = polyType)
+
   })
   
   ######################## reactive ctryNlDataLvl2 ############################
@@ -277,81 +237,7 @@ shiny::shinyServer(function(input, output, session) {
     else
       NULL
     
-    if (length(countries) == 1)
-    {
-      admLevel <-
-        unlist(
-          Rnightlights:::getCtryShpAllAdmLvls(
-            ctryCodes = countries,
-            gadmVersion = polyVer,
-            gadmPolyType = polyType,
-            custPolyPath = custPolyPath
-          )
-        )[2]
-      
-      ctryNlDataFile <-
-        Rnightlights:::getCtryNlDataFnamePath(
-          ctryCode = countries,
-          admLevel = admLevel,
-          gadmVersion = polyVer,
-          gadmPolyType = polyType,
-          custPolyPath = custPolyPath
-        )
-      
-      if (file.exists(ctryNlDataFile))
-        ctryData <- data.table::fread(ctryNlDataFile)
-      else
-        ctryData <- NULL
-    }
-    else if (length(countries) > 1)
-      #remove subcountry admin levels
-    {
-      for (ctryCode in countries)
-      {
-        admLevel <- paste0(ctryCode, "_adm0")
-        #print(ctryCode)
-        
-        ctryNlDataFile <-
-          Rnightlights:::getCtryNlDataFnamePath(
-            ctryCode = ctryCode,
-            admLevel = admLevel,
-            gadmVersion = polyVer,
-            gadmPolyType = polyType,
-            custPolyPath = custPolyPath
-          )
-        
-        if (file.exists(ctryNlDataFile))
-          temp <- data.table::fread(ctryNlDataFile)
-        else
-          temp <- NULL
-        
-        ctryCols <-
-          grep(paste0("country|area|NL_", nlType), names(temp))
-        
-        temp <- temp[, ctryCols, with = F]
-        
-        if (is.null(ctryData))
-        {
-          ctryData <- temp
-        } else
-        {
-          ctryData <- merge(ctryData, temp, all = TRUE)
-        }
-      }
-    }
-    
-    #get the nlType columns
-    ctryCols <- names(ctryData)
-    
-    ctryNonNLCols <- grep("NL_", ctryCols, invert = T, value = T)
-    ctryNLCols <- grep("NL_", ctryCols, value = T)
-    
-    ctryNLColsNlType <- grep(nlType, ctryNLCols, value = T)
-    
-    ctryData <-
-      ctryData[, c(ctryNonNLCols, ctryNLColsNlType), with = F]
-    
-    return(ctryData)
+    getCtrysDataDirect(countries = countries, polySrc = polySrc, polyVer = polyVer, polyType = polyType, nlType = nlType)
   })
   
   ######################## reactive ctryNlData ################################
@@ -404,7 +290,8 @@ shiny::shinyServer(function(input, output, session) {
       }
       
       nlStats <-
-        Rnightlights:::nlSignatureAddArg(nlStatSigs = nlStats, addArg = "na.rm=T")
+        Rnightlights:::nlSignatureAddArg(nlStatSigs = nlStats,
+                                         addArg = "na.rm=T")
       nlStats <-
         Rnightlights:::nlSignatureStat(nlStatSignature = nlStats)
     } else
@@ -594,10 +481,15 @@ shiny::shinyServer(function(input, output, session) {
       #meltVarNames <- gsub("[^[:digit:]]", "", meltMeasureVars)
       
       ctryData <-
-        data.table::data.table(reshape2::melt(ctryData, measure.vars = meltMeasureVars))
+        data.table::data.table(
+          reshape2::melt(ctryData, measure.vars = meltMeasureVars)
+        )
       
       ctryData$variable <-
-        Rnightlights::nlPeriodToDate(gsub("[^[:digit:]]", "", ctryData$variable), nlType)
+        Rnightlights::nlPeriodToDate(gsub(pattern = "[^[:digit:]]",
+                                          replacement = "",
+                                          x = ctryData$variable),
+                                     nlType)
       
       return(ctryData)
     })
@@ -650,7 +542,9 @@ shiny::shinyServer(function(input, output, session) {
       meltVarNames <- gsub("[^[:digit:]]", "", meltMeasureVars)
       
       ctryData <-
-        data.table::data.table(reshape2::melt(ctryData, measure.vars = meltMeasureVars))
+        data.table::data.table(
+          reshape2::melt(ctryData, measure.vars = meltMeasureVars)
+        )
       
       if (stringr::str_detect(input$nlType, "OLS"))
       {
@@ -791,7 +685,8 @@ shiny::shinyServer(function(input, output, session) {
     
     if (!is.null(admLevel))
       existingPolyTypes <-
-      unique(existingPolyTypes[existingPolyTypes$admLevel == admLevel, "polyType"])
+      unique(existingPolyTypes[existingPolyTypes$admLevel == admLevel,
+                               "polyType"])
     else
       existingPolyTypes <- unique(existingPolyTypes[, "polyType"])
     
@@ -851,7 +746,8 @@ shiny::shinyServer(function(input, output, session) {
         if (isFun)
         {
           if (optionNaRm)
-            Rnightlights:::nlSignatureAddArg(nlStatSigs = x, addArg = "na.rm=T")
+            Rnightlights:::nlSignatureAddArg(nlStatSigs = x,
+                                             addArg = "na.rm=T")
           else
             x
         }
@@ -863,7 +759,8 @@ shiny::shinyServer(function(input, output, session) {
     
     for (savedStat in savedStats)
     {
-      if (!exists(Rnightlights:::nlSignatureStatName(savedStat), envir = .GlobalEnv))
+      if (!exists(Rnightlights:::nlSignatureStatName(savedStat),
+                  envir = .GlobalEnv))
         Rnightlights:::loadSavedNlStat(savedStat)
     }
     
@@ -960,7 +857,8 @@ shiny::shinyServer(function(input, output, session) {
     
     shiny::textAreaInput(inputId = "newStat",
                          label = "Function Name/Def",
-                         placeholder = "mySum <- function(x)\n sum(x, na.rm=TRUE)")
+                         placeholder = 
+                           "mySum <- function(x)\n sum(x, na.rm=TRUE)")
   })
   
   ######################## renderUI btnNewStat ##########################
@@ -1035,7 +933,8 @@ shiny::shinyServer(function(input, output, session) {
     admLevel <- selectedAdmLevel3()
     
     #if no country selected or one country selected but admLevel is NULL exit
-    # if(is.null(ctryCodes) || (!is.null(ctryCodes) && length(ctryCodes)==1 && is.null(admLevel)))
+    # if(is.null(ctryCodes) ||
+    #  (!is.null(ctryCodes) && length(ctryCodes)==1 && is.null(admLevel)))
     #   return()
     
     availData <- reactListCtryNlData()
@@ -1061,7 +960,7 @@ shiny::shinyServer(function(input, output, session) {
     dta$configName
   })
   
-  ############### reactive ctryNlDataMultiTileMergeStrategy ##################
+  ############### reactive ctryNlDataMultiTileMergeStrategy ################
   
   ctryNlDataMultiTileMergeStrategy <- shiny::reactive({
     print(paste0("reactive: ctryNlDataMultiTileMergeStrategy"))
@@ -1072,7 +971,7 @@ shiny::shinyServer(function(input, output, session) {
     dta$multiTileMergeStrategy
   })
   
-  ######################## reactive ctryNlDataMultiTileMergeFun #####################
+  ############## reactive ctryNlDataMultiTileMergeFun ################
   
   ctryNlDataMultiTileMergeFun <- shiny::reactive({
     print(paste0("reactive: ctryNlDataMultiTileMergeFun"))
@@ -1083,7 +982,7 @@ shiny::shinyServer(function(input, output, session) {
     dta$multiTileMergeFun
   })
   
-  ######################## reactive ctryNlDataRemoveGasFlares #######################
+  ############# reactive ctryNlDataRemoveGasFlares #################
   
   ctryNlDataRemoveGasFlares <- shiny::reactive({
     print(paste0("reactive: ctryNlDataRemoveGasFlares"))
@@ -1094,7 +993,7 @@ shiny::shinyServer(function(input, output, session) {
     dta$removeGasFlares
   })
   
-  ######################## reactive ctryNlDataListStats ###################################
+  #################### reactive ctryNlDataListStats ##################
   
   ctryNlDataListStats <- shiny::reactive({
     print(paste0("reactive: ctryNlDataListStats"))
@@ -1103,7 +1002,11 @@ shiny::shinyServer(function(input, output, session) {
       return(NULL)
     
     xStats <- lapply(unique(dta$ctryCode), function(ctryCode) {
-      trimws(unlist(strsplit(x = dta[dta$ctryCode == ctryCode, "nlStats"], split = ",")))
+      trimws(unlist(strsplit(x = dta[dta$ctryCode == ctryCode, "nlStats"],
+                             split = ","
+                            )
+                   )
+             )
     })
     
     if (length(xStats) == 1)
@@ -1112,7 +1015,7 @@ shiny::shinyServer(function(input, output, session) {
       Reduce(intersect, xStats)
   })
   
-  ######################## reactive ctryNlDataStats ###################################
+  ################### reactive ctryNlDataStats ######################
   
   ctryNlDataStats <- shiny::reactive({
     print(paste0("reactive: ctryNlDataStats"))
@@ -1123,7 +1026,7 @@ shiny::shinyServer(function(input, output, session) {
     dta$nlStats
   })
   
-  ######################## renderUI configName ###################################
+  ############### renderUI configName ##################
   
   observe({
     print("output: configName")
@@ -1171,7 +1074,7 @@ shiny::shinyServer(function(input, output, session) {
     )
   })
   
-  ######################## renderUI multiTileMergeStrategy ###################################
+  ################### renderUI multiTileMergeStrategy #####################
   
   observe({
     print("output: multiTileStrategy")
@@ -1184,19 +1087,23 @@ shiny::shinyServer(function(input, output, session) {
     
     if (!is.null(countries))
       existingMultiTileMergeStrategys <-
-      existingMultiTileMergeStrategys[existingMultiTileMergeStrategys$ctryCode %in% countries,]
+      existingMultiTileMergeStrategys[
+        existingMultiTileMergeStrategys$ctryCode %in% countries,]
     
     admLevel <- input$radioAdmLevel
     
     if (!is.null(admLevel))
       existingMultiTileMergeStrategys <-
-      existingMultiTileMergeStrategys[existingMultiTileMergeStrategys$admLevel == admLevel, "multiTileMergeStrategy"]
+      existingMultiTileMergeStrategys[
+        existingMultiTileMergeStrategys$admLevel == admLevel,
+        "multiTileMergeStrategy"]
     else
       existingMultiTileMergeStrategys <-
       unique(existingMultiTileMergeStrategys[, "multiTileMergeStrategy"])
     
     multiTileMergeStrategys <-
-      allMultiTileMergeStrategys[!(allMultiTileMergeStrategys %in% existingMultiTileMergeStrategys)]
+      allMultiTileMergeStrategys[!(allMultiTileMergeStrategys %in%
+                                     existingMultiTileMergeStrategys)]
     
     if (length(existingMultiTileMergeStrategys) == 1)
       existingMultiTileMergeStrategys <-
@@ -1419,7 +1326,7 @@ shiny::shinyServer(function(input, output, session) {
         is.null(multiTileMergeFun) || is.null(removeGasFlares))
       return()
     
-    existsData <- vapply(countries, function(x) {
+    existsData <- sapply(countries, function(x) {
       nlStatList <- Rnightlights:::nlSignatureStat(nlStat = nlStat)
       
       Rnightlights:::existsCtryNlData(
@@ -1598,7 +1505,7 @@ shiny::shinyServer(function(input, output, session) {
     
     # if(strict)
     admLevels <-
-      unlist(vapply(seq_along(admLevels), function(admLevel)
+      unlist(sapply(seq_along(admLevels), function(admLevel)
       {
         ctryNlDataFile <-
           Rnightlights:::getCtryNlDataFnamePath(

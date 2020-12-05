@@ -1,4 +1,4 @@
-######################## myfun ###################################
+######################## maxPtsNeighborDistToHalfThresh ###################################
 
 #' Function to test the use of rowcols and lonlats in getCtryNlData
 #'
@@ -29,6 +29,10 @@
 #'     in the raster
 #'
 #' @param numPts integer The number of top pixels to detect
+#' 
+#' @param enablePlot logical Plot each stage of the iteration showing the
+#'     pixels surrounding the top pixel as we move farther out till the
+#'     target pixel is found. Output will be in PDF format.
 #'
 #' @examples
 #'
@@ -36,17 +40,17 @@
 #' pkgReset();
 #'   system.time(rastGFT92 <-  getCtryNlData(ctryCode = "NGA",
 #'      admLevel = "lowest", nlTypes = "OLS.Y", nlPeriods = "1992",
-#'      removeGasFlares = F, ignoreMissing=FALSE, nlStats = list("myfun")))
+#'      removeGasFlares = F, ignoreMissing=FALSE, nlStats = list("maxPtsNeighborDistToHalfThresh", list(numPts=1, enablePlot=TRUE))))
 #'
 #'   pkgOptions(extractMethod="gdal",cropMaskMethod="gdal");
 #'   system.time(gdalGFT92 <-  getCtryNlData(ctryCode = "NGA",
 #'       admLevel = "lowest", nlTypes = "OLS.Y", nlPeriods = "1992",
-#'       removeGasFlares = F, ignoreMissing=FALSE, nlStats="myfun"))
+#'       removeGasFlares = F, ignoreMissing=FALSE, nlStats = list("maxPtsNeighborDistToHalfThresh", list(numPts=1, enablePlot=TRUE))))
 #' }
 #'
 #' @export
-myfun <-
-  function(col, row, lon, lat, val, numPts = 3)
+maxPtsNeighborDistToHalfThresh <-
+  function(col, row, lon, lat, val, numPts = 3, enablePlot = FALSE)
     #function(dt, numPts=3)
   {
     dt <- data.frame(col, row, val)
@@ -73,11 +77,14 @@ myfun <-
                (abs(dt$row - topPt$row) == nbIdx &
                   abs(dt$col - topPt$col) <= nbIdx),]
         
-        # plot(dt$col, dt$row)
-        # points(topPt$col, topPt$row, pch=21)
-        # points(nbrs$col[is.na(nbrs$val)], nbrs$row[is.na(nbrs$val)], pch=0)
-        # points(nbrs$col[!is.na(nbrs$val)], nbrs$row[!is.na(nbrs$val)], pch=19)
-        # points(nbrs$col[nbrs$val <= topPt$val/2], nbrs$row[nbrs$val <= topPt$val/2], pch=11)
+        if(enablePlot)
+        {
+          plot(dt$col, dt$row)
+          points(topPt$col, topPt$row, pch=21)
+          points(nbrs$col[is.na(nbrs$val)], nbrs$row[is.na(nbrs$val)], pch=0)
+          points(nbrs$col[!is.na(nbrs$val)], nbrs$row[!is.na(nbrs$val)], pch=19)
+          points(nbrs$col[nbrs$val <= topPt$val/2], nbrs$row[nbrs$val <= topPt$val/2], pch=11)
+        }
         
         nbrs <- nbrs[!is.na(nbrs$val), ]
         
@@ -93,6 +100,6 @@ myfun <-
     return(res$nbIdx)
   }
 
-#pkgReset();pkgOptions(numThreads=6);system.time(rastGFT92 <-  getCtryNlData(ctryCode = "NGA", admLevel = "lowest", nlTypes = "OLS.Y", nlPeriods = "1992", removeGasFlares = F, ignoreMissing=FALSE, nlStats = list("myfun")))
+#pkgReset();pkgOptions(numThreads=6);system.time(rastGFT92 <-  getCtryNlData(ctryCode = "NGA", admLevel = "lowest", nlTypes = "OLS.Y", nlPeriods = "1992", removeGasFlares = F, ignoreMissing=FALSE, nlStats = list("maxPtsNeighborDistToHalfThresh")))
 
-#pkgOptions(extractMethod="gdal",cropMaskMethod="gdal"); system.time(gdalGFT92 <-  getCtryNlData(ctryCode = "NGA", admLevel = "lowest", nlTypes = "OLS.Y", nlPeriods = "1992", removeGasFlares = F, ignoreMissing=FALSE, nlStats="myfun"))
+#pkgOptions(extractMethod="gdal",cropMaskMethod="gdal"); system.time(gdalGFT92 <-  getCtryNlData(ctryCode = "NGA", admLevel = "lowest", nlTypes = "OLS.Y", nlPeriods = "1992", removeGasFlares = F, ignoreMissing=FALSE, nlStats="maxPtsNeighborDistToHalfThresh"))

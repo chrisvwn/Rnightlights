@@ -37,15 +37,15 @@ validNlStats <- function(nlStats)
   
   if (is.list(nlStats) &&
       length(nlStats) > 1 &&
-      all(vapply(2:length(nlStats), function(i)
+      all(sapply(2:length(nlStats), function(i)
         ! is.list(nlStats[[i]]) &&
         (grepl("=", nlStats[i]) || length(names(nlStats[i])) > 0))))
     nlStats <- list(nlStats)
   
-  matchedFuns <- vapply(nlStats, function(nlStat)
+  matchedFuns <- sapply(nlStats, function(nlStat)
     tryCatch({
       if (is.list(nlStat) &&
-          all(vapply(2:length(nlStat), function(i)
+          all(sapply(2:length(nlStat), function(i)
             grepl("=", nlStat[i]) || length(names(nlStat[i])) > 0)))
         matched <-
           is.character(nlStat[[1]]) && !is.null(match.fun(nlStat[[1]]))
@@ -116,7 +116,7 @@ nlStatParams <- function(nlStatName)
     
     #split by = to separate name from value
     fmls <-
-      vapply(fmls, function(x)
+      sapply(fmls, function(x)
         trimws(unlist(strsplit(x, "="))[1]))
   }
   
@@ -187,17 +187,17 @@ nlStatArgs <- function(nlStat)
       trimws(unlist(strsplit(x, "="))))
   
   #length 1 is unnamed param
-  paramLengths <- vapply(params2, length)
+  paramLengths <- sapply(params2, length)
   
   paramNames <-
-    vapply(params2, function(x)
+    sapply(params2, function(x)
       if(length(x) == 1)
         ""
       else
         x[[1]])
   
   paramValues <-
-    vapply(params2, function(x)
+    sapply(params2, function(x)
       if(length(x) == 1)
         x[[1]]
       else
@@ -226,7 +226,7 @@ nlStatArgs <- function(nlStat)
     stats::setNames(paramValues[which(!is.na(matchFmls))], paramNames[which(!is.na(matchFmls))])
   
   unMatchedNamedParams <-
-    vapply(params2[paramNames != "" &
+    sapply(params2[paramNames != "" &
                      !(paramNames %in% names(matchedNamedParams))], paste, collapse = "=")
   
   if (length(unMatchedNamedParams) > 0)
@@ -269,7 +269,7 @@ nlStatArgs <- function(nlStat)
   
   #get order of args according to formal params
   paramIdxs <-
-    unlist(vapply(fmls, function(x)
+    unlist(sapply(fmls, function(x)
       which(names(allParams) == x), USE.NAMES = F, simplify = T))
   
   #put the supplied args in order
@@ -318,7 +318,7 @@ nlSignatureAddArg <- function(nlStatSigs, addArg)
 {
   addArg <- nlStatArgsStandardize(addArg)
   
-  vapply(nlStatSigs, function(nlStatSig)
+  sapply(nlStatSigs, function(nlStatSig)
   {
     #convert the signature into an nlStat list
     nlStat <- nlSignatureStat(nlStatSignature = nlStatSig)
@@ -671,7 +671,7 @@ listSavedNlStats <- function(nlStatNames = NULL,
   
   if (length(savedNlStats) > 0 && detail)
     savedNlStats <-
-    vapply(savedNlStats, function(x)
+    sapply(savedNlStats, function(x)
       getSavedNlStat(x), USE.NAMES = F)
   
   savedNlStats
@@ -909,7 +909,7 @@ existsSavedNlStatHash <- function(nlStatHash)
     return(FALSE)
   
   existsStatHash <-
-    any(vapply(.RnightlightsEnv$savedNlStats, function(x)
+    any(sapply(.RnightlightsEnv$savedNlStats, function(x)
       x == nlStatHash))
   
   return(existsStatHash)
@@ -1118,7 +1118,7 @@ myZonal <-
     zones <- NULL
     
     #create the text for the functions
-    fun <- vapply(nlStats,
+    fun <- sapply(nlStats,
                   function(nlStat)
                   {
                     #remove preceding = from "(=" or ",="
@@ -1139,9 +1139,9 @@ myZonal <-
                     nlStatArgs <- formals(nlStat)
                     
                     retVal <-
-                      if (all(vapply(c("col", "row"), "%in%", names(nlStatArgs))))
+                      if (all(sapply(c("col", "row"), "%in%", names(nlStatArgs))))
                         "colrowval"
-                    else if (all(vapply(c("lon", "lat"), "%in%", names(nlStatArgs))))
+                    else if (all(sapply(c("lon", "lat"), "%in%", names(nlStatArgs))))
                       "lonlatval"
                     else
                       NULL
@@ -1163,15 +1163,15 @@ myZonal <-
         "dta[, as.list(unlist(stats::setNames(lapply(fun, function(fn) eval(parse(text=fn))), funNames))), by=zones]"
       )
     
-    retVal <- vapply(nlStats, function(nlStat) {
+    retVal <- sapply(nlStats, function(nlStat) {
       nlStat <- nlStat[[1]]
       
       nlStatArgs <- formals(nlStat)
       
       retVal <-
-        if (all(vapply(c("col", "row"), "%in%", names(nlStatArgs))))
+        if (all(sapply(c("col", "row"), "%in%", names(nlStatArgs))))
           "colrowval"
-      else if (all(vapply(c("lon", "lat"), "%in%", names(nlStatArgs))))
+      else if (all(sapply(c("lon", "lat"), "%in%", names(nlStatArgs))))
         "lonlatval"
       else
         NULL
@@ -1379,7 +1379,7 @@ myZonal <-
     
     #count cols with nlStat in them
     nlStatColCounts <-
-      vapply(funNames, function(funName)
+      sapply(funNames, function(funName)
         length(grep(
           paste0("^", funName, "\\.*"), names(result)
         )))
@@ -1601,7 +1601,7 @@ ZonalPipe <- function (ctryCode,
   message(Sys.time(), ": Calculating zonal stats ... DONE")
   
   colnames(Zstat)[2:length(Zstat)] <-
-    vapply(
+    sapply(
       X = nlStats,
       FUN = function(x)
         x[[1]]
@@ -1959,7 +1959,7 @@ fnAggRadRast <-
     #to avoid RCheck notes
     i <- NULL
     
-    nlStatNames <- vapply(nlStats, function(x)
+    nlStatNames <- sapply(nlStats, function(x)
       x[[1]])
     
     result <- foreach::foreach(
@@ -1978,15 +1978,15 @@ fnAggRadRast <-
       message(Sys.time(), ": PID:", pid, " Extracting data from polygon " , i)
       
       retVal <-
-        vapply(nlStats, function(nlStat) {
+        sapply(nlStats, function(nlStat) {
           nlStat <- nlStat[[1]]
           
           nlStatArgs <- formals(nlStat)
           
           retVal <-
-            if (all(vapply(c("col", "row"), "%in%", names(nlStatArgs))))
+            if (all(sapply(c("col", "row"), "%in%", names(nlStatArgs))))
               "colrowval"
-          else if (all(vapply(c("lon", "lat"), "%in%", names(nlStatArgs))))
+          else if (all(sapply(c("lon", "lat"), "%in%", names(nlStatArgs))))
             "lonlatval"
           else
             NULL
@@ -2039,9 +2039,9 @@ fnAggRadRast <-
             formals(nlStat)
           
           retVal <-
-            if (all(vapply(c("col", "row"), "%in%", names(nlStatArgs))))
+            if (all(sapply(c("col", "row"), "%in%", names(nlStatArgs))))
               "colrowval"
-          else if (all(vapply(c("lon", "lat"), "%in%", names(nlStatArgs))))
+          else if (all(sapply(c("lon", "lat"), "%in%", names(nlStatArgs))))
             "lonlatval"
           else
             NULL
@@ -2069,7 +2069,7 @@ fnAggRadRast <-
     
     #count cols with nlStat in them
     nlStatColCounts <-
-      vapply(nlStatNames, function(nlStat)
+      sapply(nlStatNames, function(nlStat)
         length(grep(
           paste0("^", nlStat, "\\.*"), names(result)
         )))
