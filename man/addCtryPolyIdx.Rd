@@ -4,8 +4,12 @@
 \alias{addCtryPolyIdx}
 \title{Add an index column to all layers of a polygon}
 \usage{
-addCtryPolyIdx(ctryCode, gadmVersion = pkgOptions("gadmVersion"),
-  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
+addCtryPolyIdx(
+  ctryCode,
+  gadmVersion = pkgOptions("gadmVersion"),
+  gadmPolyType = pkgOptions("gadmPolyType"),
+  custPolyPath = NULL
+)
 }
 \arguments{
 \item{ctryCode}{The ISO3 ctryCode of the country polygon to download}

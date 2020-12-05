@@ -4,8 +4,12 @@
 \alias{getNlUrlVIIRS}
 \title{Function to return the url of the VIIRS tile to download}
 \usage{
-getNlUrlVIIRS(nlPeriod, tileNum, nlType,
-  configName = pkgOptions(paste0("configName_", nlType)))
+getNlUrlVIIRS(
+  nlPeriod,
+  tileNum,
+  nlType,
+  configName = pkgOptions(paste0("configName_", nlType))
+)
 }
 \arguments{
 \item{nlPeriod}{character string the nlPeriod}

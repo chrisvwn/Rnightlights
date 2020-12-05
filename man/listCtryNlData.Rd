@@ -4,11 +4,21 @@
 \alias{listCtryNlData}
 \title{List available data}
 \usage{
-listCtryNlData(ctryCodes = NULL, admLevels = NULL, nlTypes = NULL,
-  configNames = NULL, multiTileMergeStrategys = NULL,
-  multiTileMergeFuns = NULL, removeGasFlares = NULL,
-  nlPeriods = NULL, polySrcs = NULL, polyVers = NULL,
-  polyTypes = NULL, nlStats = NULL, source = "local")
+listCtryNlData(
+  ctryCodes = NULL,
+  admLevels = NULL,
+  nlTypes = NULL,
+  configNames = NULL,
+  multiTileMergeStrategys = NULL,
+  multiTileMergeFuns = NULL,
+  removeGasFlares = NULL,
+  nlPeriods = NULL,
+  polySrcs = NULL,
+  polyVers = NULL,
+  polyTypes = NULL,
+  nlStats = NULL,
+  source = "local"
+)
 }
 \arguments{
 \item{ctryCodes}{\code{character} vector of ctryCodes to filter by}

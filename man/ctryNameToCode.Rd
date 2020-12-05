@@ -21,7 +21,7 @@ Convert country names to ISO3 codes. Searches the rworldmap map data.
 ctryNameToCode("kenya") #returns "KEN"
 
 ctryNameToCode("ken") #returns "KEN"
-  
+
 ctryNameToCode("jamaica") #returns JAM
 
 }

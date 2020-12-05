@@ -4,17 +4,22 @@
 \alias{getCtryShpLyrNames}
 \title{Get the standard names of polygon layers in a country}
 \usage{
-getCtryShpLyrNames(ctryCodes = NULL, lyrNums, dnldPoly,
+getCtryShpLyrNames(
+  ctryCodes = NULL,
+  lyrNums,
+  dnldPoly,
   gadmVersion = pkgOptions("gadmVersion"),
-  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
+  gadmPolyType = pkgOptions("gadmPolyType"),
+  custPolyPath = NULL
+)
 }
 \arguments{
 \item{ctryCodes}{the ISO3 codes for the countries}
 
-\item{lyrNums}{the layer numbers starting from 0 = country level, 
+\item{lyrNums}{the layer numbers starting from 0 = country level,
 1 = first admin level}
 
-\item{dnldPoly}{\code{logical} If the country polygon doesn't exist 
+\item{dnldPoly}{\code{logical} If the country polygon doesn't exist
 should we download it?}
 
 \item{gadmVersion}{The GADM version to use}
@@ -27,9 +32,9 @@ should we download it?}
 Character layer name
 }
 \description{
-Get the standard name of a polygon layer for a country. Used to refer 
-    to a polygon layer by name i.e. for 
-    CTRYCODE & lyrNum="0": lyrName="CTRYCODE_adm0", 
+Get the standard name of a polygon layer for a country. Used to refer
+    to a polygon layer by name i.e. for
+    CTRYCODE & lyrNum="0": lyrName="CTRYCODE_adm0",
     lyrNum="1": lyrName="KEN_adm1".
     Note this is different from the official country administration
     level name.

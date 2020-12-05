@@ -4,9 +4,13 @@
 \alias{getCtryStructAdmLevelNames}
 \title{Get the list of admin level names from a ctryStruct file}
 \usage{
-getCtryStructAdmLevelNames(ctryCode = NULL, lowestAdmLevel,
+getCtryStructAdmLevelNames(
+  ctryCode = NULL,
+  lowestAdmLevel,
   gadmVersion = pkgOptions("gadmVersion"),
-  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
+  gadmPolyType = pkgOptions("gadmPolyType"),
+  custPolyPath = NULL
+)
 }
 \arguments{
 \item{ctryCode}{\code{character} The ctryCode of the country of interest}
@@ -25,7 +29,7 @@ character vector of admin level names
 \description{
 Get the list of admin level names from a ctryStruct file created from
     the polygon for speed. It returns:
-    all official names starting from 1 to the specified 
+    all official names starting from 1 to the specified
     \code{lowestAdmLevel}. If not \code{lowestAdmLevel} is not
     specified, all admin level names are returned
 }

@@ -4,9 +4,12 @@
 \alias{getNlTileZipLclNamePath}
 \title{Constructs the full path used to save/access the compressed downloaded tile}
 \usage{
-getNlTileZipLclNamePath(nlType,
-  configName = pkgOptions(paste0("configName_", nlType)), nlPeriod,
-  tileNum)
+getNlTileZipLclNamePath(
+  nlType,
+  configName = pkgOptions(paste0("configName_", nlType)),
+  nlPeriod,
+  tileNum
+)
 }
 \arguments{
 \item{nlType}{the nlType of interest}
@@ -29,7 +32,7 @@ Constructs the full path used to save/access the compressed downloaded tile
 Rnightlights:::getNlTileZipLclNamePath("VIIRS.M", "201401", 1)
  #returns "/dataPath/VIIRS_2014_01_75N180W.tgz"
  }
- 
+
 \dontrun{
 Rnightlights:::getNlTileZipLclNamePath("OLS.Y", "2004", 1)
  #returns "/dataPath/OLS.Y_2004_00N180W.tar"

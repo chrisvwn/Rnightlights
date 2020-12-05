@@ -4,9 +4,12 @@
 \alias{dnldGADMCtrySpRds}
 \title{Download a country's polygon RDS files from \url{http://gadm.org}}
 \usage{
-dnldGADMCtrySpRds(ctryCode, gadmVersion = pkgOptions("gadmVersion"),
+dnldGADMCtrySpRds(
+  ctryCode,
+  gadmVersion = pkgOptions("gadmVersion"),
   gadmPolyType = pkgOptions("gadmPolyType"),
-  downloadMethod = pkgOptions("downloadMethod"))
+  downloadMethod = pkgOptions("downloadMethod")
+)
 }
 \arguments{
 \item{ctryCode}{The ISO3 ctryCode of the country polygon to download}

@@ -15,8 +15,8 @@ Character The full country name if the ctryCode is found. If
     codes and their corresponding names
 }
 \description{
-Convert a country ISO3 code to the full name. Exposes the rworldmap function 
-    isoToName(ctryCode). #rworldmap::isoToName can resolve 2-letter ctryCodes 
+Convert a country ISO3 code to the full name. Exposes the rworldmap function
+    isoToName(ctryCode). #rworldmap::isoToName can resolve 2-letter ctryCodes
     but we only want 3-letter ISO3 codes.  With no parameters returns a list
     of ctryCodes and their corresponding names as given by rworldMap::getMap@data
 }

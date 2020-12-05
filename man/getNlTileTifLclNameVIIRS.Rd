@@ -4,9 +4,12 @@
 \alias{getNlTileTifLclNameVIIRS}
 \title{Constructs the filename of the decompressed VIIRS .tif file}
 \usage{
-getNlTileTifLclNameVIIRS(nlType,
-  configName = pkgOptions(paste0("configName_", nlType)), nlPeriod,
-  tileNum)
+getNlTileTifLclNameVIIRS(
+  nlType,
+  configName = pkgOptions(paste0("configName_", nlType)),
+  nlPeriod,
+  tileNum
+)
 }
 \arguments{
 \item{nlType}{character string the nlType}

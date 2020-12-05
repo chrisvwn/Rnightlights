@@ -4,22 +4,28 @@
 \alias{processNLCountry}
 \title{Processes nightlights for an individual country in a particular nlPeriod}
 \usage{
-processNLCountry(ctryCode, admLevel, nlType,
+processNLCountry(
+  ctryCode,
+  admLevel,
+  nlType,
   configName = pkgOptions(paste0("configName_", nlType)),
   multiTileStrategy = pkgOptions("multiTileStrategy"),
   multiTileMergeFun = pkgOptions("multiTileMergeFun"),
-  removeGasFlares = pkgOptions("removeGasFlares"), nlPeriod,
+  removeGasFlares = pkgOptions("removeGasFlares"),
+  nlPeriod,
   nlStats = pkgOptions("nlStats"),
   downloadMethod = pkgOptions("downloadMethod"),
   cropMaskMethod = pkgOptions("cropMaskMethod"),
   extractMethod = pkgOptions("extractMethod"),
   gadmVersion = pkgOptions("gadmVersion"),
-  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
+  gadmPolyType = pkgOptions("gadmPolyType"),
+  custPolyPath = NULL
+)
 }
 \arguments{
 \item{ctryCode}{\code{character} The ctryCode of interest}
 
-\item{admLevel}{\code{character} The country admin level in the given 
+\item{admLevel}{\code{character} The country admin level in the given
 ctryCode at which to calculate stats}
 
 \item{nlType}{\code{character} The nlType of interest}
@@ -34,15 +40,15 @@ ctryCode at which to calculate stats}
 
 \item{nlPeriod}{\code{character} The nlPeriod of interest}
 
-\item{nlStats}{the statistics to calculate. If not provided will calculate 
+\item{nlStats}{the statistics to calculate. If not provided will calculate
 the stats specified in \code{pkgOptions("nlStats")}}
 
 \item{downloadMethod}{The method used to download polygons and rasters}
 
-\item{cropMaskMethod}{\code{character} Whether to use rasterize or 
+\item{cropMaskMethod}{\code{character} Whether to use rasterize or
 gdal-based functions to crop and mask the country rasters}
 
-\item{extractMethod}{("rast" or "gdal") Whether to use rasterize or 
+\item{extractMethod}{("rast" or "gdal") Whether to use rasterize or
 gdal-based functions to crop and mask the country rasters}
 
 \item{gadmVersion}{The GADM version to use}
@@ -55,37 +61,37 @@ gdal-based functions to crop and mask the country rasters}
 None
 }
 \description{
-Given a \code{countryCode}, \code{yearMonth} and preferred processing 
-    methods \code{cropMaskMethod} and \code{extractMethod}, this function 
-    will first check if the data already exists in the cache. First it 
-    will check if the data file exists and if it does not it will create 
+Given a \code{countryCode}, \code{yearMonth} and preferred processing
+    methods \code{cropMaskMethod} and \code{extractMethod}, this function
+    will first check if the data already exists in the cache. First it
+    will check if the data file exists and if it does not it will create
     a dataframe of the country data containing only the administrative
-    properties and move to processing. If the data file exists it will 
-    check to see if the particular year month already exists. If it 
-    exists, it will exit with a message. If it does not exist, it will 
+    properties and move to processing. If the data file exists it will
+    check to see if the particular year month already exists. If it
+    exists, it will exit with a message. If it does not exist, it will
     load the country data file and move on to processing.
 }
 \details{
 Processing consists of:
-    \itemize{ 
+    \itemize{
        \item Reading in the country polygon in ESRI Shapefile format
-       \item Reading in the tiles that the particular country intersects 
-           with and then clipping 
+       \item Reading in the tiles that the particular country intersects
+           with and then clipping
        the tile(s) to the country boundary
-       \item Extract the data from the clipped raster and compute various 
+       \item Extract the data from the clipped raster and compute various
            statistics at the lowest admin level in the country.
-       \item Finally, these stats are appended to the data frame and 
+       \item Finally, these stats are appended to the data frame and
            written to the data file.
     }
 
-NOTE: \code{processNLCountry()} assumes that all inputs are available 
-    and will not attempt to download them. It should ideally be called 
-    from the function \code{processNlData()} which does all the 
-    preparation for processing. \code{processNlData()} which can process 
-    multiple countries and time periods will download all the required 
-    tiles and polygons prior to calling \code{processNlCountry}. 
-    \code{getCtryNlData} can also be used with the option 
-    \code{ignoreMissing=FALSE} which will call \code{processNlData} 
+    NOTE: \code{processNLCountry()} assumes that all inputs are available
+    and will not attempt to download them. It should ideally be called
+    from the function \code{processNlData()} which does all the
+    preparation for processing. \code{processNlData()} which can process
+    multiple countries and time periods will download all the required
+    tiles and polygons prior to calling \code{processNlCountry}.
+    \code{getCtryNlData} can also be used with the option
+    \code{ignoreMissing=FALSE} which will call \code{processNlData}
     in the background.
 }
 \examples{

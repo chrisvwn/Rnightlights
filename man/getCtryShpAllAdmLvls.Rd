@@ -4,9 +4,12 @@
 \alias{getCtryShpAllAdmLvls}
 \title{Get all the admLevels in a country}
 \usage{
-getCtryShpAllAdmLvls(ctryCodes = NULL,
+getCtryShpAllAdmLvls(
+  ctryCodes = NULL,
   gadmVersion = pkgOptions("gadmVersion"),
-  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
+  gadmPolyType = pkgOptions("gadmPolyType"),
+  custPolyPath = NULL
+)
 }
 \arguments{
 \item{ctryCodes}{\code{character} The ctryCode of the country of interest}

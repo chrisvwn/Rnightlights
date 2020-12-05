@@ -4,20 +4,30 @@
 \alias{getCtryNlData}
 \title{Returns nightlight statistics for the given ctryCode and nlType in the given nPeriods}
 \usage{
-getCtryNlData(ctryCode = NULL, admLevel, nlTypes, nlPeriods,
-  nlStats = pkgOptions("nlStats"), ignoreMissing = FALSE,
+getCtryNlData(
+  ctryCode = NULL,
+  admLevel,
+  nlTypes,
+  nlPeriods,
+  nlStats = pkgOptions("nlStats"),
+  ignoreMissing = FALSE,
   gadmVersion = pkgOptions("gadmVersion"),
-  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL,
+  gadmPolyType = pkgOptions("gadmPolyType"),
+  custPolyPath = NULL,
   downloadMethod = pkgOptions("downloadMethod"),
   cropMaskMethod = pkgOptions("cropMaskMethod"),
-  extractMethod = pkgOptions("extractMethod"), configNames,
+  extractMethod = pkgOptions("extractMethod"),
+  configNames,
   multiTileStrategy = pkgOptions("multiTileStrategy"),
   multiTileMergeFun = pkgOptions("multiTileMergeFun"),
   removeGasFlares = pkgOptions("removeGasFlares"),
-  useSavedStats = FALSE, source = "local", ...)
+  useSavedStats = FALSE,
+  source = "local",
+  ...
+)
 }
 \arguments{
-\item{ctryCode}{the ISO3 code of the country. Only 1 country can be 
+\item{ctryCode}{the ISO3 code of the country. Only 1 country can be
 processed at a time.}
 
 \item{admLevel}{The country admin level of interest. Only 1 admLevel
@@ -32,16 +42,16 @@ for the nlType.}
 as listed in pkgOptions("nlStats").}
 
 \item{ignoreMissing}{controls how the function behaves if any data is not
-found in the data file.
+    found in the data file.
 
-\itemize{
-    \item NULL (default) only return data if found for ALL nlPeriods
-       and ALL stats provided otherwise return NULL
-    \item TRUE return any partial data that is found for the provided 
-       nlPeriods and stats. Ignore any missing data
-    \item FALSE return all data that is found and call \code{processNlData}
-       to download and process any missing nlPeriods and stats
-}}
+    \itemize{
+        \item NULL (default) only return data if found for ALL nlPeriods
+           and ALL stats provided otherwise return NULL
+        \item TRUE return any partial data that is found for the provided
+           nlPeriods and stats. Ignore any missing data
+        \item FALSE return all data that is found and call \code{processNlData}
+           to download and process any missing nlPeriods and stats
+    }}
 
 \item{gadmVersion}{The GADM version to use}
 
@@ -67,7 +77,7 @@ on the satellite raster}
 \item{useSavedStats}{logical Whether to load saved stats and search them for nlStats}
 
 \item{source}{"local" or "remote" Whether to download and process the
-data locally or to download the pre-processed data from a remote 
+data locally or to download the pre-processed data from a remote
 source/repo}
 
 \item{...}{other arguments}
@@ -77,24 +87,25 @@ dataframe of data for one country in one nlType in one or multiple
     nlPeriods
 }
 \description{
-Returns nightlight data for the given ctryCode and nlStats in the given 
+Returns nightlight data for the given ctryCode and nlStats in the given
     nlPeriods and of the specified nlType. Note that getCtryNldata only
     processes one ctryCode at a time.
     \code{ignoreMissing} plays a significant role here. It can take 3 values:
-    
-    \itemize{
+}
+\details{
+\itemize{
         \item NULL (default) only return data if found for all nlPeriods
            and all nlStats provided otherwise return NULL.
-        \item TRUE return any partial data that is found for the provided 
+        \item TRUE return any partial data that is found for the provided
            nlPeriods and nlStats. Ignore any missing data.
         \item FALSE return all data that is found and call \code{processNlData}
            to download and process any missing nlPeriods and nlStats.
     }
-   
+
    Farther, if \code{nlPeriods} is missing, it is assigned values based on
-   the value of ignoreMissing. If ignoreMissing is FALSE, nlPeriods is 
-   assigned all existing nlPeriods to date. This is the equivalent of 
-   retrieving all nightlight data for the given country and stats. If 
+   the value of ignoreMissing. If ignoreMissing is FALSE, nlPeriods is
+   assigned all existing nlPeriods to date. This is the equivalent of
+   retrieving all nightlight data for the given country and stats. If
    ignoreMissing is TRUE or NULL then the existing data is returned.
 }
 \examples{
@@ -112,13 +123,13 @@ getCtryNlData("KEN", "KEN_adm0", "OLS.Y", ignoreMissing=TRUE)
     #Returns all requested data if it exists i.e. all nlPeriods and all
     #nlStats for KEN but omits any missing data
     }
- 
+
 \dontrun{
 getCtryNlData(ctryCode="KEN", "KEN_adm0", "VIIRS.Y", ignoreMissing=FALSE)
     #Returns all requested data i.e. all nlPeriods and all
     #nlStats for KEN. All missing data will be downloaded and processed
     }
- 
+
 \dontrun{
 getCtryNlData("KEN", "KEN_adm0", "VIIRS.M", nlPeriods=c("existingNlPeriod", "missingNlPeriod"),
     nlStats=c("sum", "unknownStat"), ignoreMissing=NULL)
@@ -132,7 +143,7 @@ getCtryNlData("KEN", "KEN_adm0", "VIIRS.D", nlPeriods=c("existingNlPeriod", "mis
    #Returns existingStat for existingNlPeriods omits missingNlPeriod and missingStat
    #(ignoreMissing=TRUE returns only existing data)
    }
- 
+
 \dontrun{
 getCtryNlData("KEN", "KEN_adm0", "VIIRS.M", nlPeriods=c("existingNlPeriod", "missingNlPeriod"),
     nlStats=c("sum", "unknownStat"), ignoreMissing=FALSE)
@@ -141,5 +152,5 @@ getCtryNlData("KEN", "KEN_adm0", "VIIRS.M", nlPeriods=c("existingNlPeriod", "mis
     #"missingNlPeriod"
     #(ignoreMissing=FALSE must return all data: forces processing of any missing)
     }
- 
+
 }

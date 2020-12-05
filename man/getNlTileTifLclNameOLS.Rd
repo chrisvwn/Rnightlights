@@ -4,8 +4,11 @@
 \alias{getNlTileTifLclNameOLS}
 \title{Constructs the filename of the decompressed OLS .tif file}
 \usage{
-getNlTileTifLclNameOLS(nlType = "OLS.Y",
-  configName = pkgOptions(paste0("configName_", nlType)), nlPeriod)
+getNlTileTifLclNameOLS(
+  nlType = "OLS.Y",
+  configName = pkgOptions(paste0("configName_", nlType)),
+  nlPeriod
+)
 }
 \arguments{
 \item{nlType}{character string the nlType}

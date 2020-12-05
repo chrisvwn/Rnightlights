@@ -4,9 +4,12 @@
 \alias{existsPolyFnameRDS}
 \title{Check if the decompressed country polygon has been stored as RDS}
 \usage{
-existsPolyFnameRDS(ctryCode = NULL,
+existsPolyFnameRDS(
+  ctryCode = NULL,
   gadmVersion = pkgOptions("gadmVersion"),
-  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
+  gadmPolyType = pkgOptions("gadmPolyType"),
+  custPolyPath = NULL
+)
 }
 \arguments{
 \item{ctryCode}{The ctryCode to process}

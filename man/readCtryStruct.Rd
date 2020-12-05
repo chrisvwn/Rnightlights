@@ -4,9 +4,12 @@
 \alias{readCtryStruct}
 \title{Reads the ctry admin structure from struct text file}
 \usage{
-readCtryStruct(ctryCode = NULL,
+readCtryStruct(
+  ctryCode = NULL,
   gadmVersion = pkgOptions("gadmVersion"),
-  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
+  gadmPolyType = pkgOptions("gadmPolyType"),
+  custPolyPath = NULL
+)
 }
 \arguments{
 \item{ctryCode}{The ISO3 ctryCode of the country structure to read}

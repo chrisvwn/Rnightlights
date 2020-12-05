@@ -15,7 +15,7 @@ Returns the world gasflares polygon if it exists
 \examples{
 \dontrun{
   getNlGasFlaresRds()
-#returns mosaiced gasflare polygon
+  #returns mosaiced gasflare polygon
 }
 
 }

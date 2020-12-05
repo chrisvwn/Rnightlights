@@ -20,7 +20,7 @@ Get the parameters of an nlStat
 Rnightlights:::nlStatParams("sum")
 
 #returns
-#...   na.rm = FALSE 
+#...   na.rm = FALSE
 #"..."       "na.rm"
 
 }

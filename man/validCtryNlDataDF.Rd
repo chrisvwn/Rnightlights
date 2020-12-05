@@ -19,6 +19,6 @@ Check if a country dataframe is valid
 \dontrun{
   Rnightlights:::validCtryNlDataDF(nlCtryDataDF) #returns TRUE
 }
- 
+
 
 }

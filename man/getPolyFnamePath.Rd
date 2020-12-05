@@ -4,9 +4,12 @@
 \alias{getPolyFnamePath}
 \title{Get the path of the unzipped polygon directory downloaded from GADM.ORG}
 \usage{
-getPolyFnamePath(ctryCode = NULL,
+getPolyFnamePath(
+  ctryCode = NULL,
   gadmVersion = pkgOptions("gadmVersion"),
-  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
+  gadmPolyType = pkgOptions("gadmPolyType"),
+  custPolyPath = NULL
+)
 }
 \arguments{
 \item{ctryCode}{character the ISO3 code of the country}
@@ -23,13 +26,13 @@ character path to polygon shapefile directory
 \description{
 Get the path of the unzipped polygon directory downloaded from GADM.ORG. Note the polygons are in ESRI
     Shapefile format thus when unzipped create a directory with the name <ctrycode>_adm_shp e.g.
-    KEN_adm_shp. The directory will contain a number of files including the .shp file. 
+    KEN_adm_shp. The directory will contain a number of files including the .shp file.
     \code{rgdal::readOGR} can read a shapefile polygon when given the directory path. It will
     determine which files to read.
 }
 \examples{
 Rnightlights:::getPolyFnamePath("KEN")
  #returns "dataPath/polygons/KEN_adm_shp"
- 
+
 #@export only due to exploreData() shiny app
 }

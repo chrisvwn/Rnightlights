@@ -4,20 +4,24 @@
 \alias{downloadNlTiles}
 \title{Download the listed tiles for a given nlType in a given nlPeriod}
 \usage{
-downloadNlTiles(nlType, configName = pkgOptions(paste0("configName_",
-  nlType)), nlPeriod, tileList,
-  multiTileStrategy = pkgOptions("multiTileStrategy"))
+downloadNlTiles(
+  nlType,
+  configName = pkgOptions(paste0("configName_", nlType)),
+  nlPeriod,
+  tileList,
+  multiTileStrategy = pkgOptions("multiTileStrategy")
+)
 }
 \arguments{
 \item{nlType}{character The nightlight type}
 
 \item{configName}{character the type of raster being processed}
 
-\item{nlPeriod}{character The nlPeriod to process in the appropriate 
+\item{nlPeriod}{character The nlPeriod to process in the appropriate
 format}
 
-\item{tileList}{integer vector or character vector of digits containing 
-valid tile numbers as obtained by tileName2Idx for VIIRS. Ignore for 
+\item{tileList}{integer vector or character vector of digits containing
+valid tile numbers as obtained by tileName2Idx for VIIRS. Ignore for
 nlType=="OLS"}
 
 \item{multiTileStrategy}{character How to handle multiple tiles per nlPeriod}
@@ -37,9 +41,9 @@ Rnightlights:::downloadNlTiles("VIIRS.M", "201401", c(2, 5))
 
 #same as above but getting the tileList automatically
 \dontrun{
-Rnightlights:::downloadNlTiles(nlType="VIIRS.M", 
-    nlPeriod="201401", 
-    tileList=Rnightlights:::getCtryTileList(ctryCodes="KEN", 
+Rnightlights:::downloadNlTiles(nlType="VIIRS.M",
+    nlPeriod="201401",
+    tileList=Rnightlights:::getCtryTileList(ctryCodes="KEN",
         nlType="VIIRS.M")
 )
 }

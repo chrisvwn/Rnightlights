@@ -4,17 +4,22 @@
 \alias{searchAdmLevel}
 \title{Search for the admLevel by official name}
 \usage{
-searchAdmLevel(ctryCodes = NULL, admLevelNames, dnldPoly = TRUE,
+searchAdmLevel(
+  ctryCodes = NULL,
+  admLevelNames,
+  dnldPoly = TRUE,
   downloadMethod = pkgOptions("downloadMethod"),
   gadmVersion = pkgOptions("gadmVersion"),
-  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
+  gadmPolyType = pkgOptions("gadmPolyType"),
+  custPolyPath = NULL
+)
 }
 \arguments{
 \item{ctryCodes}{\code{character} The ctryCodes of the country of interest}
 
 \item{admLevelNames}{\code{character} The names to search for}
 
-\item{dnldPoly}{\code{logical} If the country polygon doesn't exist 
+\item{dnldPoly}{\code{logical} If the country polygon doesn't exist
 should we download it?}
 
 \item{downloadMethod}{The method used to download polygons}

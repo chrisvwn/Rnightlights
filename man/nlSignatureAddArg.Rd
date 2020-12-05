@@ -27,7 +27,7 @@ nlSig <- Rnightlights:::nlStatSignature(nlStat)
 Rnightlights:::nlSignatureAddArg(nlStatSigs = nlSig, addArg = "na.rm = TRUE")
 
 #returns
-#            sum() 
-# "sum(na.rm=TRUE)" 
+#            sum()
+# "sum(na.rm=TRUE)"
 
 }

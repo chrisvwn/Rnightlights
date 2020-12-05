@@ -20,7 +20,7 @@ Check if an nlPeriod is valid for a given nightlight type. Vectorized
     a single nlType is given all nlPeriods are checked in that nlType.
     If multiple nlTypes are given, then a corresponding number of
     nlPeriods is expected e.g. if nlPeriods is a vector each entry
-    must correspond to the nlType. If multiple nlPeriods are to be 
+    must correspond to the nlType. If multiple nlPeriods are to be
     tested per nlType then a list of vectors is expected, one for
     each nlType.
 }
@@ -28,7 +28,7 @@ Check if an nlPeriod is valid for a given nightlight type. Vectorized
 validNlPeriods(c("201401", "201402"),"VIIRS.M")
  #returns
  #$VIIRS.M
- #201401 201402 
+ #201401 201402
  #  TRUE   TRUE
 
 validNlPeriods("201203","VIIRS.M")

@@ -15,7 +15,7 @@ getCtryTileList(ctryCodes, nlType, omitCountries = "none")
 \item{omitCountries}{countries to exclude from processing. This is
 helpful when the number of countries to exclude is smaller than
 the number to process e.g. when one wants to process all countries
-and exclude countries that take long to process i.e. 
+and exclude countries that take long to process i.e.
 omitCountries = "long"}
 }
 \value{
@@ -29,11 +29,11 @@ Given a list of countries, this function will provide alist of VIIRS
     processing. Note all VIIRS_* nlTypes have the same nlTiles.
 }
 \examples{
-Rnightlights:::getCtryTileList(ctryCodes=c("BDI", "KEN", "RWA", "TZA", "UGA"), 
+Rnightlights:::getCtryTileList(ctryCodes=c("BDI", "KEN", "RWA", "TZA", "UGA"),
     nlType="VIIRS.M", omitCountries="none")
 
 #only 1 tile for OLS
-Rnightlights:::getCtryTileList(ctryCodes=c("BDI", "KEN", "RWA", "TZA", "UGA"), 
+Rnightlights:::getCtryTileList(ctryCodes=c("BDI", "KEN", "RWA", "TZA", "UGA"),
     nlType="OLS.Y", omitCountries="none")
     #returns "DUMMY"
 

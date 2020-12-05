@@ -12,10 +12,10 @@ behaviour. The option can take the following values:
 \itemize{
     \item{\code{missing}} ctryCodes that are in \code{rworldmap} but not on \code{GADM}
     \item{\code{long}} ctryCodes that take very long to process using 'rast'
-        options. May improve using more processors or using 'gdal' 
+        options. May improve using more processors or using 'gdal'
         options.
     \item{\code{error}} ctryCodes whose polygons have caused processing to crash
-        in tests. Not extensively tested and may work fine on other 
+        in tests. Not extensively tested and may work fine on other
         systems.
     \item{\code{all}} Omit a combination of all the above options
     \item{\code{none}} Do not omit any ctryCodes

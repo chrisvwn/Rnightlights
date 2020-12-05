@@ -4,8 +4,13 @@
 \alias{listNlTiles}
 \title{List locally cached tiles}
 \usage{
-listNlTiles(nlTypes = NULL, configNames = NULL, nlPeriods = NULL,
-  tileName = NULL, source = "local")
+listNlTiles(
+  nlTypes = NULL,
+  configNames = NULL,
+  nlPeriods = NULL,
+  tileName = NULL,
+  source = "local"
+)
 }
 \arguments{
 \item{nlTypes}{A character vector of nlTypes to filter by}

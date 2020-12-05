@@ -18,7 +18,7 @@ Checks if the country gasflares rds exists
 \examples{
 \dontrun{
   existsNlCtryGasFlaresRds(ctryCode="NGA")
-#returns TRUE
+  #returns TRUE
 }
 
 }

@@ -4,8 +4,11 @@
 \alias{getNlTileZipLclNameOLS}
 \title{The name with which to save the OLS tile locally}
 \usage{
-getNlTileZipLclNameOLS(nlType = "OLS.Y",
-  configName = pkgOptions(paste0("configName_", nlType)), nlPeriod)
+getNlTileZipLclNameOLS(
+  nlType = "OLS.Y",
+  configName = pkgOptions(paste0("configName_", nlType)),
+  nlPeriod
+)
 }
 \arguments{
 \item{nlType}{The particular VIIRS type e.g. VIIRS.D for daily VIIRS}

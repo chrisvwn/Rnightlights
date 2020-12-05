@@ -4,9 +4,15 @@
 \alias{getCtryNlDataColName}
 \title{Construct the name of a nightlight data column given the nightlight type and nlPeriod}
 \usage{
-getCtryNlDataColName(nlPeriod, nlStat, nlType, configName,
-  multiTileStrategy = "all", multiTileMergeFun = "mean",
-  removeGasFlares = TRUE)
+getCtryNlDataColName(
+  nlPeriod,
+  nlStat,
+  nlType,
+  configName,
+  multiTileStrategy = "all",
+  multiTileMergeFun = "mean",
+  removeGasFlares = TRUE
+)
 }
 \arguments{
 \item{nlPeriod}{character vector The nlPeriod to process}
@@ -33,5 +39,5 @@ Construct the name of a nightlight data column given the nightlight type and nlP
 \examples{
 
 Rnightlights:::getCtryNlDataColName("201612", "sum", nlType="VIIRS.M")
-  
+
 }

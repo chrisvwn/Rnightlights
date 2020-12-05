@@ -4,8 +4,14 @@
 \alias{fnAggRadRast}
 \title{Calculate statistics on a nightlight raster that fall within a polygon}
 \usage{
-fnAggRadRast(ctryPoly, ctryRastCropped, nlType, configName, nlStats,
-  custPolyPath = NULL)
+fnAggRadRast(
+  ctryPoly,
+  ctryRastCropped,
+  nlType,
+  configName,
+  nlStats,
+  custPolyPath = NULL
+)
 }
 \arguments{
 \item{ctryPoly}{The polygon of the admin level/region of interest. In general is a country polygon
@@ -27,18 +33,18 @@ data.frame of polygon attributes and the calculated stats, one column per nlStat
 }
 \description{
 Calculate stats on the radiance of the pixels in a nightlight raster
-    that fall within a polygon and its subpolygons using the \code{raster} 
-    package. Given a country polygon with subpolygons representing lower 
-    admin levels, it will crop and mask the raster to each subpolygon and 
+    that fall within a polygon and its subpolygons using the \code{raster}
+    package. Given a country polygon with subpolygons representing lower
+    admin levels, it will crop and mask the raster to each subpolygon and
     calculate the total radiance for the polygon and return a vector of total
     radiances that matches the subpolygons
 }
 \examples{
 #read the Kenya polygon downloaded from GADM and load the lowest admin level (ward)
 \dontrun{
-ctryPoly <- readCtryPolyAdmLayer(ctryCode="KEN", 
+ctryPoly <- readCtryPolyAdmLayer(ctryCode="KEN",
     Rnightlights:::getCtryShpLowestLyrNames(ctryCodes="KEN"))
-    
+
 # the VIIRS nightlight raster cropped earlier to the country outline
 ctryRastCropped <- raster::raster(Rnightlights:::getCtryRasterOutputFnamePath(ctryCode="KEN",
     nlType="VIIRS.M", nlPeriod="201401"))

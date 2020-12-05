@@ -4,9 +4,12 @@
 \alias{createCtryStruct}
 \title{Save ctry admin structure to text file for faster access}
 \usage{
-createCtryStruct(ctryCode = NULL,
+createCtryStruct(
+  ctryCode = NULL,
   gadmVersion = pkgOptions("gadmVersion"),
-  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
+  gadmPolyType = pkgOptions("gadmPolyType"),
+  custPolyPath = NULL
+)
 }
 \arguments{
 \item{ctryCode}{The ISO3 ctryCode of the country}

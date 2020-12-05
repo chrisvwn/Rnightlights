@@ -4,17 +4,23 @@
 \alias{searchAdmLevelMembers}
 \title{Search for names of members of admLevels}
 \usage{
-searchAdmLevelMembers(ctryCode = NULL, admLevels, admLevelMembers,
-  dnldPoly = TRUE, downloadMethod = pkgOptions("downloadMethod"),
+searchAdmLevelMembers(
+  ctryCode = NULL,
+  admLevels,
+  admLevelMembers,
+  dnldPoly = TRUE,
+  downloadMethod = pkgOptions("downloadMethod"),
   gadmVersion = pkgOptions("gadmVersion"),
-  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
+  gadmPolyType = pkgOptions("gadmPolyType"),
+  custPolyPath = NULL
+)
 }
 \arguments{
 \item{admLevels}{\code{character} The admLevel to search}
 
 \item{admLevelMembers}{The names to search for within the admLevels}
 
-\item{dnldPoly}{\code{logical} If the country polygon doesn't exist 
+\item{dnldPoly}{\code{logical} If the country polygon doesn't exist
 should we download it?}
 
 \item{downloadMethod}{The method used to download polygons}

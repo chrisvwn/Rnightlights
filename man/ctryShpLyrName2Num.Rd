@@ -4,9 +4,13 @@
 \alias{ctryShpLyrName2Num}
 \title{Get the integer number of the layer.}
 \usage{
-ctryShpLyrName2Num(ctryCode = NULL, layerName,
+ctryShpLyrName2Num(
+  ctryCode = NULL,
+  layerName,
   gadmVersion = pkgOptions("gadmVersion"),
-  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
+  gadmPolyType = pkgOptions("gadmPolyType"),
+  custPolyPath = NULL
+)
 }
 \arguments{
 \item{ctryCode}{The ctryCode to process}
@@ -23,8 +27,8 @@ ctryShpLyrName2Num(ctryCode = NULL, layerName,
 Integer layer number
 }
 \description{
-Get the integer number of the layer. Is the last character in the name 
-    and is a digit. E.g. for the 3rd layer in Kenya shapefile polygon 
+Get the integer number of the layer. Is the last character in the name
+    and is a digit. E.g. for the 3rd layer in Kenya shapefile polygon
     named "KEN_adm3" the layer number is \code{3}. The lowest layer number
     is \code{0}
 }

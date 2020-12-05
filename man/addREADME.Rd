@@ -19,5 +19,5 @@ Add README file to the root data path
   \dontrun{
   Rnightlights:::addREADME()
   }
-    
+
 }

@@ -18,7 +18,7 @@ Get the path to the saved country gasflare RDS
 \examples{
 \dontrun{
   getNlCtryGasFlaresRdsFnamePath(ctryCode="NGA")
-#returns path to the world RDS
+  #returns path to the world RDS
 }
 
 }

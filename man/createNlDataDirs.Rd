@@ -16,5 +16,5 @@ Create required data subdirectories in the root data path
   \dontrun{
   Rnightlights:::createNlDataDirs()
   }
-    
+
 }

@@ -4,8 +4,11 @@
 \alias{getNlTifLclNameOLS}
 \title{Constructs the filename used to save/access the decompressed OLS .tif file}
 \usage{
-getNlTifLclNameOLS(nlType, configName = pkgOptions(paste0("configName_",
-  nlType)), nlPeriod)
+getNlTifLclNameOLS(
+  nlType,
+  configName = pkgOptions(paste0("configName_", nlType)),
+  nlPeriod
+)
 }
 \arguments{
 \item{nlType}{The particular VIIRS type e.g. VIIRS.D for daily VIIRS}

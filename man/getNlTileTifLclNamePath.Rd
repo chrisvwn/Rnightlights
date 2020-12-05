@@ -4,9 +4,12 @@
 \alias{getNlTileTifLclNamePath}
 \title{Constructs the full path used to save/access the downloaded tile .tgz file}
 \usage{
-getNlTileTifLclNamePath(nlType,
-  configName = pkgOptions(paste0("configName_", nlType)), nlPeriod,
-  tileNum)
+getNlTileTifLclNamePath(
+  nlType,
+  configName = pkgOptions(paste0("configName_", nlType)),
+  nlPeriod,
+  tileNum
+)
 }
 \arguments{
 \item{nlType}{character string the nlType}

@@ -4,12 +4,20 @@
 \alias{allExistsCtryNlData}
 \title{Checks if all data is available}
 \usage{
-allExistsCtryNlData(ctryCodes, admLevels, nlTypes, configNames,
+allExistsCtryNlData(
+  ctryCodes,
+  admLevels,
+  nlTypes,
+  configNames,
   multiTileStrategy = pkgOptions("multiTileStrategy"),
   multiTileMergeFun = pkgOptions("multiTileMergeFun"),
-  removeGasFlares = pkgOptions("removeGasFlares"), nlPeriods, nlStats,
+  removeGasFlares = pkgOptions("removeGasFlares"),
+  nlPeriods,
+  nlStats,
   gadmVersion = pkgOptions("gadmVersion"),
-  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
+  gadmPolyType = pkgOptions("gadmPolyType"),
+  custPolyPath = NULL
+)
 }
 \arguments{
 \item{ctryCodes}{\code{character} vector of ctryCodes to filter by}

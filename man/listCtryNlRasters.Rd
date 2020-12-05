@@ -4,9 +4,16 @@
 \alias{listCtryNlRasters}
 \title{List available cropped country rasters}
 \usage{
-listCtryNlRasters(ctryCodes = NULL, nlPeriods = NULL, nlTypes = NULL,
-  configNames = NULL, polySrcs = NULL, polyVers = NULL,
-  nlStats = NULL, source = "local")
+listCtryNlRasters(
+  ctryCodes = NULL,
+  nlPeriods = NULL,
+  nlTypes = NULL,
+  configNames = NULL,
+  polySrcs = NULL,
+  polyVers = NULL,
+  nlStats = NULL,
+  source = "local"
+)
 }
 \arguments{
 \item{ctryCodes}{A character vector of ctryCodes to filter by}

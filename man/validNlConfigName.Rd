@@ -20,7 +20,7 @@ Check if a configName is valid for a given nlType
 \examples{
 Rnightlights:::validNlConfigName("VCMCFG", "OLS.Y")
  #returns FALSE
- 
+
 Rnightlights:::validNlConfigName("VCMCFG", "VIIRS.M")
  #returns TRUE
 

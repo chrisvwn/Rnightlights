@@ -8,7 +8,7 @@ plotCtryWithTilesVIIRS(ctry)
 }
 \arguments{
 \item{ctry}{\code{character} the 3-letter ISO3 country code e.g. "KEN"
-or a common name of the country e.g. "Kenya" as found valid by 
+or a common name of the country e.g. "Kenya" as found valid by
 \code{rworldmap::rwmgetISO3()}}
 }
 \value{
@@ -16,11 +16,12 @@ None
 }
 \description{
 Plot a country boundary as defined in the \pkg{rworldmap} package along
-    with the VIIRS nightlight tiles for a visual inspection of the tiles 
-    required for download in order to process a country's nightlight 
+    with the VIIRS nightlight tiles for a visual inspection of the tiles
+    required for download in order to process a country's nightlight
     data. Output corresponds to that of \code{getCtryNlTiles()}
-    
-    It utilizes \code{rworldmap::rwmgetISO3()} to resolve country 
+}
+\details{
+It utilizes \code{rworldmap::rwmgetISO3()} to resolve country
     codes as well as names.
 }
 \examples{

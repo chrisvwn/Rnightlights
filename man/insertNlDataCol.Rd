@@ -4,9 +4,17 @@
 \alias{insertNlDataCol}
 \title{Insert an aggregate nightlight data column in a country nightlights dataframe}
 \usage{
-insertNlDataCol(ctryNlDataDF, dataCol, nlStat, nlPeriod, nlType,
-  configName, multiTileStrategy, multiTileMergeFun,
-  removeGasFlares = TRUE)
+insertNlDataCol(
+  ctryNlDataDF,
+  dataCol,
+  nlStat,
+  nlPeriod,
+  nlType,
+  configName,
+  multiTileStrategy,
+  multiTileMergeFun,
+  removeGasFlares = TRUE
+)
 }
 \arguments{
 \item{ctryNlDataDF}{dataframe with the country data to save}
@@ -37,12 +45,12 @@ Insert an aggregate nightlight data column in a country nightlights dataframe. T
 \examples{
 
 \dontrun{
-ctryNlDataDF <- Rnightlights:::insertNlDataCol(ctryNlDataDF, 
+ctryNlDataDF <- Rnightlights:::insertNlDataCol(ctryNlDataDF,
     dataCol, "sum", "201409", "VIIRS.D")
     }
 
 \dontrun{
-ctryNlDataDF <- Rnightlights:::insertNlDataCol(ctryNlDataDF, 
+ctryNlDataDF <- Rnightlights:::insertNlDataCol(ctryNlDataDF,
     dataCol, "mean", "2012", "OLS.Y")
     }
 

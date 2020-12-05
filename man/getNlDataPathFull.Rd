@@ -15,5 +15,5 @@ Gets the full path to the data directory"
 }
 \examples{
 print(getNlDataPathFull())
-    
+
 }

@@ -25,7 +25,7 @@ Rnightlights:::nlSignatureStat(nlStatSignature = nlSignature)
 #[[1]]
 #[[1]][[1]]
 #[1] "sum"
-# 
+#
 #[[1]][[2]]
 #[1] "na.rm=TRUE"
 #

@@ -11,7 +11,7 @@ pkgOptions(...)
 pairs to set options.}
 }
 \value{
-if an option name is supplied as a parameter this returns the 
+if an option name is supplied as a parameter this returns the
     value, else a list of all options is returned.
 }
 \description{
@@ -25,66 +25,66 @@ The following options are supported
      identify the tile file to use out of the downloaded tile .tar. The
      data are available as annual composited series:
      \itemize{
-         \item cf_cvg \emph{(Cloud-free coverages)}: 
+         \item cf_cvg \emph{(Cloud-free coverages)}:
           tally the total number of observations that went into each 30 arc
            second grid cell. This image can be used to identify areas with
            low numbers of observations where the quality is reduced.
            In some years there are areas with zero cloud- free observations
            in certain locations.
-     
+
          \item avg_vis \emph{(Raw average visible band)}: contains the
           average of the visible band digital number values with no further
           filtering. Data values range from 0-63. Areas with zero cloud-free
           observations are represented by the value 255.
-         
+
          \item stable_lights \emph{(Cleaned up avg_vis)}: contains the
-          lights from cities, towns, and other sites with persistent 
-          lighting, including gas flares. Ephemeral events, such as fires 
+          lights from cities, towns, and other sites with persistent
+          lighting, including gas flares. Ephemeral events, such as fires
           have been discarded. Then the background noise was identified and
-          replaced with values of zero. Data values range from 1-63. Areas 
+          replaced with values of zero. Data values range from 1-63. Areas
           with zero cloud-free observations are represented by the value 255.
-         
+
          \item pct_lights \emph{(Percent detection freq)}: the percentage of
          observations where light is detected per grid cell.
-         
+
          \item avg_lights_x_pct \emph{(Avg vis band x percent detection freq)}:
           derived from the average visible band digital number(DN) of
            cloud-free light detections multiplied by the percent frequency
-           of light detection. The inclusion of the percent frequency 
-           of detection term normalizes the resulting digital values for 
-           variations in the persistence of lighting. For instance, the 
+           of light detection. The inclusion of the percent frequency
+           of detection term normalizes the resulting digital values for
+           variations in the persistence of lighting. For instance, the
            value for a light only detected half the time is discounted by 50\%.
-           Note that this product contains detections from fires and a 
-           variable amount of background noise. This is the product used 
+           Note that this product contains detections from fires and a
+           variable amount of background noise. This is the product used
            to infer gas flaring volumes from the nighttime lights.
            }
          }
-     
+
  \item{\code{configName_VIIRS.D}}{(\code{character}) The regex to uniquely
      identify the tile file to use out of the downloaded tile .tgz. The
-     version 1 monthly series is run globally using two different 
+     version 1 monthly series is run globally using two different
      configurations:
      \itemize{
          \item vcmcfg \emph{(Stray Light Removed)}: Excludes any
          data impacted by stray light.
-     
+
          \item vcmslcfg \emph{(Stray Light Corrected)}: includes data
           impacted by stray light if the radiance values have undergone the stray-
          light correction procedure.
      }
-     
+
      The "vcmslcfg" version, that includes the stray-light corrected data,
      will have more data coverage toward the poles, but will be of reduced
      quality.
-         
+
      It is up to the users to determine which set is best for their
      applications. The annual versions are only made with the "vcm"
      version, excluding any data impacted by stray light.}
-     
+
  \item{\code{configName_VIIRS.M}}{(\code{character}) The regex to uniquely
      identify the tile file to use out of the downloaded monthly .tgz
      tile. Has the same options as configName.VIIRS.D}
- 
+
  \item{\code{configName_VIIRS.Y}}{(\code{character}) The regex to uniquely
      identify the tile file to use out of the downloaded tile .tgz. The
      annual products can have other values for the config shortname (Field 5).
@@ -100,41 +100,41 @@ The following options are supported
        \item vcm-ntl \emph{(VIIRS Cloud Mask - Nighttime Lights)}: This product
          contains the "vcm" average, with background
          (non-lights) set to zero.}}
- \item{\code{cropMaskMethod}}{(\code{character}) The method to use to 
+ \item{\code{cropMaskMethod}}{(\code{character}) The method to use to
      clip the nightlight raster tiles to the country boundaries }
- \item{\code{deleteTiles}}{(\code{character}) whether to delete tiles 
+ \item{\code{deleteTiles}}{(\code{character}) whether to delete tiles
      after processing may be useful where diskspace is a concern }
- \item{\code{dirNlData}}{(\code{character}) The directory to store 
+ \item{\code{dirNlData}}{(\code{character}) The directory to store
      the extracted data files in }
- \item{\code{dirNlRoot}}{\code{character}) The root directory 
+ \item{\code{dirNlRoot}}{\code{character}) The root directory
      storing the package data}
- \item{\code{dirNlTiles}}{(\code{character}) The directory in which 
+ \item{\code{dirNlTiles}}{(\code{character}) The directory in which
      to store the downloaded VIIRS raster tiles }
- \item{\code{dirPolygon}}{(\code{character}) The directory to store 
+ \item{\code{dirPolygon}}{(\code{character}) The directory to store
      the downloaded country administration level polygons }
- \item{\code{dirRasterOutput}}{(\code{character}) The directory in 
+ \item{\code{dirRasterOutput}}{(\code{character}) The directory in
      which to store the clipped country rasters }
- \item{\code{dirRasterWeb}}{(\code{character}) The directory in which 
+ \item{\code{dirRasterWeb}}{(\code{character}) The directory in which
      to store the rasters resampled for web display }
- \item{\code{dirZonals}}{(\code{character}) The directory in which to 
+ \item{\code{dirZonals}}{(\code{character}) The directory in which to
      store the zonal statistics country polygon }
- \item{\code{downloadMethod}}{(\code{character}) The download method 
+ \item{\code{downloadMethod}}{(\code{character}) The download method
      to use }
- \item{\code{extractMethod}}{(\code{character}) The method to use to 
+ \item{\code{extractMethod}}{(\code{character}) The method to use to
      extract data from the rasters }
- \item{\code{gdalCacheMax}}{(\code{numeric}) The maximum memory gdal 
+ \item{\code{gdalCacheMax}}{(\code{numeric}) The maximum memory gdal
      should use in gdal_rasterize }
- \item{\code{ntLtsIndexUrlOLS.Y}}{(\code{character}) The url with the OLS 
+ \item{\code{ntLtsIndexUrlOLS.Y}}{(\code{character}) The url with the OLS
      tile index }
- \item{\code{ntLtsIndexUrlVIIRS}}{(\code{character}) The url with the 
+ \item{\code{ntLtsIndexUrlVIIRS}}{(\code{character}) The url with the
      VIIRS tile index }
- \item{\code{numThreads}}{(\code{integer}) The number of processing threads 
+ \item{\code{numThreads}}{(\code{integer}) The number of processing threads
      to use when extractMethod = "raster" }
- \item{\code{omitCountries}}{(\code{character}) The countries to exclude 
+ \item{\code{omitCountries}}{(\code{character}) The countries to exclude
      in processing }
- \item{\code{stats}}{(\code{character}) The statistics to calculate for 
-     country regions. The default are sum and mean. Any other aggregate 
-     statistics can be included. Also any aggregate function accessible 
+ \item{\code{stats}}{(\code{character}) The statistics to calculate for
+     country regions. The default are sum and mean. Any other aggregate
+     statistics can be included. Also any aggregate function accessible
      in the current environment can be added. }
  \item{\code{tmpDir}}{(\code{character}) Change the temporary directory
      for processing rasters. Not in use }

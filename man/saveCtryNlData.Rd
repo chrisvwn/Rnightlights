@@ -4,9 +4,14 @@
 \alias{saveCtryNlData}
 \title{Save a data frame of a country's data to the appropriate location}
 \usage{
-saveCtryNlData(ctryNlDataDF, ctryCode = NULL, admLevel,
+saveCtryNlData(
+  ctryNlDataDF,
+  ctryCode = NULL,
+  admLevel,
   gadmVersion = pkgOptions("gadmVersion"),
-  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
+  gadmPolyType = pkgOptions("gadmPolyType"),
+  custPolyPath = NULL
+)
 }
 \arguments{
 \item{ctryNlDataDF}{dataframe with the country data to save}
@@ -25,8 +30,8 @@ saveCtryNlData(ctryNlDataDF, ctryCode = NULL, admLevel,
 None
 }
 \description{
-Saves the data frame created from processNlCountry* to the appropriate location. 
-    Note: This function does not perform any validation error checking and will overwrite 
+Saves the data frame created from processNlCountry* to the appropriate location.
+    Note: This function does not perform any validation error checking and will overwrite
     existing data. Use with caution.
 }
 \examples{

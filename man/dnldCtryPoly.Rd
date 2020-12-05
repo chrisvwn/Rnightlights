@@ -4,9 +4,13 @@
 \alias{dnldCtryPoly}
 \title{Download a country's polygon shapefile from \url{http://gadm.org}}
 \usage{
-dnldCtryPoly(ctryCode = NULL, gadmVersion = pkgOptions("gadmVersion"),
-  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL,
-  downloadMethod = pkgOptions("downloadMethod"))
+dnldCtryPoly(
+  ctryCode = NULL,
+  gadmVersion = pkgOptions("gadmVersion"),
+  gadmPolyType = pkgOptions("gadmPolyType"),
+  custPolyPath = NULL,
+  downloadMethod = pkgOptions("downloadMethod")
+)
 }
 \arguments{
 \item{ctryCode}{The ISO3 ctryCode of the country polygon to download}

@@ -4,9 +4,12 @@
 \alias{getCtryStructFname}
 \title{Construct the name for the country struct file}
 \usage{
-getCtryStructFname(ctryCode = NULL,
+getCtryStructFname(
+  ctryCode = NULL,
   gadmVersion = pkgOptions("gadmVersion"),
-  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
+  gadmPolyType = pkgOptions("gadmPolyType"),
+  custPolyPath = NULL
+)
 }
 \arguments{
 \item{ctryCode}{The ISO3 ctryCode of the country}

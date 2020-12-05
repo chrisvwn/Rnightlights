@@ -21,7 +21,7 @@ Get the list a VIIRS tiles that a polygon intersects with
 ctryShapefile <- Rnightlights:::dnldCtryPoly("KEN")
 
 #read in shapefile top layer
-ctryPoly <- readCtryPolyAdmLayer("KEN", 
+ctryPoly <- readCtryPolyAdmLayer("KEN",
     Rnightlights:::getCtryShpLyrNames("KEN",0))
 
 #get list of intersecting tiles

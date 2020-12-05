@@ -21,6 +21,6 @@ Interactively allows the user to set up the default root path where data
 }
 \seealso{
 Internally, @see "setNlDataPath" is used to set the root path.
-    The \code{"base::interactive"} function is used to test whether 
+    The \code{"base::interactive"} function is used to test whether
     \code{R} is running interactively or not.
 }

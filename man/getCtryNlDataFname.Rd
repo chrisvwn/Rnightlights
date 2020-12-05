@@ -4,9 +4,13 @@
 \alias{getCtryNlDataFname}
 \title{Construct the name of the country data file.}
 \usage{
-getCtryNlDataFname(ctryCode = NULL, admLevel,
+getCtryNlDataFname(
+  ctryCode = NULL,
+  admLevel,
   gadmVersion = pkgOptions("gadmVersion"),
-  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
+  gadmPolyType = pkgOptions("gadmPolyType"),
+  custPolyPath = NULL
+)
 }
 \arguments{
 \item{ctryCode}{The ctryCode of interest}
@@ -23,9 +27,9 @@ getCtryNlDataFname(ctryCode = NULL, admLevel,
 Character filename of the country data file
 }
 \description{
-Construct the name of the data file. This function can be altered to name the file as 
-    required and consistently retrieve the name. Used in the function getCtryNlDataFnamePath 
-    to concat the directory path and this filename. Currently all nlTypes are stored in one 
+Construct the name of the data file. This function can be altered to name the file as
+    required and consistently retrieve the name. Used in the function getCtryNlDataFnamePath
+    to concat the directory path and this filename. Currently all nlTypes are stored in one
     file. Can be altered to separate VIIRS and OLS data files for example.
 }
 \examples{

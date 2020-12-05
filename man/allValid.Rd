@@ -17,10 +17,10 @@ allValid(testData, testFun, ...)
 TRUE/FALSE
 }
 \description{
-Check if a vector/list of values given is valid as per the given 
-    validation function. The function will also print a warning 
-    showing the values that are invalid. One can stop the warning 
-    being printed by wrapping the function in the 
+Check if a vector/list of values given is valid as per the given
+    validation function. The function will also print a warning
+    showing the values that are invalid. One can stop the warning
+    being printed by wrapping the function in the
     \code{suppressWarnings} function.
 }
 \examples{
@@ -28,7 +28,7 @@ Check if a vector/list of values given is valid as per the given
 \donttest{
   Rnightlights:::allValid(c("KEZ", "UGA", "RWA", "TZA"), Rnightlights:::validCtryCodes)
 }
- 
+
 \donttest{
   Rnightlights:::allValid(c("2012", "2015"), validNlPeriods, "OLS.Y")
 }

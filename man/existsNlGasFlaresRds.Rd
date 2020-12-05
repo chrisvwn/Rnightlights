@@ -15,7 +15,7 @@ Check if the world gasflare RDS exists
 \examples{
 \dontrun{
   existsNlGasFlaresRds()
-#returns TRUE/FALSE
+  #returns TRUE/FALSE
 }
 
 }

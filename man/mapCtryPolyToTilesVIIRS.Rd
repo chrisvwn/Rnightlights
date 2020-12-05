@@ -4,26 +4,28 @@
 \alias{mapCtryPolyToTilesVIIRS}
 \title{Create a mapping of all countries and the tiles they intersect}
 \usage{
-mapCtryPolyToTilesVIIRS(ctryCodes = "all",
-  omitCountries = pkgOptions("omitCountries"))
+mapCtryPolyToTilesVIIRS(
+  ctryCodes = "all",
+  omitCountries = pkgOptions("omitCountries")
+)
 }
 \arguments{
-\item{ctryCodes}{A character vector or list of countries to map. Default 
+\item{ctryCodes}{A character vector or list of countries to map. Default
 is \code{"all"}}
 
 \item{omitCountries}{A character vector or list of countries to leave out.
 Default is \code{"none"}}
 }
 \value{
-ctryCodeTiles A data frame of countries and the tiles they 
+ctryCodeTiles A data frame of countries and the tiles they
     intersect with as give by \code{getNlTiles}
 }
 \description{
 Create a dataframe mapping each country in the rworldmap to the VIIRS
-    tiles which they intersect with and thus need to be retrieved to 
+    tiles which they intersect with and thus need to be retrieved to
     process their nightlight imagery. Since some functions use this
-    dataframe for long-term processing, omitCountries can eliminate 
-    countries that should be excluded from the list hence from processing. 
+    dataframe for long-term processing, omitCountries can eliminate
+    countries that should be excluded from the list hence from processing.
     Countries can be added in the omitCountries function. Default is "none".
 }
 \examples{

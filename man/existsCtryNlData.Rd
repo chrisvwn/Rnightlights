@@ -4,12 +4,20 @@
 \alias{existsCtryNlData}
 \title{Check if VIIRS nightlight stats exist locally}
 \usage{
-existsCtryNlData(ctryCode = NULL, admLevel, nlTypes, configNames,
+existsCtryNlData(
+  ctryCode = NULL,
+  admLevel,
+  nlTypes,
+  configNames,
   multiTileStrategy = pkgOptions("multiTileStrategy"),
   multiTileMergeFun = pkgOptions("multiTileMergeFun"),
-  removeGasFlares = pkgOptions("removeGasFlares"), nlPeriods, nlStats,
+  removeGasFlares = pkgOptions("removeGasFlares"),
+  nlPeriods,
+  nlStats,
   gadmVersion = pkgOptions("gadmVersion"),
-  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
+  gadmPolyType = pkgOptions("gadmPolyType"),
+  custPolyPath = NULL
+)
 }
 \arguments{
 \item{ctryCode}{character The ISO3 code of the country}
@@ -40,12 +48,12 @@ existsCtryNlData(ctryCode = NULL, admLevel, nlTypes, configNames,
 TRUE/FALSE
 }
 \description{
-Check if VIIRS nightlight data for the country exists in the country 
+Check if VIIRS nightlight data for the country exists in the country
     nightlight data file. First checks if the country nightlight data
     file exists.
 }
 \examples{
-Rnightlights:::existsCtryNlData(ctryCode = "KEN", admLevel = "KEN_adm0", 
+Rnightlights:::existsCtryNlData(ctryCode = "KEN", admLevel = "KEN_adm0",
     nlTypes = "VIIRS.M", configNames = "stable_lights", nlPeriods = "201401", nlStats = "sum")
 
 }

@@ -15,7 +15,7 @@ Get the path to the saved world gasflare RDS
 \examples{
 \dontrun{
   getNlGasFlaresRdsFnamePath(ctryCode="NGA")
-#returns path to the world RDS
+  #returns path to the world RDS
 }
 
 }

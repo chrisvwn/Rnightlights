@@ -21,7 +21,7 @@ Check if given statistics are valid. A valid statistic is one which
 
 Rnightlights:::validNlStats(c("sum", "mean"))
  #returns TRUE TRUE
- 
+
 Rnightlights:::validNlStats("unknownFunction")
  #returns FALSE
 

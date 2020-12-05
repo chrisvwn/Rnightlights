@@ -4,13 +4,18 @@
 \alias{getCtryRasterOutputFname}
 \title{Constructs the name of the output raster}
 \usage{
-getCtryRasterOutputFname(ctryCode, nlType,
+getCtryRasterOutputFname(
+  ctryCode,
+  nlType,
   configName = pkgOptions(paste0("configName_", nlType)),
   multiTileStrategy = pkgOptions("multiTileStrategy"),
   multiTileMergeFun = pkgOptions("multiTileMergeFun"),
-  removeGasFlares = pkgOptions("removeGasFlares"), nlPeriod,
+  removeGasFlares = pkgOptions("removeGasFlares"),
+  nlPeriod,
   gadmVersion = pkgOptions("gadmVersion"),
-  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
+  gadmPolyType = pkgOptions("gadmPolyType"),
+  custPolyPath = NULL
+)
 }
 \arguments{
 \item{ctryCode}{the ctryCode of interest}
@@ -35,7 +40,7 @@ getCtryRasterOutputFname(ctryCode, nlType,
 to using GADM polygons}
 }
 \value{
-Character the name of country raster for a country and a given 
+Character the name of country raster for a country and a given
     nlType and nlPeriod
 }
 \description{

@@ -4,9 +4,12 @@
 \alias{getNlTileZipLclNameVIIRS}
 \title{Constructs the filename used to save/access the downloaded VIIRS tile .tgz file}
 \usage{
-getNlTileZipLclNameVIIRS(nlType,
-  configName = pkgOptions(paste0("configName_", nlType)), nlPeriod,
-  tileNum)
+getNlTileZipLclNameVIIRS(
+  nlType,
+  configName = pkgOptions(paste0("configName_", nlType)),
+  nlPeriod,
+  tileNum
+)
 }
 \arguments{
 \item{nlType}{The particular VIIRS type e.g. VIIRS.D for daily VIIRS}

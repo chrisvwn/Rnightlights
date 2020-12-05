@@ -4,8 +4,12 @@
 \alias{loadSavedNlStat}
 \title{Load the saved nlStat into an accessible environment}
 \usage{
-loadSavedNlStat(statSig, newStatName = NULL, envir = .GlobalEnv,
-  overwrite = FALSE)
+loadSavedNlStat(
+  statSig,
+  newStatName = NULL,
+  envir = .GlobalEnv,
+  overwrite = FALSE
+)
 }
 \arguments{
 \item{statSig}{character The nlStat signature}

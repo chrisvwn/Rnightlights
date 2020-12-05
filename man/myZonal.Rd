@@ -4,8 +4,17 @@
 \alias{myZonal}
 \title{Calculate zonal statistics. Used internally}
 \usage{
-myZonal(rast, nlType, configName, zone, nlStats, digits = 0,
-  retVal = NULL, na.rm = TRUE, ...)
+myZonal(
+  rast,
+  nlType,
+  configName,
+  zone,
+  nlStats,
+  digits = 0,
+  retVal = NULL,
+  na.rm = TRUE,
+  ...
+)
 }
 \arguments{
 \item{rast}{the country raster}
@@ -20,7 +29,7 @@ myZonal(rast, nlType, configName, zone, nlStats, digits = 0,
 
 \item{digits}{round off to how many decimals}
 
-\item{retVal}{Whether to return the raster data as a vector, or 
+\item{retVal}{Whether to return the raster data as a vector, or
 data.frame with spatial context NULL returns a vector of all
 values, colrowval returns a data.frame with row, col and raster
 value while lonlatval returns a data.frame with lon,lat and val.}
@@ -33,6 +42,6 @@ value while lonlatval returns a data.frame with lon,lat and val.}
 numeric value result of the given nlStat function
 }
 \description{
-Calculate zonal statistics. Used internally by zonalpipe. Modified from 
+Calculate zonal statistics. Used internally by zonalpipe. Modified from
     \url{http://www.guru-gis.net/efficient-zonal-statistics-using-r-and-gdal/}
 }

@@ -4,16 +4,23 @@
 \alias{processNlData}
 \title{Downloads nightlight tiles and country polygons and calls the function to process them}
 \usage{
-processNlData(ctryCodes, admLevels, nlTypes, configNames,
+processNlData(
+  ctryCodes,
+  admLevels,
+  nlTypes,
+  configNames,
   multiTileStrategy = pkgOptions("multiTileStrategy"),
   multiTileMergeFun = pkgOptions("multiTileMergeFun"),
-  removeGasFlares = pkgOptions("removeGasFlares"), nlPeriods,
-  nlStats = pkgOptions("nlStats"), custPolyPath = NULL,
+  removeGasFlares = pkgOptions("removeGasFlares"),
+  nlPeriods,
+  nlStats = pkgOptions("nlStats"),
+  custPolyPath = NULL,
   gadmVersion = pkgOptions("gadmVersion"),
   gadmPolyType = pkgOptions("gadmPolyType"),
   downloadMethod = pkgOptions("downloadMethod"),
   cropMaskMethod = pkgOptions("cropMaskMethod"),
-  extractMethod = pkgOptions("extractMethod"))
+  extractMethod = pkgOptions("extractMethod")
+)
 }
 \arguments{
 \item{ctryCodes}{the list of countries to be processed}
@@ -53,22 +60,22 @@ None
 }
 \description{
 Downloads nightlight tiles and country polygons in preparation for the appropriate functions
-    to process them. Given a list of countries and nlPeriods and an nlType, processNlData 
-    will first determine which countries and periods do not actually have data i.e. have not 
+    to process them. Given a list of countries and nlPeriods and an nlType, processNlData
+    will first determine which countries and periods do not actually have data i.e. have not
     been previously processed. From the list of countries and prediods that need processing,
-    it determines which nightlight tiles require to be downloaded. At the same time, it 
+    it determines which nightlight tiles require to be downloaded. At the same time, it
     downloads any country polygons which have not already been downloaded.
 }
 \details{
 processNlData then calls processNlCountry with the nlType supplied as a parameter. The
     processing is essentially the same for all nlTypes.
 
-This is the main entry-point to the package and the main user-facing function. However, it 
-    works in batch mode and caches all data without returning any data to the user. However, it 
+    This is the main entry-point to the package and the main user-facing function. However, it
+    works in batch mode and caches all data without returning any data to the user. However, it
     will return TRUE/FALSE depending on whether it completed successfully. Since it saves state
-    regularly it can be run multiply in case of failure until it finally returns TRUE. This is where 
-    the only constraints are downloading and processing errors due to bandwidth or other 
-    resource constraints. A good example is running a long-running batch on an AWS EC2 
+    regularly it can be run multiply in case of failure until it finally returns TRUE. This is where
+    the only constraints are downloading and processing errors due to bandwidth or other
+    resource constraints. A good example is running a long-running batch on an AWS EC2
     spot-priced machine where the server may be decommissioned at any time. See more in the examples.
 }
 \examples{
@@ -76,9 +83,9 @@ This is the main entry-point to the package and the main user-facing function. H
 #long running examples which may require large downloads
 \dontrun{
 #Example 1: process monthly VIIRS nightlights for all countries at the
-    lowest admin level and for all nlPeriods available e.g. to create a 
+    lowest admin level and for all nlPeriods available e.g. to create a
     local cache or repo
-    
+
     processNlData() #process VIIRS nightlights for all countries and all periods
 
 #Example 2: process monthly VIIRS nightlights for all countries in 2014 only
@@ -102,13 +109,13 @@ This is the main entry-point to the package and the main user-facing function. H
 
 #Example 4: process VIIRS nightlights for countries KEN & RWA in 2014 Oct to 2014 Dec only
 
-    processNlData(ctryCodes=c("KEN", "RWA"), nlTypes="VIIRS.M", 
+    processNlData(ctryCodes=c("KEN", "RWA"), nlTypes="VIIRS.M",
         nlPeriods=c("201410", "201411", "201412"))
-    
+
 #Example 5: process all nightlights, all countries, all stats in one thread
 
-   processNlData() 
-   
+   processNlData()
+
 #Example 6: process all VIIRS monthly nightlights, all countries, all stats with each
 #   year in a separate thread. Create a separate R script for each year as follows:
 
@@ -121,7 +128,7 @@ This is the main entry-point to the package and the main user-facing function. H
     processNlData(nlPeriods=nlPeriods_2014)
 
     #Run the script from the command line as:
-    
+
     #R CMD BATCH script_name_2014.R
     }
 }

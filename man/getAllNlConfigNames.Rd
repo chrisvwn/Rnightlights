@@ -4,15 +4,19 @@
 \alias{getAllNlConfigNames}
 \title{Generate a list of all possible configNames for a given nlType}
 \usage{
-getAllNlConfigNames(nlTypes = NULL, configNames = NULL,
-  description = NULL, pretty = FALSE)
+getAllNlConfigNames(
+  nlTypes = NULL,
+  configNames = NULL,
+  description = NULL,
+  pretty = FALSE
+)
 }
 \arguments{
 \item{nlTypes}{if present show only configNames matching the nlTypes}
 
 \item{configNames}{if present show only configNames matching the configNames}
 
-\item{description}{\code{(character)} whether to print the long or 
+\item{description}{\code{(character)} whether to print the long or
 short description. Possible values are:
 \itemize{
     \item NULL Do not show descriptions
@@ -29,5 +33,5 @@ Generate a list of all possible configNames for a given nlType
 \examples{
 getAllNlConfigNames("OLS.Y")
  #returns '"cf_cvg", "avg_vis", "stable_lights"'
- 
+
 }

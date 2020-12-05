@@ -4,9 +4,12 @@
 \alias{getNlCtryGasFlaresPoly}
 \title{Returns a country's gasflares polygon if it exists}
 \usage{
-getNlCtryGasFlaresPoly(ctryCode = ctryCode,
+getNlCtryGasFlaresPoly(
+  ctryCode = ctryCode,
   gadmVersion = pkgOptions("gadmVersion"),
-  gadmPolyType = pkgOptions("gadmPolyType"), custPolyPath = NULL)
+  gadmPolyType = pkgOptions("gadmPolyType"),
+  custPolyPath = NULL
+)
 }
 \arguments{
 \item{ctryCode}{\code{character} The ctryCode of the country of interest}
@@ -26,7 +29,7 @@ Returns a country's gasflares polygon if it exists
 \examples{
 \dontrun{
   getNlCtryGasFlaresPoly(ctryCode="NGA")
-#returns gasflare polygon
+  #returns gasflare polygon
 }
 
 }

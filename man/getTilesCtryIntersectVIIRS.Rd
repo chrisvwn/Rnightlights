@@ -16,7 +16,7 @@ None
 Create a dataframe mapping each country in the rworldmap to the VIIRS
     tiles which they intersect with and thus need to be retrieved to
     process their nightlight imagery. Since some functions use this
-    dataframe for long-term processing, omitCountries can eliminate 
+    dataframe for long-term processing, omitCountries can eliminate
     countries that should be excluded from the list hence from processing.
     Countries can be added in the omitCountries function.
     Default is "none".
