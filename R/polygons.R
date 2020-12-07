@@ -398,7 +398,7 @@ addCtryPolyIdx <- function(ctryCode,
 #'
 #' @examples
 #' \dontrun{
-#'  Rnightlights:::dnldCtryShpZip("KEN", "3.6", "shpZip")
+#'  Rnightlights:::dnldGADMCtryShpZip("KEN", "3.6", "shpZip")
 #' }
 #'
 dnldGADMCtryShpZip <- function(ctryCode,
@@ -711,7 +711,7 @@ dnldGADMCtryShpZip <- function(ctryCode,
   }
 }
 
-######################## dnldGADMCtryRDS ###################################
+######################## dnldGADMCtrySpRds ###################################
 
 #' Download a country's polygon RDS files from \url{http://gadm.org}
 #'
@@ -730,7 +730,7 @@ dnldGADMCtryShpZip <- function(ctryCode,
 #'
 #' @examples
 #' \dontrun{
-#' Rnightlights:::dnldCtryPoly("KEN")
+#' Rnightlights:::dnldGADMCtrySpRds("KEN")
 #' }
 #'
 dnldGADMCtrySpRds <- function(ctryCode,
@@ -882,6 +882,7 @@ dnldGADMCtrySpRds <- function(ctryCode,
 #' Rnightlights:::dnldCtryPoly("KEN")
 #' }
 #'
+#' @export
 dnldCtryPoly <- function(ctryCode = NULL,
                          gadmVersion = pkgOptions("gadmVersion"),
                          gadmPolyType = pkgOptions("gadmPolyType"),
@@ -972,6 +973,7 @@ dnldCtryPoly <- function(ctryCode = NULL,
 #' Rnightlights:::deleteCtryPoly("KEN")
 #' }
 #'
+#' @export
 deleteCtryPoly <- function(ctryCode = NULL,
                            gadmVersion = pkgOptions("gadmVersion"),
                            gadmPolyType = pkgOptions("gadmPolyType"),
