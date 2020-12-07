@@ -32,7 +32,7 @@ Download a country's polygon RDS files from \url{http://gadm.org} and
 }
 \examples{
 \dontrun{
- Rnightlights:::dnldCtryShpZip("KEN", "3.6", "shpZip")
+ Rnightlights:::dnldGADMCtryShpZip("KEN", "3.6", "shpZip")
 }
 
 }

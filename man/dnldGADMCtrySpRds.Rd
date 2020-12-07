@@ -29,7 +29,7 @@ Download a country's polygon RDS files from \url{http://gadm.org} and
 }
 \examples{
 \dontrun{
-Rnightlights:::dnldCtryPoly("KEN")
+Rnightlights:::dnldGADMCtrySpRds("KEN")
 }
 
 }
