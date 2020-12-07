@@ -1,8 +1,20 @@
 .onLoad <- function(libname, pkgname)
 {
-  credits <- "DMSP data collected by US Air Force Weather Agency
+  #increase download timeout to prevent aborted downloads
+  .RnightlightsEnv$oldTimeout <- options("timeout")
+  
+  options("timeout" = 3600)
+  
+  #display credits
+  credits <- "Rnightlights
+  
+DMSP data collected by US Air Force Weather Agency
 Image and data processing by NOAA's National Geophysical Data Center
 (https://www.ngdc.noaa.gov/eog/download.html)
+
+VIIRS data produced by
+Earth Observation Group, Payne Institute for Public Policy
+https://eogdata.mines.edu/download_dnb_composites.html
 
 Maps distributed by GADM
 (https://gadm.org)"
@@ -51,6 +63,8 @@ Maps distributed by GADM
 .onDetach <- function(libpath)
 {
   suppressWarnings(rm(.RnightlightsEnv))
+  
+  options("timeout" = .RnightlightsEnv$oldTimeout)
 }
 
 ######################## .Last.lib ###################################
