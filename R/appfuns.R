@@ -1,3 +1,17 @@
+######################## getAllGadmVersions #############################
+
+#' Return ctryCodes that have data
+#'
+#' Return ctryCodes that have data
+#'
+#' @return character vector valid ctryCodes
+#'
+#' @examples
+#' \dontrun{
+#'  getCtryCodesWithData()
+#' }
+#'
+#' @export
 getCtryCodesWithData <- function()
 {
   print("ctryCodesWithData")
@@ -16,9 +30,25 @@ getCtryCodesWithData <- function()
     ctryCodesWithData <-
     stats::setNames(ctryCodesWithData, ctryCodeNames)
   
+  ctryCodesWithData <- if(length(ctryCodesWithData) > 0) ctryCodesWithData else NULL
+  
   ctryCodesWithData
 }
 
+######################## getCtryNlTypes #############################
+
+#' Return the unique nlTypes available in the data
+#'
+#' Return the unique nlTypes available in the data
+#'
+#' @return character vector available nlTypes
+#'
+#' @examples
+#' \dontrun{
+#'  getCtryNlTypes()
+#' }
+#'
+#' @export
 getCtryNlTypes <- function(countries, admLevel, polySrc = "GADM", polyVer = "3.6", polyType = "SHPZIP")
 {
   if (length(countries) == 0)
