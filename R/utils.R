@@ -289,7 +289,7 @@ printCredits <-
     {
       ws <- paste(rep(" ", floor((
         width - nchar(cred)
-      ) / 2)), collapse = "")
+      ) %/% 2)), collapse = "")
       
       paste(ws, cred, sep = "", collapse = "")
     }, USE.NAMES = F)

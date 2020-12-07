@@ -11,12 +11,17 @@
 DMSP data collected by US Air Force Weather Agency
 Image and data processing by NOAA's National Geophysical Data Center
 (https://www.ngdc.noaa.gov/eog/download.html)
-
+---
 VIIRS data produced by
 Earth Observation Group, Payne Institute for Public Policy
 https://eogdata.mines.edu/download_dnb_composites.html
 
 Maps produced and distributed by GADM
+The data are freely available for academic use and other 
+non-commercial use.
+Redistribution, or commercial use, is not allowed without
+prior permission.
+Using the data to create maps for academic publishing is allowed.
 (https://gadm.org)"
   
   printCredits(credits)
