@@ -18,7 +18,7 @@ Need to understand how to implement this
 
 The Rnightlights package extracts country rasters and zonal statistics from satellite nightlight rasters downloaded from the United States National Oceanic and Atmospheric Administration (<http://www.noaa.gov>) free data repositories. 
 
-The package supports DMSP-OLS annual and SNPP-VIIRS daily, monthly and annual (yearly) nightlight raster data. Satellite nightlight raster tiles are downloaded and cropped to the country boundaries using shapefiles from the GADM database of Global Administrative Areas (<http://gadm.org>). Specified zonal statistics are then calculated at the selected administrative level(s) for the selected country(ies) and cached locally for future retrieval. Finally, a simple data explorer/browser is included that allows one to visualize the cached data e.g. graphing, mapping and clustering regional data.
+The package supports DMSP-OLS annual and SNPP-VIIRS daily, monthly and annual (yearly) nightlight raster data. Satellite nightlight raster tiles are downloaded and cropped to the country boundaries using shapefiles from the GADM database of Global Administrative Areas (<http://gadm.org>). Specified zonal statistics are then calculated at the selected administrative level(s) for the selected country(ies) and cached locally for future retrieval. Finally, an experimental gui is included that allows one to download, process, analyze and visualize the data.
 
 **NOTE: Rnightlights is still in beta and may change drastically in ways that may break previous functionality and interfaces**
 
@@ -156,6 +156,6 @@ Note the matching ctryCodes and admLevels. Also note the `nlStats` parameter now
 **Browse the cached data with the internal Shiny app**
 
 ```
-exploreData() #still under construction
+gui() #still under construction
 
 ```

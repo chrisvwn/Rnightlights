@@ -34,5 +34,5 @@ Get the path of the unzipped polygon directory downloaded from GADM.ORG. Note th
 Rnightlights:::getPolyFnamePath("KEN")
  #returns "dataPath/polygons/KEN_adm_shp"
 
-#@export only due to exploreData() shiny app
+#@export only due to gui() shiny app
 }

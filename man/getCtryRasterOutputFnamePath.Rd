@@ -51,5 +51,5 @@ Get the full path to the file where the cropped VIIRS country raster is stored. 
 getCtryRasterOutputFnamePath("KEN","VIIRS.M", "201412")
 }
 
-#export for exploreData() shiny app
+#export for gui() shiny app
 }

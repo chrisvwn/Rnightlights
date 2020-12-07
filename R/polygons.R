@@ -1516,7 +1516,7 @@ existsPolyFnameRDS <- function(ctryCode = NULL,
 #'   #returns "KEN_adm1"
 #' }
 #'
-#' #export only due to exploreData() shiny app
+#' #export only due to gui() shiny app
 #' @export
 getCtryShpLyrNames <- function(ctryCodes = NULL,
                                lyrNums,
@@ -2743,7 +2743,7 @@ getPolyFname <- function(ctryCode = NULL,
 #' Rnightlights:::getPolyFnamePath("KEN")
 #'  #returns "dataPath/polygons/KEN_adm_shp"
 #'
-#' #@export only due to exploreData() shiny app
+#' #@export only due to gui() shiny app
 #' @export
 getPolyFnamePath <- function(ctryCode = NULL,
                              gadmVersion = pkgOptions("gadmVersion"),

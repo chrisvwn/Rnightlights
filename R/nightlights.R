@@ -755,7 +755,7 @@ getCtryRasterOutputFname <- function(ctryCode,
 #' getCtryRasterOutputFnamePath("KEN","VIIRS.M", "201412")
 #' }
 #'
-#'#export for exploreData() shiny app
+#'#export for gui() shiny app
 #'@export
 getCtryRasterOutputFnamePath <- function(ctryCode,
                                          nlType,

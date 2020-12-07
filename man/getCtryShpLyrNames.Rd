@@ -46,5 +46,5 @@ getCtryShpLyrNames("KEN","1")
   #returns "KEN_adm1"
 }
 
-#export only due to exploreData() shiny app
+#export only due to gui() shiny app
 }

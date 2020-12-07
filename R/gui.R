@@ -1,4 +1,4 @@
-######################## exploreData ###################################
+######################## gui ###################################
 
 #' Run a web application to explore the processed nightlight data cached
 #'     locally
@@ -11,11 +11,11 @@
 #'
 #' @examples
 #' \dontrun{
-#' exploreData()
+#' gui()
 #' }
 #'
 #' @export
-exploreData <- function()
+gui <- function()
 {
   appDir <- system.file("application", package = "Rnightlights")
   if (appDir == "")
