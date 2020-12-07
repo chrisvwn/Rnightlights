@@ -78,11 +78,13 @@ shinydashboard::dashboardPage(
         multiple = TRUE
       ),
       
-      shiny::actionButton(
-        inputId = "btnGo",
-        label = "LOAD",
-        style = "background-color:lightblue"
-      ),
+      # shiny::actionButton(
+      #   inputId = "btnGo",
+      #   label = "LOAD",
+      #   style = "background-color:lightblue"
+      # ),
+      
+      shiny::uiOutput(outputId = "btnGo"),
       
       shinydashboard::menuItem(
         "Inputs",
@@ -183,6 +185,20 @@ shinydashboard::dashboardPage(
       shinydashboard::menuItem(
         text = "Options",
         tabName = "options",
+        
+        shiny::selectInput(
+          inputId = "cropMaskMethod",
+          label = "cropMaskMethod",
+          choices = list("gdal", "rast"),
+          selected = pkgOptions("cropMaskMethod")
+        ),
+        
+        shiny::selectInput(
+          inputId = "extractMethod",
+          label = "extractMethod",
+          choices = list("gdal", "rast"),
+          selected = pkgOptions("extractMethod")
+        ),
         
         #shiny::checkboxInput(inputId = "strict", label = "Strict", value = T),
         shiny::radioButtons(

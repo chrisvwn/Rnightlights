@@ -1,6 +1,7 @@
 missingPkgs <- NULL
 
 #wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+wgs84 <- Rnightlights:::getCRS()
 
 if (!requireNamespace("Rnightlights", quietly = TRUE))
 {
@@ -81,7 +82,7 @@ shiny::shinyServer(function(input, output, session) {
   ################## reactive ctryCodesWithData #######################
   
   ctryCodesWithData <- shiny::reactive({
-    getCryCodesWithData()
+    Rnightlights:::getCtryCodesWithData()
   })
   
   ######################## update countries ###################################
@@ -101,8 +102,10 @@ shiny::shinyServer(function(input, output, session) {
     diffCtryCodes <-
       allCtryCodes[!(allCtryCodes %in% ctryCodesWithData)]
     
-    ctryCodes <-
-      list("Have Data" = ctryCodesWithData, "Without Data" = diffCtryCodes)
+    ctryCodes <- if(is.null(ctryCodesWithData))
+      list("Without Data" = as.list(diffCtryCodes))
+    else
+      list("Have Data" = as.list(ctryCodesWithData), "Without Data" = as.list(diffCtryCodes))
     
     shiny::updateSelectizeInput(
       session = session,
@@ -137,6 +140,26 @@ shiny::shinyServer(function(input, output, session) {
     
     btn
   })
+  
+  # observe({
+  #   print("update: btnGo")
+  #   
+  #   if (values$needsDataUpdate || values$needsDataProcessing)
+  #   {
+  #     if (values$needsDataUpdate)
+  #         shiny::updateActionButton(session = session, inputId = "btnGo", label = "LOAD",
+  #                             style = "background-color:orange")
+  #     
+  #     #give precedence to process. if both set let process override load
+  #     if (values$needsDataProcessing)
+  #       btn <-
+  #         shiny::updateActionButton(session = session, inputId = "btnGo", label = "PROCESS",
+  #                             style = "background-color:orange")
+  #   } else
+  #     btn <-
+  #       shiny::updateActionButton(session = session, inputId = "btnGo", label = "LOAD",
+  #                           style = "background-color:lightblue")
+  # })
   
   ######################## reactive getInputCountries ###########################
   
@@ -321,6 +344,10 @@ shiny::shinyServer(function(input, output, session) {
     else
       NULL
     
+    cropMaskMethod <- shiny::isolate(input$cropMaskMethod)
+    
+    extractMethod <- shiny::isolate(input$extractMethod)
+    
     if (length(countries) == 1)
     {
       if (is.null(admLevel <- shiny::isolate(input$radioAdmLevel)))
@@ -375,7 +402,8 @@ shiny::shinyServer(function(input, output, session) {
           nlTypes = nlType,
           nlPeriods = nlPeriod,
           nlStats = nlStats,
-          extractMethod = "gdal",
+          cropMaskMethod = cropMaskMethod,
+          extractMethod = extractMethod,
           configNames = configName,
           multiTileStrategy = multiTileStrategy,
           multiTileMergeFun = multiTileMergeFun,
@@ -738,10 +766,11 @@ shiny::shinyServer(function(input, output, session) {
     existingStats <-
       unname(unlist(lapply(existingStats, function(x) {
         xStat <- Rnightlights:::nlSignatureStat(nlStatSignature = x)
+        xHash <- Rnightlights:::hashNlStat(nlStatName = xStat)
         
         isFun <-
           suppressMessages(Rnightlights:::validNlStats(xStat)) ||
-          Rnightlights:::existsSavedNlStatName(x)
+          Rnightlights:::existsSavedNlStat(nlStatSig = x, nlStatHash = )
         
         if (isFun)
         {
@@ -769,8 +798,11 @@ shiny::shinyServer(function(input, output, session) {
         isValidNlStat <-
           Rnightlights:::validNlStats(Rnightlights:::nlSignatureStat(x))
         
+        xStat <- Rnightlights:::nlSignatureStat(nlStatSignature = x)
+        xHash <- Rnightlights:::hashNlStat(nlStatName = xStat)
+        
         existsSavedNlStatName <-
-          Rnightlights:::existsSavedNlStatName(x)
+          Rnightlights:::existsSavedNlStat(nlStatSig = x, nlStatHash = xHash)
         
         isFun <-
           suppressMessages(isValidNlStat || existsSavedNlStatName)
@@ -1085,21 +1117,26 @@ shiny::shinyServer(function(input, output, session) {
     
     countries <- getInputCountries()
     
-    if (!is.null(countries))
+    if (!is.null(countries) && nrow(existingMultiTileMergeStrategys) > 0)
       existingMultiTileMergeStrategys <-
       existingMultiTileMergeStrategys[
         existingMultiTileMergeStrategys$ctryCode %in% countries,]
     
     admLevel <- input$radioAdmLevel
     
-    if (!is.null(admLevel))
+    if (!is.null(admLevel) && nrow(existingMultiTileMergeStrategys) > 0)
+    {
       existingMultiTileMergeStrategys <-
       existingMultiTileMergeStrategys[
         existingMultiTileMergeStrategys$admLevel == admLevel,
         "multiTileMergeStrategy"]
-    else
+    } else if(nrow(existingMultiTileMergeStrategys) > 0){
       existingMultiTileMergeStrategys <-
       unique(existingMultiTileMergeStrategys[, "multiTileMergeStrategy"])
+    } else
+    {
+      existingMultiTileMergeStrategys <- NULL
+    }
     
     multiTileMergeStrategys <-
       allMultiTileMergeStrategys[!(allMultiTileMergeStrategys %in%
@@ -1117,10 +1154,10 @@ shiny::shinyServer(function(input, output, session) {
     
     if (length(existingMultiTileMergeStrategys) == 0)
       selectedMultiTileMergeStrategy <-
-      Rnightlights::pkgOptions("multiTileStrategy")
+      toupper(Rnightlights::pkgOptions("multiTileStrategy"))
     else
       selectedMultiTileMergeStrategy <-
-      existingMultiTileMergeStrategys[1]
+      toupper(existingMultiTileMergeStrategys[1])
     
     shiny::updateSelectInput(
       session = session,
@@ -1142,23 +1179,28 @@ shiny::shinyServer(function(input, output, session) {
     
     countries <- getInputCountries()
     
-    if (!is.null(countries))
+    if (!is.null(countries) && nrow(existingMultiTileMergeFuns) > 0)
       existingMultiTileMergeFuns <-
       existingMultiTileMergeFuns[existingMultiTileMergeFuns$ctryCode %in% countries,]
     
     admLevel <- input$radioAdmLevel
     
-    if (!is.null(admLevel))
+    if (!is.null(admLevel) && nrow(existingMultiTileMergeFuns) > 0)
+    {
       existingMultiTileMergeFuns <-
       existingMultiTileMergeFuns[existingMultiTileMergeFuns$admLevel == admLevel, "multiTileMergeFun"]
-    else
+    } else if(nrow(existingMultiTileMergeFuns) > 0)
+    {
       existingMultiTileMergeFuns <-
       unique(existingMultiTileMergeFuns[, "multiTileMergeFun"])
+    } else
+    {
+      existingMultiTileMergeFuns <- NULL
+    }
     
     multiTileMergeFuns <-
       allMultiTileMergeFuns[!(allMultiTileMergeFuns %in% existingMultiTileMergeFuns)]
-    
-    
+
     if (length(existingMultiTileMergeFuns) == 1)
       existingMultiTileMergeFuns <- list(existingMultiTileMergeFuns)
     
@@ -1170,9 +1212,9 @@ shiny::shinyServer(function(input, output, session) {
     
     if (length(existingMultiTileMergeFuns) == 0)
       selectedMultiTileMergeFun <-
-      Rnightlights::pkgOptions("multiTileMergeFun")
+      toupper(Rnightlights::pkgOptions("multiTileMergeFun"))
     else
-      selectedMultiTileMergeFun <- existingMultiTileMergeFuns[1]
+      selectedMultiTileMergeFun <- existingMultiTileMergeFuns[[1]]
     
     shiny::updateSelectInput(
       session = session,
@@ -3117,8 +3159,8 @@ shiny::shinyServer(function(input, output, session) {
   
   output$plotNightLights <- plotly::renderPlotly({
     print(paste0("output: renderPlot"))
-    #input$btnGo
-    values$updateNeededPlot
+    input$btnGo
+    #values$updateNeededPlot
     
     shiny::isolate({
       countries <- shiny::isolate(getInputCountries())
