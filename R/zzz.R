@@ -3,7 +3,7 @@
   #increase download timeout to prevent aborted downloads
   .RnightlightsEnv$oldTimeout <- options("timeout")
   
-  options("timeout" = 3600)
+  options("timeout" = pkgOptions("downloadTimeout"))
   
   #display credits
   credits <- "Rnightlights
@@ -16,7 +16,7 @@ VIIRS data produced by
 Earth Observation Group, Payne Institute for Public Policy
 https://eogdata.mines.edu/download_dnb_composites.html
 
-Maps distributed by GADM
+Maps produced and distributed by GADM
 (https://gadm.org)"
   
   printCredits(credits)

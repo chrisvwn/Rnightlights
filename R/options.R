@@ -118,6 +118,10 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   #nlStats. The default is TRUE
   removeGasFlares = TRUE,
   
+  #the timeout for download.file is set at a higher value than R's
+  #default of 60
+  downloadTimeout = 3600,
+  
   #Change the temp dir to use e.g. if the system temp dir does not have enough space
   #Not used yet
   tmpDir = raster::tmpDir(),
@@ -270,6 +274,8 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
 #'      country regions. The default are sum and mean. Any other aggregate
 #'      statistics can be included. Also any aggregate function accessible
 #'      in the current environment can be added. }
+#'  \item{\code{downloadTimeout}}{(\code{character}) The timeout for download
+#'      operations }
 #'  \item{\code{tmpDir}}{(\code{character}) Change the temporary directory
 #'      for processing rasters. Not in use }
 #' }
