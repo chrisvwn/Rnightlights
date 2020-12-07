@@ -1107,6 +1107,8 @@ myZonal <-
             na.rm = TRUE,
             ...)
   {
+    library(ff)
+    
     options(fftempdir = getNlDir("dirNlTemp"), fffinalizer = "delete")
     
     options(stringsAsFactors = FALSE)
