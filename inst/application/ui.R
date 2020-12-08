@@ -190,14 +190,14 @@ shinydashboard::dashboardPage(
           inputId = "cropMaskMethod",
           label = "cropMaskMethod",
           choices = list("gdal", "rast"),
-          selected = pkgOptions("cropMaskMethod")
+          selected = Rnightlights:::pkgOptions("cropMaskMethod")
         ),
         
         shiny::selectInput(
           inputId = "extractMethod",
           label = "extractMethod",
           choices = list("gdal", "rast"),
-          selected = pkgOptions("extractMethod")
+          selected = Rnightlights:::pkgOptions("extractMethod")
         ),
         
         #shiny::checkboxInput(inputId = "strict", label = "Strict", value = T),
