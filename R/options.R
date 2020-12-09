@@ -47,6 +47,9 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   #downloadMethod used options: auto, aria, curl, libcurl, wget
   downloadMethod = "auto",
   
+  #the file in which to save EOG credentials
+  EOG_CredFile = "credseog.txt",
+  
   #methods to extract data. Options: raster, gdal
   extractMethod = "rast",
   

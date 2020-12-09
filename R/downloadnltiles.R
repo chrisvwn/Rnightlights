@@ -1,3 +1,167 @@
+#' @export
+saveCredentialsEOG <-function(credFile = file.path(getNlDataPathFull(), pkgOptions("EOG_CredFile")))
+{
+  if (interactive())
+  {
+    prompt <-
+      paste0(
+        "Registration required for VIIRS satellite imagery access\n\n",
+        "Please browse to ",
+        "\n\nhttps://eogauth.mines.edu/auth/realms/master/account/",
+        "\n\nand register an account.",
+        "\n\nIf you already have the credentials use the menu ",
+        "below to save the username and password.",
+        "\n\nEnter 0 to Exit."
+    )
+
+    ans <-
+      utils::menu(
+        choices = c(
+          "Save credentials",
+          "View saved credentials"
+        ),
+        graphics = F,
+        title = prompt
+      )
+  } else { #if not interactive
+    print("saveCredentialsEOGVIIRS() can only run interactively. Please run it manually")
+  }
+  
+  if (ans == 1)
+  {
+    username = ""
+    password = ""
+    
+    message("Please enter the email and password you registered at the EOG site")
+    
+    while(username == "")
+    {
+      username <- readline(prompt = "Username: ")
+    }
+    
+    while(password == "")
+    {
+      password <- readline(prompt = "Password: ")
+    }
+    
+    cat(paste(c("username", "password"), c(username, password), sep = ":"),
+        file = credFile,
+        sep = "\n")
+    
+  } else if (ans == 2)
+  {
+    creds <- getCredentialsEOG()
+
+    if(length(creds) != 2)
+    {
+      message("No credentials found")
+    } else
+    {
+      print(creds[1])
+      print(creds[2])
+    }
+    readline("Press enter to continue ... ")
+    
+  }else if (ans == 0)
+  {
+    msg <-
+      paste0(
+        "Registration required for VIIRS satellite imagery access\n\n",
+        "Please browse to ",
+        "\n\nhttps://eogauth.mines.edu/auth/realms/master/account/",
+        "\n\nand register an account.",
+        "\n\nIf you already have the credentials run 'saveCredentialsEOG()'",
+        "interactively to save the username and password.",
+      )
+    
+    stop(Sys.time(), ": ", msg)
+  } 
+}
+
+#' @export
+getCredentialsEOG <- function(credFile = file.path(getNlDataPathFull(), pkgOptions("EOG_CredFile")))
+{
+  if(!file.exists(credFile))
+  {
+    message(Sys.time(), ": EOG credential file not found")
+    
+    return(NULL)
+  }
+  
+  creds <- readLines(con = credFile)
+}
+
+#' @import RCurl
+#' 
+#' @export
+getAuthTokenEOG <- function()
+{
+  creds <- getCredentialsEOG()
+  
+  while(length(creds) != 2)
+  {
+    message("Invalid EOG credentials")
+    
+    saveCredentialsEOG()
+    
+    creds <- getCredentialsEOG()
+  }
+  
+  client_id <- "eogdata_oidc"
+  client_secret <- "368127b1-1ee0-4f3f-8429-29e9a93daf9a"
+  username <- unlist(strsplit(creds[1], ":"))[2]
+  password <- unlist(strsplit(creds[2], ":"))[2]
+  
+  h = RCurl::basicTextGatherer()
+  hdr = RCurl::basicHeaderGatherer()
+  
+  req = list(client_id=client_id,
+             client_secret=client_secret,
+             username="chris.njuguna@gmail.com",
+             password="chrisvwn1*",
+             grant_type='password')
+  
+  req <- paste(names(req), req, sep = '=', collapse = '&')
+  
+  #body = enc2utf8(jsonlite::toJSON(req))
+  
+  body=req
+  
+  h$reset()
+  
+  curlPerform(#url = "https://enwaqionzwfie.x.pipedream.net/", #requestbin.com
+    url = "https://eogauth.mines.edu/auth/realms/master/protocol/openid-connect/token",
+    httpheader=c('Content-Type' = "application/x-www-form-urlencoded"),
+    postfields=body,
+    writefunction = h$update,
+    headerfunction = hdr$update,
+    verbose = TRUE
+  )
+  
+  headers = hdr$value()
+  
+  httpStatus = headers["status"]
+  
+  token <- NULL
+  
+  if (httpStatus >= 400)
+  {
+    print(paste("The request failed with status code:", httpStatus, sep=" "))
+    
+    # Print the headers - they include the requert ID and the timestamp, which are useful for debugging the failure
+    print(headers)
+    
+    print("Please ensure the username and password saved can login on the EOG site")
+  } else
+  {
+    print("Success retrieving token")
+    result <- jsonlite::fromJSON(h$value())
+    token <- result$access_token
+  }
+  
+  return(token)
+}
+
 ######################## downloadNlTilesVIIRS ###################################
 
 #' Download VIIRS nightlight tile
@@ -88,21 +252,41 @@ downloadNlTilesVIIRS <- function(nlPeriod,
     if (!(downloadMethod %in% validDnldMethods))
       downloadMethod <- "auto"
     
+    access_token <- getAuthTokenEOG()
+
+    accessTokenHeader <- 
+      if(downloadMethod == "auto")
+      {
+        list("Authorization" =  paste0("Bearer ", access_token))
+      } else if(downloadMethod %in% c("curl", "libcurl"))
+      {
+        list("Authorization", paste0("Bearer ", access_token))
+      } else if(downloadMethod == "wget")
+      {
+        list("Authorization", paste0("Bearer ", access_token))
+      } else if(downloadMethod == "aria")
+      {
+        paste0('\"Authorization: Bearer ', access_token, '"')
+      }
+    
     if (downloadMethod %in% c("auto", "curl", "libcurl", "wget"))
       rsltDnld <- utils::download.file(
         url = ntLtsFileUrl,
         destfile = ntLtsZipLocalNamePathVIIRS,
         mode = "wb",
         method = downloadMethod,
-        extra = "-c"
+        extra = "-c",
+        headers = accessTokenHeader
       )
     else if (downloadMethod == "aria")
       #downloads to path relative to -d if specified else local dir
       rsltDnld <-
       system(
         command = paste0(
-          "aria2c -c -x",
+          "aria2c -c -s2 -x", #continue downloads even if they were started elsewhere
           pkgOptions("numParDnldConns"),
+          " --header ",
+          accessTokenHeader,
           " --show-console-readout=false --summary-interval=10 ",
           ntLtsFileUrl,
           " -d ",
