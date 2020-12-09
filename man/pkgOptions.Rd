@@ -136,6 +136,8 @@ The following options are supported
      country regions. The default are sum and mean. Any other aggregate
      statistics can be included. Also any aggregate function accessible
      in the current environment can be added. }
+ \item{\code{downloadTimeout}}{(\code{character}) The timeout for download
+     operations }
  \item{\code{tmpDir}}{(\code{character}) Change the temporary directory
      for processing rasters. Not in use }
 }
