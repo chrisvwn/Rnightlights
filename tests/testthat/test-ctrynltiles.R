@@ -26,29 +26,25 @@ if (.runThisTest)
     expect_equal(nlTilesVIIRS, nlTilesOrigVIIRS)
     expect_equal(nlTilesOLS, nlTilesOrigOLS)
     
-    nlConfigNames <-
-      list(
-        "OLS.Y" = c(
-          "cf_cvg",
-          "avg_vis",
-          "stable_lights",
-          "pct_lights",
-          "avg_lights_x_pct"
-        ),
-        "VIIRS.D" = c("vcmcfg", "vcmslcfg"),
-        "VIIRS.M" = c("cf_cvg", "vcmcfg", "vcmslcfg"),
-        "VIIRS.Y" = c("cf_cvg", "vcm-orm", "vcm-orm-ntl", "vcm-ntl")
-      )
+    allNlTypes <- getAllNlTypes()
+    allNlConfigNames <- getAllNlConfigNames()
     
-    expect_equal(getAllNlConfigNames(), nlConfigNames)
+    #expect nlConfigNames to be a data.frame
+    expect_equal(class(allNlConfigNames) == "data.frame")
     
-    for (nlType in getAllNlTypes())
-      expect_equal(getAllNlConfigNames(nlType = nlType), nlConfigNames[nlType])
+    #at least 2 rows one for DMSP and one for OLS
+    expect_true(nrow(allNlConfigNames) > allNlTypes)
+    
+    #2 columns
+    expect_identical(names(allNlConfigNames), c("nlType", "configName"))
+    
+    for (nlType in allNlTypes)
+      expect_gte(nrow(getAllNlConfigNames(nlType = nlType)), 1)
     
     expect_error(getAllNlConfigNames("Unknown"),
                  "Invalid nlTypes detected")
     
-    expect_true(Rnightlights:::validNlConfigName(configName = "cf_cvg", "VIIRS.M"))
+    expect_true(Rnightlights:::validNlConfigName(configName = "cf_cvg", nlType = "VIIRS.M"))
     
     expect_equal(Rnightlights:::validNlConfigName(configName = unlist(nlConfigNames)),
                  rep(TRUE, length(unlist(nlConfigNames))))
