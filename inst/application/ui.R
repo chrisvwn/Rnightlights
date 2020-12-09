@@ -78,13 +78,13 @@ shinydashboard::dashboardPage(
         multiple = TRUE
       ),
       
-      # shiny::actionButton(
-      #   inputId = "btnGo",
-      #   label = "LOAD",
-      #   style = "background-color:lightblue"
-      # ),
+      shiny::actionButton(
+        inputId = "btnGo",
+        label = "LOAD",
+        style = "background-color:lightblue"
+      ),
       
-      shiny::uiOutput(outputId = "btnGo"),
+      # shiny::uiOutput(outputId = "btnGo"),
       
       shinydashboard::menuItem(
         "Inputs",

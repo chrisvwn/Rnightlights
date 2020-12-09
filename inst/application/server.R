@@ -88,7 +88,7 @@ shiny::shinyServer(function(input, output, session) {
   ######################## update countries ###################################
   
   observe({
-    print("countries")
+    print(paste0("observe: countries"))
     
     #c("Ashm", "CYN", "Gaza", "IDN", "IOA", "KAS", "KOS"))
     allCtryCodes <- Rnightlights::getAllNlCtryCodes()
@@ -141,25 +141,25 @@ shiny::shinyServer(function(input, output, session) {
     btn
   })
   
-  # observe({
-  #   print("update: btnGo")
-  #   
-  #   if (values$needsDataUpdate || values$needsDataProcessing)
-  #   {
-  #     if (values$needsDataUpdate)
-  #         shiny::updateActionButton(session = session, inputId = "btnGo", label = "LOAD",
-  #                             style = "background-color:orange")
-  #     
-  #     #give precedence to process. if both set let process override load
-  #     if (values$needsDataProcessing)
-  #       btn <-
-  #         shiny::updateActionButton(session = session, inputId = "btnGo", label = "PROCESS",
-  #                             style = "background-color:orange")
-  #   } else
-  #     btn <-
-  #       shiny::updateActionButton(session = session, inputId = "btnGo", label = "LOAD",
-  #                           style = "background-color:lightblue")
-  # })
+  observe({
+    print("update: btnGo")
+
+    if (values$needsDataUpdate || values$needsDataProcessing)
+    {
+      if (values$needsDataUpdate)
+          shiny::updateActionButton(session = session, inputId = "btnGo", label = "LOAD",
+                              icon = shiny::icon("play"))
+
+      #give precedence to process. if both set let process override load
+      if (values$needsDataProcessing)
+        btn <-
+          shiny::updateActionButton(session = session, inputId = "btnGo", label = "PROCESS",
+                              icon = shiny::icon("play"))
+    } else
+      btn <-
+        shiny::updateActionButton(session = session, inputId = "btnGo", label = "LOAD",
+                              icon = character(0))
+  })
   
   ######################## reactive getInputCountries ###########################
   
@@ -1306,6 +1306,8 @@ shiny::shinyServer(function(input, output, session) {
   })
   
   observe({
+    print(paste0("observe: newStat"))
+    
     countries <- getInputCountries()
     admLevel <- selectedAdmLevel3()
     
@@ -1399,6 +1401,7 @@ shiny::shinyServer(function(input, output, session) {
   })
   
   observeEvent(input$countries, {
+    print(paste0("observeEvent: input$countries"))
     if (length(input$countries) > 1)
       updateRadioButtons(session = session,
                          inputId = "admLevel",
@@ -1406,7 +1409,7 @@ shiny::shinyServer(function(input, output, session) {
   })
   
   observe({
-    print("here")
+    print(paste0("observe: needsDataProcessing"))
     
     if ((length(input$countries) > 0) &&
         !is.null(input$radioAdmLevel) && is.null(ctryNlDataList()))
@@ -1416,6 +1419,8 @@ shiny::shinyServer(function(input, output, session) {
   })
   
   observeEvent(input$newStat, {
+    print(paste0("observeEvent: input$newstat"))
+    
     if (is.null(newStat <- input$newStat))
       return()
     
@@ -1425,6 +1430,8 @@ shiny::shinyServer(function(input, output, session) {
   })
   
   observeEvent(input$btnNewStat, {
+    print(paste0("observeEvent: input$btnNewStat"))
+    
     if (is.null(newStat <- input$newStat))
       return()
     
@@ -1508,16 +1515,21 @@ shiny::shinyServer(function(input, output, session) {
   })
   
   observeEvent(input$countries, {
+    print(paste0("observeEvent: input$countries"))
+    
     if (!is.null(input$countries) && !values$needsDataUpdate)
       values$needsDataUpdate <- TRUE
   })
   
   observeEvent(input$radioAdmLevel, {
+    print(paste0("observeEvent: input$radioAdmLevel"))
+    
     if (!is.null(input$countries) && !values$needsDataUpdate)
       values$needsDataUpdate <- TRUE
   })
   
   observeEvent(input$btnGo, {
+    print(paste0("observeEvent: input$btnGo"))
     values$needsDataUpdate <- FALSE
     
     values$needsDataProcessing <- FALSE
@@ -3579,6 +3591,7 @@ shiny::shinyServer(function(input, output, session) {
     ######################## observe map ###################################
     
     observe({
+      print(paste0("observe: map"))
       #input$btnGo
       
       countries <- getInputCountries()
