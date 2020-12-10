@@ -1,5 +1,17 @@
+######################## saveCredentialsEOG ###################################
+
+#' Save credentials required for download from the EOG site
+#'
+#' Save credentials required for download from the new EOG site at University of
+#'     Colorado, Dept of Mines
+#'
+#' @param credFile (character) Path to a file containing the credentials
+#'     obtained from registration at 
+#'     \url{https://eogauth.mines.edu/auth/realms/master/account/}
+#'
 #' @export
-saveCredentialsEOG <-function(credFile = file.path(getNlDataPathFull(), pkgOptions("EOG_CredFile")))
+saveCredentialsEOG <-function(credFile = file.path(getNlDataPathFull(),
+                                                   pkgOptions("EOG_CredFile")))
 {
   if (interactive())
   {
@@ -78,6 +90,17 @@ saveCredentialsEOG <-function(credFile = file.path(getNlDataPathFull(), pkgOptio
   } 
 }
 
+######################## getCredentialsEOG ###################################
+
+#' Retrieve credentials required for download from the EOG site
+#'
+#' Retrieve credentials required for download from the new EOG site at 
+#'     University of Colorado, Dept of Mines
+#'
+#' @param credFile (character) Path to a file containing the credentials
+#'     obtained from registration at 
+#'     \url{https://eogauth.mines.edu/auth/realms/master/account/}
+#'
 #' @export
 getCredentialsEOG <- function(credFile = file.path(getNlDataPathFull(), pkgOptions("EOG_CredFile")))
 {
@@ -91,75 +114,190 @@ getCredentialsEOG <- function(credFile = file.path(getNlDataPathFull(), pkgOptio
   creds <- readLines(con = credFile)
 }
 
+saveAuthTokenEOGResult <- function(authTokenEOGResult)
+{
+  .RnightlightsEnv$authTokenEOGResult <- authTokenEOGResult
+}
+
+existsAuthTokenEOG <- function()
+{
+  exists(x = "authTokenEOGResult", envir = .RnightlightsEnv)
+}
+
+getAuthTokenEOG <- function()
+{
+  if(existsAuthTokenEOG())
+    return(.RnightlightsEnv$authTokenEOGResult$access_token)
+}
+
+getExistingRefreshTokenEOG <- function()
+{
+  if(existsAuthTokenEOG())
+    return(.RnightlightsEnv$authTokenEOGResult$refresh_token)
+}
+
+getAuthTokenEOGRefreshToken <- function()
+{
+  if(existsAuthTokenEOG())
+    return(.RnightlightsEnv$authTokenEOGResult$refresh_token)
+}
+
+getAuthTokenEOGRequestTime <- function()
+{
+  if(existsAuthTokenEOG())
+    return(.RnightlightsEnv$authTokenEOGResult$reqTime)
+}
+
+getAuthTokenEOGExpireTime <- function()
+{
+  if(existsAuthTokenEOG())
+    return(.RnightlightsEnv$authTokenEOGResult$expires_in)
+}
+
+getAuthRefreshTokenEOGExpireTime <- function()
+{
+  if(existsAuthTokenEOG())
+    return(.RnightlightsEnv$authTokenEOGResult$refresh_expires_in)
+}
+
+expiredAuthTokenEOG <- function()
+{
+  requestTime <- getAuthTokenEOGRequestTime()
+  expireTime <- getAuthTokenEOGExpireTime()
+  
+  #if request time + expire time is less than current time 
+  #
+  ifelse(!is.null(requestTime) && !is.null(expireTime),
+         requestTime + expireTime <= Sys.time() - lubridate::as.duration("5 sec"),
+         TRUE)
+}
+
+expiredAuthRefreshTokenEOG <- function()
+{
+  requestTime <- getAuthTokenEOGRequestTime()
+  expireTime <- getAuthRefreshTokenEOGExpireTime()
+  
+  ifelse(!is.null(requestTime) && !is.null(expireTime),
+         requestTime + expireTime <= Sys.time() - lubridate::as.duration("5 sec"),
+         TRUE)
+}
+
+######################## reqAuthTokenEOG ###################################
+
+#' Retrieve an access token required for download from the EOG site
+#'
+#' Retrieve a temporary access token required for the actual download from the
+#'    new EOG site at University of Colorado, Dept of Mines
+#'
 #' @import RCurl
 #' 
 #' @export
-getAuthTokenEOG <- function()
+reqAuthTokenEOG <- function()
 {
-  creds <- getCredentialsEOG()
-  
-  while(length(creds) != 2)
+  #if we have an existing token and it is not expired
+  if(existsAuthTokenEOG() && !expiredAuthTokenEOG())
   {
-    message("Invalid EOG credentials")
+    access_token <- getAuthTokenEOG()
+  } else #if we don't have an existing token or it is expired
+  {
+    #common fields required
+    client_id <- pkgOptions("EOG_ClientID")
+    client_secret <- pkgOptions("EOG_ClientSecret")
     
-    saveCredentialsEOG()
+    h <- RCurl::basicTextGatherer()
+    hdr <-  RCurl::basicHeaderGatherer()
     
-    creds <- getCredentialsEOG()
+    #If we have an existing token but it is expired and the refresh token is
+    #not expired
+    if(existsAuthTokenEOG() && expiredAuthTokenEOG() && !expiredAuthRefreshTokenEOG())
+    {
+      refresh_token <- getExistingRefreshTokenEOG()
+      
+      req <- list(client_id=client_id,
+                 client_secret=client_secret,
+                 refresh_token=refresh_token,
+                 grant_type='refresh_token')
+      
+    } else #we don't have an existing token or refresh token is expired. Request afresh
+    {
+      creds <- getCredentialsEOG()
+      
+      while(length(creds) != 2)
+      {
+        message("Invalid EOG credentials")
+        
+        saveCredentialsEOG()
+        
+        creds <- getCredentialsEOG()
+      }
+      
+      username <- unlist(strsplit(creds[1], ":"))[2]
+      password <- unlist(strsplit(creds[2], ":"))[2]
+      
+      req <- list(client_id=client_id,
+                 client_secret=client_secret,
+                 username=username,
+                 password=password,
+                 grant_type='password')
+    }
+    
+    req <- paste(names(req), req, sep = '=', collapse = '&')
+    
+    #body = enc2utf8(jsonlite::toJSON(req))
+    
+    body <- req
+    
+    h$reset()
+    
+    curlPerform(#url = "https://enwaqionzwfie.x.pipedream.net/", #requestbin.com
+      url = "https://eogauth.mines.edu/auth/realms/master/protocol/openid-connect/token",
+      httpheader=c('Content-Type' = "application/x-www-form-urlencoded"),
+      postfields=body,
+      writefunction = h$update,
+      headerfunction = hdr$update,
+      verbose = TRUE
+    )
+    
+    headers = hdr$value()
+    
+    httpStatus = headers["status"]
+    
+    access_token <- NULL
+    
+    if (httpStatus >= 400)
+    {
+      print(paste("The request failed with status code:", httpStatus, sep=" "))
+      
+      result <- jsonlite::fromJSON(h$value())
+      
+      print(paste("The error is: ", result))
+      # 
+      # Print the headers - they include the requert ID and the timestamp, which are useful for debugging the failure
+      print(headers)
+      
+      print("Please ensure the username and password saved can login on the EOG site")
+    } else
+    {
+      print("Success retrieving access token")
+      result <- jsonlite::fromJSON(h$value())
+      
+      access_token <- result$access_token
+      
+      result$reqTime <- Sys.time()
+      
+      #in case refresh_token fields are missing assume this means we should
+      #use the previous values. May happen after refreshing
+      if(is.null(result$refresh_token))
+        result$refresh_token <- getExistingRefreshTokenEOG()
+      
+      if(is.null(result$refresh_expires_in))
+        result$refresh_expires_in <- getAuthRefreshTokenEOGExpireTime()
+      
+      saveAuthTokenEOGResult(result)
+    }
   }
   
-  client_id <- "eogdata_oidc"
-  client_secret <- "368127b1-1ee0-4f3f-8429-29e9a93daf9a"
-  username <- unlist(strsplit(creds[1], ":"))[2]
-  password <- unlist(strsplit(creds[2], ":"))[2]
-  
-  h = RCurl::basicTextGatherer()
-  hdr = RCurl::basicHeaderGatherer()
-  
-  req = list(client_id=client_id,
-             client_secret=client_secret,
-             username="chris.njuguna@gmail.com",
-             password="chrisvwn1*",
-             grant_type='password')
-  
-  req <- paste(names(req), req, sep = '=', collapse = '&')
-  
-  #body = enc2utf8(jsonlite::toJSON(req))
-  
-  body=req
-  
-  h$reset()
-  
-  curlPerform(#url = "https://enwaqionzwfie.x.pipedream.net/", #requestbin.com
-    url = "https://eogauth.mines.edu/auth/realms/master/protocol/openid-connect/token",
-    httpheader=c('Content-Type' = "application/x-www-form-urlencoded"),
-    postfields=body,
-    writefunction = h$update,
-    headerfunction = hdr$update,
-    verbose = TRUE
-  )
-  
-  headers = hdr$value()
-  
-  httpStatus = headers["status"]
-  
-  token <- NULL
-  
-  if (httpStatus >= 400)
-  {
-    print(paste("The request failed with status code:", httpStatus, sep=" "))
-    
-    # Print the headers - they include the requert ID and the timestamp, which are useful for debugging the failure
-    print(headers)
-    
-    print("Please ensure the username and password saved can login on the EOG site")
-  } else
-  {
-    print("Success retrieving token")
-    result <- jsonlite::fromJSON(h$value())
-    token <- result$access_token
-  }
-  
-  return(token)
+  return(access_token)
 }
 
 ######################## downloadNlTilesVIIRS ###################################
@@ -252,7 +390,7 @@ downloadNlTilesVIIRS <- function(nlPeriod,
     if (!(downloadMethod %in% validDnldMethods))
       downloadMethod <- "auto"
     
-    access_token <- getAuthTokenEOG()
+    access_token <- reqAuthTokenEOG()
 
     accessTokenHeader <- 
       if(downloadMethod == "auto")
@@ -564,6 +702,23 @@ downloadNlTilesOLS <- function(nlPeriod,
           if (!(downloadMethod %in% validDnldMethods))
             downloadMethod <- "auto"
           
+          access_token <- reqAuthTokenEOG()
+          
+          accessTokenHeader <- 
+            if(downloadMethod == "auto")
+            {
+              list("Authorization" =  paste0("Bearer ", access_token))
+            } else if(downloadMethod %in% c("curl", "libcurl"))
+            {
+              list("Authorization", paste0("Bearer ", access_token))
+            } else if(downloadMethod == "wget")
+            {
+              list("Authorization", paste0("Bearer ", access_token))
+            } else if(downloadMethod == "aria")
+            {
+              paste0('\"Authorization: Bearer ', access_token, '"')
+            }
+          
           message(
             Sys.time(),
             ": Downloading tile(",
@@ -581,15 +736,18 @@ downloadNlTilesOLS <- function(nlPeriod,
               ntLtsZipLocalNamePathOLSTemp,
               mode = "wb",
               method = downloadMethod,
-              extra = "-c"
+              extra = "-c",
+              headers = accessTokenHeader
             )
           else if (downloadMethod == "aria")
             #downloads to path relative to -d if specified else local dir
             rsltDnld <-
             system(
               paste0(
-                "aria2c -c -x",
+                "aria2c -c -s2 -x",
                 pkgOptions("numParDnldConns"),
+                " --header ",
+                accessTokenHeader,
                 " --show-console-readout=false --summary-interval=10 ",
                 ntLtsFileUrl,
                 " -d ",

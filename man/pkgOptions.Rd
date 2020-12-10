@@ -120,6 +120,12 @@ The following options are supported
      store the zonal statistics country polygon }
  \item{\code{downloadMethod}}{(\code{character}) The download method
      to use }
+ \item{\code{EOG_CredFile}}{(\code{character}) The filename used to save
+     the user credentials for EOG in the .Rnightlights folder }
+ \item{\code{EOG_ClientID}}{(\code{character}) The client_id required
+     to request for an access token from EOG }
+ \item{\code{EOG_ClientSecret}}{(\code{character}) The client_secret required
+     to request for an access token from EOG }
  \item{\code{extractMethod}}{(\code{character}) The method to use to
      extract data from the rasters }
  \item{\code{gdalCacheMax}}{(\code{numeric}) The maximum memory gdal

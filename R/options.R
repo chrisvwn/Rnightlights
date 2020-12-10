@@ -50,6 +50,12 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   #the file in which to save EOG credentials
   EOG_CredFile = "credseog.txt",
   
+  #the EOG auth api token client_id
+  EOG_ClientID = "eogdata_oidc",
+  
+  #the EOG auth api token client_secret
+  EOG_ClientSecret = "368127b1-1ee0-4f3f-8429-29e9a93daf9a",
+  
   #methods to extract data. Options: raster, gdal
   extractMethod = "rast",
   
@@ -93,11 +99,13 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   
   #urls for raster tile listings. In theory, can be used to override the
   #url if it is changed and before the package is updated
-  ntLtsIndexUrlOLS.Y = "https://www.ngdc.noaa.gov/eog/dmsp/downloadV4composites.html",
+  ntLtsIndexUrlOLS.Y_OLD = "https://www.ngdc.noaa.gov/eog/dmsp/downloadV4composites.html",
+  
+  ntLtsIndexUrlOLS.Y = "https://eogdata.mines.edu/dmsp/downloadV4composites.html",
   
   ntLtsIndexUrlVIIRS.D = "https://ngdc.noaa.gov/eog/viirs/download_ut_mos_tile_iframe.html",
   
-  #updated: 20190731. Data at old site stopped 15th July, 2019
+  #updated: 20190731. New data at old site stopped 15th July, 2019
   ntLtsIndexUrlVIIRS.M_OLD = "https://www.ngdc.noaa.gov/eog/viirs/download_dnb_composites_iframe.html",
   
   ntLtsIndexUrlVIIRS.Y_OLD = "https://www.ngdc.noaa.gov/eog/viirs/download_dnb_composites_iframe.html",
@@ -261,6 +269,12 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
 #'      store the zonal statistics country polygon }
 #'  \item{\code{downloadMethod}}{(\code{character}) The download method
 #'      to use }
+#'  \item{\code{EOG_CredFile}}{(\code{character}) The filename used to save
+#'      the user credentials for EOG in the .Rnightlights folder }
+#'  \item{\code{EOG_ClientID}}{(\code{character}) The client_id required
+#'      to request for an access token from EOG }
+#'  \item{\code{EOG_ClientSecret}}{(\code{character}) The client_secret required
+#'      to request for an access token from EOG }
 #'  \item{\code{extractMethod}}{(\code{character}) The method to use to
 #'      extract data from the rasters }
 #'  \item{\code{gdalCacheMax}}{(\code{numeric}) The maximum memory gdal
