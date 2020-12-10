@@ -156,6 +156,7 @@ getBatchBytes <- function(freeRAM = pkgOptions("batchBytes"))
 #'  Rnightlights:::nlCleanup()
 #'  }
 #'
+#' @export
 nlCleanup <- function(temp = TRUE, tileCache = FALSE)
 {
   #remove any global vars we created in .onLoad
