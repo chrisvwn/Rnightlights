@@ -2107,12 +2107,9 @@ listCtryNlData <-
         "polyType",
         dplyr::contains("stat")
       )
-    
-    #only return dataList if we have records esp. after filtering else return NULL
-    if (nrow(dataList) > 0)
-      return(dataList)
-    else
-      return(NULL)
+
+    #return data.frame even if zero row    
+    return(dataList)
   }
 
 ######################## listCtryNlRasters ###################################
