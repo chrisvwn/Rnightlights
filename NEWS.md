@@ -1,6 +1,29 @@
 # Rnightlights: Nightlights for R
 
 ### ChangeLog
+#### v0.2.5.0
+##### *Bug Fixes*
+This version does not fix any bugs.
+
+##### *New features*
+This version introduces a few new features:
+
+The package has adopted the 4 digit version control (e.g. 0.2.5.0) in addition to the previous 3 digit (e.g. 0.2.4). 4 digits denotes a development version while 3 digits is considered a release. Generally, the 3 digit versions are more stable. *Note: Generally*.
+
+- **`New tile download site`** The tile download sites for both VIIRS and OLS have been moved to the [Payne Institute at the Colorado School of Mines](https://payneinstitute.mines.edu/eog/). Users will now need to register and provide auth credentials ot the package to access the new data location (see below).
+
+- **`Authentication for tile downloads`** This version implements authentication for the download of raster tiles from the download site after this became a requirement. Users must register themselves and then provide username and password to the package in order to access the tile downloads. The package will store the credentials so they need only be entered once. The notice for this change is [here](https://payneinstitute.mines.edu/eog-2/transition-to-secured-data-access/).
+
+- **`nlStat repository`** To ensure the integrity of the data processed we need to store the nlStat functions that are actually used. The package stores the function name, signature (arguments supplied), a hash of the function and the function body to ensure that it can distinguish between different functions even if they have similar names. Calls to the same function with different arguments will result in a new data process. Finally, the function that was used can be retrieved in case the user needs it. However, function dependencies are not stored so if any functionality is called externally it will not be available. This feature is still very buggy.
+
+- **`Credits`** A function has been added to print out credits to the various data sources. It is set to print when the package is loaded. It can be suppressed by wrapping a call to `library()` with the `suppressPackageStartupMessages()` function.
+
+- **`shiny app GUI`** The shiny app previously called `exploreData()` is now called `gui()`. It has been revamped to not only view data but to be able to visually access the main functionality of the package i.e. select `country`, `admLevel`, `nlType`, `nlPeriod` and `nlStat` and process the data. The visualizations will only work for nlStats that have single vector values.
+
+- **`Package data upgrade disabled`** The upgrade of the data directory and contents from previous versions of the package will probably fail. The upgrade functions need extensive work to bring the data up to date. Until this is fixed, the package will not update your data to the latest version. Please re-run your scripts to re-process the data. The old and new data should be able to live happily side-by-side but you may want to back up your previous data just in case.
+
+- **`Package unit tests failing`** The package unit tests have not (never) been fully done and at the moment some will fail. Hence, the build badge will show failing. However, the package should build fine.
+
 #### v0.2.4
 ##### *Bug Fixes*
 This version does not fix any bugs. A workaround for a missing layer in at least one shapefile (IDN) is introduced by adding a parameter *gadmPolyType*. More on that in the *New features* section below.
@@ -30,7 +53,7 @@ This version introduces a few new features:
 
   Only shpZip and spRds are currently implemented. Previously only shapefile zips were possible and this change was necessitated by [issue #22](https://github.com/chrisvwn/Rnightlights/issues/22) where a missing polygon layer was detected in the shpZip for Indonesia (IDN). The spRds offering was not affected by this problem. So in a sense this is a workaround.
 
-- **`configName`** is added as a parameter to getCtryNlData allowing one to select which raster to use out of the available rasters per nlType. They provide the rasters with different pre-processing applied to them. See https://ngdc.noaa.gov/eog/viirs/download_dnb_composites.html and https://ngdc.noaa.gov/eog/gcv4_readme.txt for details.
+- **`configName`** is added as a parameter to getCtryNlData allowing one to select which raster to use out of the available rasters per nlType. They provide the rasters with different pre-processing applied to them. [See](https://ngdc.noaa.gov/eog/viirs/download_dnb_composites.html and https://ngdc.noaa.gov/eog/gcv4_readme.txt) for details.
     They are:
     
   + `configName_VIIRS.D`: The regex to uniquely identify the tile file to use out
