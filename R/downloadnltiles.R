@@ -36,13 +36,13 @@ saveCredentialsEOG <-function(credFile = file.path(getNlDataPathFull(),
         title = prompt
       )
   } else { #if not interactive
-    print("saveCredentialsEOGVIIRS() can only run interactively. Please run it manually")
+    stop("saveCredentialsEOGVIIRS() can only run interactively. Please run it manually")
   }
   
   if (ans == 1)
   {
-    username = ""
-    password = ""
+    username <- ""
+    password <- ""
     
     message("Please enter the email and password you registered at the EOG site")
     
@@ -83,7 +83,7 @@ saveCredentialsEOG <-function(credFile = file.path(getNlDataPathFull(),
         "\n\nhttps://eogauth.mines.edu/auth/realms/master/account/",
         "\n\nand register an account.",
         "\n\nIf you already have the credentials run 'saveCredentialsEOG()'",
-        "interactively to save the username and password.",
+        "interactively to save the username and password."
       )
     
     stop(Sys.time(), ": ", msg)
