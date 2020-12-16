@@ -78,13 +78,13 @@ shinydashboard::dashboardPage(
         multiple = TRUE
       ),
       
-      shiny::actionButton(
-        inputId = "btnGo",
-        label = "LOAD",
-        style = "background-color:lightblue"
-      ),
+      # shiny::actionButton(
+      #   inputId = "btnGo",
+      #   label = "LOAD",
+      #   style = "background-color:lightblue"
+      # ),
       
-      # shiny::uiOutput(outputId = "btnGo"),
+      shiny::uiOutput(outputId = "btnGo"),
       
       shinydashboard::menuItem(
         "Inputs",
@@ -125,6 +125,17 @@ shinydashboard::dashboardPage(
         shiny::uiOutput(outputId = "newStat"),
         
         shiny::uiOutput(outputId = "btnNewStat"),
+        
+        shiny::checkboxInput(
+          inputId = "norm_area",
+          label = "norm_area",
+          value = FALSE
+        )
+      ),
+      
+      shinydashboard::menuItem(
+        text = "Opt Inputs",
+        tabName = "optInputs",
         
         shiny::selectInput(
           inputId = "polySrc",
@@ -173,12 +184,6 @@ shinydashboard::dashboardPage(
           label = "removeGasFlares",
           choices = NULL,
           selected = NULL
-        ),
-        
-        shiny::checkboxInput(
-          inputId = "norm_area",
-          label = "norm_area",
-          value = FALSE
         )
       ),
       
@@ -305,6 +310,9 @@ shinydashboard::dashboardPage(
         tags$style("height: 80vh; position:relative;"),
         DT::dataTableOutput(outputId = "downloadCart")
       )
+    ),
+    shiny::fluidRow(
+      shiny::verbatimTextOutput(outputId = "logs", placeholder = TRUE)
     )
   )
 )
