@@ -219,7 +219,7 @@ printCredits <-
            horzWidth = 3,
            vertWidth = 2)
   {
-    width <- getOption("width")
+    screenWidth <- getOption("width")
     
     if (newLineChar != "\n")
       credits <- gsub(pattern = "\n",
@@ -229,9 +229,84 @@ printCredits <-
     credits <-
       unlist(strsplit(x = credits, split = newLineChar, fixed = T))
     
-    sideFrame <- paste(rep(surroundChar, horzWidth), collapse = "")
-    
+    #split credit lines to fit screen width
+    maxLineWidth <- screenWidth - (horzPadding * 2 + horzWidth * 2)
+
     longestLine <- max(sapply(credits, nchar))
+    
+    if(longestLine > maxLineWidth)
+    {
+      credits <- unlist(sapply(credits, function(cred){
+        credWidth <- nchar(cred)
+        credOut <- c()
+        i <- 1
+        
+        if(credWidth > maxLineWidth)
+        {
+          splitLen <- maxLineWidth
+          while(credWidth > maxLineWidth)
+          {
+            #if maxLineWidth falls on a char try to find
+            #the previous best split point e.g. space, hyphen etc
+            if(grepl(pattern = "[[:alnum:]]", x = substring(text = cred, first = maxLineWidth, last = maxLineWidth)))
+            {
+              #find last non-char and split on it
+              
+              #first does there exist a non alpha? or is this one word?
+              if(grepl(pattern = "[^[:alnum:]]", x = cred))
+              {
+                j <- maxLineWidth
+                
+                while(j > 1)
+                {
+                  if(grepl(pattern = , "[^[:alnum:]]", x = substring(text = cred, first = j, last = j)))
+                    break()
+                  
+                  j <- j - 1
+                }
+                
+                #if we traversed the whole cred and didn't
+                #find a non-alphanum assume it is one word
+                #redundant but for safety
+                if(j == 2)
+                  splitLen <- maxLineWidth
+                else
+                  splitLen <- j
+                
+                #if char at j is a space remove it
+                #due to centering optics
+                if(substring(text = cred, first = j, last = j) == " ")
+                  splitLen <- j - 1
+              } 
+            } else
+            {
+              #if this is one word just split the word as usual
+              splitLen <- maxLineWidth
+            }
+
+            credOut[i] <- substring(text = cred, first = 1, last = splitLen)
+              
+            cred <- substring(text = cred, first = splitLen + 1)
+            
+            i <- i + 1
+            
+            credWidth <- nchar(cred)
+            
+            if(credWidth <= maxLineWidth)
+              credOut[i] <- cred
+          }
+        } else
+        {
+          credOut <- cred
+        }
+        
+        credOut
+      }, simplify = T, USE.NAMES = FALSE))
+    }
+        
+    longestLine <- max(sapply(credits, nchar))
+    
+    sideFrame <- paste(rep(surroundChar, horzWidth), collapse = "")
     
     fullHorzFrame <-
       paste(rep(surroundChar, longestLine + horzPadding * 2 + horzWidth * 2),
@@ -288,9 +363,9 @@ printCredits <-
     
     credits <- sapply(credits, function(cred)
     {
-      ws <- paste(rep(" ", floor((
-        width - nchar(cred)
-      ) %/% 2)), collapse = "")
+      wsWidth <- (screenWidth - nchar(cred)) %/% 2
+    
+      ws <- paste(rep(" ", wsWidth), collapse = "")
       
       paste(ws, cred, sep = "", collapse = "")
     }, USE.NAMES = F)
