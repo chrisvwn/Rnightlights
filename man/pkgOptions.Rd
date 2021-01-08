@@ -120,6 +120,8 @@ The following options are supported
      store the zonal statistics country polygon }
  \item{\code{downloadMethod}}{(\code{character}) The download method
      to use }
+ \item{\code{downloadTimeout}}{(\code{character}) The timeout for download
+     operations }
  \item{\code{EOG_CredFile}}{(\code{character}) The filename used to save
      the user credentials for EOG in the .Rnightlights folder }
  \item{\code{EOG_ClientID}}{(\code{character}) The client_id required
@@ -132,18 +134,41 @@ The following options are supported
      should use in gdal_rasterize }
  \item{\code{ntLtsIndexUrlOLS.Y}}{(\code{character}) The url with the OLS
      tile index }
- \item{\code{ntLtsIndexUrlVIIRS}}{(\code{character}) The url with the
-     VIIRS tile index }
+ \item{\code{ntLtsIndexUrlVIIRS.D}}{(\code{character}) The url with the
+     VIIRS.D tile index }
+ \item{\code{ntLtsIndexUrlVIIRS.M}}{(\code{character}) The url with the
+     VIIRS.M tile index }
+ \item{\code{ntLtsIndexUrlVIIRS.Y}}{(\code{character}) The url with the
+     VIIRS.Y tile index }
+ \item{\code{ntLtsInfoUrlOLS.Y}}{(\code{character}) The url with the OLS
+     tile info }
+ \item{\code{ntLtsInfoUrlVIIRS.D}}{(\code{character}) The url with the
+     VIIRS.D tile info }
+ \item{\code{ntLtsInfoUrlVIIRS.M}}{(\code{character}) The url with the
+     VIIRS.M tile info }
+ \item{\code{ntLtsInfoUrlVIIRS.Y}}{(\code{character}) The url with the
+     VIIRS.Y tile info }
  \item{\code{numThreads}}{(\code{integer}) The number of processing threads
      to use when extractMethod = "raster" }
  \item{\code{omitCountries}}{(\code{character}) The countries to exclude
      in processing }
+ \item{\code{removeGasFlaresMethod}}{(\code{character}) The gasflare removal 
+     strategy to use. Valid values are:
+     \itemize{
+       \item OGP \emph{(OLS Gas-Flare Polygons)}: There are gas-flare
+         shapefile polygons provided for OLS. These can be used to crop
+         areas with gas-flares. However, they are old and may not be reliable.
+       \item OTM \emph{(OLS Tile Mask)}: Since OLS tiles are annual composites,
+         it is possible to use them to identify dark areas. However, once
+         again, the OLS data may be out-dated and further processing may be
+         required to align VIIRS and OLS tiles. There may be loss of data.
+       \item VTM \emph{(VIIRS Tile Mask)}: Same as the OLS tile mask but done
+         using the VIIRS.Y annual tiles. Currently only 2 VIIRS.Y annual tiles
+         exist for 2015 and 2016. }}
  \item{\code{stats}}{(\code{character}) The statistics to calculate for
      country regions. The default are sum and mean. Any other aggregate
      statistics can be included. Also any aggregate function accessible
      in the current environment can be added. }
- \item{\code{downloadTimeout}}{(\code{character}) The timeout for download
-     operations }
  \item{\code{tmpDir}}{(\code{character}) Change the temporary directory
      for processing rasters. Not in use }
 }
@@ -155,6 +180,9 @@ pkgOptions("cropMaskMethod")
 
 #set the cropMaskMethod
 pkgOptions(cropMaskMethod="gdal")
+
+#' #set multiple options
+pkgOptions(cropMaskMethod="gdal", extractMethod="gdal")
 
 #retrieve all options
 pkgOptions()

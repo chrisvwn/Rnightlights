@@ -9,6 +9,7 @@ listCtryNlRasters(
   nlPeriods = NULL,
   nlTypes = NULL,
   configNames = NULL,
+  extensions = NULL,
   polySrcs = NULL,
   polyVers = NULL,
   nlStats = NULL,
@@ -22,7 +23,9 @@ listCtryNlRasters(
 
 \item{nlTypes}{A character vector of nlTypes to filter by}
 
-\item{configNames}{character the type of rasters to filter by}
+\item{configNames}{character the config shortnames of rasters to filter by}
+
+\item{extensions}{character the extensions of rasters to filter by}
 
 \item{polySrcs}{The source of polygons e.g. GADM or CUST to filter by}
 

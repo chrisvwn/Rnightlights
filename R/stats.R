@@ -922,7 +922,7 @@ existsSavedNlStatHash <- function(nlStatHash)
 #' Check whether an nlStat exists in the saved nlStats given the nlStat
 #'     signature and the nlStatHash to ensure a unique hit
 #'
-#' @param nlStatName character The signature of the nlStat to check
+#' @param nlStatSig character The signature of the nlStat to check
 #'
 #' @param nlStatHash character The hash of the nlStat to check
 #'
@@ -954,7 +954,7 @@ existsSavedNlStat <- function(nlStatSig, nlStatHash)
 #'
 #' Delete a previously saved nlStat
 #'
-#' @param nlStatName The name of the nlStat to delete
+#' @param nlStat The nlStat to delete
 #'
 #' @return an nlPeriod vector
 #'
@@ -965,7 +965,7 @@ existsSavedNlStat <- function(nlStatSig, nlStatHash)
 #' @export
 deleteSavedNlStat <- function(nlStat)
 {
-  nlStatName <- Rnightlights:::nlSignatureStatName(nlStat)
+  nlStatName <- nlSignatureStatName(nlStat)
   nlStatArgs <- nlStatArgs(nlStat)
   nlStatHash <- hashNlStat(nlStatName)
   nlStatSig <- nlStatSignature(nlStat = nlStat)
@@ -1076,7 +1076,9 @@ equalNlStats <- function(nlStatName1, nlStatName2)
 #'
 #' @param nlType the nlType of interest
 #'
-#' @param configName character the type of raster being processed
+#' @param configName character the config shortname of raster being processed
+#' 
+#' @param extension character the extension of raster being processed
 #'
 #' @param zone the zonal country polygon layer
 #'
@@ -1096,10 +1098,13 @@ equalNlStats <- function(nlStatName1, nlStatName2)
 #' @return numeric value result of the given nlStat function
 #'
 #' @import data.table
+#' 
+#' @import ff
 myZonal <-
   function (rast,
             nlType,
             configName,
+            extension,
             zone,
             nlStats,
             digits = 0,
@@ -1107,8 +1112,6 @@ myZonal <-
             na.rm = TRUE,
             ...)
   {
-    library(ff)
-    
     options(fftempdir = getNlDir("dirNlTemp"), fffinalizer = "delete")
     
     options(stringsAsFactors = FALSE)
@@ -1251,7 +1254,7 @@ myZonal <-
         # with values of zero. Data values range from 1-63. Areas with zero
         # cloud-free observations are represented by the value 255.
         
-        if (configName %in% c("avg_vis", "stable_lights"))
+        if (grepl(x = nlType, pattern = "OLS.Y") && configName %in% c("raw", "avg_vis", "stable_lights"))
         {
           #not for cf_cvg
           #in DMSP-OLS 255 == NA
@@ -1439,7 +1442,9 @@ myZonal <-
 #'
 #' @param nlType character The nlType of interest
 #'
-#' @param configName character the type of raster being processed
+#' @param configName character the configName of raster being processed
+#' 
+#' @param extension character the extension of raster being processed
 #'
 #' @param path.in.shp The path to the country shapefile
 #'
@@ -1466,6 +1471,7 @@ ZonalPipe <- function (ctryCode,
                        ctryPoly,
                        nlType,
                        configName,
+                       extension,
                        path.in.shp,
                        path.in.r,
                        path.out.r,
@@ -1595,6 +1601,7 @@ ZonalPipe <- function (ctryCode,
         rast = r,
         nlType = nlType,
         configName = configName,
+        extension = extension,
         zone = zone,
         nlStats = nlStats
       )
@@ -1636,13 +1643,15 @@ ZonalPipe <- function (ctryCode,
 #'
 #' @param nlType the nlType of interest
 #'
-#' @param configName character the type of raster being processed
+#' @param configName character the config short name of raster being processed
+#' 
+#' @param extension character the extension of raster being processed
 #'
 #' @param multiTileStrategy character How to handle multiple tiles per nlPeriod
 #'
 #' @param multiTileMergeFun character The function to use to merge tiles
 #'
-#' @param removeGasFlares logical Whether to perform gas flare removal pre-processing
+#' @param removeGasFlaresMethod logical Whether to perform gas flare removal pre-processing
 #'
 #' @param nlPeriod character string the nlPeriod to be processed
 #'
@@ -1672,9 +1681,10 @@ fnAggRadGdal <- function(ctryCode,
                          ctryPoly,
                          nlType,
                          configName = pkgOptions(paste0("configName_", nlType)),
+                         extension,
                          multiTileStrategy = pkgOptions("multiTileStrategy"),
                          multiTileMergeFun = pkgOptions("multiTileMergeFun"),
-                         removeGasFlares = pkgOptions("removeGasFlares"),
+                         removeGasFlaresMethod = pkgOptions("removeGasFlaresMethod"),
                          nlPeriod,
                          nlStats = pkgOptions("nlStats"),
                          gadmVersion = pkgOptions("gadmVersion"),
@@ -1713,9 +1723,10 @@ fnAggRadGdal <- function(ctryCode,
     ctryCode = ctryCode,
     nlType = nlType,
     configName = configName,
+    extension = extension,
     multiTileStrategy = multiTileStrategy,
     multiTileMergeFun = multiTileMergeFun,
-    removeGasFlares = removeGasFlares,
+    removeGasFlaresMethod = removeGasFlaresMethod,
     nlPeriod = nlPeriod,
     gadmVersion = gadmVersion,
     gadmPolyType = gadmPolyType,
@@ -1744,7 +1755,7 @@ fnAggRadGdal <- function(ctryCode,
         "_",
         # nlPeriod, "_",
         "GF",
-        substr(as.character(removeGasFlares), 1, 1),
+        toupper(removeGasFlaresMethod),
         "_",
         "GADM-",
         gadmVersion,
@@ -1769,7 +1780,7 @@ fnAggRadGdal <- function(ctryCode,
         "_",
         # nlPeriod, "_",
         "GF",
-        substr(as.character(removeGasFlares), 1, 1),
+        toupper(removeGasFlaresMethod),
         "_",
         basename(custPolyPath),
         "-SHPZIP.tif"
@@ -1885,7 +1896,9 @@ fnAggRadGdal <- function(ctryCode,
 #'
 #' @param nlType Character vector The nlType to process
 #'
-#' @param configName character the type of raster being processed
+#' @param configName character the config short name of raster being processed
+#' 
+#' @param extension character the extension of raster being processed
 #'
 #' @param nlStats The statistics to calculate
 #'
@@ -1913,6 +1926,7 @@ fnAggRadRast <-
            ctryRastCropped,
            nlType,
            configName,
+           extension,
            nlStats,
            custPolyPath = NULL)
   {
@@ -2001,7 +2015,8 @@ fnAggRadRast <-
             ctryRast = ctryRastCropped,
             idx = i,
             retVal = is.null(retVal),
-            configName = configName
+            configName = configName,
+            extension = extension
           )
       else if (stringr::str_detect(nlType, "VIIRS"))
         masqVIIRS(
@@ -2009,7 +2024,8 @@ fnAggRadRast <-
           ctryRast = ctryRastCropped,
           idx = i,
           retVal = is.null(retVal),
-          configName = configName
+          configName = configName,
+          extension = extension
         )
       
       message(Sys.time(),

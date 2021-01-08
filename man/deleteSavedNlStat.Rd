@@ -7,7 +7,7 @@
 deleteSavedNlStat(nlStat)
 }
 \arguments{
-\item{nlStatName}{The name of the nlStat to delete}
+\item{nlStat}{The nlStat to delete}
 }
 \value{
 an nlPeriod vector

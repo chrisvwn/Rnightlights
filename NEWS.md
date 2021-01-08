@@ -8,11 +8,11 @@ This version does not fix any bugs.
 ##### *New features*
 This version introduces a few new features:
 
-The package has adopted the 4 digit version control (e.g. 0.2.5.0) in addition to the previous 3 digit (e.g. 0.2.4). 4 digits denotes a development version while 3 digits is considered a release. Generally, the 3 digit versions are more stable. *Note: Generally*.
+- **`Authentication for tile downloads`** This version implements authentication for the download of raster tiles from the download site after this became a requirement. Users must register themselves and then provide username and password to the package in order to access the tile downloads. The package will store the credentials so they need only be entered once. The notice for this change is [here](https://payneinstitute.mines.edu/eog-2/transition-to-secured-data-access/).
+
+- **`Background/gas-flare removal`** Previously only the DMSP-OLS gasflare polygons were available for gas-flare removal. Currently, the package includes background masking using the VIIRS yearly tiles (currently 2015/2016). The plan is to also add DSMP-OLS raster masking using the selected year. Any feedback on the gasflare and background removal methods employed in the package are welcome.
 
 - **`New tile download site`** The tile download sites for both VIIRS and OLS have been moved to the [Payne Institute at the Colorado School of Mines](https://payneinstitute.mines.edu/eog/). Users will now need to register and provide auth credentials ot the package to access the new data location (see below).
-
-- **`Authentication for tile downloads`** This version implements authentication for the download of raster tiles from the download site after this became a requirement. Users must register themselves and then provide username and password to the package in order to access the tile downloads. The package will store the credentials so they need only be entered once. The notice for this change is [here](https://payneinstitute.mines.edu/eog-2/transition-to-secured-data-access/).
 
 - **`nlStat repository`** To ensure the integrity of the data processed we need to store the nlStat functions that are actually used. The package stores the function name, signature (arguments supplied), a hash of the function and the function body to ensure that it can distinguish between different functions even if they have similar names. Calls to the same function with different arguments will result in a new data process. Finally, the function that was used can be retrieved in case the user needs it. However, function dependencies are not stored so if any functionality is called externally it will not be available. This feature is still very buggy.
 

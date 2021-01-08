@@ -11,9 +11,10 @@ insertNlDataCol(
   nlPeriod,
   nlType,
   configName,
+  extension,
   multiTileStrategy,
   multiTileMergeFun,
-  removeGasFlares = TRUE
+  removeGasFlaresMethod = pkgOptions("removeGasFlaresMethod")
 )
 }
 \arguments{
@@ -27,13 +28,16 @@ insertNlDataCol(
 
 \item{nlType}{the type of nightlight data}
 
-\item{configName}{character the type of raster being processed}
+\item{configName}{character the config shortname of the raster to process}
+
+\item{extension}{character the extension of the raster to process}
 
 \item{multiTileStrategy}{character How to handle multiple tiles per nlPeriod}
 
 \item{multiTileMergeFun}{character The function to use to merge tiles}
 
-\item{removeGasFlares}{logical Whether to perform gas flare removal pre-processing}
+\item{removeGasFlaresMethod}{character The method to use to perform gas flare removal
+or NULL to disable}
 }
 \value{
 the updated dataframe

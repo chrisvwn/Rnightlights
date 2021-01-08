@@ -7,14 +7,18 @@
 getAllNlConfigNames(
   nlTypes = NULL,
   configNames = NULL,
-  description = NULL,
-  pretty = FALSE
+  extensions = NULL,
+  description = "short",
+  printOut = FALSE,
+  summary = FALSE
 )
 }
 \arguments{
 \item{nlTypes}{if present show only configNames matching the nlTypes}
 
 \item{configNames}{if present show only configNames matching the configNames}
+
+\item{extensions}{if present show only extensions matching the extensions}
 
 \item{description}{\code{(character)} whether to print the long or
 short description. Possible values are:
@@ -24,8 +28,10 @@ short description. Possible values are:
     \item long Show long descriptions
 }}
 
-\item{pretty}{Whether to prettify the output. Prints one line per nlType.
-Only available if description is NULL}
+\item{printOut}{Whether to print the output. Output may be formatted
+to aid viewing.}
+
+\item{summary}{Return a summarized view showing only abbrevs.}
 }
 \description{
 Generate a list of all possible configNames for a given nlType

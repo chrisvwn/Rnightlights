@@ -8,6 +8,7 @@ myZonal(
   rast,
   nlType,
   configName,
+  extension,
   zone,
   nlStats,
   digits = 0,
@@ -21,7 +22,9 @@ myZonal(
 
 \item{nlType}{the nlType of interest}
 
-\item{configName}{character the type of raster being processed}
+\item{configName}{character the config shortname of raster being processed}
+
+\item{extension}{character the extension of raster being processed}
 
 \item{zone}{the zonal country polygon layer}
 

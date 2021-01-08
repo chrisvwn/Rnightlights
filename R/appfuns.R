@@ -41,6 +41,18 @@ getCtryCodesWithData <- function()
 #'
 #' Return the unique nlTypes available in the data
 #'
+#' @param ctryCodes the ISO3 code of the countries
+#'
+#' @param admLevel The country admin level of interest
+#'
+#' @param gadmPolySrc The GADM source to use
+#' 
+#' @param gadmPolyVer The GADM version to use
+#'
+#' @param gadmPolyType The format of polygons to download from GADM
+#'
+#' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
+#' 
 #' @return character vector available nlTypes
 #'
 #' @examples
@@ -49,82 +61,108 @@ getCtryCodesWithData <- function()
 #' }
 #'
 #' @export
-getCtryNlTypes <- function(countries, admLevel, polySrc = "GADM", polyVer = "3.6", polyType = "SHPZIP")
+getCtryNlTypes <- function(ctryCodes, 
+                           admLevel,
+                           gadmPolySrc = "GADM",
+                           gadmPolyVer = "3.6",
+                           gadmPolyType = "SHPZIP",
+                           custPolyPath)
 {
-  if (length(countries) == 0)
+  if (length(ctryCodes) == 0)
     return()
 
   if (is.null(admLevel))
     return()
   
-  if ((length(countries) == 0 ||
-       grepl("^\\s*$", countries)) &&
-      (is.null(polySrc) ||
-       polySrc == "" || is.null(polyVer) || polyVer == ""))
+  if ((length(ctryCodes) == 0 ||
+       grepl("^\\s*$", ctryCodes)) &&
+      (is.null(gadmPolySrc) ||
+       gadmPolySrc == "" || is.null(gadmPolyVer) || gadmPolyVer == ""))
     return()
   
-  if (!(length(countries) == 0 || grepl("^\\s*$", countries)))
-    if (is.null(polySrc) ||
-        polySrc == "" ||
-        is.null(polyVer) ||
-        polyVer == "" || is.null(polyType) || polyType == "")
+  if (!(length(ctryCodes) == 0 || grepl("^\\s*$", ctryCodes)))
+    if (is.null(gadmPolySrc) ||
+        gadmPolySrc == "" ||
+        is.null(gadmPolyVer) ||
+        gadmPolyVer == "" || is.null(gadmPolyType) || gadmPolyType == "")
       return()
-  
-  custPolyPath <- if (polySrc == "CUST")
-    polyVer
-  else
-    NULL
   
   nlTypes <-
     unique(
       Rnightlights::listCtryNlData(
-        ctryCodes = countries,
+        ctryCodes = ctryCodes,
         admLevels = admLevel,
-        polySrcs = polySrc,
-        polyVers = polyVer,
-        polyTypes = polyType
+        polySrcs = gadmPolySrc,
+        polyVers = gadmPolyVer,
+        polyTypes = gadmPolyType
       )$nlType
     )
   
   return(nlTypes)
 }
 
-getCtrysDataDirect <- function(countries, polySrc = "GADM", polyVer = "3.6", polyType = "SHPZIP", nlType = "VIIRS.M")
+######################## getCtrysDataDirect #############################
+
+#' Read the ctryNlData directly from files
+#'
+#' Read the ctryNlData directly from files
+#'
+#' @param ctryCodes the ISO3 code of the countries
+#'
+#' @param admLevel The country admin level of interest
+#' 
+#' @param nlType The nlType of interest
+#'
+#' @param gadmPolySrc The polygon source to use
+#'
+#' @param gadmPolyVer The GADM version to use
+#'
+#' @param gadmPolyType The format of polygons to download from GADM
+#' 
+#' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
+#' 
+#' @return character vector available nlTypes
+#'
+#' @examples
+#' \dontrun{
+#'  getCtryNlTypes()
+#' }
+#'
+#' @export
+getCtrysDataDirect <- function(ctryCodes, admLevel, gadmPolySrc = "GADM",
+                               gadmPolyVer = "3.6", gadmPolyType = "SHPZIP",
+                               nlType = "VIIRS.M", custPolyPath = NULL)
 {
-  if (is.null(polySrc) ||
-      polySrc == "" ||
-      is.null(polyVer) ||
-      polyVer == "" || is.null(polyType) || polyType == "")
+  if (is.null(gadmPolySrc) ||
+      gadmPolySrc == "" ||
+      is.null(gadmPolyVer) ||
+      gadmPolyVer == "" || is.null(gadmPolyType) || gadmPolyType == "")
     return(NULL)
   
   if (is.null(nlType))
     return(NULL)
   
   ctryData <- NULL
-  
-  custPolyPath <- if (polySrc == "CUST")
-    polyVer
-  else
-    NULL
-  
-  if (length(countries) == 1)
+
+  if (length(ctryCodes) == 1)
   {
-    admLevel <-
-      unlist(
-        Rnightlights:::getCtryShpAllAdmLvls(
-          ctryCodes = countries,
-          gadmVersion = polyVer,
-          gadmPolyType = polyType,
-          custPolyPath = custPolyPath
-        )
-      )[2]
+    if(missing(admLevel)||length(admLevel) ==0)
+      admLevel <-
+        unlist(
+          getCtryShpAllAdmLvls(
+            ctryCodes = ctryCodes,
+            gadmVersion = gadmPolyVer,
+            gadmPolyType = gadmPolyType,
+            custPolyPath = custPolyPath
+          )
+        )[2]
     
     ctryNlDataFile <-
-      Rnightlights:::getCtryNlDataFnamePath(
-        ctryCode = countries,
+      getCtryNlDataFnamePath(
+        ctryCode = ctryCodes,
         admLevel = admLevel,
-        gadmVersion = polyVer,
-        gadmPolyType = polyType,
+        gadmVersion = gadmPolyVer,
+        gadmPolyType = gadmPolyType,
         custPolyPath = custPolyPath
       )
     
@@ -133,20 +171,20 @@ getCtrysDataDirect <- function(countries, polySrc = "GADM", polyVer = "3.6", pol
     else
       ctryData <- NULL
   }
-  else if (length(countries) > 1)
+  else if (length(ctryCodes) > 1)
     #remove subcountry admin levels
   {
-    for (ctryCode in countries)
+    for (ctryCode in ctryCodes)
     {
       admLevel <- paste0(ctryCode, "_adm0")
       #print(ctryCode)
       
       ctryNlDataFile <-
-        Rnightlights:::getCtryNlDataFnamePath(
+        getCtryNlDataFnamePath(
           ctryCode = ctryCode,
           admLevel = admLevel,
-          gadmVersion = polyVer,
-          gadmPolyType = polyType,
+          gadmVersion = gadmPolyVer,
+          gadmPolyType = gadmPolyType,
           custPolyPath = custPolyPath
         )
       

@@ -9,6 +9,7 @@ downloadNlTilesOLS(
   downloadMethod = pkgOptions("downloadMethod"),
   nlType = "OLS.Y",
   configName = pkgOptions(paste0("configName_", nlType)),
+  extension,
   multiTileStrategy = pkgOptions("multiTileStrategy")
 )
 }
@@ -19,7 +20,9 @@ downloadNlTilesOLS(
 
 \item{nlType}{A character string of nlType}
 
-\item{configName}{character the type of raster being processed}
+\item{configName}{character the config shortname of the raster to process}
+
+\item{extension}{character the extension of the raster to process}
 
 \item{multiTileStrategy}{character How to handle multiple tiles per nlPeriod}
 }

@@ -138,19 +138,23 @@ getNlTileZipLclNameVIIRS <-
     
     configName <- toupper(configName)
     
-    return (
-      paste0(
-        "NL_TILE_",
-        nlType,
-        "_",
-        configName,
-        "_",
-        nlPeriod,
-        "_",
-        tileIdx2Name(tileNum, nlType),
-        ".tgz"
-      )
-    )
+    # return (
+    #   paste0(
+    #     "NL_TILE_",
+    #     nlType,
+    #     "_",
+    #     configName,
+    #     "_",
+    #     nlPeriod,
+    #     "_",
+    #     tileIdx2Name(tileNum, nlType),
+    #     ".tgz"
+    #   )
+    # )
+    
+    tileZipUrl <- getNlUrlVIIRS(nlPeriod = nlPeriod, tileNum = tileNum, nlType = nlType, configName = configName)
+    
+    return(basename(tileZipUrl))
   }
 
 ######################## getNlTileTifLclNamePath ###################################
@@ -161,7 +165,9 @@ getNlTileZipLclNameVIIRS <-
 #'
 #' @param nlType character string the nlType
 #'
-#' @param configName character the type of raster being processed
+#' @param configName character the config shortname of raster being processed
+#' 
+#' @param extension character the extension of raster being processed
 #'
 #' @param nlPeriod the nlPeriod in which the tile was created
 #'
@@ -183,6 +189,7 @@ getNlTileZipLclNameVIIRS <-
 getNlTileTifLclNamePath <-
   function(nlType,
            configName = pkgOptions(paste0("configName_", nlType)),
+           extension,
            nlPeriod,
            tileNum)
   {
@@ -205,6 +212,15 @@ getNlTileTifLclNamePath <-
            " for nlType: ",
            nlType)
     
+    if (!validNlConfigExtension(extension = extension, configName = configName, nlType = nlType))
+      stop(Sys.time(),
+           ": Invalid extension: ",
+           extension,
+           " for configName: ",
+           configName,
+           " of ",
+           nlType)
+    
     if (!allValidNlPeriods(nlPeriod, nlType))
       stop(Sys.time(),
            ": Invalid nlPeriod: ",
@@ -222,6 +238,7 @@ getNlTileTifLclNamePath <-
         getNlTileTifLclNameOLS(
           nlType = nlType,
           configName = configName,
+          extension = extension,
           nlPeriod = nlPeriod
         )
       ))
@@ -231,6 +248,7 @@ getNlTileTifLclNamePath <-
         getNlTileTifLclNameVIIRS(
           nlType = nlType,
           configName = configName,
+          extension = extension,
           nlPeriod = nlPeriod,
           tileNum = tileNum
         )
@@ -245,7 +263,9 @@ getNlTileTifLclNamePath <-
 #'
 #' @param nlType character string the nlType
 #'
-#' @param configName character the type of raster being processed
+#' @param configName character the config shortname of raster being processed
+#' 
+#' @param extension character the extension of raster being processed
 #'
 #' @param nlPeriod the nlPeriod in which the tile was created
 #'
@@ -263,6 +283,7 @@ getNlTileTifLclNamePath <-
 getNlTileTifLclNameVIIRS <-
   function(nlType,
            configName = pkgOptions(paste0("configName_", nlType)),
+           extension,
            nlPeriod,
            tileNum)
   {
@@ -285,6 +306,15 @@ getNlTileTifLclNameVIIRS <-
            " for nlType: ",
            nlType)
     
+    if (!validNlConfigExtension(extension = extension, configName = configName, nlType = nlType))
+      stop(Sys.time(),
+           ": Invalid extension: ",
+           extension,
+           " for configName: ",
+           configName,
+           " of ",
+           nlType)
+    
     if (!allValidNlPeriods(nlPeriod, nlType))
       stop(Sys.time(), ": Invalid nlPeriod: ", nlPeriod)
     
@@ -299,6 +329,8 @@ getNlTileTifLclNameVIIRS <-
         nlType,
         "_",
         configName,
+        "_",
+        extension,
         "_",
         nlPeriod,
         "_",
@@ -316,7 +348,9 @@ getNlTileTifLclNameVIIRS <-
 #'
 #' @param nlType character string the nlType
 #'
-#' @param configName character the type of raster being processed
+#' @param configName character the config shortname of the raster being processed
+#' 
+#' @param extension character the extension of the raster being processed
 #'
 #' @param nlPeriod the nlPeriod in which the tile was created
 #'
@@ -332,6 +366,7 @@ getNlTileTifLclNameVIIRS <-
 getNlTileTifLclNameOLS <-
   function(nlType = "OLS.Y",
            configName = pkgOptions(paste0("configName_", nlType)),
+           extension,
            nlPeriod)
   {
     if (missing(nlPeriod))
@@ -344,6 +379,15 @@ getNlTileTifLclNameOLS <-
            " for nlType: ",
            nlType)
     
+    if (!validNlConfigExtension(extension = extension, configName = configName, nlType = nlType))
+      stop(Sys.time(),
+           ": Invalid extension: ",
+           extension,
+           " for configName: ",
+           configName,
+           " of ",
+           nlType)
+    
     if (!allValidNlPeriods(nlPeriod, nlType))
       stop(Sys.time(), ": Invalid nlPeriod: ", nlPeriod)
     
@@ -354,6 +398,8 @@ getNlTileTifLclNameOLS <-
       nlType,
       "_",
       configName,
+      "_",
+      extension,
       "_",
       nlPeriod,
       "_00N180W.tif"
@@ -368,7 +414,9 @@ getNlTileTifLclNameOLS <-
 #'
 #' @param nlType The particular VIIRS type e.g. VIIRS.D for daily VIIRS
 #'
-#' @param configName character the type of raster being processed
+#' @param configName character the config shortname of raster being processed
+#' 
+#' @param extension character the extension of raster being processed
 #'
 #' @param nlPeriod the yearMonth in which the tile was created
 #'
@@ -386,6 +434,7 @@ getNlTileTifLclNameOLS <-
 getNlTileTifLclNamePathVIIRS <-
   function(nlType = "VIIRS.M",
            configName = pkgOptions(paste0("configName_", nlType)),
+           extension,
            nlPeriod,
            tileNum)
   {
@@ -401,11 +450,20 @@ getNlTileTifLclNamePathVIIRS <-
     if (!grepl("VIIRS", nlType))
       stop(Sys.time(), ": This function is for the VIIRS family only")
     
-    if (!validNlConfigName(configName, nlType))
+    if (!validNlConfigName(configName = configName, nlType = nlType))
       stop(Sys.time(),
            ": Invalid configName: ",
            configName,
            " for nlType: ",
+           nlType)
+    
+    if (!validNlConfigExtension(extension = extension, configName = configName, nlType = nlType))
+      stop(Sys.time(),
+           ": Invalid extension: ",
+           extension,
+           " for configName: ",
+           configName,
+           " of ",
            nlType)
     
     if (!allValidNlPeriods(nlPeriod, nlType))
@@ -418,6 +476,8 @@ getNlTileTifLclNamePathVIIRS <-
       getNlDir("dirNlTiles"),
       getNlTileTifLclNameVIIRS(
         nlType = nlType,
+        configName = configName,
+        extension = extension,
         nlPeriod = nlPeriod,
         tileNum = tileNum
       )
@@ -432,7 +492,9 @@ getNlTileTifLclNamePathVIIRS <-
 #'
 #' @param nlType The particular VIIRS type e.g. VIIRS.D for daily VIIRS
 #'
-#' @param configName character the type of raster being processed
+#' @param configName character the config shortname of raster being processed
+#' 
+#' @param extension character the extension of raster being processed
 #'
 #' @param nlPeriod the year in which the tile was created
 #'
@@ -450,6 +512,7 @@ getNlTileTifLclNamePathVIIRS <-
 getNlTileTifLclNamePathOLS <-
   function(nlType = "OLS.Y",
            configName = pkgOptions(paste0("configName_", nlType)),
+           extension,
            nlPeriod,
            tileNum)
   {
@@ -469,7 +532,16 @@ getNlTileTifLclNamePathOLS <-
            " for nlType: ",
            nlType)
     
-    if (!allValidNlPeriods(nlPeriod, "OLS.Y"))
+    if (!validNlConfigExtension(extension = extension, configName = configName, nlType = nlType))
+      stop(Sys.time(),
+           ": Invalid extension: ",
+           extension,
+           " for configName: ",
+           configName,
+           " of ",
+           nlType)
+    
+    if (!allValidNlPeriods(nlPeriods = nlPeriod, nlTypes = nlType))
       stop(Sys.time(), ": Invalid nlPeriod: ", nlPeriod)
     
     return (file.path(
@@ -520,25 +592,29 @@ getNlTileZipLclNameOLS <-
     
     configName <- toupper(configName)
     
-    fileExt <-
-      if (configName %in% toupper(c("cf_cvg", "avg_vis", "stable_lights")))
-      {
-        ".tar"
-      } else if (configName %in% toupper(c("pct_lights", "avg_lights_x_pct")))
-      {
-        ".tgz"
-      }
+    # fileExt <-
+    #   if (configName %in% toupper(c("cf_cvg", "avg_vis", "stable_lights")))
+    #   {
+    #     ".tar"
+    #   } else if (configName %in% toupper(c("pct_lights", "avg_lights_x_pct")))
+    #   {
+    #     ".tgz"
+    #   }
+    # 
+    # return (paste0(
+    #   "NL_TILE_",
+    #   nlType,
+    #   "_",
+    #   configName,
+    #   "_",
+    #   nlPeriod,
+    #   "_00N180W",
+    #   fileExt
+    # ))
     
-    return (paste0(
-      "NL_TILE_",
-      nlType,
-      "_",
-      configName,
-      "_",
-      nlPeriod,
-      "_00N180W",
-      fileExt
-    ))
+    tileZipUrl <- getNlUrlOLS(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
+    
+    return(basename(tileZipUrl))
   }
 
 ######################## getNlTifLclNameOLS ###################################
@@ -549,7 +625,9 @@ getNlTileZipLclNameOLS <-
 #'
 #' @param nlType The particular VIIRS type e.g. VIIRS.D for daily VIIRS
 #'
-#' @param configName character the type of raster being processed
+#' @param configName character the config shortname of raster being processed
+#' 
+#' @param extension character the extension of raster being processed
 #'
 #' @param nlPeriod the nlPeriod in which the tile was created
 #'
@@ -563,7 +641,7 @@ getNlTileZipLclNameOLS <-
 #'  }
 #'
 getNlTifLclNameOLS <-
-  function(nlType, configName = pkgOptions(paste0("configName_", nlType)), nlPeriod)
+  function(nlType, configName = pkgOptions(paste0("configName_", nlType)), extension, nlPeriod)
   {
     if (missing(nlPeriod))
       stop(Sys.time(), ": Missing required parameter nlPeriod")
@@ -582,5 +660,5 @@ getNlTifLclNameOLS <-
     
     configName <- toupper(configName)
     
-    return (paste0("NL_TILE_", nlType, "_", configName, "_", nlPeriod, ".tif"))
+    return (paste0("NL_TILE_", nlType, "_", configName, "_", extension, "_", nlPeriod, ".tif"))
   }

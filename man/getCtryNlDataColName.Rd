@@ -9,9 +9,10 @@ getCtryNlDataColName(
   nlStat,
   nlType,
   configName,
+  extension,
   multiTileStrategy = "all",
   multiTileMergeFun = "mean",
-  removeGasFlares = TRUE
+  removeGasFlaresMethod = pkgOptions("removeGasFlaresMethod")
 )
 }
 \arguments{
@@ -21,13 +22,15 @@ getCtryNlDataColName(
 
 \item{nlType}{character vector The type of nightlight}
 
-\item{configName}{character the type of raster being processed}
+\item{configName}{character the confg short name of raster being processed}
+
+\item{extension}{character the extension of raster being processed}
 
 \item{multiTileStrategy}{character How to handle multiple tiles per nlPeriod}
 
 \item{multiTileMergeFun}{character The function to use to merge tiles}
 
-\item{removeGasFlares}{logical Whether to perform gas flare removal pre-processing}
+\item{removeGasFlaresMethod}{logical Whether to perform gas flare removal pre-processing}
 }
 \value{
 character string

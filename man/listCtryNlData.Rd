@@ -9,9 +9,10 @@ listCtryNlData(
   admLevels = NULL,
   nlTypes = NULL,
   configNames = NULL,
+  extensions = NULL,
   multiTileMergeStrategys = NULL,
   multiTileMergeFuns = NULL,
-  removeGasFlares = NULL,
+  removeGasFlaresMethod = NULL,
   nlPeriods = NULL,
   polySrcs = NULL,
   polyVers = NULL,
@@ -27,13 +28,15 @@ listCtryNlData(
 
 \item{nlTypes}{A character vector of nlTypes to filter by}
 
-\item{configNames}{character the type of rasters to filter by}
+\item{configNames}{character the config shortnames of rasters to filter by}
+
+\item{extensions}{character the extensions of rasters to filter by}
 
 \item{multiTileMergeStrategys}{character the multiTileMergeStrategies to filter by}
 
 \item{multiTileMergeFuns}{character the multiTileMergeFuns to filter by}
 
-\item{removeGasFlares}{character filter by removeGasFlare values}
+\item{removeGasFlaresMethod}{character filter by removeGasFlare values}
 
 \item{nlPeriods}{A character vector of nlPeriods to filter by}
 

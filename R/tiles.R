@@ -1,3 +1,49 @@
+getNlFileRegex <-function(nlTypes = NULL, configNames = NULL, extensions = NULL, regexNum = NULL, nlPeriod = NULL, tileName = NULL, extension = NULL)
+{
+  allConfigNames <- getAllNlConfigNames(nlTypes = nlTypes, configNames = configNames, extensions = extensions)
+  
+  regex <- unique(if(regexNum == 1)
+    allConfigNames$fileRegex1
+  else if(regexNum == 2)
+    allConfigNames$fileRegex2)
+  
+  if(!missing(nlPeriod) && !is.null(nlPeriod))
+  {
+    regex <- gsub(pattern = "{nlPeriod}", replacement = nlPeriod, x = regex, fixed = TRUE)
+  } else
+  {
+    nlP <- unlist(getAllNlPeriods(nlTypes = nlTypes))[1]
+    
+    regex <- gsub(pattern = "{nlPeriod}", replacement = paste0("\\d{",nchar(nlP),"}"), x = regex, fixed = TRUE)
+  }
+  
+  if(!missing(configNames) && !is.null(configNames))
+  {
+    regex <- gsub(pattern = "{configName}", replacement = configNames, x = regex, fixed = TRUE)
+  } else
+  {
+    regex <- gsub(pattern = "{configName}", replacement = ".*", x = regex, fixed = TRUE)
+  }
+      
+  if(!missing(tileName) && !is.null(tileName))
+  {
+    regex <- gsub(pattern = "{tileName}", replacement = tileName, x = regex, fixed = TRUE)
+  } else
+  {
+    regex <- gsub(pattern = "{tileName}", replacement = "\\d{2,3}N\\d{3}[E|W]", x = regex, fixed = TRUE)
+  }
+  
+  if(!missing(extension) && !is.null(extension))
+  {
+    regex <- gsub(pattern = "{extension}", replacement = extension, x = regex, fixed = TRUE)
+  } else
+  {
+    regex <- gsub(pattern = "{extension}", replacement = ".*", x = regex, fixed = TRUE)
+  }
+  
+  regex
+}
+
 ######################## getAllNlConfigNames ###################################
 
 #' Generate a list of all possible configNames for a given nlType
@@ -7,6 +53,8 @@
 #' @param nlTypes if present show only configNames matching the nlTypes
 #'
 #' @param configNames if present show only configNames matching the configNames
+#' 
+#' @param extensions if present show only extensions matching the extensions
 #'
 #' @param description \code{(character)} whether to print the long or
 #'     short description. Possible values are:
@@ -16,8 +64,10 @@
 #'         \item long Show long descriptions
 #'     }
 #'
-#' @param pretty Whether to prettify the output. Prints one line per nlType.
-#'     Only available if description is NULL
+#' @param printOut Whether to print the output. Output may be formatted
+#'     to aid viewing.
+#' 
+#' @param summary Return a summarized view showing only abbrevs.
 #'
 #' @examples
 #' getAllNlConfigNames("OLS.Y")
@@ -27,8 +77,10 @@
 getAllNlConfigNames <-
   function(nlTypes = NULL,
            configNames = NULL,
-           description = NULL,
-           pretty = FALSE)
+           extensions = NULL,
+           description = "short",
+           printOut = FALSE,
+           summary = FALSE)
   {
     if (!is.null(nlTypes) && !all(validNlTypes(nlTypes = nlTypes)))
       stop(Sys.time(), ": Invalid nlTypes detected")
@@ -40,17 +92,25 @@ getAllNlConfigNames <-
     allConfigNames <- list(
       list(
         nlType = "OLS.Y",
-        configName = "cf_cvg",
+        productName = "cf_composite",
+        configName = "stable_lights",
+        extension = "cf_cvg",
+        fileRegex1 = "F\\d{2}{nlPeriod}\\.v4\\.tar",
+        fileRegex2 = "F\\d{2}{nlPeriod}\\.v4b_web\\.{extension}\\.tif\\.gz",
         shortDescription = "Cloud-free coverages",
         longDescription = "Tally of the total number of observations that went into
       each 30 arc second grid cell. This image can be used to identify
       areas with low numbers of observations where the quality is reduced.
-      In some years there are areas with zero cloud- free observations in
+      In some years there are areas with zero cloud-free observations in
       certain locations"
       ),
       list(
         nlType = "OLS.Y",
-        configName = "avg_vis",
+        productName = "cf_composite",
+        configName = "stable_lights",
+        extension = "avg_vis",
+        fileRegex1 = "F\\d{2}{nlPeriod}\\.v4\\.tar",
+        fileRegex2 = "F\\d{2}{nlPeriod}\\.v4b_web\\.{extension}\\.tif\\.gz",
         shortDescription = "Raw average visible band",
         longDescription = "Contains the average of the visible band digital number
       values with no further filtering. Data values range from 0-63. Areas
@@ -58,7 +118,11 @@ getAllNlConfigNames <-
       ),
       list(
         nlType = "OLS.Y",
+        productName = "cf_composite",
         configName = "stable_lights",
+        extension = "avg_vis",
+        fileRegex1 = "F\\d{2}{nlPeriod}\\.v4\\.tar",
+        fileRegex2 = "F\\d{2}{nlPeriod}\\.v4b_web\\.stable_lights\\.{extension}\\.tif",
         shortDescription = "Cleaned up avg_vis",
         longDescription = "Contains the lights from cities, towns, and other sites with persistent
           lighting, including gas flares. Ephemeral events, such as fires
@@ -68,14 +132,24 @@ getAllNlConfigNames <-
       ),
       list(
         nlType = "OLS.Y",
-        configName = "pct_lights",
+        productName = "avg_lights_x_pct",
+        configName = "avg_lights_x_pct",
+        extension = "pct_lights",
+        fileRegex1 = "F\\d{2}{nlPeriod}\\.v4b\\.avg_lights_x_pct\\.tgz",
+        fileRegex2 = "F\\d{2}{nlPeriod}\\.v4b\\.{extension}\\.tif",
         shortDescription = "Percent detection freq",
-        longDescription = "the percentage of
-         observations where light is detected per grid cell."
+        longDescription = "The percent frequency of light detections in cloud-free 
+          observations. The number of light detections is not provided but can be 
+          calculated by multiplying pct_lights by the number of cloud-free observations (cf_cvg). 
+          Data values range from 0-100."
       ),
       list(
         nlType = "OLS.Y",
+        productName = "avg_lights_x_pct",
         configName = "avg_lights_x_pct",
+        extension = "avg_lights_x_pct",
+        fileRegex1 = "F\\d{2}{nlPeriod}\\.v4b\\.avg_lights_x_pct\\.tgz",
+        fileRegex2 = "F\\d{2}{nlPeriod}\\.v4b\\.{extension}\\.tif",
         shortDescription = "Avg vis band x percent detection freq",
         longDescription = "Derived from the average visible band digital number(DN) of
            cloud-free light detections multiplied by the percent frequency
@@ -89,56 +163,87 @@ getAllNlConfigNames <-
       ),
       list(
         nlType = "VIIRS.D",
+        productName = "cf_composite",
         configName = "vcmcfg",
-        shortDescription = "Stray Light Removed",
-        longDescription = "Excludes any data impacted by stray light."
-      ),
-      list(
-        nlType = "VIIRS.D",
-        configName = "vcmslcfg",
-        shortDescription = "Stray Light Corrected",
-        longDescription = " Includes data impacted by stray light if the radiance values
-      have undergone the stray-light correction procedure. The 'vcmslcfg' version,
-      that includes the stray-light corrected data, will have more data coverage
-      toward the poles, but will be of reduced quality."
-      ),
-      list(
-        nlType = "VIIRS.M",
-        configName = "cf_cvg",
-        shortDescription = "Cloud-free coverages",
-        longDescription = "Tally of the total number of observations that went into
-      each grid cell. This image can be used to identify areas with low numbers of
-      observations where the quality is reduced. In some time periods there are areas
-      with zero cloud-free observations in certain locations"
-      ),
-      list(
-        nlType = "VIIRS.M",
-        configName = "vcmcfg",
+        extension = "rade9",
+        fileRegex1 = "SVDNB_npp_d{nlPeriod}\\.d\\.{tileName}\\.{extension}\\.tif",
+        fileRegex2 = "",
         shortDescription = "Stray Light Removed",
         longDescription = "Excludes any data impacted by stray light."
       ),
       list(
         nlType = "VIIRS.M",
-        configName = "vcmslcfg",
-        shortDescription = "Stray Light Corrected",
-        longDescription = "Includes data impacted by stray light if the radiance
-      values have undergone the stray-light correction procedure. The
-      'vcmslcfg' version, that includes the stray-light corrected data, will
-      have more data coverage toward the poles, but will be of reduced
-      quality."
-      ),
-      list(
-        nlType = "VIIRS.Y",
-        configName = "cf_cvg",
+        productName = "cf_composites",
+        configName = "vcmcfg",
+        extension = "avg_rade9",
+        fileRegex1 = "SVDNB_npp_{nlPeriod}01-{nlPeriod}\\d{2}_{tileName}_{configName}_v10_c\\d{12}\\.tgz",
+        fileRegex2 = "SVDNB_npp_{nlPeriod}01-{nlPeriod}\\d{2}_{tileName}_{configName}_v10_c\\d{12}\\.{extension}h\\.tif",
         shortDescription = "Cloud-free coverages",
-        longDescription = "Tally of the total number of observations that went into
-      each grid cell. This image can be used to identify areas with low numbers of
-      observations where the quality is reduced. In some time periods there are areas
-      with zero cloud-free observations in certain locations"
+        longDescription = ""
+      ),
+      list(
+        nlType = "VIIRS.M",
+        productName = "cf_composites",
+        configName = "vcmcfg",
+        extension = "cf_cvg",
+        fileRegex1 = "SVDNB_npp_{nlPeriod}01-{nlPeriod}\\d{2}_{tileName}_{configName}_v10_c\\d{12}\\.tgz",
+        fileRegex2 = "SVDNB_npp_{nlPeriod}01-{nlPeriod}\\d{2}_{tileName}_{configName}_v10_c\\d{12}\\.{extension}\\.tif",
+        shortDescription = "VCMCFG cloud-free tallies",
+        longDescription = "Integer counts of the number of cloud-free coverages, 
+        or observations, that went in to constructing the average radiance image.
+        "
+      ),
+      list(
+        nlType = "VIIRS.M",
+        productName = "avg_rad",
+        configName = "vcmslcfg",
+        extension = "avg_rade9",
+        fileRegex1 = "SVDNB_npp_{nlPeriod}01-{nlPeriod}\\d{2}_{tileName}_{configName}_v10_c\\d{12}\\.tgz",
+        fileRegex2 = "SVDNB_npp_{nlPeriod}01-{nlPeriod}\\d{2}_{tileName}_{configName}_v10_c\\d{12}\\.{extension}h\\.tif",
+        shortDescription = "VCMSL Avg Radiances",
+        longDescription = ""
+      ),
+      list(
+        nlType = "VIIRS.M",
+        productName = "",
+        configName = "vcmslcfg",
+        extension = "cf_cvg",
+        fileRegex1 = "SVDNB_npp_{nlPeriod}01-{nlPeriod}\\d{2}_{tileName}_{configName}_v10_c\\d{12}\\.tgz",
+        fileRegex2 = "SVDNB_npp_{nlPeriod}01-{nlPeriod}\\d{2}_{tileName}_{configName}_v10_c\\d{12}\\.{extension}\\.tif",
+        shortDescription = "VCMSL Cloud-Free Tallies",
+        longDescription = "Integer counts of the number of cloud-free coverages, 
+        or observations, that went in to constructing the average radiance image.
+        "
       ),
       list(
         nlType = "VIIRS.Y",
+        productName = "avg_rad",
+        configName = "vcm-ntl",
+        extension = "avg_rade9",
+        fileRegex1 = "SVDNB_npp_{nlPeriod}0101-{nlPeriod}1231_{tileName}_{configName}_v10_c\\d{12}\\.tgz",
+        fileRegex2 = "SVDNB_npp_{nlPeriod}0101-{nlPeriod}1231_{tileName}_{configName}_v10_c\\d{12}\\.{extension}\\.tif",
+        shortDescription = "VIIRS Cloud Mask - Nighttime Lights",
+        longDescription = "This product contains the 'vcm' average, with background
+      (non-lights) set to zero"
+      ),
+      list(
+        nlType = "VIIRS.Y",
+        productName = "avg_rad_composite",
+        configName = "vcm-orm-ntl",
+        extension = "avg_rade9",
+        fileRegex1 = "SVDNB_npp_{nlPeriod}0101-{nlPeriod}1231_{tileName}_v10_c\\d{12}\\.tgz",
+        fileRegex2 = "SVDNB_npp_{nlPeriod}0101-{nlPeriod}1231_{tileName}_vcm-orm-ntl_v10_c\\d{12}\\.{extension}\\.tif",
+        shortDescription = "VIIRS Cloud Mask - Outlier Removed - Nighttime Light",
+        longDescription = "This product contains the 'vcm-orm' average,
+      with background (non-lights) set to zero."
+      ),
+      list(
+        nlType = "VIIRS.Y",
+        productName = "avg_rad_composite",
         configName = "vcm-orm",
+        extension = "avg_rade9",
+        fileRegex1 = "SVDNB_npp_{nlPeriod}0101-{nlPeriod}1231_{tileName}_v10_c\\d{12}\\.tgz",
+        fileRegex2 = "SVDNB_npp_{nlPeriod}0101-{nlPeriod}1231_{tileName}_vcm-orm_v10_c\\d{12}\\.{extension}\\.tif",
         shortDescription = "VIIRS Cloud Mask - Outlier Removed",
         longDescription = "This product contains cloud-free average radiance values
       that have undergone an outlier removal process to filter out fires
@@ -146,61 +251,106 @@ getAllNlConfigNames <-
       ),
       list(
         nlType = "VIIRS.Y",
-        configName = "vcm-ntl",
-        shortDescription = "VIIRS Cloud Mask - Outlier Removed - Nighttime Light",
-        longDescription = "This product contains the 'vcm-orm' average,
-      with background (non-lights) set to zero."
+        productName = "avg_rad_composite",
+        configName = "vcm",
+        extension = "avg_rade9",
+        fileRegex1 = "SVDNB_npp_{nlPeriod}0101-{nlPeriod}1231_{tileName}_v10_c\\d{12}\\.tgz",
+        fileRegex2 = "SVDNB_npp_{nlPeriod}0101-{nlPeriod}1231_{tileName}_vcm_v10_c\\d{12}\\.{extension}\\.tif",
+        shortDescription = "Average Radiance",
+        longDescription = ""
       ),
       list(
         nlType = "VIIRS.Y",
-        configName = "vcm-orm-ntl",
-        shortDescription = "VIIRS Cloud Mask - Nighttime Lights",
-        longDescription = "This product contains the 'vcm' average, with background
-      (non-lights) set to zero"
+        productName = "avg_rad_composite",
+        configName = "vcm",
+        extension = "cf_cvg",
+        fileRegex1 = "SVDNB_npp_{nlPeriod}0101-{nlPeriod}1231_{tileName}_v10_c\\d{12}\\.tgz",
+        fileRegex2 = "SVDNB_npp_{nlPeriod}0101-{nlPeriod}1231_{tileName}_vcm_v10_c\\d{12}\\.{extension}\\.tif",
+        shortDescription = "Cloud-Free Coverage Tallies",
+        longDescription = "Integer counts of the number of cloud-free coverages, 
+        or observations, that went in to constructing the average radiance image.
+        Counts the total number of observations that went into each grid cell. 
+        This image can be used to identify areas with low numbers of observations 
+        where the quality is reduced. In some time periods there are areas
+      with zero cloud-free observations in certain locations"
+      ),
+      list(
+        nlType = "VIIRS.Y",
+        productName = "avg_rad_composite",
+        configName = "vcm",
+        extension = "cvg",
+        fileRegex1 = "SVDNB_npp_{nlPeriod}0101-{nlPeriod}1231_{tileName}_v10_c\\d{12}\\.tgz",
+        fileRegex2 = "SVDNB_npp_{nlPeriod}0101-{nlPeriod}1231_{tileName}_vcm_v10_c\\d{12}\\.{extension}\\.tif",
+        shortDescription = "Coverage Tallies",
+        longDescription = "Integer counts of the number of coverages or total 
+        observations available (regardless of cloud-cover)"
       )
     )
     
     res <- do.call(rbind.data.frame, allConfigNames)
     
+    rownames(res) <- NULL
+    
     res$longDescription <-
       gsub("\\s*\\n\\s*", " ", res$longDescription)
     
     if (!is.null(nlTypes))
-      res <- res[res$nlType %in% nlTypes,]
+      res <- res[toupper(res$nlType) %in% toupper(nlTypes),]
     
     if (!is.null(configNames))
-      res <- res[res$configName %in% configNames,]
+      res <- res[toupper(res$configName) %in% toupper(configNames),]
     
-    if (!is.null(description))
+    if (!is.null(extensions))
+      res <- res[toupper(res$extension) %in% toupper(extensions),]
+    
+    if (summary)
     {
-      if (description == "short")
-        res$longDescription <- NULL
+      res <-
+        stats::aggregate(configName ~ extension + nlType, res, paste, collapse = ", ")
     } else
     {
-      res$shortDescription <- NULL
-      res$longDescription <- NULL
+      if (is.null(description))
+      {
+        res$shortDescription <- NULL
+        res$longDescription <- NULL
+      } else if (description == "short")
+      {
+        res$longDescription <- NULL
+      }
     }
     
-    if (pretty)
-      if (is.null(description))
-        res <-
-      stats::aggregate(configName ~ nlType, res, paste, collapse = ", ")
-    else if (description == "long")
-      res$longDescription <-
-      sapply(
-        strwrap(
-          res$longDescription,
-          width = getOption("width") - 50,
-          simplify = F
-        ),
-        paste,
-        sep = "",
-        collapse = "\n",
-        USE.NAMES = F,
-        simplify = T
-      )
+    if(printOut)
+    {
+      if(!summary && !is.null(description) && description == "long")
+      {
+        longDesc <-
+          strwrap(
+            res$longDescription,
+            width = getOption("width") - 50,
+            simplify = F
+          )
+        
+        res1 <- res
+        res <- res[FALSE,]
+        
+        for(i in 1:nrow(res1))
+        {
+          lDesc <- unlist(longDesc[i])
+          
+          for(j in 1:length(lDesc))
+          {
+            if(j == 1)
+              res <- rbind(res, stats::setNames(cbind(res1[i, -(ncol(res1))], lDesc[j]), names(res1)))
+            else
+              res <- rbind(res, stats::setNames(cbind(as.data.frame(matrix(data = rep(x = "", times = ncol(res1)-1), nrow = 1)), lDesc[j]), names(res1)))
+          }
+        }
+      }
+      
+      print(x = res, width = getOption("width"), right=FALSE)
+    }
     
-    return(res)
+    invisible(res)
   }
 
 ######################## validNlConfigName ###################################
@@ -227,6 +377,32 @@ validNlConfigName <- function(configName, nlType)
   toupper(configName) %in% toupper(unique(getAllNlConfigNames(nlTypes = nlType)$configName))
 }
 
+######################## validNlConfigExtension ###################################
+
+#' Check if a configName is valid for a given nlType
+#'
+#' Check if a configName is valid for a given nlType
+#'
+#' @param configName character the config shortname of raster
+#' 
+#' @param extension character the extension of raster
+#'
+#' @param nlType types of nightlight to check
+#'
+#' @return logical a vector of logical values
+#'
+#' @examples
+#' Rnightlights:::validNlConfigName("VCMCFG", "OLS.Y")
+#'  #returns FALSE
+#'
+#' Rnightlights:::validNlConfigName("VCMCFG", "VIIRS.M")
+#'  #returns TRUE
+#'
+validNlConfigExtension <- function(extension, configName, nlType)
+{
+  toupper(extension) %in% toupper(unique(getAllNlConfigNames(nlTypes = nlType, configNames = configName)$extension))
+}
+
 ######################## downloadNlTiles ###################################
 
 #' Download the listed tiles for a given nlType in a given nlPeriod
@@ -235,7 +411,9 @@ validNlConfigName <- function(configName, nlType)
 #'
 #' @param nlType character The nightlight type
 #'
-#' @param configName character the type of raster being processed
+#' @param configName character the config short name of raster being processed
+#' 
+#' @param extension character the extension of raster being processed
 #'
 #' @param nlPeriod character The nlPeriod to process in the appropriate
 #'     format
@@ -269,6 +447,7 @@ validNlConfigName <- function(configName, nlType)
 downloadNlTiles <-
   function(nlType,
            configName = pkgOptions(paste0("configName_", nlType)),
+           extension = extension,
            nlPeriod,
            tileList,
            multiTileStrategy = pkgOptions("multiTileStrategy"))
@@ -301,14 +480,18 @@ downloadNlTiles <-
         downloadMethod = pkgOptions("downloadMethod"),
         nlType = nlType,
         configName = configName,
+        extension = extension,
         multiTileStrategy = multiTileStrategy
       )
     else if (stringr::str_detect(nlType, "VIIRS"))
+    {
+      i <- 1
+      
       for (tile in tileList)
       {
         nlTile <- tileName2Idx(tile, nlType)
         
-        message(Sys.time(), ": Downloading tile: ", paste0(nlPeriod, nlTile))
+        message(Sys.time(), ": Downloading tile (", i, "/", length(tileList), "): ", paste0(nlPeriod, nlTile))
         
         #download tile
         success <-
@@ -317,9 +500,13 @@ downloadNlTiles <-
             nlPeriod = nlPeriod,
             tileNum = nlTile,
             nlType = nlType,
-            configName = configName
+            configName = configName,
+            extension = extension
           )
+        
+        i <- i + 1
       }
+    }
     
     return (success)
   }

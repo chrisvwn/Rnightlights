@@ -8,14 +8,15 @@ deleteNlDataCol(
   ctryCode = NULL,
   admLevel,
   nlType,
-  configName = pkgOptions(paste0("configName_", nlType)),
-  multiTileStrategy = pkgOptions("multiTileStrategy"),
-  multiTileMergeFun = pkgOptions("multiTileMergeFun"),
-  removeGasFlares = pkgOptions("removeGasFlares"),
+  configName,
+  extension,
+  multiTileStrategy,
+  multiTileMergeFun,
+  removeGasFlaresMethod,
   nlPeriod,
   nlStat,
-  gadmVersion = pkgOptions("gadmVersion"),
-  gadmPolyType = pkgOptions("gadmPolyType"),
+  gadmVersion,
+  gadmPolyType,
   custPolyPath = NULL
 )
 }
@@ -26,13 +27,16 @@ deleteNlDataCol(
 
 \item{nlType}{the type of nightlight data}
 
-\item{configName}{character the type of raster being processed}
+\item{configName}{character the config short name of raster being processed}
+
+\item{extension}{character the extension of raster being processed}
 
 \item{multiTileStrategy}{character How to handle multiple tiles per nlPeriod}
 
 \item{multiTileMergeFun}{character The function to use to merge tiles}
 
-\item{removeGasFlares}{logical Whether to perform gas flare removal pre-processing}
+\item{removeGasFlaresMethod}{character The method to use to perform gas flare removal
+or NULL to disable}
 
 \item{nlPeriod}{the nlPeriod that the dataCol belongs to}
 

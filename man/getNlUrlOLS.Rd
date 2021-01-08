@@ -4,9 +4,15 @@
 \alias{getNlUrlOLS}
 \title{Function to return the url of the OLS tile to download}
 \usage{
-getNlUrlOLS(nlPeriod, configName = pkgOptions("configName_OLS.Y"))
+getNlUrlOLS(
+  nlType,
+  nlPeriod,
+  configName = pkgOptions(paste0("configName_", nlType))
+)
 }
 \arguments{
+\item{nlType}{The nlType for which to return the tile download URL}
+
 \item{nlPeriod}{The nlPeriod of the tile for which to return the tile download URL}
 
 \item{configName}{character the type of raster being processed}

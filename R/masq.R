@@ -15,7 +15,9 @@
 #'     values, colrowval returns a data.frame with row, col and raster
 #'     value while lonlatval returns a data.frame with lon,lat and val.
 #'
-#' @param configName character the type of raster being processed
+#' @param configName character the config shortname of raster being processed
+#' 
+#' @param extension character the extension of raster being processed
 #'
 #' @return numeric vector of radiances
 #'
@@ -34,7 +36,8 @@ masqVIIRS <-
            ctryRast,
            idx,
            retVal = NULL,
-           configName)
+           configName,
+           extension)
   {
     #Extract one polygon based on index value i
     polygon <- ctryPoly[idx, ] #extract one polygon
@@ -125,7 +128,9 @@ masqVIIRS <-
 #'     values, colrowval returns a data.frame with row, col and raster
 #'     value while lonlatval returns a data.frame with lon,lat and val.
 #'
-#' @param configName character the type of raster being processed
+#' @param configName character the config shortname of raster being processed
+#' 
+#' @param extension character the extension of raster being processed
 #'
 #' @return numeric vector of radiances
 #'
@@ -149,7 +154,8 @@ masqOLS <-
            ctryRast,
            idx,
            retVal = NULL,
-           configName)
+           configName,
+           extension)
   {
     #Extract one polygon based on index value i
     polygon <- ctryPoly[idx, ] #extract one polygon
@@ -167,8 +173,10 @@ masqOLS <-
     if (!inherits(x = result, what = "try-error"))
     {
       #we should be okay here
+      
+      #crops to polygon edge & converts to raster
       inner <-
-        raster::rasterize(x = polygon, y = outer, mask = TRUE) #crops to polygon edge & converts to raster
+        raster::rasterize(x = polygon, y = outer, mask = TRUE)
       
       vals <- as.vector(inner)
       

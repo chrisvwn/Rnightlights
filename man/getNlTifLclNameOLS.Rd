@@ -7,13 +7,16 @@
 getNlTifLclNameOLS(
   nlType,
   configName = pkgOptions(paste0("configName_", nlType)),
+  extension,
   nlPeriod
 )
 }
 \arguments{
 \item{nlType}{The particular VIIRS type e.g. VIIRS.D for daily VIIRS}
 
-\item{configName}{character the type of raster being processed}
+\item{configName}{character the config shortname of raster being processed}
+
+\item{extension}{character the extension of raster being processed}
 
 \item{nlPeriod}{the nlPeriod in which the tile was created}
 }

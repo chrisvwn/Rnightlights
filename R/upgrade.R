@@ -195,21 +195,22 @@ upgradeRnightlights <- function()
           #splits <- unlist(strsplit(tools::file_path_sans_ext(fileName), "_"))
           
           nlType <-
-            stringr::str_extract(string = fileName, "(OLS|VIIRS)(\\.[D|M|Y])?")
+            stringr::str_extract(string = fileName, pattern = paste0("(",paste(unique(getAllNlTypes()), collapse = "|"),")"))
           
           nlType <- newNlType(nlType)
           
           configName <-
-            unlist(
-              stringr::str_extract(string = fileName, pattern = "(CF_CVG|AVG_VIS|STABLE_LIGHTS|PCT_LIGHTS|AVG_LIGHTS_X_PCT|VCMCFG|VCMSLCFG|VCMCFG|VCMSLCFG|VCM-ORM|VCM-ORM-NTL|VCM-NTL)")
-            )
+              stringr::str_extract(string = fileName, pattern = paste0("(",paste(unique(getAllNlConfigNames()$configName), collapse = "|"),")"))
+
+          if (is.na(configName))
+            configName <- pkgOptions(paste0("configName_", nlType))
+
+          extension <-
+            stringr::str_extract(string = fileName, pattern = paste0("(",paste(unique(getAllNlConfigNames()$extension), collapse = "|"),")"))
           
-          configName <-
-            if (is.na(configName))
-              ifelse(grepl("OLS", nlType), "AVG_VIS", "VCMCFG")
-          else
-            configName
-          
+          if (is.na(extension))
+            extension <-pkgOptions(paste0("extension_", nlType))
+
           nlPeriod <-
             stringr::str_extract(string = fileName, "\\d{4,8}")
           
@@ -219,6 +220,7 @@ upgradeRnightlights <- function()
           newFileName <- getNlTileTifLclNamePath(
             nlType = nlType,
             configName = configName,
+            extension = extension,
             nlPeriod = nlPeriod,
             tileNum = tileName2Idx(tileName = tileName,
                                    nlType =  nlType)
@@ -448,15 +450,15 @@ upgradeRnightlights <- function()
             else
               multiTileMergeFun
             
-            removeGasFlares <- gsub("RGF", "", extraOptions[3])
+            removeGasFlaresMethod <- gsub("RGF", "", extraOptions[3])
             
             #gsub always returns a string
-            #if null set removeGasFlares to false
-            removeGasFlares <-
-              if (is.na(removeGasFlares))
+            #if null set removeGasFlaresMethod to false
+            removeGasFlaresMethod <-
+              if (is.na(removeGasFlaresMethod))
                 FALSE
             else
-              as.logical(removeGasFlares)
+              as.logical(removeGasFlaresMethod)
             
             newColName <- getCtryNlDataColName(
               nlPeriod = nlPeriod,
@@ -464,9 +466,10 @@ upgradeRnightlights <- function()
                                     nlStat)),
               nlType = nlType,
               configName = configName,
+              extension = extension,
               multiTileStrategy = multiTileStrategy,
               multiTileMergeFun = multiTileMergeFun,
-              removeGasFlares = removeGasFlares
+              removeGasFlaresMethod = removeGasFlaresMethod
             )
           })
           
@@ -577,14 +580,14 @@ upgradeRnightlights <- function()
           else
             multiTileMergeFun
           
-          removeGasFlares <- gsub("RGF", "", extraOptions[3])
+          removeGasFlaresMethod <- gsub("RGF", "", extraOptions[3])
           
-          #if null set removeGasFlares to false
-          removeGasFlares <-
-            if (is.na(removeGasFlares))
+          #if null set removeGasFlaresMethod to false
+          removeGasFlaresMethod <-
+            if (is.na(removeGasFlaresMethod))
               FALSE
           else
-            as.logical(removeGasFlares)
+            as.logical(removeGasFlaresMethod)
           
           gadmVersion <-
             gsub(
@@ -629,9 +632,10 @@ upgradeRnightlights <- function()
             nlType = nlType,
             nlPeriod = nlPeriod,
             configName = configName,
+            extension = extension,
             multiTileStrategy = multiTileStrategy,
             multiTileMergeFun = multiTileMergeFun,
-            removeGasFlares = removeGasFlares,
+            removeGasFlaresMethod = removeGasFlaresMethod,
             gadmVersion = gadmVersion,
             gadmPolyType = gadmPolyType,
             custPolyPath = custPolyPath

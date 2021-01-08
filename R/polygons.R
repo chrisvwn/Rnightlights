@@ -1938,7 +1938,7 @@ getCtryStructAdmLevelNames <- function(ctryCode = NULL,
 #'
 #' Search for the admLevels in the admLevels of a particular country
 #'
-#' @param ctryCodes \code{character} The ctryCodes of the country of interest
+#' @param ctryCode \code{character} The ctryCode of the country of interest
 #'
 #' @param admLevels \code{character} The admLevel to search
 #'
@@ -1998,6 +1998,9 @@ searchAdmLevelMembers <- function(ctryCode = NULL,
   if (missing(dnldPoly))
     dnldPoly <- TRUE
   
+  #for cran checks
+  ..admLevel <- NULL
+  
   ctryStruct <- readCtryStruct(
     ctryCode = ctryCode,
     gadmVersion = gadmVersion,
@@ -2007,7 +2010,7 @@ searchAdmLevelMembers <- function(ctryCode = NULL,
   
   ctryStruct <- ctryStruct[, 1:(ncol(ctryStruct) - 1)]
   
-  admLvlMembers <- setNames(lapply(admLevels, function(admLevel)
+  admLvlMembers <- stats::setNames(lapply(admLevels, function(admLevel)
   {
     if (is.null(admLevelMembers))
     {
@@ -2015,7 +2018,7 @@ searchAdmLevelMembers <- function(ctryCode = NULL,
     }
     
     z <-
-      setNames(lapply(
+      stats::setNames(lapply(
         admLevelMembers,
         FUN = function(admLevelMember)
         {

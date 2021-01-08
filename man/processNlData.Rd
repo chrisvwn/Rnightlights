@@ -9,9 +9,10 @@ processNlData(
   admLevels,
   nlTypes,
   configNames,
+  extensions,
   multiTileStrategy = pkgOptions("multiTileStrategy"),
   multiTileMergeFun = pkgOptions("multiTileMergeFun"),
-  removeGasFlares = pkgOptions("removeGasFlares"),
+  removeGasFlaresMethod = pkgOptions("removeGasFlaresMethod"),
   nlPeriods,
   nlStats = pkgOptions("nlStats"),
   custPolyPath = NULL,
@@ -23,37 +24,40 @@ processNlData(
 )
 }
 \arguments{
-\item{ctryCodes}{the list of countries to be processed}
+\item{ctryCodes}{(character) the list of countries to be processed}
 
-\item{admLevels}{the list of admin levels in the given countries at
+\item{admLevels}{(character) the list of admin levels in the given countries at
 which to calculate stats}
 
-\item{nlTypes}{the types of nightlights to process}
+\item{nlTypes}{(character) the types of nightlights to process}
 
-\item{configNames}{character the types of raster being processed}
+\item{configNames}{character the config shortnames of rasters being processed}
 
-\item{multiTileStrategy}{character How to handle multiple tiles per nlPeriod}
+\item{extensions}{character the extensions of rasters being processed}
 
-\item{multiTileMergeFun}{character The function to use to merge tiles}
+\item{multiTileStrategy}{(character) How to handle multiple tiles per nlPeriod}
 
-\item{removeGasFlares}{logical Whether to perform gas flare removal pre-processing}
+\item{multiTileMergeFun}{(character) The function to use to merge tiles}
 
-\item{nlPeriods}{the nlPeriods of interest}
+\item{removeGasFlaresMethod}{character The method to use to perform gas flare removal
+or NULL to disable}
 
-\item{nlStats}{the statistics to calculate. If not provided will calculate
+\item{nlPeriods}{(character) the nlPeriods of interest}
+
+\item{nlStats}{(character) the statistics to calculate. If not provided will calculate
 the stats specified in \code{pkgOptions("nlStats")}}
 
-\item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
+\item{custPolyPath}{(character) Alternative to GADM. A path to a custom shapefile zip}
 
-\item{gadmVersion}{The GADM version to use}
+\item{gadmVersion}{(character) The GADM version to use}
 
-\item{gadmPolyType}{The format of polygons to download from GADM}
+\item{gadmPolyType}{(character) The format of polygons to download from GADM}
 
-\item{downloadMethod}{The method used to download rasters and polygons}
+\item{downloadMethod}{(character) The method used to download rasters and polygons}
 
-\item{cropMaskMethod}{The method used to crop and mask satellite rasters}
+\item{cropMaskMethod}{(character) The method used to crop and mask satellite rasters}
 
-\item{extractMethod}{The method used to extract and perform functions on raster data}
+\item{extractMethod}{(character) The method used to extract and perform functions on raster data}
 }
 \value{
 None

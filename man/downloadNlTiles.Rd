@@ -7,6 +7,7 @@
 downloadNlTiles(
   nlType,
   configName = pkgOptions(paste0("configName_", nlType)),
+  extension = extension,
   nlPeriod,
   tileList,
   multiTileStrategy = pkgOptions("multiTileStrategy")
@@ -15,7 +16,9 @@ downloadNlTiles(
 \arguments{
 \item{nlType}{character The nightlight type}
 
-\item{configName}{character the type of raster being processed}
+\item{configName}{character the config short name of raster being processed}
+
+\item{extension}{character the extension of raster being processed}
 
 \item{nlPeriod}{character The nlPeriod to process in the appropriate
 format}

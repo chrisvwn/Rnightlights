@@ -4,7 +4,7 @@
 \alias{masqOLS}
 \title{Extract raster pixel values within the boundaries of a polygon}
 \usage{
-masqOLS(ctryPoly, ctryRast, idx, retVal = NULL, configName)
+masqOLS(ctryPoly, ctryRast, idx, retVal = NULL, configName, extension)
 }
 \arguments{
 \item{ctryPoly}{the country Polygon layer as SpatialPolygon}
@@ -18,7 +18,9 @@ data.frame with spatial context NULL returns a vector of all
 values, colrowval returns a data.frame with row, col and raster
 value while lonlatval returns a data.frame with lon,lat and val.}
 
-\item{configName}{character the type of raster being processed}
+\item{configName}{character the config shortname of raster being processed}
+
+\item{extension}{character the extension of raster being processed}
 }
 \value{
 numeric vector of radiances

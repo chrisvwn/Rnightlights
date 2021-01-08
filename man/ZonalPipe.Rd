@@ -10,6 +10,7 @@ ZonalPipe(
   ctryPoly,
   nlType,
   configName,
+  extension,
   path.in.shp,
   path.in.r,
   path.out.r,
@@ -30,7 +31,9 @@ ZonalPipe(
 
 \item{nlType}{character The nlType of interest}
 
-\item{configName}{character the type of raster being processed}
+\item{configName}{character the configName of raster being processed}
+
+\item{extension}{character the extension of raster being processed}
 
 \item{path.in.shp}{The path to the country shapefile}
 

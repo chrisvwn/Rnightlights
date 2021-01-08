@@ -47,6 +47,13 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   #downloadMethod used options: auto, aria, curl, libcurl, wget
   downloadMethod = "auto",
   
+  #the timeout for download.file is set at a higher value than R's
+  #default of 60
+  downloadTimeout = 3600,
+  
+  #the EOG url where users need to register
+  EOG_UserRegURL = "https://eogauth.mines.edu/auth/realms/master/account/",
+  
   #the file in which to save EOG credentials
   EOG_CredFile = "credseog.txt",
   
@@ -55,6 +62,14 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   
   #the EOG auth api token client_secret
   EOG_ClientSecret = "368127b1-1ee0-4f3f-8429-29e9a93daf9a",
+  
+  #the url to auth user credentials get EOG tile download token from
+  EOG_ClientAuthURL = "https://eogauth.mines.edu/auth/realms/master/protocol/openid-connect/token",
+  
+  extension_OLS.Y = "avg_vis",
+  extension_VIIRS.D = "avg_vis",
+  extension_VIIRS.M = "avg_rade9",
+  extension_VIIRS.Y = "avg_rade9",
   
   #methods to extract data. Options: raster, gdal
   extractMethod = "rast",
@@ -114,6 +129,15 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   
   ntLtsIndexUrlVIIRS.Y = "https://eogdata.mines.edu/pages/download_dnb_composites_iframe.html",
   
+  #official pages with info about the tiles for reference
+  ntLtsInfoUrlOLS.Y = "https://eogdata.mines.edu/dmsp/downloadV4composites.html",
+  
+  ntLtsInfoUrlVIIRS.D = "https://eogdata.mines.edu/download_ut_mos.html",
+  
+  ntLtsInfoUrlVIIRS.M = "https://eogdata.mines.edu/download_dnb_composites.html",
+  
+  ntLtsInfoUrlVIIRS.Y = "https://eogdata.mines.edu/download_dnb_composites.html",
+  
   #the number of cores to use for parallel processing
   numThreads = 2,
   
@@ -125,38 +149,36 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   #and want to exclude a few
   omitCountries = "missing",
   
-  #should we apply gas flare removal to the rasters before calculating
-  #nlStats. The default is TRUE
-  removeGasFlares = TRUE,
-  
-  #the timeout for download.file is set at a higher value than R's
-  #default of 60
-  downloadTimeout = 3600,
-  
+  #Should we apply gas flare removal to the rasters before calculating
+  #nlStats.
+  #the methods to use to remove gasflares:
+  #OGP=OLSGFPoly, OTM=OLSTileMask, VTM=VIIRSTileMask, NULL
+  #Currently only used for VIIRS
+  removeGasFlaresMethod = "OGP",
+
   #Change the temp dir to use e.g. if the system temp dir does not have enough space
   #Not used yet
   tmpDir = raster::tmpDir(),
   
   .allowed = list(
-    configName_OLS.Y = settings::inlist(
-      "avg_lights_x_pct",
-      "avg_vis",
-      "cf_cvg",
-      "pct_lights",
-      "stable_lights"
-    ),
-    configName_VIIRS.D = settings::inlist("vcmcfg", "vcmslcfg"),
-    configName_VIIRS.M = settings::inlist("cf_cvg", "vcmcfg", "vcmslcfg"),
-    configName_VIIRS.Y = settings::inlist("cf_cvg", "vcm-orm", "vcm-orm-ntl", "vcm-ntl"),
+    configName_OLS.Y = settings::inlist("avg_lights_x_pct", "avg_vis", "cf_cvg",
+      "pct_lights", "stable_lights"),
+    configName_VIIRS.D = settings::inlist("vcmcfg"),
+    configName_VIIRS.M = settings::inlist("vcmcfg", "vcmslcfg"),
+    configName_VIIRS.Y = settings::inlist("vcm", "vcm-orm", "vcm-orm-ntl", "vcm-ntl"),
     cropMaskMethod = settings::inlist("gdal", "rast"),
     deleteTiles = settings::inlist(FALSE, TRUE),
     downloadMethod = settings::inlist("aria", "auto", "curl", "libcurl", "wget"),
+    extension_OLS.Y = settings::inlist("avg_vis", "cf_cvg", "pct_lights", "avg_lights_x_pct"),
+    extension_VIIRS.D = settings::inlist("avg_vis", "cf_cvg"),
+    extension_VIIRS.M = settings::inlist("avg_rade9", "cf_cvg"),
+    extension_VIIRS.Y = settings::inlist("avg_rade9", "cf_cvg", "cvg"),
     extractMethod = settings::inlist("gdal", "rast"),
     gadmVersion = settings::inlist("2.8", "3.6"),
     gadmPolyType = settings::inlist("gpkgZip", "kmlZip", "shpZip", "sfRds", "spRds"),
     multiTileStrategy = settings::inlist("first", "last", "all"),
     omitCountries = settings::inlist("all", "error", "long", "missing", "none"),
-    removeGasFlares = settings::inlist(FALSE, TRUE)
+    removeGasFlaresMethod = settings::inlist("OGP", "OTM", "VTM")
   )
 )
 
@@ -269,6 +291,8 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
 #'      store the zonal statistics country polygon }
 #'  \item{\code{downloadMethod}}{(\code{character}) The download method
 #'      to use }
+#'  \item{\code{downloadTimeout}}{(\code{character}) The timeout for download
+#'      operations }
 #'  \item{\code{EOG_CredFile}}{(\code{character}) The filename used to save
 #'      the user credentials for EOG in the .Rnightlights folder }
 #'  \item{\code{EOG_ClientID}}{(\code{character}) The client_id required
@@ -281,18 +305,41 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
 #'      should use in gdal_rasterize }
 #'  \item{\code{ntLtsIndexUrlOLS.Y}}{(\code{character}) The url with the OLS
 #'      tile index }
-#'  \item{\code{ntLtsIndexUrlVIIRS}}{(\code{character}) The url with the
-#'      VIIRS tile index }
+#'  \item{\code{ntLtsIndexUrlVIIRS.D}}{(\code{character}) The url with the
+#'      VIIRS.D tile index }
+#'  \item{\code{ntLtsIndexUrlVIIRS.M}}{(\code{character}) The url with the
+#'      VIIRS.M tile index }
+#'  \item{\code{ntLtsIndexUrlVIIRS.Y}}{(\code{character}) The url with the
+#'      VIIRS.Y tile index }
+#'  \item{\code{ntLtsInfoUrlOLS.Y}}{(\code{character}) The url with the OLS
+#'      tile info }
+#'  \item{\code{ntLtsInfoUrlVIIRS.D}}{(\code{character}) The url with the
+#'      VIIRS.D tile info }
+#'  \item{\code{ntLtsInfoUrlVIIRS.M}}{(\code{character}) The url with the
+#'      VIIRS.M tile info }
+#'  \item{\code{ntLtsInfoUrlVIIRS.Y}}{(\code{character}) The url with the
+#'      VIIRS.Y tile info }
 #'  \item{\code{numThreads}}{(\code{integer}) The number of processing threads
 #'      to use when extractMethod = "raster" }
 #'  \item{\code{omitCountries}}{(\code{character}) The countries to exclude
 #'      in processing }
+#'  \item{\code{removeGasFlaresMethod}}{(\code{character}) The gasflare removal 
+#'      strategy to use. Valid values are:
+#'      \itemize{
+#'        \item OGP \emph{(OLS Gas-Flare Polygons)}: There are gas-flare
+#'          shapefile polygons provided for OLS. These can be used to crop
+#'          areas with gas-flares. However, they are old and may not be reliable.
+#'        \item OTM \emph{(OLS Tile Mask)}: Since OLS tiles are annual composites,
+#'          it is possible to use them to identify dark areas. However, once
+#'          again, the OLS data may be out-dated and further processing may be
+#'          required to align VIIRS and OLS tiles. There may be loss of data.
+#'        \item VTM \emph{(VIIRS Tile Mask)}: Same as the OLS tile mask but done
+#'          using the VIIRS.Y annual tiles. Currently only 2 VIIRS.Y annual tiles
+#'          exist for 2015 and 2016. }}
 #'  \item{\code{stats}}{(\code{character}) The statistics to calculate for
 #'      country regions. The default are sum and mean. Any other aggregate
 #'      statistics can be included. Also any aggregate function accessible
 #'      in the current environment can be added. }
-#'  \item{\code{downloadTimeout}}{(\code{character}) The timeout for download
-#'      operations }
 #'  \item{\code{tmpDir}}{(\code{character}) Change the temporary directory
 #'      for processing rasters. Not in use }
 #' }
@@ -306,6 +353,9 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
 #'
 #' #set the cropMaskMethod
 #' pkgOptions(cropMaskMethod="gdal")
+#' 
+#' #' #set multiple options
+#' pkgOptions(cropMaskMethod="gdal", extractMethod="gdal")
 #'
 #' #retrieve all options
 #' pkgOptions()

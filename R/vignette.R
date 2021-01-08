@@ -40,12 +40,16 @@
 #' pkgReset();
 #'   system.time(rastGFT92 <-  getCtryNlData(ctryCode = "NGA",
 #'      admLevel = "lowest", nlTypes = "OLS.Y", nlPeriods = "1992",
-#'      removeGasFlares = F, ignoreMissing=FALSE, nlStats = list("maxPtsNeighborDistToHalfThresh", list(numPts=1, enablePlot=TRUE))))
+#'      removeGasFlaresMethod = "OGP", ignoreMissing=FALSE, 
+#'      nlStats = list("maxPtsNeighborDistToHalfThresh", 
+#'      list(numPts=1, enablePlot=TRUE))))
 #'
 #'   pkgOptions(extractMethod="gdal",cropMaskMethod="gdal");
 #'   system.time(gdalGFT92 <-  getCtryNlData(ctryCode = "NGA",
 #'       admLevel = "lowest", nlTypes = "OLS.Y", nlPeriods = "1992",
-#'       removeGasFlares = F, ignoreMissing=FALSE, nlStats = list("maxPtsNeighborDistToHalfThresh", list(numPts=1, enablePlot=TRUE))))
+#'       removeGasFlaresMethod = "OGP", ignoreMissing=FALSE,
+#'       nlStats = list("maxPtsNeighborDistToHalfThresh", 
+#'       list(numPts=1, enablePlot=TRUE))))
 #' }
 #'
 #' @export
@@ -79,11 +83,11 @@ maxPtsNeighborDistToHalfThresh <-
         
         if(enablePlot)
         {
-          plot(dt$col, dt$row)
-          points(topPt$col, topPt$row, pch=21)
-          points(nbrs$col[is.na(nbrs$val)], nbrs$row[is.na(nbrs$val)], pch=0)
-          points(nbrs$col[!is.na(nbrs$val)], nbrs$row[!is.na(nbrs$val)], pch=19)
-          points(nbrs$col[nbrs$val <= topPt$val/2], nbrs$row[nbrs$val <= topPt$val/2], pch=11)
+          graphics::plot(dt$col, dt$row)
+          graphics::points(topPt$col, topPt$row, pch=21)
+          graphics::points(nbrs$col[is.na(nbrs$val)], nbrs$row[is.na(nbrs$val)], pch=0)
+          graphics::points(nbrs$col[!is.na(nbrs$val)], nbrs$row[!is.na(nbrs$val)], pch=19)
+          graphics::points(nbrs$col[nbrs$val <= topPt$val/2], nbrs$row[nbrs$val <= topPt$val/2], pch=11)
         }
         
         nbrs <- nbrs[!is.na(nbrs$val), ]

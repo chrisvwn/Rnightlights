@@ -41,14 +41,17 @@
 #'
 #' @param nlType \code{character} The nlType of interest
 #'
-#' @param configName character the type of raster being processed
+#' @param configName character the config shortname of raster being processed
+#' 
+#' @param extension character the extension of raster being processed
 #'
 #' @param multiTileStrategy character How to handle multiple tiles per nlPeriod
 #'
 #' @param multiTileMergeFun character The function to use to merge tiles
 #'
-#' @param removeGasFlares logical Whether to perform gas flare removal pre-processing
-#'
+#' @param removeGasFlaresMethod character The method to use to perform gas flare removal
+#'     or NULL to disable
+#'     
 #' @param nlPeriod \code{character} The nlPeriod of interest
 #'
 #' @param nlStats the statistics to calculate. If not provided will calculate
@@ -82,9 +85,10 @@ processNLCountry <- function(ctryCode,
                              admLevel,
                              nlType,
                              configName = pkgOptions(paste0("configName_", nlType)),
+                             extension,
                              multiTileStrategy = pkgOptions("multiTileStrategy"),
                              multiTileMergeFun = pkgOptions("multiTileMergeFun"),
-                             removeGasFlares = pkgOptions("removeGasFlares"),
+                             removeGasFlaresMethod = pkgOptions("removeGasFlaresMethod"),
                              nlPeriod,
                              nlStats = pkgOptions("nlStats"),
                              downloadMethod = pkgOptions("downloadMethod"),
@@ -179,9 +183,10 @@ processNLCountry <- function(ctryCode,
         admLevel = admLevel,
         nlTypes = nlType,
         configNames = configName,
+        extensions = extension,
         multiTileStrategy = multiTileStrategy,
         multiTileMergeFun = multiTileMergeFun,
-        removeGasFlares = removeGasFlares,
+        removeGasFlaresMethod = removeGasFlaresMethod,
         nlPeriods = nlPeriod,
         nlStats = nlStats[i],
         gadmVersion = gadmVersion,
@@ -249,9 +254,10 @@ processNLCountry <- function(ctryCode,
       ctryCode = ctryCode,
       nlType = nlType,
       configName = configName,
+      extension = extension,
       multiTileStrategy = multiTileStrategy,
       multiTileMergeFun = multiTileMergeFun,
-      removeGasFlares = removeGasFlares,
+      removeGasFlaresMethod = removeGasFlaresMethod,
       nlPeriod = nlPeriod,
       gadmVersion = gadmVersion,
       gadmPolyType = gadmPolyType,
@@ -278,6 +284,49 @@ processNLCountry <- function(ctryCode,
       custPolyPath = custPolyPath
     )
     
+    # if(removeGasFlaresMethod == "OGP")
+    # {
+    #   message(Sys.time(), ": Gas flare removal (OLS Gas-Flare Polygons) is ON")
+    #   
+    #   #read in the mosaiced gas flare polys
+    #   #does this country require gas flare removal
+    #   if(hasNlCtryGasFlares(ctryCode = ctryCode,
+    #                         gadmVersion = gadmVersion,
+    #                         gadmPolyType = gadmPolyType,
+    #                         custPolyPath = custPolyPath))
+    #   {
+    #     message(Sys.time(), ": Reading in gas-flare polygons")
+    #     
+    #     #replace ctryPolyAdm0 with a gas-flare corrected
+    #     #ctryPolyAdm0 (from DMSP-OLS) which will be used to crop the 
+    #     #raster
+    #     ctryPolyAdm0 <- getNlCtryGasFlaresPoly(
+    #       ctryCode = ctryCode,
+    #       gadmVersion = gadmVersion,
+    #       gadmPolyType = gadmPolyType,
+    #       custPolyPath = custPolyPath
+    #     )
+    #     
+    #   } else
+    #   {
+    #     message(Sys.time(),
+    #             ": Gas flare removal not required for: ",
+    #             ctryCode)
+    #   }
+    # }
+    
+    if(!missing(removeGasFlaresMethod) && !is.null(removeGasFlaresMethod) && 
+       removeGasFlaresMethod == "OGP")
+    {
+      gfRemoved <- removeGasFlares(removeGasFlaresMethod = removeGasFlaresMethod,
+                                     ctryPolyAdm0 = ctryPolyAdm0,
+                                     ctryCode = ctryCode, nlType = nlType,
+                                     nlPeriod = nlPeriod,gadmVersion = gadmVersion,
+                                     gadmPolyType = gadmPolyType, custPolyPath = custPolyPath)
+      
+      ctryPolyAdm0 <- gfRemoved$ctryGFPolyAdm0
+    }
+
     message(Sys.time(), ": Reading in the raster tiles")
     
     tileList <-
@@ -290,6 +339,7 @@ processNLCountry <- function(ctryCode,
       rastFilename <- getNlTileTifLclNamePath(
         nlType = nlType,
         configName = configName,
+        extension = extension,
         nlPeriod = nlPeriod,
         tileNum = tileName2Idx(tileName = tile,
                                nlType = nlType)
@@ -304,39 +354,6 @@ processNLCountry <- function(ctryCode,
       message(Sys.time(), ": Cropping the raster tiles ")
       
       #extTempCrop <- crop(rastTile, ctryExtent)
-      
-      if (removeGasFlares)
-      {
-        #read in the mosaiced gas flare polys
-        message(Sys.time(), ": Gas flare removal is ON")
-        
-        #does this country require gas flare removal
-        if (hasNlCtryGasFlares(
-          ctryCode = ctryCode,
-          gadmVersion = gadmVersion,
-          gadmPolyType = gadmPolyType,
-          custPolyPath = custPolyPath
-        ))
-        {
-          message(Sys.time(), ": Processing gas flare removal")
-          
-          ctryPolyAdm0 <- getNlCtryGasFlaresPoly(
-            ctryCode,
-            gadmVersion = gadmVersion,
-            gadmPolyType = gadmPolyType,
-            custPolyPath = custPolyPath
-          )
-          
-        } else
-        {
-          message(Sys.time(),
-                  ": Gas flare removal not required for: ",
-                  ctryCode)
-        }
-      } else
-      {
-        message(Sys.time(), ": Gas flare removal is OFF. Skipping")
-      }
       
       message(Sys.time(), ": Cropping tile = ", tile)
       
@@ -355,8 +372,6 @@ processNLCountry <- function(ctryCode,
       if (is.null(ctryRastCropped))
       {
         ctryRastCropped <- tempCrop
-        
-        #ctryExtCropped <- extTempCrop
       }
       else
       {
@@ -499,6 +514,18 @@ processNLCountry <- function(ctryCode,
       sp::CRS(SRS_string = wgs84)
   }
   
+  if(!missing(removeGasFlaresMethod) && !is.null(removeGasFlaresMethod) && 
+     removeGasFlaresMethod %in% c("OTM","VTM"))
+  {
+    gfRemoved <- removeGasFlares(removeGasFlaresMethod = removeGasFlaresMethod,
+                                                ctryRastCropped = ctryRastCropped,
+                                                ctryCode = ctryCode, nlType = nlType,
+                                                nlPeriod = nlPeriod,gadmVersion = gadmVersion,
+                                                gadmPolyType = gadmPolyType, custPolyPath = custPolyPath)
+    
+    ctryRastCropped <- gfRemoved$ctryGFMaskCropped
+  }
+  
   #message(Sys.time(), ": Create web version of raster")
   
   #gdal_translate -co COMPRESS=JPEG -co PHOTOMETRIC=YCBCR -co TILED=YES 5255C.tif 5255C_JPEG_YCBCR.tif
@@ -533,6 +560,7 @@ processNLCountry <- function(ctryCode,
       ctryRastCropped = ctryRastCropped,
       nlType = nlType,
       configName = configName,
+      extension = extension,
       nlStats = nlStats,
       custPolyPath = custPolyPath
     )
@@ -543,9 +571,10 @@ processNLCountry <- function(ctryCode,
       ctryPoly = ctryPoly,
       nlType = nlType,
       configName = configName,
+      extension = extension,
       multiTileStrategy = multiTileStrategy,
       multiTileMergeFun = multiTileMergeFun,
-      removeGasFlares = removeGasFlares,
+      removeGasFlaresMethod = removeGasFlaresMethod,
       nlPeriod = nlPeriod,
       nlStats = nlStats,
       gadmVersion = gadmVersion,
@@ -564,9 +593,10 @@ processNLCountry <- function(ctryCode,
       nlPeriod = nlPeriod,
       nlType = nlType,
       configName = configName,
+      extension = extension,
       multiTileStrategy = multiTileStrategy,
       multiTileMergeFun = multiTileMergeFun,
-      removeGasFlares = removeGasFlares
+      removeGasFlaresMethod = removeGasFlaresMethod
     )
     
     #finally we are sure the nlStat is good and working,
@@ -613,13 +643,15 @@ processNLCountry <- function(ctryCode,
 #'
 #' @param nlType the nlType of interest
 #'
-#' @param configName character the type of raster being processed
+#' @param configName character the config shortname of raster being processed
+#' 
+#' @param extension character the extension of raster being processed
 #'
 #' @param multiTileStrategy character How to handle multiple tiles per nlPeriod
 #'
 #' @param multiTileMergeFun character The function to use to merge tiles
 #'
-#' @param removeGasFlares logical Whether to perform gas flare removal pre-processing
+#' @param removeGasFlaresMethod logical Whether to perform gas flare removal pre-processing
 #'
 #' @param nlPeriod the nlPeriod of interest
 #'
@@ -640,9 +672,10 @@ processNLCountry <- function(ctryCode,
 getCtryRasterOutputFname <- function(ctryCode,
                                      nlType,
                                      configName = pkgOptions(paste0("configName_", nlType)),
+                                     extension,
                                      multiTileStrategy = pkgOptions("multiTileStrategy"),
                                      multiTileMergeFun = pkgOptions("multiTileMergeFun"),
-                                     removeGasFlares = pkgOptions("removeGasFlares"),
+                                     removeGasFlaresMethod = pkgOptions("removeGasFlaresMethod"),
                                      nlPeriod,
                                      gadmVersion = pkgOptions("gadmVersion"),
                                      gadmPolyType = pkgOptions("gadmPolyType"),
@@ -675,6 +708,8 @@ getCtryRasterOutputFname <- function(ctryCode,
   
   configName <- toupper(configName)
   
+  extension <- toupper(extension)
+  
   fname <- if (is.null(custPolyPath))
     paste0(
       "NL_",
@@ -685,12 +720,14 @@ getCtryRasterOutputFname <- function(ctryCode,
       nlPeriod,
       "_",
       configName,
+      "_",
+      extension,
       "-MTS",
       toupper(multiTileStrategy),
       "-",
       toupper(multiTileMergeFun),
       "-RGF",
-      substr(as.character(removeGasFlares), 1, 1),
+      removeGasFlaresMethod,
       "_GADM-",
       gadmVersion,
       "-",
@@ -707,18 +744,21 @@ getCtryRasterOutputFname <- function(ctryCode,
       nlPeriod,
       "_",
       configName,
+      "_",
+      extension,
       "-MTS",
       toupper(multiTileStrategy),
       "-",
       toupper(multiTileMergeFun),
       "-RGF",
-      substr(as.character(removeGasFlares), 1, 1),
+      removeGasFlaresMethod,
       "_CUST-",
       basename(custPolyPath),
       "-SHPZIP.tif"
     )
   return (fname)
 }
+
 
 ######################## getCtryRasterOutputFnamePath ###################################
 
@@ -727,28 +767,30 @@ getCtryRasterOutputFname <- function(ctryCode,
 #' Get the full path to the file where the cropped VIIRS country raster is stored. This file is created
 #'     when processing the country before extracting the data. It can be used to re-process a country much faster
 #'
-#' @param ctryCode the ctryCode of interest
+#' @param ctryCode (character) the ctryCode of interest
 #'
-#' @param nlType the nlType of interest
+#' @param nlType (character) the nlType of interest
 #'
-#' @param configName character the type of raster being processed
+#' @param configName character the config shortname of raster being processed
+#' 
+#' @param extension character the extension of raster being processed
 #'
-#' @param multiTileStrategy character How to handle multiple tiles per nlPeriod
+#' @param multiTileStrategy (character) How to handle multiple tiles per nlPeriod
 #'
-#' @param multiTileMergeFun character The function to use to merge tiles
+#' @param multiTileMergeFun (character) The function to use to merge tiles
 #'
-#' @param removeGasFlares logical Whether to perform gas flare removal pre-processing
+#' @param removeGasFlaresMethod (character) The method to use to perform gas flare removal
 #'
-#' @param nlPeriod the nlPeriod of interest
+#' @param nlPeriod (character) the nlPeriod of interest
 #'
-#' @param gadmVersion The GADM version to use
+#' @param gadmVersion (character) The GADM version to use
 #'
-#' @param gadmPolyType The format of polygons to download from GADM
+#' @param gadmPolyType (character) The format of polygons to download from GADM
 #'
-#' @param custPolyPath The path to a custom polygon as an alternative
+#' @param custPolyPath (character) The path to a custom polygon as an alternative
 #'     to using GADM polygons
 #'
-#' @return Character full path to the cropped VIIRS country raster for a country and a given year and month
+#' @return (character) full path to the cropped VIIRS country raster for a country and a given year and month
 #'
 #' @examples
 #' \dontrun{
@@ -760,9 +802,10 @@ getCtryRasterOutputFname <- function(ctryCode,
 getCtryRasterOutputFnamePath <- function(ctryCode,
                                          nlType,
                                          configName,
+                                         extension,
                                          multiTileStrategy = pkgOptions("multiTileStrategy"),
                                          multiTileMergeFun = pkgOptions("multiTileMergeFun"),
-                                         removeGasFlares = pkgOptions("removeGasFlares"),
+                                         removeGasFlaresMethod = pkgOptions("removeGasFlaresMethod"),
                                          nlPeriod,
                                          gadmVersion = pkgOptions("gadmVersion"),
                                          gadmPolyType = pkgOptions("gadmPolyType"),
@@ -780,6 +823,10 @@ getCtryRasterOutputFnamePath <- function(ctryCode,
   if (missing("configName") ||
       is.na(configName) || length(configName) == 0 || configName == "")
     configName <- pkgOptions(paste0("configName_", nlType))
+  
+  if (missing("extension") ||
+      is.na(extension) || length(extension) == 0 || extension == "")
+    extension <- pkgOptions(paste0("extension_", nlType))
   
   if (!validCtryCodes(ctryCodes = ctryCode))
     stop(Sys.time(), "Invalid ctryCode: ", ctryCode)
@@ -800,9 +847,10 @@ getCtryRasterOutputFnamePath <- function(ctryCode,
       ctryCode = ctryCode,
       nlType = nlType,
       configName = configName,
+      extension = extension,
       multiTileStrategy = multiTileStrategy,
       multiTileMergeFun = multiTileMergeFun,
-      removeGasFlares = removeGasFlares,
+      removeGasFlaresMethod = removeGasFlaresMethod,
       nlPeriod = nlPeriod,
       gadmVersion = gadmVersion,
       gadmPolyType = gadmPolyType,
@@ -810,6 +858,164 @@ getCtryRasterOutputFnamePath <- function(ctryCode,
     )
   ))
 }
+
+######################## getCtryMaskOutputFname ###################################
+
+#' Constructs the name of the output raster
+#'
+#' Constructs the name of the output raster
+#'
+#' @param ctryCode the ctryCode of interest
+#'
+#' @param nlType the nlType of interest
+#'
+#' @param nlPeriod the nlPeriod of interest
+#'
+#' @param gadmVersion The GADM version to use
+#'
+#' @param gadmPolyType The format of polygons to download from GADM
+#'
+#' @param custPolyPath The path to a custom polygon as an alternative
+#'     to using GADM polygons
+#'
+#' @return Character the name of country raster for a country and a given
+#'     nlType and nlPeriod
+#'
+#' @examples
+#'
+#' Rnightlights:::getCtryGFMaskOutputFname(ctryCode = "KEN", nlType = "VIIRS.M", nlPeriod = "201412")
+#'
+getCtryGFMaskOutputFname <- function(ctryCode,
+                                     nlType,
+                                     nlPeriod,
+                                     gadmVersion = pkgOptions("gadmVersion"),
+                                     gadmPolyType = pkgOptions("gadmPolyType"),
+                                     custPolyPath = NULL)
+{
+  if (missing(ctryCode))
+    stop(Sys.time(), "Missing required parameter ctryCode")
+  
+  if (missing(nlType))
+    stop(Sys.time(), "Missing required parameter nlType")
+  
+  if (missing(nlPeriod))
+    stop(Sys.time(), "Missing required parameter nlPeriod")
+  
+  if (!validCtryCodes(ctryCodes = ctryCode))
+    stop(Sys.time(), "Invalid ctryCode: ", ctryCode)
+  
+  if (!validNlTypes(nlTypes = nlType))
+    stop(Sys.time(), "Invalid nlType: ", nlType)
+  
+  if (!allValidNlPeriods(nlPeriods = nlPeriod, nlTypes = nlType))
+    stop(Sys.time(),
+         "Invalid nlPeriod: ",
+         nlPeriod,
+         " for nlType: ",
+         nlType)
+  
+  if (missing(custPolyPath))
+    custPolyPath <- NULL
+  
+  fname <- if (is.null(custPolyPath))
+    paste0(
+      "NL_GFMask_",
+      ctryCode,
+      "_",
+      nlType,
+      "_",
+      nlPeriod,
+      "_",
+      gadmVersion,
+      "-",
+      toupper(gadmPolyType),
+      ".tif"
+    )
+  else
+    paste0(
+      "NL_GFMask_",
+      ctryCode,
+      "_",
+      nlType,
+      "_",
+      nlPeriod,
+      "_",
+      "_CUST-",
+      basename(custPolyPath),
+      "-SHPZIP.tif"
+    )
+  return (fname)
+}
+
+######################## getCtryGFMaskOutputFnamePath ###################################
+
+#' Get the full path to the file where the cropped VIIRS country mask is stored.
+#'
+#' Get the full path to the file where the cropped VIIRS country mask is stored. This file is created
+#'     when processing the country before extracting the data. It can be used to re-process a country much faster
+#'
+#' @param ctryCode (character) the ctryCode of interest
+#'
+#' @param nlType (character) the nlType of interest
+#'
+#' @param nlPeriod (character) the nlPeriod of interest
+#'
+#' @param gadmVersion (character) The GADM version to use
+#'
+#' @param gadmPolyType (character) The format of polygons to download from GADM
+#'
+#' @param custPolyPath (character) The path to a custom polygon as an alternative
+#'     to using GADM polygons
+#'
+#' @return (character) full path to the cropped VIIRS country raster for a country and a given year and month
+#'
+#' @examples
+#' \dontrun{
+#' getCtryRasterOutputFnamePath("KEN","VIIRS.M", "201412")
+#' }
+#'
+getCtryGFMaskOutputFnamePath <- function(ctryCode,
+                                         nlType,
+                                         nlPeriod,
+                                         gadmVersion = pkgOptions("gadmVersion"),
+                                         gadmPolyType = pkgOptions("gadmPolyType"),
+                                         custPolyPath = NULL)
+{
+  if (missing(ctryCode))
+    stop(Sys.time(), "Missing required parameter ctryCode")
+  
+  if (missing(nlType))
+    stop(Sys.time(), "Missing required parameter nlType")
+  
+  if (missing(nlPeriod))
+    stop(Sys.time(), "Missing required parameter nlPeriod")
+
+  if (!validCtryCodes(ctryCodes = ctryCode))
+    stop(Sys.time(), "Invalid ctryCode: ", ctryCode)
+  
+  if (!validNlTypes(nlTypes = nlType))
+    stop(Sys.time(), "Invalid nlType: ", nlType)
+  
+  if (!allValidNlPeriods(nlPeriods = nlPeriod, nlTypes = nlType))
+    stop(Sys.time(),
+         "Invalid nlPeriod: ",
+         nlPeriod,
+         " for nlType: ",
+         nlType)
+  
+  return (file.path(
+    getNlDir("dirRasterOutput"),
+    getCtryGFMaskOutputFname(
+      ctryCode = ctryCode,
+      nlType = nlType,
+      nlPeriod = nlPeriod,
+      gadmVersion = gadmVersion,
+      gadmPolyType = gadmPolyType,
+      custPolyPath = custPolyPath
+    )
+  ))
+}
+
 
 ######################## processNlData ###################################
 
@@ -833,37 +1039,40 @@ getCtryRasterOutputFnamePath <- function(ctryCode,
 #'     resource constraints. A good example is running a long-running batch on an AWS EC2
 #'     spot-priced machine where the server may be decommissioned at any time. See more in the examples.
 #'
-#' @param ctryCodes the list of countries to be processed
+#' @param ctryCodes (character) the list of countries to be processed
 #'
-#' @param admLevels the list of admin levels in the given countries at
+#' @param admLevels (character) the list of admin levels in the given countries at
 #'     which to calculate stats
 #'
-#' @param nlTypes the types of nightlights to process
+#' @param nlTypes (character) the types of nightlights to process
 #'
-#' @param configNames character the types of raster being processed
+#' @param configNames character the config shortnames of rasters being processed
+#' 
+#' @param extensions character the extensions of rasters being processed
 #'
-#' @param multiTileStrategy character How to handle multiple tiles per nlPeriod
+#' @param multiTileStrategy (character) How to handle multiple tiles per nlPeriod
 #'
-#' @param multiTileMergeFun character The function to use to merge tiles
+#' @param multiTileMergeFun (character) The function to use to merge tiles
 #'
-#' @param removeGasFlares logical Whether to perform gas flare removal pre-processing
+#' @param removeGasFlaresMethod character The method to use to perform gas flare removal
+#'     or NULL to disable
+#'     
+#' @param nlPeriods (character) the nlPeriods of interest
 #'
-#' @param nlPeriods the nlPeriods of interest
-#'
-#' @param nlStats the statistics to calculate. If not provided will calculate
+#' @param nlStats (character) the statistics to calculate. If not provided will calculate
 #'     the stats specified in \code{pkgOptions("nlStats")}
 #'
-#' @param gadmVersion The GADM version to use
+#' @param gadmVersion (character) The GADM version to use
 #'
-#' @param gadmPolyType The format of polygons to download from GADM
+#' @param gadmPolyType (character) The format of polygons to download from GADM
 #'
-#' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
+#' @param custPolyPath (character) Alternative to GADM. A path to a custom shapefile zip
 #'
-#' @param downloadMethod The method used to download rasters and polygons
+#' @param downloadMethod (character) The method used to download rasters and polygons
 #'
-#' @param cropMaskMethod The method used to crop and mask satellite rasters
+#' @param cropMaskMethod (character) The method used to crop and mask satellite rasters
 #'
-#' @param extractMethod The method used to extract and perform functions on raster data
+#' @param extractMethod (character) The method used to extract and perform functions on raster data
 #'
 #' @return None
 #'
@@ -925,9 +1134,10 @@ processNlData <- function (ctryCodes,
                            admLevels,
                            nlTypes,
                            configNames,
+                           extensions,
                            multiTileStrategy = pkgOptions("multiTileStrategy"),
                            multiTileMergeFun = pkgOptions("multiTileMergeFun"),
-                           removeGasFlares = pkgOptions("removeGasFlares"),
+                           removeGasFlaresMethod = pkgOptions("removeGasFlaresMethod"),
                            nlPeriods,
                            nlStats = pkgOptions("nlStats"),
                            custPolyPath = NULL,
@@ -948,6 +1158,9 @@ processNlData <- function (ctryCodes,
   
   if (missing(configNames))
     configNames <- pkgOptions(paste0("configName_", nlTypes))
+  
+  if(missing(extensions))
+    extensions <- pkgOptions(paste0("extension_", nlTypes))
   
   #if the period is not given process all available periods
   if (missing("nlPeriods") ||
@@ -1182,6 +1395,8 @@ processNlData <- function (ctryCodes,
     
     configName <- configNames[idxNlType]
     
+    extension <- extensions[idxNlType]
+      
     if (length(nlTypes) == 1)
     {
       if (is.list(nlPeriods))
@@ -1218,6 +1433,8 @@ processNlData <- function (ctryCodes,
         nlType,
         " | configName: ",
         configName,
+        " | extension: ",
+        extension,
         " | nlPeriod:",
         nlPeriod,
         "****"
@@ -1251,9 +1468,10 @@ processNlData <- function (ctryCodes,
                                               admLevels = admLevel,
                                               nlTypes = nlType,
                                               configNames = configNames,
+                                              extensions = extensions,
                                               multiTileStrategy = multiTileStrategy,
                                               multiTileMergeFun = multiTileMergeFun,
-                                              removeGasFlares = removeGasFlares,
+                                              removeGasFlaresMethod = removeGasFlaresMethod,
                                               nlPeriods = nlPeriod,
                                               nlStats = nlStats,
                                               gadmVersion = gadmVersion,
@@ -1275,9 +1493,10 @@ processNlData <- function (ctryCodes,
             ctryCode = ctryCode,
             nlType = nlType,
             configName = configName,
+            extension = extension,
             multiTileStrategy = multiTileStrategy,
             multiTileMergeFun = multiTileMergeFun,
-            removeGasFlares = removeGasFlares,
+            removeGasFlaresMethod = removeGasFlaresMethod,
             nlPeriod = nlPeriod,
             gadmVersion = gadmVersion,
             gadmPolyType = gadmPolyType,
@@ -1343,6 +1562,7 @@ processNlData <- function (ctryCodes,
         if (!downloadNlTiles(
           nlType = nlType,
           configName = configName,
+          extension = extension,
           multiTileStrategy = multiTileStrategy,
           nlPeriod = nlPeriod,
           tileList = tileList
@@ -1382,9 +1602,10 @@ processNlData <- function (ctryCodes,
             admLevel = admLevel,
             nlType = nlType,
             configName = configName,
+            extension = extension,
             multiTileStrategy = multiTileStrategy,
             multiTileMergeFun = multiTileMergeFun,
-            removeGasFlares = removeGasFlares,
+            removeGasFlaresMethod = removeGasFlaresMethod,
             nlPeriod = nlPeriod,
             nlStats = nlStats,
             downloadMethod = downloadMethod,

@@ -9,7 +9,8 @@ downloadNlTilesVIIRS(
   tileNum,
   downloadMethod = pkgOptions("downloadMethod"),
   nlType,
-  configName = pkgOptions(paste0("configName_", nlType))
+  configName = pkgOptions(paste0("configName_", nlType)),
+  extension
 )
 }
 \arguments{
@@ -21,7 +22,9 @@ downloadNlTilesVIIRS(
 
 \item{nlType}{A character string of nlType}
 
-\item{configName}{character the type of raster being processed}
+\item{configName}{character the config short name of raster being processed}
+
+\item{extension}{character the extension of raster being processed}
 }
 \value{
 TRUE/FALSE Whether the download was successful

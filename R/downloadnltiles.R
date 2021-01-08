@@ -13,81 +13,95 @@
 saveCredentialsEOG <-function(credFile = file.path(getNlDataPathFull(),
                                                    pkgOptions("EOG_CredFile")))
 {
-  if (interactive())
-  {
-    prompt <-
-      paste0(
-        "Registration required for VIIRS satellite imagery access\n\n",
-        "Please browse to ",
-        "\n\nhttps://eogauth.mines.edu/auth/realms/master/account/",
-        "\n\nand register an account.",
-        "\n\nIf you already have the credentials use the menu ",
-        "below to save the username and password.",
-        "\n\nEnter 0 to Exit."
-    )
-
-    ans <-
-      utils::menu(
-        choices = c(
-          "Save credentials",
-          "View saved credentials"
-        ),
-        graphics = F,
-        title = prompt
-      )
-  } else { #if not interactive
-    stop("saveCredentialsEOGVIIRS() can only run interactively. Please run it manually")
-  }
+  ans <- -1
   
-  if (ans == 1)
+  while(ans != 0)
   {
-    username <- ""
-    password <- ""
-    
-    message("Please enter the email and password you registered at the EOG site")
-    
-    while(username == "")
+    if (interactive())
     {
-      username <- readline(prompt = "Username: ")
-    }
-    
-    while(password == "")
-    {
-      password <- readline(prompt = "Password: ")
-    }
-    
-    cat(paste(c("username", "password"), c(username, password), sep = ":"),
-        file = credFile,
-        sep = "\n")
-    
-  } else if (ans == 2)
-  {
-    creds <- getCredentialsEOG()
-
-    if(length(creds) != 2)
-    {
-      message("No credentials found")
-    } else
-    {
-      print(creds[1])
-      print(creds[2])
-    }
-    readline("Press enter to continue ... ")
-    
-  }else if (ans == 0)
-  {
-    msg <-
-      paste0(
-        "Registration required for VIIRS satellite imagery access\n\n",
-        "Please browse to ",
-        "\n\nhttps://eogauth.mines.edu/auth/realms/master/account/",
-        "\n\nand register an account.",
-        "\n\nIf you already have the credentials run 'saveCredentialsEOG()'",
-        "interactively to save the username and password."
+      prompt <-
+        paste0(
+          "Registration required for VIIRS satellite imagery access\n\n",
+          "Please browse to ",
+          pkgOptions("EOG_UserRegURL"),
+          " and register an account.",
+          "\n\nIf you already have the credentials use the menu ",
+          "below to save the username and password.",
+          "\n\nEnter 0 to Exit."
       )
+      
+      ans <-
+        utils::menu(
+          choices = c(
+            "Save credentials",
+            "View saved credentials",
+            "Open EOG registration page in default browser"
+          ),
+          graphics = F,
+          title = prompt
+        )
+    } else { #if not interactive
+      stop("saveCredentialsEOGVIIRS() can only run interactively. Please run it manually")
+    }
     
-    stop(Sys.time(), ": ", msg)
-  } 
+    if (ans == 1)
+    {
+      username <- ""
+      password <- ""
+      
+      message("Please enter the email and password you registered at the EOG site")
+      
+      while(username == "")
+      {
+        username <- readline(prompt = "Username: ")
+      }
+      
+      while(password == "")
+      {
+        password <- readline(prompt = "Password: ")
+      }
+      
+      cat(paste(c("username", "password"), c(username, password), sep = ":"),
+          file = credFile,
+          sep = "\n")
+      
+    } else if (ans == 2)
+    {
+      creds <- getCredentialsEOG()
+  
+      if(length(creds) != 2)
+      {
+        message("No credentials found")
+      } else
+      {
+        print(creds[1])
+        print(creds[2])
+      }
+      readline("Press enter to continue ... ")
+    } else if(ans == 3)
+    {
+      utils::browseURL("https://eogauth.mines.edu/auth/realms/master/account/")
+    }else if (ans == 0)
+    {
+      creds <- getCredentialsEOG()
+      
+      if(length(creds) != 2)
+      {
+          
+        msg <-
+          paste0(
+            "Credentials not found\n\n",
+            "Registration required for VIIRS satellite imagery access\n\n",
+            "Please browse to ",
+            pkgOptions("EOG_UserRegURL"),
+            " and register an account.",
+            "\n\nIf you already have the credentials run 'saveCredentialsEOG()'",
+            "interactively to save the username and password.",
+            "\n\nRun saveCredentialsEOG() to save EOG download credentials"
+          )
+      }
+    }
+  }
 }
 
 ######################## getCredentialsEOG ###################################
@@ -189,14 +203,14 @@ expiredAuthRefreshTokenEOG <- function()
 #' Retrieve a temporary access token required for the actual download from the
 #'    new EOG site at University of Colorado, Dept of Mines
 #'
-#' @import RCurl
-#' 
 #' @export
 reqAuthTokenEOG <- function()
 {
   #if we have an existing token and it is not expired
   if(existsAuthTokenEOG() && !expiredAuthTokenEOG())
   {
+    message(Sys.time(), ": Download token available and not expired")
+    
     access_token <- getAuthTokenEOG()
   } else #if we don't have an existing token or it is expired
   {
@@ -211,6 +225,8 @@ reqAuthTokenEOG <- function()
     #not expired
     if(existsAuthTokenEOG() && expiredAuthTokenEOG() && !expiredAuthRefreshTokenEOG())
     {
+      message(Sys.time(), ": Download token expired. Refreshing")
+      
       refresh_token <- getExistingRefreshTokenEOG()
       
       req <- list(client_id=client_id,
@@ -220,6 +236,7 @@ reqAuthTokenEOG <- function()
       
     } else #we don't have an existing token or refresh token is expired. Request afresh
     {
+      message(Sys.time(), ": Download token expired. Refresh token expired. Requesting new")
       creds <- getCredentialsEOG()
       
       while(length(creds) != 2)
@@ -249,8 +266,8 @@ reqAuthTokenEOG <- function()
     
     h$reset()
     
-    curlPerform(#url = "https://enwaqionzwfie.x.pipedream.net/", #requestbin.com
-      url = "https://eogauth.mines.edu/auth/realms/master/protocol/openid-connect/token",
+    RCurl::curlPerform(
+      url = pkgOptions("EOG_ClientAuthURL"),
       httpheader=c('Content-Type' = "application/x-www-form-urlencoded"),
       postfields=body,
       writefunction = h$update,
@@ -278,7 +295,8 @@ reqAuthTokenEOG <- function()
       print("Please ensure the username and password saved can login on the EOG site")
     } else
     {
-      print("Success retrieving access token")
+      message(Sys.time(), ": Successfully retrieved access token")
+      
       result <- jsonlite::fromJSON(h$value())
       
       access_token <- result$access_token
@@ -314,7 +332,9 @@ reqAuthTokenEOG <- function()
 #'
 #' @param nlType A character string of nlType
 #'
-#' @param configName character the type of raster being processed
+#' @param configName character the config short name of raster being processed
+#' 
+#' @param extension character the extension of raster being processed
 #'
 #' @return TRUE/FALSE Whether the download was successful
 #'
@@ -328,7 +348,8 @@ downloadNlTilesVIIRS <- function(nlPeriod,
                                  tileNum,
                                  downloadMethod = pkgOptions("downloadMethod"),
                                  nlType,
-                                 configName = pkgOptions(paste0("configName_", nlType)))
+                                 configName = pkgOptions(paste0("configName_", nlType)),
+                                 extension)
 {
   if (missing(nlPeriod))
     stop(Sys.time(), ": Missing required parameter nlPeriod")
@@ -353,33 +374,39 @@ downloadNlTilesVIIRS <- function(nlPeriod,
   #get the zip local names
   ntLtsZipLocalNamePathVIIRS <-
     getNlTileZipLclNamePath(nlType = nlType,
+                            configName = configName,
                             nlPeriod = nlPeriod,
                             tileNum = tileNum)
   
   #get the tif local names
   ntLtsTifLocalNamePathVIIRS <-
     getNlTileTifLclNamePath(nlType = nlType,
+                            configName = configName,
+                            extension = extension,
                             nlPeriod = nlPeriod,
                             tileNum = tileNum)
   
   #if the .tif doesn't exist download tgz tile. For aria and wget, if the tgz exists
   #it should attempt to complete it if incomplete else confirm it is complete and move
   #to extraction. For the other methods it will restart the download and overwrite
-  if (!file.exists(ntLtsTifLocalNamePathVIIRS))
+  if (!file.exists(ntLtsTifLocalNamePathVIIRS) && !file.exists(ntLtsZipLocalNamePathVIIRS))
   {
     ntLtsFileUrl <-
       getNlUrlVIIRS(nlPeriod = nlPeriod,
                     tileNum = tileNum,
-                    nlType = nlType)
+                    nlType = nlType,
+                    configName = configName)
     
-    if (is.null(ntLtsFileUrl))
+    if (is.null(ntLtsFileUrl) || length(ntLtsFileUrl) == 0)
     {
       message(
         Sys.time(),
         ": ** Tile not available on the NOAA page.\n Please manually check for the ",
         nlPeriod,
-        " tile at '",
-        pkgOptions(paste0("ntLtsIndexUrl", nlType)),
+        " tile for '",
+        configName,
+        " at ",
+        pkgOptions(paste0("ntLtsInfoUrl", nlType)),
         "'. If it exists please report this as a bug **"
       )
       return(FALSE)
@@ -465,12 +492,13 @@ downloadNlTilesVIIRS <- function(nlPeriod,
       {
         file.rename(from = ntLtsZipLocalNamePathVIIRS, to = ntLtsTifLocalNamePathVIIRS)
       }
-    }
-    else if (!file.exists(
+    } else if (!file.exists(
       getNlTileTifLclNamePathVIIRS(
         nlPeriod = nlPeriod,
         tileNum = tileNum,
-        nlType = nlType
+        nlType = nlType,
+        configName = configName,
+        extension = extension
       )
     ))
     {
@@ -508,14 +536,27 @@ downloadNlTilesVIIRS <- function(nlPeriod,
       #   tgzAvgRadFilename <- tgzFileList[grep(paste0("svdnb.*.", configShortName ,".*.avg_rade9.*.tif$"),tgzFileList, ignore.case = T)]
       # }
       
-      configShortName <- pkgOptions(paste0("configName_", nlType))
+      tgzFileRgxp <- getNlFileRegex(nlTypes = nlType, configNames = configName,
+                                    extensions = extension, regexNum = "2", nlPeriod = nlPeriod,
+                                    tileName = tileIdx2Name(tileNum = tileNum, nlType = nlType),
+                                    extension = extension
+                                    )
       
-      tgzAvgRadFilename <-
-        tgzFileList[grep(
-          pattern = paste0("svdnb.*.", configShortName , ".*.avg_rade9.*.tif$"),
-          x = tgzFileList,
-          ignore.case = T
-        )]
+      # tgzFileRgxp <- gsub(pattern = "{tileName}", replacement = tileIdx2Name(tileNum = tileNum, nlType = nlType), x = tgzFileRgxp, fixed = T)
+      # 
+      # tgzFileRgxp <- gsub(pattern = "{nlPeriod}", replacement = nlPeriod, x = tgzFileRgxp, fixed = T)
+      # 
+      # tgzFileRgxp <- gsub(pattern = "{extension}", replacement = extension, x = tgzFileRgxp, fixed = T)
+      # 
+      
+      tgzAvgRadFilename <- tgzFileList[grep(tgzFileRgxp, tgzFileList, ignore.case = T)]
+      
+      # tgzAvgRadFilename <-
+      #   tgzFileList[grep(
+      #     pattern = paste0("svdnb.*.", configShortName , ".*.avg_rade9.*.tif$"),
+      #     x = tgzFileList,
+      #     ignore.case = T
+      #   )]
       
       message(Sys.time(), ": Extracting ", tgzAvgRadFilename)
       
@@ -523,7 +564,9 @@ downloadNlTilesVIIRS <- function(nlPeriod,
         getNlTileTifLclNamePathVIIRS(
           nlPeriod = nlPeriod,
           tileNum = tileNum,
-          nlType = nlType
+          nlType = nlType,
+          configName = configName,
+          extension = extension
         )
       ))
       {
@@ -539,7 +582,9 @@ downloadNlTilesVIIRS <- function(nlPeriod,
           to = getNlTileTifLclNamePathVIIRS(
             nlPeriod = nlPeriod,
             tileNum = tileNum,
-            nlType = nlType
+            nlType = nlType,
+            configName = configName,
+            extension = extension
           )
         )
         
@@ -572,7 +617,9 @@ downloadNlTilesVIIRS <- function(nlPeriod,
 #'
 #' @param nlType A character string of nlType
 #'
-#' @param configName character the type of raster being processed
+#' @param configName character the config shortname of the raster to process
+#' 
+#' @param extension character the extension of the raster to process
 #'
 #' @param multiTileStrategy character How to handle multiple tiles per nlPeriod
 #'
@@ -588,6 +635,7 @@ downloadNlTilesOLS <- function(nlPeriod,
                                downloadMethod = pkgOptions("downloadMethod"),
                                nlType = "OLS.Y",
                                configName = pkgOptions(paste0("configName_", nlType)),
+                               extension,
                                multiTileStrategy = pkgOptions("multiTileStrategy"))
 {
   if (missing(nlPeriod))
@@ -598,7 +646,24 @@ downloadNlTilesOLS <- function(nlPeriod,
   
   rsltDnld <- 0
   
-  nlUrlsOLS <- getNlUrlOLS(nlPeriod, configName)
+  nlUrlsOLS <- getNlUrlOLS(nlType = nlType, nlPeriod = nlPeriod, configName = configName)
+  
+  if (is.null(nlUrlsOLS) || length(nlUrlsOLS) == 0)
+  {
+    message(
+      Sys.time(),
+      ": ** Tile not available on the NOAA page.\n Please manually check for the ",
+      nlPeriod,
+      " tile for '",
+      configName,
+      ", ",
+      extension,
+      " at ",
+      pkgOptions(paste0("ntLtsInfoUrl", nlType)),
+      "'. If it exists please report this as a bug **"
+    )
+    return(FALSE)
+  }
   
   if (length(nlUrlsOLS) > 1)
   {
@@ -639,18 +704,11 @@ downloadNlTilesOLS <- function(nlPeriod,
     }
   }
   
-  ntLtsZipLocalNameOLS <-
-    getNlTileZipLclNameOLS(nlType = nlType,
-                           nlPeriod = nlPeriod,
-                           configName = configName)
-  ntLtsZipLocalNamePathOLS <-
-    getNlTileZipLclNamePath(nlType = nlType,
-                            nlPeriod = nlPeriod,
-                            configName = configName)
   ntLtsTifLocalNamePathOLS <-
     getNlTileTifLclNamePath(nlType = nlType,
                             nlPeriod = nlPeriod,
-                            configName = configName)
+                            configName = configName,
+                            extension = extension)
   
   if (!file.exists(ntLtsTifLocalNamePathOLS))
   {
@@ -660,28 +718,38 @@ downloadNlTilesOLS <- function(nlPeriod,
     {
       rsltDnld <- NA
       
+      ntLtsZipLocalNameOLS <- basename(nlUrlsOLS[i])
+      # getNlTileZipLclNameOLS(nlType = nlType,
+      #                        nlPeriod = nlPeriod,
+      #                        configName = configName)
+      ntLtsZipLocalNamePathOLS <- file.path(getNlDir(dirName = "dirNlTile"), ntLtsZipLocalNameOLS)
+      # getNlTileZipLclNamePath(nlType = nlType,
+      #                         nlPeriod = nlPeriod,
+      #                         configName = configName)
+
       #get the zip and tif local names
-      ntLtsZipLocalNameOLSTemp <-
-        getNlTileZipLclNameOLS(nlType = nlType,
-                               nlPeriod = nlPeriod,
-                               configName = configName)
-      ntLtsZipLocalNamePathOLSTemp <-
-        getNlTileZipLclNamePath(nlType = nlType,
-                                nlPeriod = nlPeriod,
-                                configName = configName)
+      ntLtsZipLocalNameOLSTemp <- basename(nlUrlsOLS[i])
+        # getNlTileZipLclNameOLS(nlType = nlType,
+        #                        nlPeriod = nlPeriod,
+        #                        configName = configName)
+      ntLtsZipLocalNamePathOLSTemp <- file.path(getNlDir("dirNlTiles"), basename(nlUrlsOLS[i]))
+        # getNlTileZipLclNamePath(nlType = nlType,
+        #                         nlPeriod = nlPeriod,
+        #                         configName = configName)
       ntLtsTifLocalNamePathOLSTemp <-
         getNlTileTifLclNamePath(nlType = nlType,
                                 nlPeriod = nlPeriod,
-                                configName = configName)
+                                configName = configName,
+                                extension = extension)
       
-      ntLtsZipLocalNameOLSTemp <-
-        gsub(pattern = "(\\.tar)",
-             paste0("_", i, "\\1"),
-             ntLtsZipLocalNameOLSTemp)
-      ntLtsZipLocalNamePathOLSTemp <-
-        gsub(pattern = "(\\.tar)",
-             paste0("_", i, "\\1"),
-             ntLtsZipLocalNamePathOLSTemp)
+      # ntLtsZipLocalNameOLSTemp <-
+      #   gsub(pattern = "(\\.tar)",
+      #        paste0("_", i, "\\1"),
+      #        ntLtsZipLocalNameOLSTemp)
+      # ntLtsZipLocalNamePathOLSTemp <-
+      #   gsub(pattern = "(\\.tar)",
+      #        paste0("_", i, "\\1"),
+      #        ntLtsZipLocalNamePathOLSTemp)
       ntLtsTifLocalNamePathOLSTemp <-
         gsub(pattern = "(\\.tif)",
              paste0("_", i, "\\1"),
@@ -732,8 +800,8 @@ downloadNlTilesOLS <- function(nlPeriod,
           if (downloadMethod %in% c("auto", "curl", "libcurl", "wget"))
             rsltDnld <-
             utils::download.file(
-              ntLtsFileUrl,
-              ntLtsZipLocalNamePathOLSTemp,
+              url = ntLtsFileUrl,
+              destfile = ntLtsZipLocalNamePathOLSTemp,
               mode = "wb",
               method = downloadMethod,
               extra = "-c",
@@ -766,7 +834,7 @@ downloadNlTilesOLS <- function(nlPeriod,
         #if the file is found we can return positive? Probably not unless there's an overwrite option
         #for our purposes return true
         message(Sys.time(),
-                "File exists, set Overwrite = TRUE to overwrite")
+                ": File exists, set Overwrite = TRUE to overwrite")
         
         rsltDnld <- 0
       }
@@ -800,14 +868,14 @@ downloadNlTilesOLS <- function(nlPeriod,
           #F1?YYYY.v4[b|c]_stable_lights.lights_pct.tif
           #F1?YYYY.v4[b|c]_avg_lights_x_pct.tif
           
-          tgzFile <-
-            tarFileList[grep(
-              paste0(".*\\.", configName, ".*\\.tif(\\.gz)*$"),
-              tarFileList,
-              ignore.case = T
-            )]
+          tgzFileRgxp <- getNlFileRegex(nlTypes = nlType, configNames = configName,
+                                        extensions = extension, regexNum = "2", nlPeriod = nlPeriod)
           
-          if (toupper(configName) %in% toupper(c("cf_cvg", "avg_vis", "stable_lights")))
+          # tgzFileRgxp <- gsub(pattern = "{nlPeriod}", replacement = nlPeriod, x = tgzFileRgxp, fixed = T)
+          
+          tgzFile <- tarFileList[grep(tgzFileRgxp, tarFileList, ignore.case = T)]
+          
+          if (toupper(configName) %in% c("stable_lights") || toupper(extension) %in% toupper(c("cf_cvg", "avg_vis")))
           {
             #extract the nightlight gz data file
             utils::untar(
@@ -832,7 +900,7 @@ downloadNlTilesOLS <- function(nlPeriod,
               )
             
             #unlink(ntLtsZipLocalNamePathOLS, force = TRUE)
-          } else if (configName %in% toupper(c("pct_lights", "avg_lights_x_pct")))
+          } else if (toupper(extension) %in% toupper(c("pct_lights", "avg_lights_x_pct")))
           {
             message(
               Sys.time(),
@@ -877,12 +945,14 @@ downloadNlTilesOLS <- function(nlPeriod,
       ntLtsTifLocalNameOLS <-
         getNlTileTifLclNameOLS(nlType = nlType,
                                nlPeriod = nlPeriod,
-                               configName = configName)
+                               configName = configName,
+                               extension = extension)
       
       ntLtsTifLocalNamePathOLS <-
         getNlTileTifLclNamePath(nlType = nlType,
                                 nlPeriod = nlPeriod,
-                                configName = configName)
+                                configName = configName,
+                                extension = extension)
       
       ntLtsTifList <- sapply(seq_along(nlUrlsOLS), function(i) {
         #get the zip and tif local names
@@ -947,4 +1017,45 @@ downloadNlTilesOLS <- function(nlPeriod,
   }
   
   return (rsltDnld == 0)
+}
+
+deleteNlTile <- function(nlType,
+                         configName,
+                         nlPeriod,
+                         tileNum)
+{
+  if (missing(nlType))
+    stop(Sys.time(), ": Missing required parameter nlType")
+  
+  if (!validNlTypes(nlType))
+    stop(Sys.time(), ": Invalid nlType")
+  
+  if (!allValidNlPeriods(nlPeriods = nlPeriod, nlTypes = nlType))
+    stop(Sys.time(), ": Invalid nlPeriod: ", nlPeriod)
+  
+  if (!validNlTileNumVIIRS(tileNum, nlType))
+    stop(Sys.time(), ": Invalid tileNum: ", tileNum)
+  
+  if (missing(nlPeriod))
+    stop(Sys.time(), ": Missing required parameter nlPeriod")
+  
+  if (missing(tileNum))
+    stop(Sys.time(), ": Missing required parameter tileNum")
+  
+  if(grepl(nlType, "VIIRS"))
+  {
+    #get the zip local names
+    ntLtsZipLocalNamePathVIIRS <-
+      getNlTileZipLclNamePath(nlType = nlType,
+                              configName = configName,
+                              nlPeriod = nlPeriod,
+                              tileNum = tileNum)
+    
+    #get the tif local names
+    ntLtsTifLocalNamePathVIIRS <-
+      getNlTileTifLclNamePath(nlType = nlType,
+                              configName = configName,
+                              nlPeriod = nlPeriod,
+                              tileNum = tileNum)
+  }
 }

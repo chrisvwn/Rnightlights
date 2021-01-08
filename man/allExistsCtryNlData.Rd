@@ -9,9 +9,10 @@ allExistsCtryNlData(
   admLevels,
   nlTypes,
   configNames,
+  extensions,
   multiTileStrategy = pkgOptions("multiTileStrategy"),
   multiTileMergeFun = pkgOptions("multiTileMergeFun"),
-  removeGasFlares = pkgOptions("removeGasFlares"),
+  removeGasFlaresMethod = pkgOptions("removeGasFlaresMethod"),
   nlPeriods,
   nlStats,
   gadmVersion = pkgOptions("gadmVersion"),
@@ -26,13 +27,15 @@ allExistsCtryNlData(
 
 \item{nlTypes}{A character vector of nlTypes to filter by}
 
-\item{configNames}{character the type of raster being processed}
+\item{configNames}{character the config short name of raster being processed}
+
+\item{extensions}{character the extension of raster being processed}
 
 \item{multiTileStrategy}{character How to handle multiple tiles per nlPeriod}
 
 \item{multiTileMergeFun}{character The function to use to merge tiles}
 
-\item{removeGasFlares}{logical Whether to perform gas flare removal pre-processing}
+\item{removeGasFlaresMethod}{logical Whether to perform gas flare removal pre-processing}
 
 \item{nlPeriods}{A character vector of nlPeriods to filter by}
 

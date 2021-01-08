@@ -9,6 +9,7 @@ fnAggRadRast(
   ctryRastCropped,
   nlType,
   configName,
+  extension,
   nlStats,
   custPolyPath = NULL
 )
@@ -22,7 +23,9 @@ cropped to the country outline}
 
 \item{nlType}{Character vector The nlType to process}
 
-\item{configName}{character the type of raster being processed}
+\item{configName}{character the config short name of raster being processed}
+
+\item{extension}{character the extension of raster being processed}
 
 \item{nlStats}{The statistics to calculate}
 

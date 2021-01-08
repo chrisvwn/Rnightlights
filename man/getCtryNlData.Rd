@@ -18,9 +18,10 @@ getCtryNlData(
   cropMaskMethod = pkgOptions("cropMaskMethod"),
   extractMethod = pkgOptions("extractMethod"),
   configNames,
+  extensions,
   multiTileStrategy = pkgOptions("multiTileStrategy"),
   multiTileMergeFun = pkgOptions("multiTileMergeFun"),
-  removeGasFlares = pkgOptions("removeGasFlares"),
+  removeGasFlaresMethod = pkgOptions("removeGasFlaresMethod"),
   useSavedStats = FALSE,
   source = "local",
   ...
@@ -66,13 +67,16 @@ as listed in pkgOptions("nlStats").}
 \item{extractMethod}{The method used to extract data and perform calculations
 on the satellite raster}
 
-\item{configNames}{character the types of raster being processed}
+\item{configNames}{character the config short names of rasters being processed}
+
+\item{extensions}{character the extensions of rasters being processed}
 
 \item{multiTileStrategy}{character How to handle multiple tiles per nlPeriod}
 
 \item{multiTileMergeFun}{character The function to use to merge tiles}
 
-\item{removeGasFlares}{logical Whether to perform gas flare removal pre-processing}
+\item{removeGasFlaresMethod}{character The method to use to perform gas flare removal
+or NULL to disable}
 
 \item{useSavedStats}{logical Whether to load saved stats and search them for nlStats}
 

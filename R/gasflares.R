@@ -59,8 +59,10 @@ createNlGasFlares <- function()
 {
   message(
     Sys.time(),
-    ": removeGasFlares = TRUE. Downloading gas flare country polygons. This will take a while"
+    ": removeGasFlaresMethod = OGP. Downloading DMSP-OLS gas flare country polygons. This will take a while"
   )
+  
+  wgs84 <- getCRS()
   
   gasFlareRdsFnamePath <- getNlGasFlaresRdsFnamePath()
   
@@ -174,8 +176,6 @@ createNlGasFlares <- function()
       gfPolyMosaic <- do.call(raster::bind, gfPoly)
       
       rm(gfPoly)
-      
-      wgs84 <- getCRS()
       
       raster::projection(gfPolyMosaic) <- sp::CRS(projargs = wgs84)
       
@@ -472,4 +472,298 @@ getNlCtryGasFlaresPoly <- function(ctryCode = ctryCode,
       custPolyPath = custPolyPath
     )
   )
+}
+
+removeGasFlares <- function(removeGasFlaresMethod, ctryPolyAdm0 = NULL,
+                            ctryRastCropped = NULL, ctryCode, nlType, nlPeriod, 
+                            gadmVersion, gadmPolyType, custPolyPath,
+                            cropMaskMethod = pkgOptions("cropMaskMethod"))
+{
+  message(Sys.time(), ": Processing gas-flare/background removal")
+  
+  wgs84 <- getCRS()
+  
+  ctryMaskCropped <- NULL
+  
+  if (removeGasFlaresMethod == "OGP")
+  {
+    #read in the mosaiced gas flare polys
+
+    #does this country require gas flare removal
+    if (hasNlCtryGasFlares(
+      ctryCode = ctryCode,
+      gadmVersion = gadmVersion,
+      gadmPolyType = gadmPolyType,
+      custPolyPath = custPolyPath
+    ))
+    {
+      message(Sys.time(), ": RGF: Processing gas flare removal")
+
+      ctryPolyAdm0 <- getNlCtryGasFlaresPoly(
+        ctryCode,
+        gadmVersion = gadmVersion,
+        gadmPolyType = gadmPolyType,
+        custPolyPath = custPolyPath
+      )
+
+    } else
+    {
+      message(Sys.time(),
+              ": RGF: Gas flare removal not required for: ",
+              ctryCode)
+    }
+  }else if(removeGasFlaresMethod %in% c("OTM","VTM"))
+  {
+    if(missing(ctryPolyAdm0) || is.null(ctryPolyAdm0))
+    {
+      ctryPolyAdm0 <- readCtryPolyAdmLayer(
+        ctryCode = ctryCode,
+        admLevel = unlist(
+          getCtryShpLyrNames(
+            ctryCodes = ctryCode,
+            lyrNums = 0,
+            gadmVersion = gadmVersion,
+            gadmPolyType = gadmPolyType,
+            custPolyPath = custPolyPath
+          )
+        ),
+        gadmVersion = gadmVersion,
+        custPolyPath = custPolyPath
+      )
+    }
+    
+    maskNlType <- ifelse(removeGasFlaresMethod == "OTM", "OLS.Y", "VIIRS.Y")
+    
+    maskConfigName <- pkgOptions(paste0("configName_", maskNlType))
+    
+    maskExtension <- pkgOptions(paste0("extension_", maskNlType))
+    
+    allMaskNlPeriods <- getAvailableNlPeriods(nlTypes = maskNlType, configNames = maskConfigName)
+    
+    allMaskNlPeriods <- allMaskNlPeriods[[maskNlType]][[maskConfigName]]
+    
+    maskNlPeriod <- allMaskNlPeriods[length(allMaskNlPeriods)]
+    
+    #get the path we will use to save the cropped raster
+    ctryGFMaskOutputFnamePath <-
+      getCtryGFMaskOutputFnamePath(
+        ctryCode = ctryCode,
+        nlType = maskNlType,
+        nlPeriod = maskNlPeriod,
+        gadmVersion = gadmVersion,
+        gadmPolyType = gadmPolyType,
+        custPolyPath = custPolyPath
+      )
+    
+    if (!file.exists(ctryGFMaskOutputFnamePath))
+    {
+      message(Sys.time(), ": RGF: Country mask raster not found. Creating")
+      
+      message(Sys.time(), ": RGF: Identified tile ", nlType, " ", maskNlPeriod)
+      
+      maskTileList <- getCtryTileList(ctryCodes = ctryCode, nlType = maskNlType)
+      
+      #download tiles
+      #download all required tiles
+      if (!downloadNlTiles(
+        nlType = maskNlType,
+        configName = maskConfigName,
+        extension = maskExtension,
+        multiTileStrategy = pkgOptions("multiTileStrategy"),
+        nlPeriod = maskNlPeriod,
+        tileList = maskTileList
+      ))
+      {
+        message(Sys.time(),
+                ": RGF: Something went wrong with the tile downloads. Aborting ...")
+        
+        return()
+      }
+
+      ctryMaskCropped <- NULL
+      
+      #crop tiles to country outline and save
+      #mask file
+      for (tile in maskTileList)
+      {
+        maskFilename <- getNlTileTifLclNamePath(
+          nlType = maskNlType,
+          configName = maskConfigName,
+          extension = maskExtension,
+          nlPeriod = maskNlPeriod,
+          tileNum = tileName2Idx(tileName = tile,
+                                 nlType = nlType)
+        )
+        
+        maskTile <- raster::raster(x = maskFilename)
+
+        raster::projection(maskTile) <- sp::CRS(projargs = wgs84)
+        
+        ctryPolyAdm0 <- sp::spTransform(ctryPolyAdm0, sp::CRS(SRS_string = wgs84))
+        
+        message(Sys.time(), ": RGF: Cropping the raster tiles ")
+        
+        #extTempCrop <- crop(rastTile, ctryExtent)
+        
+        message(Sys.time(), ": RGF: Cropping mask tile = ", tile)
+        
+        #we crop using raster for both rast and gdal
+        #Note: gdalwarp is not used for cropping because the crop_to_cutline option
+        #causes a shift in the cell locations which then affects the stats extracted.
+        #A gdal-based crop to extent would be highly desirable for performance reasons
+        #though so seeking other gdal-based workarounds
+        tempMaskCrop <-
+          raster::crop(x = maskTile,
+                       y = ctryPolyAdm0,
+                       progress = 'text')
+        
+        #will only be non-null if there are multiple tiles to be mosaiced i.e. a country
+        #that straddles multiple tiles. So in the 2nd+ loop ctryRastCropped will not be null
+        if (is.null(ctryMaskCropped))
+        {
+          ctryMaskCropped <- tempMaskCrop
+        }
+        else
+        {
+          #if we are here we are mosaicing multiple tiles
+          ctryMaskMerged <- ctryMaskCropped
+          
+          ctryMaskCropped <- NULL
+          
+          #mosaic the tiles and store back in ctryRastCropped
+          ctryMaskCropped <-
+            raster::merge(x = ctryMaskMerged, y = tempMaskCrop)
+          
+          rm(ctryMaskMerged)
+        }
+        
+        rm(tempMaskCrop)
+      }
+      
+      #unload the tile from memory
+      rm(maskTile)
+      
+      #release unused memory
+      gc()
+      
+      message(Sys.time(), ": RGF: Masking the raster ")
+      
+      if (cropMaskMethod == "rast")
+      {
+        #RASTERIZE
+        message(Sys.time(), ": RGF: Convert to raster object using fasterize ")
+        
+        
+        # Use fasterize to mask
+        # Convert sf object to raster
+        
+        ctryPolyAdm0_raster <-
+          fasterize::fasterize(sf = sf::st_as_sf(ctryPolyAdm0),
+                               raster = ctryMaskCropped)
+        message(Sys.time(), ": RGF: Masking ")
+        
+        ctryRastCropped <-
+          raster::mask(x = ctryMaskCropped, mask = ctryPolyAdm0_raster)
+        
+        message(Sys.time(), ": RGF: Writing the raster to disk ")
+        
+        raster::writeRaster(
+          x = ctryMaskCropped,
+          filename = ctryGFMaskOutputFnamePath,
+          overwrite = TRUE,
+          progress = "text"
+        )
+        
+        message(Sys.time(), ": RGF: Crop and mask using rasterize ... Done")
+        
+      } else if (cropMaskMethod == "gdal")
+      {
+        message(Sys.time(), ": RGF: Crop and mask using gdalwarp ... ")
+        
+        #GDALWARP
+        rstTmp <-
+          file.path(getNlDir(dirName = "dirNlTemp"),
+                    paste0(basename(tempfile()), ".tif"))
+        
+        message(Sys.time(),
+                ": RGF: Writing merged raster to disk for gdalwarp masking")
+        
+        raster::writeRaster(x = ctryMaskCropped,
+                            filename = rstTmp,
+                            progress = "text")
+        
+        ctryRastCropped <- NULL
+        
+        gc()
+        
+        #the polygon will already correspond to having gas flares removed or not
+        ctryPolyAdm0TmpDir <- tools::file_path_sans_ext(rstTmp)
+        
+        rgdal::writeOGR(
+          obj = methods::as(ctryPolyAdm0, "SpatialPolygonsDataFrame"),
+          dsn = ctryPolyAdm0TmpDir,
+          driver = "ESRI Shapefile",
+          layer = "GID_0_IDX"
+        )
+        
+        outputFileVrt <-
+          file.path(
+            getNlDir(dirName = "dirNlTemp"),
+            paste0(ctryCode, "_GFMask_", nlType, "_", nlPeriod, ".vrt"),
+            fsep =
+          )
+        
+        if (file.exists(outputFileVrt))
+          file.remove(outputFileVrt)
+        
+        message(Sys.time(), ": RGF: gdalwarp masking to VRT")
+        
+        gdalUtils::gdalwarp(
+          srcfile = rstTmp,
+          dstfile = outputFileVrt,
+          s_srs = wgs84,
+          t_srs = wgs84,
+          cutline = ctryPolyAdm0TmpDir,
+          cl = "GID_0_IDX",
+          multi = TRUE,
+          wm = pkgOptions("gdalCacheMax"),
+          wo = paste0("NUM_THREADS=",
+                      pkgOptions("numThreads")),
+          q = FALSE
+        )
+        
+        message(Sys.time(), ": RGF: gdal_translate converting VRT to TIFF ")
+        gdalUtils::gdal_translate(co = "compress=LZW",
+                                  src_dataset = outputFileVrt,
+                                  dst_dataset = ctryGFMaskOutputFnamePath)
+        
+        message(Sys.time(), ": RGF: Deleting the component rasters ")
+        
+        file.remove(rstTmp)
+        file.remove(outputFileVrt)
+        unlink(ctryPolyAdm0TmpDir,
+               recursive = T,
+               force = T)
+        
+        ctryMaskCropped <- raster::raster(ctryGFMaskOutputFnamePath)
+        
+        #GDALWARP
+        message(Sys.time(), ": RGF: Crop and mask using gdalwarp ... DONE")
+      }
+    }else
+    {
+      maskFilename <- ctryGFMaskOutputFnamePath
+      
+      message(Sys.time(), ": RGF: ", maskFilename, " already exists")
+      
+      ctryMaskCropped <- raster::raster(x = maskFilename)
+      
+      raster::projection(x = ctryMaskCropped) <- sp::CRS(SRS_string = wgs84)
+    }
+    
+    ctryMaskCropped <- raster::mask(x = ctryRastCropped, mask = ctryMaskCropped,
+                                    maskvalue = 0, updatevalue = 0, updateNA = TRUE)
+  }
+  
+  list("ctryGFPolyAdm0" = ctryPolyAdm0, "ctryGFMaskCropped" = ctryMaskCropped)
 }

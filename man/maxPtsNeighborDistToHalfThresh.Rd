@@ -55,12 +55,16 @@ The function gets the top numPts brightest pixels in a sub-polygon
 pkgReset();
   system.time(rastGFT92 <-  getCtryNlData(ctryCode = "NGA",
      admLevel = "lowest", nlTypes = "OLS.Y", nlPeriods = "1992",
-     removeGasFlares = F, ignoreMissing=FALSE, nlStats = list("maxPtsNeighborDistToHalfThresh", list(numPts=1, enablePlot=TRUE))))
+     removeGasFlaresMethod = "OGP", ignoreMissing=FALSE, 
+     nlStats = list("maxPtsNeighborDistToHalfThresh", 
+     list(numPts=1, enablePlot=TRUE))))
 
   pkgOptions(extractMethod="gdal",cropMaskMethod="gdal");
   system.time(gdalGFT92 <-  getCtryNlData(ctryCode = "NGA",
       admLevel = "lowest", nlTypes = "OLS.Y", nlPeriods = "1992",
-      removeGasFlares = F, ignoreMissing=FALSE, nlStats = list("maxPtsNeighborDistToHalfThresh", list(numPts=1, enablePlot=TRUE))))
+      removeGasFlaresMethod = "OGP", ignoreMissing=FALSE,
+      nlStats = list("maxPtsNeighborDistToHalfThresh", 
+      list(numPts=1, enablePlot=TRUE))))
 }
 
 }

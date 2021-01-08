@@ -16,6 +16,8 @@ searchAdmLevelMembers(
 )
 }
 \arguments{
+\item{ctryCode}{\code{character} The ctryCode of the country of interest}
+
 \item{admLevels}{\code{character} The admLevel to search}
 
 \item{admLevelMembers}{The names to search for within the admLevels}
@@ -30,8 +32,6 @@ should we download it?}
 \item{gadmPolyType}{The format of polygons to download from GADM}
 
 \item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
-
-\item{ctryCodes}{\code{character} The ctryCodes of the country of interest}
 }
 \value{
 character vector of admin level names
