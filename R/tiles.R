@@ -19,7 +19,7 @@ getNlFileRegex <-function(nlTypes = NULL, configNames = NULL, extensions = NULL,
   
   if(!missing(configNames) && !is.null(configNames))
   {
-    regex <- gsub(pattern = "{configName}", replacement = configNames, x = regex, fixed = TRUE)
+    regex <- gsub(pattern = "{configName}", replacement = tolower(configNames), x = regex, fixed = TRUE)
   } else
   {
     regex <- gsub(pattern = "{configName}", replacement = ".*", x = regex, fixed = TRUE)
@@ -1151,7 +1151,7 @@ tileIdx2Name <- function(tileNum, nlType)
   if (!validNlTypes(nlType))
     stop(Sys.time(), ": Invalid nlType: ", nlType)
   
-  if (!validNlTileNumVIIRS(tileNum, nlType))
+  if (!validNlTile(tileNum, nlType))
     stop(Sys.time(), ": Invalid tileNum: ", tileNum)
   
   if (!exists("nlTiles"))
@@ -1237,10 +1237,10 @@ tilesPolygonIntersectVIIRS <- function(shpPolygon)
 #' @return TRUE/FALSE
 #'
 #' @examples
-#' Rnightlights:::validNlTileNumVIIRS("1", "VIIRS.M")
+#' Rnightlights:::validNlTile("1", "VIIRS.M")
 #'  #returns TRUE
 #'
-#' Rnightlights:::validNlTileNumVIIRS("9", "VIIRS.D")
+#' Rnightlights:::validNlTile("9", "VIIRS.D")
 #'  #returns FALSE
 #'
 validNlTile <- function(nlTile, nlType)
@@ -1251,7 +1251,7 @@ validNlTile <- function(nlTile, nlType)
   if (missing(nlType))
     stop(Sys.time(), ": Missing parameter nlType")
   
-  if (!class(nlTile) %in% c("character", "numeric") ||
+  if (!class(nlTile) %in% c("character", "integer", "numeric") ||
       nlTile == "" ||
       length(nlTile) == 0)
     return(FALSE)
