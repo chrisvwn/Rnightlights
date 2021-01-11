@@ -92,7 +92,7 @@ getAllNlConfigNames <-
     allConfigNames <- list(
       list(
         nlType = "OLS.Y",
-        productName = "cf_composite",
+        productName = "dnb_composite_v4",
         configName = "stable_lights",
         extension = "cf_cvg",
         fileRegex1 = "F\\d{2}{nlPeriod}\\.v4\\.tar",
@@ -106,7 +106,7 @@ getAllNlConfigNames <-
       ),
       list(
         nlType = "OLS.Y",
-        productName = "cf_composite",
+        productName = "dnb_composite_v4",
         configName = "stable_lights",
         extension = "avg_vis",
         fileRegex1 = "F\\d{2}{nlPeriod}\\.v4\\.tar",
@@ -118,7 +118,7 @@ getAllNlConfigNames <-
       ),
       list(
         nlType = "OLS.Y",
-        productName = "cf_composite",
+        productName = "dnb_composite_v4",
         configName = "stable_lights",
         extension = "avg_vis",
         fileRegex1 = "F\\d{2}{nlPeriod}\\.v4\\.tar",
@@ -132,7 +132,7 @@ getAllNlConfigNames <-
       ),
       list(
         nlType = "OLS.Y",
-        productName = "avg_lights_x_pct",
+        productName = "dnb_composite_v4",
         configName = "avg_lights_x_pct",
         extension = "pct_lights",
         fileRegex1 = "F\\d{2}{nlPeriod}\\.v4b\\.avg_lights_x_pct\\.tgz",
@@ -145,7 +145,7 @@ getAllNlConfigNames <-
       ),
       list(
         nlType = "OLS.Y",
-        productName = "avg_lights_x_pct",
+        productName = "dnb_composite_v4",
         configName = "avg_lights_x_pct",
         extension = "avg_lights_x_pct",
         fileRegex1 = "F\\d{2}{nlPeriod}\\.v4b\\.avg_lights_x_pct\\.tgz",
@@ -163,7 +163,7 @@ getAllNlConfigNames <-
       ),
       list(
         nlType = "VIIRS.D",
-        productName = "cf_composite",
+        productName = "daily_radiance",
         configName = "vcmcfg",
         extension = "rade9",
         fileRegex1 = "SVDNB_npp_d{nlPeriod}\\.d\\.{tileName}\\.{extension}\\.tif",
@@ -173,7 +173,7 @@ getAllNlConfigNames <-
       ),
       list(
         nlType = "VIIRS.M",
-        productName = "cf_composites",
+        productName = "avg_rad_composite",
         configName = "vcmcfg",
         extension = "avg_rade9",
         fileRegex1 = "SVDNB_npp_{nlPeriod}01-{nlPeriod}\\d{2}_{tileName}_{configName}_v10_c\\d{12}\\.tgz",
@@ -183,7 +183,7 @@ getAllNlConfigNames <-
       ),
       list(
         nlType = "VIIRS.M",
-        productName = "cf_composites",
+        productName = "avg_rad_composite",
         configName = "vcmcfg",
         extension = "cf_cvg",
         fileRegex1 = "SVDNB_npp_{nlPeriod}01-{nlPeriod}\\d{2}_{tileName}_{configName}_v10_c\\d{12}\\.tgz",
@@ -195,7 +195,7 @@ getAllNlConfigNames <-
       ),
       list(
         nlType = "VIIRS.M",
-        productName = "avg_rad",
+        productName = "avg_rad_composite",
         configName = "vcmslcfg",
         extension = "avg_rade9",
         fileRegex1 = "SVDNB_npp_{nlPeriod}01-{nlPeriod}\\d{2}_{tileName}_{configName}_v10_c\\d{12}\\.tgz",
@@ -205,7 +205,7 @@ getAllNlConfigNames <-
       ),
       list(
         nlType = "VIIRS.M",
-        productName = "",
+        productName = "avg_rad_composite",
         configName = "vcmslcfg",
         extension = "cf_cvg",
         fileRegex1 = "SVDNB_npp_{nlPeriod}01-{nlPeriod}\\d{2}_{tileName}_{configName}_v10_c\\d{12}\\.tgz",
@@ -217,7 +217,7 @@ getAllNlConfigNames <-
       ),
       list(
         nlType = "VIIRS.Y",
-        productName = "avg_rad",
+        productName = "avg_rad_composite",
         configName = "vcm-ntl",
         extension = "avg_rade9",
         fileRegex1 = "SVDNB_npp_{nlPeriod}0101-{nlPeriod}1231_{tileName}_{configName}_v10_c\\d{12}\\.tgz",
