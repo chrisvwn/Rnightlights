@@ -329,7 +329,7 @@ insertNlDataCol <-
             extension,
             multiTileStrategy,
             multiTileMergeFun,
-            removeGasFlaresMethod = pkgOptions("removeGasFlaresMethod"))
+            removeGasFlaresMethod = pkgOptions(paste0("removeGasFlaresMethod_", nlType)))
   {
     if (missing(ctryNlDataDF))
       stop(Sys.time(), ": Missing required parameter ctryNlDataDF")
@@ -903,7 +903,7 @@ getCtryNlData <- function(ctryCode = NULL,
                           extensions,
                           multiTileStrategy = pkgOptions("multiTileStrategy"),
                           multiTileMergeFun = pkgOptions("multiTileMergeFun"),
-                          removeGasFlaresMethod = pkgOptions("removeGasFlaresMethod"),
+                          removeGasFlaresMethod = pkgOptions(paste0("removeGasFlaresMethod_", nlTypes)),
                           useSavedStats = FALSE,
                           source = "local",
                           ...)
@@ -1483,7 +1483,7 @@ getCtryNlDataColName <-
            extension,
            multiTileStrategy = "all",
            multiTileMergeFun = "mean",
-           removeGasFlaresMethod = pkgOptions("removeGasFlaresMethod"))
+           removeGasFlaresMethod = pkgOptions(paste0("removeGasFlaresMethod_", nlType)))
   {
     if (missing(nlPeriod))
       stop(Sys.time(), ": Missing required parameter nlPeriod")
@@ -1642,7 +1642,7 @@ existsCtryNlData <- function(ctryCode = NULL,
                              extensions,
                              multiTileStrategy = pkgOptions("multiTileStrategy"),
                              multiTileMergeFun = pkgOptions("multiTileMergeFun"),
-                             removeGasFlaresMethod = pkgOptions("removeGasFlaresMethod"),
+                             removeGasFlaresMethod = pkgOptions(paste0("removeGasFlaresMethod_", nlTypes)),
                              nlPeriods,
                              nlStats,
                              gadmVersion = pkgOptions("gadmVersion"),
@@ -1801,7 +1801,7 @@ allExistsCtryNlData <- function(ctryCodes,
                                 extensions,
                                 multiTileStrategy = pkgOptions("multiTileStrategy"),
                                 multiTileMergeFun = pkgOptions("multiTileMergeFun"),
-                                removeGasFlaresMethod = pkgOptions("removeGasFlaresMethod"),
+                                removeGasFlaresMethod = pkgOptions(paste0("removeGasFlaresMethod_", nlTypes)),
                                 nlPeriods,
                                 nlStats,
                                 gadmVersion = pkgOptions("gadmVersion"),
