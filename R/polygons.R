@@ -466,7 +466,10 @@ dnldGADMCtryShpZip <- function(ctryCode,
         rsltDnld <-
         system(
           paste0(
-            "aria2c -c -x",
+            "aria2c -c", #continue partial downloads if found
+            " -x", #number of connections to make
+            pkgOptions("numParDnldConns"),
+            " -s", #number of segments to parallel download
             pkgOptions("numParDnldConns"),
             " --show-console-readout=false --summary-interval=10 ",
             fullPolyUrl,
