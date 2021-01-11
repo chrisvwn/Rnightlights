@@ -706,7 +706,7 @@ getCtryRasterOutputFname <- function(ctryCode,
   if (missing(custPolyPath))
     custPolyPath <- NULL
   
-  configName <- toupper(configName)
+  #configName <- toupper(configName)
   
   extension <- toupper(extension)
   

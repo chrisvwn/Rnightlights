@@ -29,7 +29,7 @@ getNlUrlOLS <-
     if(!validNlConfigName(configName = configName, nlType = nlType))
       stop(Sys.time(), ": Invalid nlPeriod supplied")
     
-    configName <- toupper(configName)
+    #configName <- toupper(configName)
 
     ntLtsUrls <- getAllNlUrlOLS()
 
@@ -223,46 +223,49 @@ getNlUrlVIIRS <-
     if (!exists("nlTiles") || nrow(nlTiles) != 6)
       nlTiles <- getNlTiles(nlType = nlType)
     
-    inYear <- as.character(x = substr(x = nlPeriod, start = 1, stop = 4))
-    
-    inMonth <- as.character(x = substr(x = nlPeriod, start = 5, stop = 6))
-    
-    inDay <- as.character(x = substr(x = nlPeriod, start = 7, stop = 8))
+    # inYear <- as.character(x = substr(x = nlPeriod, start = 1, stop = 4))
+    # 
+    # inMonth <- as.character(x = substr(x = nlPeriod, start = 5, stop = 6))
+    # 
+    # inDay <- as.character(x = substr(x = nlPeriod, start = 7, stop = 8))
     
     ntLtsUrls <- getAllNlUrlVIIRS(nlTypes = nlType)
+    #
+    # #create the pattern to distinguish the url on the page
+    # if (stringr::str_detect(string = nlType, pattern = "D"))
+    #   ntLtsPageRgxp <-
+    #   paste0("SVDNB_npp_d",
+    #          nlPeriod,
+    #          "\\.d\\.",
+    #          nlTiles[tileNum, "name"],
+    #          "\\.rade9\\.tif")
+    # else if (stringr::str_detect(string = nlType, pattern = "M"))
+    #   #VIIRS.M has 2 diff tgz files based on configName vcmcfg and vcmslcfg
+    #   ntLtsPageRgxp <-
+    #   paste0("SVDNB_npp_",
+    #          nlPeriod,
+    #          "01.*",
+    #          nlTiles[tileNum, "name"],
+    #          ".*",
+    #          tolower(configName))
+    # else if (stringr::str_detect(string = nlType, pattern = "Y"))
+    #   ntLtsPageRgxp <-
+    #   paste0("SVDNB_npp_",
+    #          nlPeriod,
+    #          "0101-",
+    #          nlPeriod,
+    #          "1231_",
+    #          nlTiles[tileNum, "name"],
+    #          ".*tgz")
     
-    #create the pattern to distinguish the url on the page
-    if (stringr::str_detect(string = nlType, pattern = "D"))
-      ntLtsPageRgxp <-
-      paste0("SVDNB_npp_d",
-             nlPeriod,
-             "\\.d\\.",
-             nlTiles[tileNum, "name"],
-             "\\.rade9\\.tif")
-    else if (stringr::str_detect(string = nlType, pattern = "M"))
-      #VIIRS.M has 2 diff tgz files based on configName vcmcfg and vcmslcfg
-      ntLtsPageRgxp <-
-      paste0("SVDNB_npp_",
-             nlPeriod,
-             "01.*",
-             nlTiles[tileNum, "name"],
-             ".*",
-             tolower(configName))
-    else if (stringr::str_detect(string = nlType, pattern = "Y"))
-      ntLtsPageRgxp <-
-      paste0("SVDNB_npp_",
-             nlPeriod,
-             "0101-",
-             nlPeriod,
-             "1231_",
-             nlTiles[tileNum, "name"],
-             ".*tgz")
+    ntLtsRgxp <- getNlFileRegex(nlTypes = nlType, configNames = configName, regexNum = "1",
+                                nlPeriod = nlPeriod, tileName = tileIdx2Name(tileNum = tileNum, nlType = nlType))
     
     ntLtsUrls <- unlist(ntLtsUrls[[nlType]][[tolower(configName)]])
     
     #search for the pattern in the page
     ntLtsUrls <-
-      grep(pattern = ntLtsPageRgxp, x = ntLtsUrls, value = TRUE)
+      grep(pattern = ntLtsRgxp, x = ntLtsUrls, value = TRUE)
     
     return (ntLtsUrls)
   }

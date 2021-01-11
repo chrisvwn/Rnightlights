@@ -1519,7 +1519,7 @@ getCtryNlDataColName <-
         "NL_",
         nlType,
         "_",
-        toupper(configName),
+        configName,
         "_",
         toupper(extension),
         "-MTS",
