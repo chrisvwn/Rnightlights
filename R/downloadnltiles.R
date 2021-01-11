@@ -368,17 +368,10 @@ downloadNlTilesVIIRS <- function(nlPeriod,
   if (!allValidNlPeriods(nlPeriods = nlPeriod, nlTypes = nlType))
     stop(Sys.time(), ": Invalid nlPeriod: ", nlPeriod)
   
-  if (!validNlTileNumVIIRS(tileNum, nlType))
+  if (!validNlTile(tileNum, nlType))
     stop(Sys.time(), ": Invalid tileNum: ", tileNum)
   
   rsltDnld <- NA
-  
-  #get the zip local names
-  ntLtsZipLocalNamePathVIIRS <-
-    getNlTileZipLclNamePath(nlType = nlType,
-                            configName = configName,
-                            nlPeriod = nlPeriod,
-                            tileNum = tileNum)
   
   #get the tif local names
   ntLtsTifLocalNamePathVIIRS <-
@@ -391,21 +384,31 @@ downloadNlTilesVIIRS <- function(nlPeriod,
   #if the .tif doesn't exist download tgz tile. For aria and wget, if the tgz exists
   #it should attempt to complete it if incomplete else confirm it is complete and move
   #to extraction. For the other methods it will restart the download and overwrite
-  if (!file.exists(ntLtsTifLocalNamePathVIIRS) && !file.exists(ntLtsZipLocalNamePathVIIRS))
+  if (!file.exists(ntLtsTifLocalNamePathVIIRS))
   {
+    #get the zip local names
+    ntLtsZipLocalNamePathVIIRS <-
+      getNlTileZipLclNamePath(nlType = nlType,
+                              configName = configName,
+                              nlPeriod = nlPeriod,
+                              tileNum = tileNum)
+    
     ntLtsFileUrl <-
       getNlUrlVIIRS(nlPeriod = nlPeriod,
                     tileNum = tileNum,
                     nlType = nlType,
                     configName = configName)
     
-    if (is.null(ntLtsFileUrl) || length(ntLtsFileUrl) == 0)
+    if (is.null(ntLtsFileUrl) || length(ntLtsFileUrl) == 0 ||
+        length(ntLtsZipLocalNamePathVIIRS) == 0)
     {
       message(
         Sys.time(),
         ": ** Tile not available on the NOAA page.\n Please manually check for the ",
         nlPeriod,
-        " tile for '",
+        ": ",
+        " Tile",tileNum,"_",tileIdx2Name(tileNum = tileNum, nlType = nlType),
+        ": ",
         configName,
         " at ",
         pkgOptions(paste0("ntLtsInfoUrl", nlType)),
@@ -414,68 +417,78 @@ downloadNlTilesVIIRS <- function(nlPeriod,
       return(FALSE)
     }
     
-    validDnldMethods <- c("auto", "curl", "libcurl", "wget", "aria")
-    
-    if (!(downloadMethod %in% validDnldMethods))
-      downloadMethod <- "auto"
-    
-    access_token <- reqAuthTokenEOG()
-
-    accessTokenHeader <- 
-      if(downloadMethod == "auto")
-      {
-        list("Authorization" =  paste0("Bearer ", access_token))
-      } else if(downloadMethod %in% c("curl", "libcurl"))
-      {
-        list("Authorization", paste0("Bearer ", access_token))
-      } else if(downloadMethod == "wget")
-      {
-        list("Authorization", paste0("Bearer ", access_token))
-      } else if(downloadMethod == "aria")
-      {
-        paste0('\"Authorization: Bearer ', access_token, '"')
-      }
-    
-    if (downloadMethod %in% c("auto", "curl", "libcurl", "wget"))
-      rsltDnld <- utils::download.file(
-        url = ntLtsFileUrl,
-        destfile = ntLtsZipLocalNamePathVIIRS,
-        mode = "wb",
-        method = downloadMethod,
-        extra = "-c",
-        headers = accessTokenHeader
-      )
-    else if (downloadMethod == "aria")
-      #downloads to path relative to -d if specified else local dir
-      rsltDnld <-
-      system(
-        command = paste0(
-          "aria2c -c",
-          " -s",
-          pkgOptions("numParDnldConns"),
-          " -x", #continue downloads even if they were started elsewhere
-          pkgOptions("numParDnldConns"),
-          " --header ",
-          accessTokenHeader,
-          " --show-console-readout=false --summary-interval=10 ",
-          ntLtsFileUrl,
-          " -d ",
-          getNlDir("dirNlTiles"),
-          " -o ",
-          getNlTileZipLclNameVIIRS(
-            nlType = nlType,
-            configName = configName,
-            nlPeriod = nlPeriod,
-            tileNum = tileNum
+    if(!file.exists(ntLtsZipLocalNamePathVIIRS))
+    {
+      validDnldMethods <- c("auto", "curl", "libcurl", "wget", "aria")
+      
+      if (!(downloadMethod %in% validDnldMethods))
+        downloadMethod <- "auto"
+      
+      access_token <- reqAuthTokenEOG()
+  
+      accessTokenHeader <- 
+        if(downloadMethod == "auto")
+        {
+          list("Authorization" =  paste0("Bearer ", access_token))
+        } else if(downloadMethod %in% c("curl", "libcurl"))
+        {
+          list("Authorization", paste0("Bearer ", access_token))
+        } else if(downloadMethod == "wget")
+        {
+          list("Authorization", paste0("Bearer ", access_token))
+        } else if(downloadMethod == "aria")
+        {
+          paste0('\"Authorization: Bearer ', access_token, '"')
+        }
+      
+      if (downloadMethod %in% c("auto", "curl", "libcurl", "wget"))
+        rsltDnld <- utils::download.file(
+          url = ntLtsFileUrl,
+          destfile = ntLtsZipLocalNamePathVIIRS,
+          mode = "wb",
+          method = downloadMethod,
+          extra = "-c",
+          headers = accessTokenHeader
+        )
+      else if (downloadMethod == "aria")
+        #downloads to path relative to -d if specified else local dir
+        rsltDnld <-
+        system(
+          command = paste0(
+            "aria2c -c",
+            " -s",
+            pkgOptions("numParDnldConns"),
+            " -x", #continue downloads even if they were started elsewhere
+            pkgOptions("numParDnldConns"),
+            " --header ",
+            accessTokenHeader,
+            " --show-console-readout=false --summary-interval=10 ",
+            ntLtsFileUrl,
+            " -d ",
+            getNlDir("dirNlTiles"),
+            " -o ",
+            getNlTileZipLclNameVIIRS(
+              nlType = nlType,
+              configName = configName,
+              nlPeriod = nlPeriod,
+              tileNum = tileNum
+            )
           )
         )
-      )
+    } else
+    {
+      #if the zip file is found we can return positive? Probably not unless there's an overwrite option
+      #for our purposes return true
+      message(Sys.time(), ": Zip file exists, set Overwrite = TRUE to overwrite")
+      
+      rsltDnld <- 0
+    }
   }
   else
   {
     #if the file is found we can return positive? Probably not unless there's an overwrite option
     #for our purposes return true
-    message(Sys.time(), ": File exists, set Overwrite = TRUE to overwrite")
+    message(Sys.time(), ": Tif file exists, set Overwrite = TRUE to overwrite")
     
     rsltDnld <- 0
   }
@@ -883,7 +896,7 @@ downloadNlTilesOLS <- function(nlPeriod,
           
           tgzFile <- tarFileList[grep(tgzFileRgxp, tarFileList, ignore.case = T)]
           
-          if (toupper(configName) %in% c("stable_lights") || toupper(extension) %in% toupper(c("cf_cvg", "avg_vis")))
+          if (toupper(configName) %in% toupper("stable_lights") || toupper(extension) %in% toupper(c("cf_cvg", "avg_vis")))
           {
             #extract the nightlight gz data file
             utils::untar(
@@ -1042,7 +1055,7 @@ deleteNlTile <- function(nlType,
   if (!allValidNlPeriods(nlPeriods = nlPeriod, nlTypes = nlType))
     stop(Sys.time(), ": Invalid nlPeriod: ", nlPeriod)
   
-  if (!validNlTileNum(tileNum, nlType))
+  if (!validNlTile(tileNum, nlType))
     stop(Sys.time(), ": Invalid tileNum: ", tileNum)
   
   if (missing(nlPeriod))
