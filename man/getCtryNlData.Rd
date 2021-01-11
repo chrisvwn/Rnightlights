@@ -21,7 +21,7 @@ getCtryNlData(
   extensions,
   multiTileStrategy = pkgOptions("multiTileStrategy"),
   multiTileMergeFun = pkgOptions("multiTileMergeFun"),
-  removeGasFlaresMethod = pkgOptions("removeGasFlaresMethod"),
+  removeGasFlaresMethod = pkgOptions(paste0("removeGasFlaresMethod_", nlTypes)),
   useSavedStats = FALSE,
   source = "local",
   ...

@@ -4,7 +4,7 @@
 \alias{nlCleanup}
 \title{Clean up the environment after processing (Not yet implemented)}
 \usage{
-nlCleanup(temp = TRUE, tileCache = FALSE)
+nlCleanup(delTemp = TRUE, delTileTgz = FALSE)
 }
 \arguments{
 \item{temp}{boolean should the temp folder be cleared?}

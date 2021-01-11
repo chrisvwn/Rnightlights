@@ -8,6 +8,8 @@ This version does not fix any bugs.
 ##### *New features*
 This version introduces a few new features:
 
+- **`Sample visualization functions`** This version has implemented vaious visualization functions for plotting graphs, maps, clusters and time-series data. These are just samples and may serve as a basis for custom visualizations. 
+
 - **`Authentication for tile downloads`** This version implements authentication for the download of raster tiles from the download site after this became a requirement. Users must register themselves and then provide username and password to the package in order to access the tile downloads. The package will store the credentials so they need only be entered once. The notice for this change is [here](https://payneinstitute.mines.edu/eog-2/transition-to-secured-data-access/).
 
 - **`Background/gas-flare removal`** Previously only the DMSP-OLS gasflare polygons were available for gas-flare removal. Currently, the package includes background masking using the VIIRS yearly tiles (currently 2015/2016). The plan is to also add DSMP-OLS raster masking using the selected year. Any feedback on the gasflare and background removal methods employed in the package are welcome.

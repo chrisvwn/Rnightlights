@@ -12,7 +12,7 @@ getCtryNlDataColName(
   extension,
   multiTileStrategy = "all",
   multiTileMergeFun = "mean",
-  removeGasFlaresMethod = pkgOptions("removeGasFlaresMethod")
+  removeGasFlaresMethod = pkgOptions(paste0("removeGasFlaresMethod_", nlType))
 )
 }
 \arguments{

@@ -11,7 +11,7 @@ getCtryRasterOutputFnamePath(
   extension,
   multiTileStrategy = pkgOptions("multiTileStrategy"),
   multiTileMergeFun = pkgOptions("multiTileMergeFun"),
-  removeGasFlaresMethod = pkgOptions("removeGasFlaresMethod"),
+  removeGasFlaresMethod = pkgOptions(paste0("removeGasFlaresMethod_", nlType)),
   nlPeriod,
   gadmVersion = pkgOptions("gadmVersion"),
   gadmPolyType = pkgOptions("gadmPolyType"),

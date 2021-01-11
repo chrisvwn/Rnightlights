@@ -14,7 +14,7 @@ insertNlDataCol(
   extension,
   multiTileStrategy,
   multiTileMergeFun,
-  removeGasFlaresMethod = pkgOptions("removeGasFlaresMethod")
+  removeGasFlaresMethod = pkgOptions(paste0("removeGasFlaresMethod_", nlType))
 )
 }
 \arguments{
