@@ -55,7 +55,7 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   EOG_UserRegURL = "https://eogauth.mines.edu/auth/realms/master/account/",
   
   #the file in which to save EOG credentials
-  EOG_CredFile = "credseog.txt",
+  EOG_CredFile = "credseog.rds",
   
   #the EOG auth api token client_id
   EOG_ClientID = "eogdata_oidc",
@@ -154,7 +154,10 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
   #the methods to use to remove gasflares:
   #OGP=OLSGFPoly, OTM=OLSTileMask, VTM=VIIRSTileMask, NULL
   #Currently only used for VIIRS
-  removeGasFlaresMethod = "OGP",
+  removeGasFlaresMethod_OLS.Y = "OFF",
+  removeGasFlaresMethod_VIIRS.D = "VTM",
+  removeGasFlaresMethod_VIIRS.M = "VTM",
+  removeGasFlaresMethod_VIIRS.Y = "OFF",
 
   #Change the temp dir to use e.g. if the system temp dir does not have enough space
   #Not used yet
@@ -178,7 +181,10 @@ RNIGHTLIGHTSOPTIONS <- settings::options_manager(
     gadmPolyType = settings::inlist("gpkgZip", "kmlZip", "shpZip", "sfRds", "spRds"),
     multiTileStrategy = settings::inlist("first", "last", "all"),
     omitCountries = settings::inlist("all", "error", "long", "missing", "none"),
-    removeGasFlaresMethod = settings::inlist("OGP", "OTM", "VTM")
+    removeGasFlaresMethod_OLS.Y = settings::inlist("OFF", "OGP", "OTM", "VTM"),
+    removeGasFlaresMethod_VIIRS.D = settings::inlist("OFF", "OGP", "OTM", "VTM"),
+    removeGasFlaresMethod_VIIRS.M = settings::inlist("OFF", "OGP", "OTM", "VTM"),
+    removeGasFlaresMethod_VIIRS.Y = settings::inlist("OFF", "OGP", "OTM", "VTM")
   )
 )
 

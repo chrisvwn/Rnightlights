@@ -61,9 +61,11 @@ saveCredentialsEOG <-function(credFile = file.path(getNlDataPathFull(),
         password <- readline(prompt = "Password: ")
       }
       
-      cat(paste(c("username", "password"), c(username, password), sep = ":"),
-          file = credFile,
-          sep = "\n")
+      # cat(paste(c("username", "password"), c(username, password), sep = ":"),
+      #     file = credFile,
+      #     sep = "\n")
+      
+      saveRDS(object = list("username" = username, "password"=password), file = credFile)
       
     } else if (ans == 2)
     {
@@ -74,8 +76,7 @@ saveCredentialsEOG <-function(credFile = file.path(getNlDataPathFull(),
         message("No credentials found")
       } else
       {
-        print(creds[1])
-        print(creds[2])
+        print(creds)
       }
       readline("Press enter to continue ... ")
     } else if(ans == 3)
@@ -85,9 +86,8 @@ saveCredentialsEOG <-function(credFile = file.path(getNlDataPathFull(),
     {
       creds <- getCredentialsEOG()
       
-      if(length(creds) != 2)
+      if(!is.list(creds) || names(creds) != c("username","password"))
       {
-          
         msg <-
           paste0(
             "Credentials not found\n\n",
@@ -125,7 +125,9 @@ getCredentialsEOG <- function(credFile = file.path(getNlDataPathFull(), pkgOptio
     return(NULL)
   }
   
-  creds <- readLines(con = credFile)
+  #creds <- readLines(con = credFile)
+  
+  creds <- readRDS(file = credFile)
 }
 
 saveAuthTokenEOGResult <- function(authTokenEOGResult)
@@ -248,8 +250,8 @@ reqAuthTokenEOG <- function()
         creds <- getCredentialsEOG()
       }
       
-      username <- unlist(strsplit(creds[1], ":"))[2]
-      password <- unlist(strsplit(creds[2], ":"))[2]
+      username <- creds$username #unlist(strsplit(creds[1], ":"))[2]
+      password <- creds$password #unlist(strsplit(creds[2], ":"))[2]
       
       req <- list(client_id=client_id,
                  client_secret=client_secret,
@@ -448,7 +450,10 @@ downloadNlTilesVIIRS <- function(nlPeriod,
       rsltDnld <-
       system(
         command = paste0(
-          "aria2c -c -s2 -x", #continue downloads even if they were started elsewhere
+          "aria2c -c",
+          " -s",
+          pkgOptions("numParDnldConns"),
+          " -x", #continue downloads even if they were started elsewhere
           pkgOptions("numParDnldConns"),
           " --header ",
           accessTokenHeader,
@@ -812,7 +817,10 @@ downloadNlTilesOLS <- function(nlPeriod,
             rsltDnld <-
             system(
               paste0(
-                "aria2c -c -s2 -x",
+                "aria2c -c",
+                " -s",
+                pkgOptions("numParDnldConns"),
+                " -x",
                 pkgOptions("numParDnldConns"),
                 " --header ",
                 accessTokenHeader,
@@ -1022,7 +1030,8 @@ downloadNlTilesOLS <- function(nlPeriod,
 deleteNlTile <- function(nlType,
                          configName,
                          nlPeriod,
-                         tileNum)
+                         tile,
+                         delTif)
 {
   if (missing(nlType))
     stop(Sys.time(), ": Missing required parameter nlType")
@@ -1033,7 +1042,7 @@ deleteNlTile <- function(nlType,
   if (!allValidNlPeriods(nlPeriods = nlPeriod, nlTypes = nlType))
     stop(Sys.time(), ": Invalid nlPeriod: ", nlPeriod)
   
-  if (!validNlTileNumVIIRS(tileNum, nlType))
+  if (!validNlTileNum(tileNum, nlType))
     stop(Sys.time(), ": Invalid tileNum: ", tileNum)
   
   if (missing(nlPeriod))
