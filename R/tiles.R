@@ -1243,29 +1243,36 @@ tilesPolygonIntersectVIIRS <- function(shpPolygon)
 #' Rnightlights:::validNlTileNumVIIRS("9", "VIIRS.D")
 #'  #returns FALSE
 #'
-validNlTileNumVIIRS <- function(nlTileNum, nlType)
+validNlTile <- function(nlTile, nlType)
 {
-  nlTileNum <- as.character(nlTileNum)
-  
-  if (missing(nlTileNum))
-    stop(Sys.time(), ": Missing parameter nlTileNum")
+  if (missing(nlTile))
+    stop(Sys.time(), ": Missing parameter nlTile")
   
   if (missing(nlType))
     stop(Sys.time(), ": Missing parameter nlType")
   
-  if (class(nlTileNum) != "character" ||
-      nlTileNum == "" ||
-      length(nlTileNum) == 0 ||
-      length(grep("[^[:digit:]]", nlTileNum) > 0))
+  if (!class(nlTile) %in% c("character", "numeric") ||
+      nlTile == "" ||
+      length(nlTile) == 0)
     return(FALSE)
-  
+
   if (!exists("nlTiles"))
     nlTiles <- getNlTiles(nlType)
   
-  nlT <- as.numeric(nlTileNum)
+  if(is.numeric(nlTile) || grepl(pattern = "^\\d+$", x = nlTile))
+  {
+    #if numeric assume it is a tileNum check index
+    nlT <- as.numeric(nlTile)
+    
+    valid <- any(grepl(pattern = nlT, x = nlTiles$id))
+
+  } else
+  {
+    #if not numeric assume it is a tileName and search
+    nlT <- as.character(nlTile)
   
-  if (nlT >= 1 && nlT <= length(nlTiles))
-    return(TRUE)
-  else
-    return(FALSE)
+    valid <- any(grepl(pattern = nlT, x = nlTiles$name))
+  }
+  
+  return(valid)
 }
