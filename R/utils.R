@@ -157,7 +157,7 @@ getBatchBytes <- function(freeRAM = pkgOptions("batchBytes"))
 #'  }
 #'
 #' @export
-nlCleanup <- function(temp = TRUE, tileCache = FALSE)
+nlCleanup <- function(delTemp = TRUE, delTileTgz = FALSE)
 {
   #remove any global vars we created in .onLoad
   #suppressWarnings(rm(map, shpTopLyrName, wgs84, nlTiles, tilesSpPolysDFs))
@@ -167,9 +167,15 @@ nlCleanup <- function(temp = TRUE, tileCache = FALSE)
   #the destructor
   
   #del temp files used in this session in the nlTempDir
+  if(delTemp)
   unlink(list.files(getNlDir("dirNlTemp"), full.names = TRUE),
          recursive = TRUE,
          force = TRUE)
+  
+  if(delTileTgz)
+    unlink(list.files(path = getNlDir("dirNlTiles"), pattern = "(.tgz|.tar)", full.names = TRUE),
+           recursive = TRUE,
+           force = TRUE)
   
   #del temp dataPath directory if it was created
   #if(getNlDataPath() == tempdir())
