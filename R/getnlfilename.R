@@ -59,7 +59,7 @@ getNlTileZipLclNamePath <-
            nlType)
     
     if (stringr::str_detect(nlType, "VIIRS") &&
-        !validNlTileNumVIIRS(tileNum, nlType))
+        !validNlTile(tileNum, nlType))
       stop(Sys.time(), ": Invalid tileNum: ", tileNum)
     
     if (stringr::str_detect(nlType, "OLS"))
@@ -130,13 +130,13 @@ getNlTileZipLclNameVIIRS <-
            " for nlType: ",
            nlType)
     
-    if (!validNlTileNumVIIRS(tileNum, nlType))
+    if (!validNlTile(tileNum, nlType))
       stop(Sys.time(), ": Invalid tileNum: ", tileNum)
     
     if (!allValidNlPeriods(nlPeriod, nlType))
       stop(Sys.time(), ": Invalid nlPeriod: ", nlPeriod)
     
-    configName <- toupper(configName)
+    #configName <- toupper(configName)
     
     # return (
     #   paste0(
@@ -229,7 +229,7 @@ getNlTileTifLclNamePath <-
            nlType)
     
     if (stringr::str_detect(nlType, "VIIRS") &&
-        !validNlTileNumVIIRS(tileNum, nlType))
+        !validNlTile(tileNum, nlType))
       stop(Sys.time(), ": Invalid tileNum: ", tileNum)
     
     if (stringr::str_detect(nlType, "OLS"))
@@ -318,10 +318,10 @@ getNlTileTifLclNameVIIRS <-
     if (!allValidNlPeriods(nlPeriod, nlType))
       stop(Sys.time(), ": Invalid nlPeriod: ", nlPeriod)
     
-    if (!validNlTileNumVIIRS(tileNum, nlType))
+    if (!validNlTile(tileNum, nlType))
       stop(Sys.time(), ": Invalid tileNum: ", tileNum)
     
-    configName <- toupper(configName)
+    #configName <- toupper(configName)
     
     return (
       paste0(
@@ -391,7 +391,7 @@ getNlTileTifLclNameOLS <-
     if (!allValidNlPeriods(nlPeriod, nlType))
       stop(Sys.time(), ": Invalid nlPeriod: ", nlPeriod)
     
-    configName <- toupper(configName)
+    #configName <- toupper(configName)
     
     return (paste0(
       "NL_TILE_",
@@ -469,7 +469,7 @@ getNlTileTifLclNamePathVIIRS <-
     if (!allValidNlPeriods(nlPeriod, nlType))
       stop(Sys.time(), ": Invalid nlPeriod: ", nlPeriod)
     
-    if (!validNlTileNumVIIRS(tileNum, nlType))
+    if (!validNlTile(tileNum, nlType))
       stop(Sys.time(), ": Invalid tileNum: ", tileNum)
     
     return (file.path(
@@ -590,7 +590,7 @@ getNlTileZipLclNameOLS <-
     if (!validNlConfigName(configName, "OLS.Y"))
       stop(Sys.time(), ": Invalid configName")
     
-    configName <- toupper(configName)
+    #configName <- toupper(configName)
     
     # fileExt <-
     #   if (configName %in% toupper(c("cf_cvg", "avg_vis", "stable_lights")))
@@ -658,7 +658,7 @@ getNlTifLclNameOLS <-
     if (!allValidNlPeriods(nlPeriod, nlType))
       stop(Sys.time(), ": Invalid nlPeriod")
     
-    configName <- toupper(configName)
+    #configName <- toupper(configName)
     
     return (paste0("NL_TILE_", nlType, "_", configName, "_", extension, "_", nlPeriod, ".tif"))
   }
