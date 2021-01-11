@@ -1,4 +1,4 @@
-######################## plotData ###################################
+######################## plotCtryNlData ###################################
 #' 
 #' Plots the ctryNlData
 #' 
@@ -68,12 +68,7 @@
 #' }
 #'
 #' @export
-plotData <- function(ctryData, ctryCodes, admLevel, admLevelFilters,
-                            nlType, configName, extension,
-                            nlPeriodStart, nlPeriodEnd, gadmPolyVer, gadmPolyType, 
-                            multiTileMergeStrategy, multiTileMergeFun,
-                            removeGasFlaresMethod, nlStat, custPolyPath=NULL,
-                            cropMaskMethod, scale=FALSE, graphType="line",
+plotCtryNlData <- function(ctryData, admLevelFilters = NULL, scale=FALSE, graphType="line",
                             normArea=FALSE, plotly=TRUE)
 {
   #for cran checks
@@ -82,37 +77,40 @@ plotData <- function(ctryData, ctryCodes, admLevel, admLevelFilters,
   variable <- NULL
   value <- NULL
   
+  allCols <- NULL
+  admCols <- NULL
+  statCols <- NULL
   
-  if(missing(ctryData) || length(ctryData) == 0)
-  {
-    ctryAdmLevels <- getCtryPolyAdmLevelNames(ctryCode = ctryCodes,
-                                              gadmVersion = gadmPolyVer,
-                                              gadmPolyType = gadmPolyType, 
-                                              custPolyPath = custPolyPath)
-  } else
-  {
-    ctryCodes <- unique(ctryData[[1]])
-    
-    ctryAdmLevels <- names(ctryData)[1:(grep(pattern = "area", names(ctryData))-1)]
-    
-    nlType <- unique(stringr::str_extract(names(ctryData), "(VIIRS|OLS)\\..?"))
-    
-    nlType <- nlType[!is.na(nlType)]
-  }
+  allCols <- names(ctryData)
   
-  if (missing(selectedAdmLevel) || is.null(selectedAdmLevel))
-  {
-    admLevel <- ctryAdmLevels[length(ctryAdmLevels)]
-  }
+  statCols <- grep("^NL_", allCols, value = T)
   
+  admCols <- allCols[-which(allCols %in% statCols)]
+  
+  ctryCodes <- unique(ctryData[[1]])
+  
+  ctryAdmLevels <- admCols[1:(grep(pattern = "area_sq_km", admCols)-1)]
+  
+  nlTypes <- unique(stringr::str_extract(names(ctryData), "(VIIRS|OLS)\\..?"))
+  
+  nlTypes <- nlTypes[!is.na(nlTypes)]
+
+  admLevel <- ctryAdmLevels[length(ctryAdmLevels)]
+
   if (!exists("admLevel") ||
       is.null(admLevel) || length(admLevel) == 0 ||
       length(ctryCodes) > 1)
     admLevel <- "country"
   
-  nlPeriodStart <- nlPeriodToDate(nlPeriod = nlPeriodStart, nlType = nlType)
+  nlType <- nlTypes[1]
   
-  nlPeriodEnd <- nlPeriodToDate(nlPeriod = nlPeriodEnd, nlType = nlType)
+  nlPeriods <- stringr::str_extract(grep(nlType, statCols, value = T), "\\d{4,}")
+  
+  nlPeriodStart <- nlPeriodToDate(nlPeriod = min(nlPeriods), nlType = nlType)
+
+  nlPeriodEnd <- nlPeriodToDate(nlPeriod = max(nlPeriods), nlType = nlType)
+
+  nlStat <- unique(stringr::str_extract(statCols, "[:alnum:]+\\(.*\\)$"))
   
   xLabel <- if (stringr::str_detect(nlType, "\\.D"))
     "Day"
@@ -120,30 +118,11 @@ plotData <- function(ctryData, ctryCodes, admLevel, admLevelFilters,
     "Month"
   else if (stringr::str_detect(nlType, "\\.Y"))
     "Year"
-  
-  if(!exists("ctryData") || is.null(ctryData))
-  {
-    ctryData <- getCtryNlData(ctryCode = ctryCodes, admLevel = admLevel,nlTypes = nlType, 
-                              nlPeriods = nlRange(nlPeriodStart, nlPeriodEnd),
-                              nlStats = nlStat, gadmVersion = gadmPolyVer, 
-                              gadmPolyType = gadmPolyType, 
-                              custPolyPath = custPolyPath,cropMaskMethod = cropMaskMethod,
-                              downloadMethod = pkgOptions("downloadMethod"),
-                              extractMethod = pkgOptions("extractMethod"),
-                              configNames = configName, 
-                              extensions = extension,
-                              multiTileStrategy = multiTileMergeStrategy, 
-                              multiTileMergeFun = multiTileMergeFun, 
-                              removeGasFlaresMethod = removeGasFlaresMethod)
-  }
-  
-  ctryData <- ctryNlDataMelted(ctryData = ctryData, nlType = nlType, nlStat = nlStat)
-  
+
+  ctryData <- ctryNlDataMelted(ctryData = ctryData, nlType = nlType, nlStat = nlSignatureStat(nlStat))
+
   if (is.null(ctryData))
   {
-    if (is.null(nlType))
-      nlType <- "VIIRS.M"
-    
     g <- ggplot2::ggplot(data =  data.frame()) +
       ggplot2::geom_point()
     
@@ -217,8 +196,7 @@ plotData <- function(ctryData, ctryCodes, admLevel, admLevelFilters,
             abbr = T
           )
         )
-    }
-    else
+    } else
     {
       g <-
         ggplot2::ggplot(data = ctryData,
@@ -245,8 +223,7 @@ plotData <- function(ctryData, ctryCodes, admLevel, admLevelFilters,
     #ggplot2::ggplot(data = ctryData, ggplot2::aes(x = factor(variable), y = value, col = country)) + ggplot2::theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) + ggplot2::labs(col = admLevel) + geom_boxplot() + facet_grid(country ~ .)
     
     g <- g + ggplot2::geom_boxplot()# +facet_grid(.~variable)
-  }
-  else if (graphType == "line")
+  } else if (graphType == "line")
   {
     if (length(ctryCodes) == 1)
     {
@@ -297,8 +274,7 @@ plotData <- function(ctryData, ctryCodes, admLevel, admLevelFilters,
         vjust = 0.5
       )) +
       ggplot2::labs(col = admLevel)
-  }
-  else if (graphType == "histogram")
+  } else if (graphType == "histogram")
   {
     #ctryData <- aggregate(value ~ country+variable, data=ctryData, mean)
     
@@ -315,9 +291,10 @@ plotData <- function(ctryData, ctryCodes, admLevel, admLevelFilters,
       ggplot2::facet_grid(ctryData[[admLevel]] ~ lubridate::year(variable))
     
     
-  }
-  else
+  } else
+  {
     return(NULL)
+  }
   
   if ("scale_y_log" %in% scale)
     g <- g + ggplot2::scale_y_log10()
@@ -336,6 +313,7 @@ plotData <- function(ctryData, ctryCodes, admLevel, admLevelFilters,
     )
   
   if (normArea)
+  {
     g <- g + ggplot2::labs(
       title = plotTitle,
       x = xLabel,
@@ -346,12 +324,15 @@ plotData <- function(ctryData, ctryCodes, admLevel, admLevelFilters,
         paste0(nlStat, " NAs removed"),
         paste0(nlStat, " NAs not removed")
       )
-    ) #y=expression(paste("Avg Rad W" %.% "Sr" ^{-1} %.% "cm" ^{-2}, "per Km" ^{2})))
-  else
+      #y=expression(paste("Avg Rad W" %.% "Sr" ^{-1} %.% "cm" ^{-2}, "per Km" ^{2})))
+    ) 
+  } else
+  {
     g <- g + ggplot2::labs(title = plotTitle,
                            x = xLabel,
                            y = "Total Rad (W.Sr^-1.cm^-2)") #bquote(~Total~Rad~W %.% Sr^{-1})%.%cm^{-2}) #y=expression(~Total~Rad~W %.% Sr^{-1}%.%cm^{-2}))
-
+  }
+  
   if(plotly)
   {
     g <- plotly::ggplotly(g)
@@ -362,9 +343,70 @@ plotData <- function(ctryData, ctryCodes, admLevel, admLevelFilters,
 }
 
 ######################## hCluster ###################################
+#' 
+#' Plots the ctryNlData
+#' 
+#' Plots the ctryNlData in various plot styles including line, box
+#'     and density plot using ggplot2. If ctryData is not provided the subsequent
+#'     parameters will need to be supplied so thta getCtryNlData can be used to 
+#'     retrieve the data prior to plotting.
+#'     
+#' @param ctryData data.frame If provided the plot will use data from it rather 
+#'     than retrieving it. If not available the follow parameters are required
+#'     to retrieve the data using getCtryNlData.
+#'     
+#'     It is assumed that the ctryData data.frame is in the same format as the
+#'     output from getCtryNlData i.e. admin cols first, an area column,
+#'     followed by the stat columns. In future it may be possible to supply
+#'     a custom data.frame and direct the function on which columns to find
+#'     the particular data.
+#' 
+#' @param ctryCodes \code{character} The ctryCode of interest
+#'
+#' @param admLevel \code{character} The country admin level in the given
+#'     ctryCode at which to calculate stats
+#'
+#' @param nlType \code{character} The nlType of interest
+#'
+#' @param configName character the config shortname of raster being processed
+#' 
+#' @param extension character the extension of raster being processed
+#'
+#' @param removeGasFlaresMethod character The method to use to perform gas flare removal
+#'     or NULL to disable
+#'     
+#' @param nlPeriod \code{character} The nlPeriod of interest
+#'
+#' @param nlStat the statistics to calculate. If not provided will calculate
+#'     the stats specified in \code{pkgOptions("nlStats")}
+#'
+#' @param downloadMethod The method used to download polygons and rasters
+#'
+#' @param cropMaskMethod \code{character} Whether to use rasterize or
+#'     gdal-based functions to crop and mask the country rasters
+#'
+#' @param extractMethod ("rast" or "gdal") Whether to use rasterize or
+#'     gdal-based functions to crop and mask the country rasters
+#'
+#' @param gadmVersion The GADM version to use
+#'
+#' @param gadmPolyType The format of polygons to download from GADM
+#'
+#' @param custPolyPath Alternative to GADM. A path to a custom shapefile zip
+#'
+#' @return None
+#'
+#' @examples
+#'
+#' #calculate only the sum of monthly VIIRS radiances for Dec 2014 using gdal
+#' #for both cropMask and extraction for KEN
+#' \dontrun{
+#' Rnightlights:::processNLCountry("KEN", "KEN_adm2", "VIIRS.M", "201412", "gdal", "gdal", "sum")
+#' }
 #'
 #' @export
-hCluster <- function(ctryData, ctryCodes, admLevel, nlType, nlStat, graphType, nlPeriodStart, nlPeriodEnd, normArea)
+hCluster <- function(ctryData, ctryCodes, admLevel, nlType, nlStat,
+                     nlPeriodStart, nlPeriodEnd, graphType, normArea)
 {
   if (is.null(ctryCodes) ||
       (length(ctryCodes) == 1 && admLevel == "country"))
@@ -427,9 +469,30 @@ hCluster <- function(ctryData, ctryCodes, admLevel, nlType, nlStat, graphType, n
 ######################## plotHCluster ###################################
 #'
 #' @export
-plotHCluster <- function(ctryData, ctryCodes, admLevel, nlType, nlStat,
-                         graphType, normArea, numClusters)
+plotHCluster <- function(ctryData, numClusters, normArea = FALSE, horiz = FALSE)
 {
+  allCols <- names(ctryData)
+  
+  statCols <- grep("^NL_", allCols, value = T)
+  
+  admCols <- allCols[-which(allCols %in% statCols)]
+  
+  ctryCodes <- unique(ctryData[[1]])
+  
+  ctryAdmLevels <- admCols[1:(grep(pattern = "area_sq_km", admCols)-1)]
+  
+  nlTypes <- unique(stringr::str_extract(names(ctryData), "(VIIRS|OLS)\\..?"))
+  
+  nlTypes <- nlTypes[!is.na(nlTypes)]
+
+  nlType <- nlTypes[1]
+  
+  admLevel <- ctryAdmLevels[length(ctryAdmLevels)]
+
+  nlStatSig <- unique(stringr::str_extract(statCols, "[:alnum:]+\\(.*\\)$"))
+  
+  nlStat <- nlSignatureStat(nlStatSig)
+
   clusts <- hCluster(ctryData = ctryData,
                      ctryCodes = ctryCodes,
                      admLevel = admLevel,
@@ -468,36 +531,49 @@ plotHCluster <- function(ctryData, ctryCodes, admLevel, nlType, nlStat,
                                        k = numClusters,
                                        col = rev(cbPalette[1:numClusters]))
     
-    dendro <- graphics::plot(dendro, horiz = FALSE, main = "")
+    graphics::plot(dendro, horiz = horiz, main = "")
   
     dendextend::rect.dendrogram(tree = dendro,
                                 k = numClusters,
-                                horiz = FALSE,
+                                horiz = horiz,
                                 border = rev(cbPalette[1:numClusters]))
 }
 
 ######################## plotPointsCluster ###################################
 #'
 #' @export
-plotPointsCluster <- function(ctryData, ctryCodes, admLevel, nlType, nlStat,
-                              graphType, nlPeriodStart, nlPeriodEnd, normArea,
-                              numClusters, plotly=F)
+plotPointsCluster <- function(ctryData, numClusters, normArea=F, plotly=F)
 {
-  if (length(ctryCodes) < 1)
-    return()
+  allCols <- names(ctryData)
+  
+  statCols <- grep("^NL_", allCols, value = T)
+  
+  admCols <- allCols[-which(allCols %in% statCols)]
+  
+  ctryCodes <- unique(ctryData[[1]])
+  
+  ctryAdmLevels <- admCols[1:(grep(pattern = "area_sq_km", admCols)-1)]
+  
+  nlTypes <- unique(stringr::str_extract(names(ctryData), "(VIIRS|OLS)\\..?"))
+  
+  nlTypes <- nlTypes[!is.na(nlTypes)]
+  
+  nlType <- nlTypes[1]
+  
+  admLevel <- ctryAdmLevels[length(ctryAdmLevels)]
+  
+  nlStatSig <- unique(stringr::str_extract(statCols, "[:alnum:]+\\(.*\\)$"))
+  
+  nlStat <- nlSignatureStat(nlStatSig)
   
   clusts <- hCluster(ctryData = ctryData,
-                     ctryCodes = ctryCodes, admLevel = admLevel, nlType = nlType,
-                     nlStat = nlStat, normArea = normArea)
+                     ctryCodes = ctryCodes,
+                     admLevel = admLevel,
+                     nlType = nlType,
+                     nlStat = nlStat,
+                     normArea = normArea)
   
-  if (is.null(clusts))
-    return()
-  
-  #return if the country doesn't have adm levels below country
-  if (is.null(admLevel))
-    return()
-  
-  
+
   if (length(ctryCodes) > 1)
     admLevel <- "country"
   
@@ -555,36 +631,43 @@ plotPointsCluster <- function(ctryData, ctryCodes, admLevel, nlType, nlStat,
 ######################## mapHCluster ###################################
 #'
 #' @export
-mapHCluster <- function(ctryData, ctryCodes, admLevel, nlType, nlStat, graphType,
-                        nlPeriodStart, nlPeriodEnd, normArea, numClusters)
+mapHCluster <- function(ctryData, numClusters, normArea=F)
 {
-  if (is.null(ctryCodes))
-    return()
-  
-  if (length(ctryCodes) > 1)
-    admLevel <- "country"
-
   #for cran checks
   value <- NULL
   variable <- NULL
   
   wgs84 <- getCRS()
+
+  allCols <- names(ctryData)
   
-  # if (length(ctryCodes) != 1)
-  # {
-  #   renderText("Please select only one country/region")
-  #   return()
-  # }
+  statCols <- grep("^NL_", allCols, value = T)
   
-  #print("drawing leaflet cluster")
+  admCols <- allCols[-which(allCols %in% statCols)]
   
+  ctryCodes <- unique(ctryData[[1]])
+  
+  ctryAdmLevels <- admCols[1:(grep(pattern = "area_sq_km", admCols)-1)]
+  
+  nlTypes <- unique(stringr::str_extract(names(ctryData), "(VIIRS|OLS)\\..?"))
+  
+  nlTypes <- nlTypes[!is.na(nlTypes)]
+  
+  nlType <- nlTypes[1]
+  
+  admLevel <- ctryAdmLevels[length(ctryAdmLevels)]
+  
+  nlStatSig <- unique(stringr::str_extract(statCols, "[:alnum:]+\\(.*\\)$"))
+  
+  nlStat <- nlSignatureStat(nlStatSig)  
+
   clusts <- hCluster(ctryData = ctryData,
-                     ctryCodes = ctryCodes, admLevel = admLevel, nlType = nlType,
-                     nlStat = nlStat, normArea = normArea)
-  
-  if (is.null(clusts))
-    return()
-  
+                     ctryCodes = ctryCodes,
+                     admLevel = admLevel,
+                     nlType = nlType,
+                     nlStat = nlStat,
+                     normArea = normArea)
+
   cutClusts <- stats::cutree(clusts, k = numClusters)
   
   #admLevel <- input$radioAdmLevel #unlist(ctryAdmLevels())[2]
@@ -595,8 +678,7 @@ mapHCluster <- function(ctryData, ctryCodes, admLevel, nlType, nlStat, graphType
   if (normArea)
     meltCtryData$value <-
     meltCtryData$value / meltCtryData$area_sq_km
-  
-  
+
   #map <- leaflet::leaflet(data=ctryPoly0) %>%
   map <- leaflet::leaflet()
   
@@ -816,12 +898,27 @@ mapHCluster <- function(ctryData, ctryCodes, admLevel, nlType, nlStat, graphType
 #' @export
 plotTSDecomposed <- function(ctryData, ctryCodes, admLevel, nlType, nlStat, normArea)
 {
-  if (length(ctryCodes) < 1)
-    return()
+  allCols <- names(ctryData)
   
-  #return if the country doesn't have adm levels below country
-  if (is.null(admLevel) || admLevel == "")
-    return()
+  statCols <- grep("^NL_", allCols, value = T)
+  
+  admCols <- allCols[-which(allCols %in% statCols)]
+  
+  ctryCodes <- unique(ctryData[[1]])
+  
+  ctryAdmLevels <- admCols[1:(grep(pattern = "area_sq_km", admCols)-1)]
+  
+  nlTypes <- unique(stringr::str_extract(names(ctryData), "(VIIRS|OLS)\\..?"))
+  
+  nlTypes <- nlTypes[!is.na(nlTypes)]
+  
+  nlType <- nlTypes[1]
+  
+  admLevel <- ctryAdmLevels[length(ctryAdmLevels)]
+  
+  nlStatSig <- unique(stringr::str_extract(statCols, "[:alnum:]+\\(.*\\)$"))
+  
+  nlStat <- nlSignatureStat(nlStatSig)  
   
   if (length(ctryCodes) > 1)
     admLevel <- "country"
@@ -907,10 +1004,29 @@ plotTSDecomposed <- function(ctryData, ctryCodes, admLevel, nlType, nlStat, norm
 ######################## plotYearly ###################################
 #'
 #' @export
-plotYearly <- function(ctryData, ctryCodes, admLevel, nlType, nlStat, normArea, scale)
+plotYearly <- function(ctryData, normArea=F, scale=F)
 {
-  if (is.null(ctryCodes))
-    return(NULL)
+  allCols <- names(ctryData)
+  
+  statCols <- grep("^NL_", allCols, value = T)
+  
+  admCols <- allCols[-which(allCols %in% statCols)]
+  
+  ctryCodes <- unique(ctryData[[1]])
+  
+  ctryAdmLevels <- admCols[1:(grep(pattern = "area_sq_km", admCols)-1)]
+  
+  nlTypes <- unique(stringr::str_extract(names(ctryData), "(VIIRS|OLS)\\..?"))
+  
+  nlTypes <- nlTypes[!is.na(nlTypes)]
+  
+  nlType <- nlTypes[1]
+  
+  admLevel <- ctryAdmLevels[length(ctryAdmLevels)]
+  
+  nlStatSig <- unique(stringr::str_extract(statCols, "[:alnum:]+\\(.*\\)$"))
+  
+  nlStat <- nlSignatureStat(nlStatSig)
   
   ctryData <- ctryNlDataMelted(ctryData = ctryData, nlType = nlType, nlStat = nlStat)
   
@@ -1161,8 +1277,9 @@ dtAvailableData <- function(lstCtryNlData)
 ######################## mapData ###################################
 #'
 #' @export
-mapData <- function(ctryData, ctryCodes, admLevel, admLevelFilters, nlPeriod, nlStat,
-                    scale, nlType,normArea, gadmPolySrc, gadmPolyVer, gadmPolyType, custPolyPath)
+mapData <- function(ctryData, admLevelFilters=NULL, nlPeriod,
+                    scale=F, normArea=F, gadmPolySrc="GADM", gadmPolyVer="3.6",
+                    custPolyPath)
 {
   #for cran checks
   area_sq_km <- NULL
@@ -1173,27 +1290,32 @@ mapData <- function(ctryData, ctryCodes, admLevel, admLevelFilters, nlPeriod, nl
   
   allCols <- names(ctryData)
   
-  statCols <- grep(pattern = "^NL_", x = allCols, value = TRUE)
+  statCols <- grep("^NL_", allCols, value = T)
   
-  nonStatCols <- setdiff(x = allCols, y = statCols)
+  admCols <- allCols[-which(allCols %in% statCols)]
   
-  if(missing(admLevel) || !grepl(pattern = admLevel, x = names(ctryData), fixed = TRUE))
-    admLevel <- nonStatCols[length(nonStatCols)-1]
+  ctryCodes <- unique(ctryData[[1]])
+  
+  ctryAdmLevels <- admCols[1:(grep(pattern = "area_sq_km", admCols)-1)]
+  
+  nlTypes <- unique(stringr::str_extract(names(ctryData), "(VIIRS|OLS)\\..?"))
+  
+  nlTypes <- nlTypes[!is.na(nlTypes)]
+  
+  nlType <- nlTypes[1]
+  
+  admLevel <- ctryAdmLevels[length(ctryAdmLevels)]
+  
+  nlStatSig <- unique(stringr::str_extract(statCols, "[:alnum:]+\\(.*\\)$"))
+  
+  nlStat <- nlSignatureStat(nlStatSig)  
+  
+  nlPeriods <- stringr::str_extract(grep(nlType, statCols, value = T), "\\d{4,}")
   
   if(missing(nlPeriod))
-  {
-    tileDets <- regmatches(x = statCols,
-                         m = regexpr(pattern = "[VIIRSOL]{3,5}\\.[D|M|Y]_[A-Z]+_([a-zA-Z]+_?)+[^-]",
-                                     text = statCols))
-    
-    nlType <- unlist(strsplit(tileDets, "_"))[1]
-    
-    configName <- unlist(strsplit(tileDets, "_"))[2]
-    
-    extension <- 
-    
-    nlPeriod <- regmatches(regexpr("\\d{4,}"))
-  }
+    nlPeriod <- nlPeriodToDate(nlPeriod = nlPeriods[1], nlType = nlType)
+  else
+    nlPeriod <- nlPeriodToDate(nlPeriod = nlPeriod, nlType = nlType)
   
   map <- leaflet::leaflet()
   
@@ -1219,10 +1341,12 @@ mapData <- function(ctryData, ctryCodes, admLevel, admLevelFilters, nlPeriod, nl
       )
     )
   
-  if (is.null(gadmPolySrc) ||
-      is.null(gadmPolyVer) || gadmPolySrc == "" || gadmPolyVer == "")
-    return()
-  
+  if (is.null(gadmPolySrc))
+    gadmPolySrc <- "GADM"
+    
+  if(is.null(gadmPolyVer)) 
+    gadmPolyVer <- 3.6
+
   if (is.null(admLevel))
     admLevel <- "country"
   
