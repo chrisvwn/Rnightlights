@@ -5,7 +5,9 @@
 <hr>
 
 ### NOTE:
-This package is still in beta. Background removal/gas flare removal has been added but is still under testing.
+1. I am not a GIS expert.
+2. This package is still in beta. It is provided as-is for whatever use you may find for it. It may or may not function as you expect it to.
+3. Background removal/gas flare removal has been added but is still under testing. 
 
 <hr>
 
