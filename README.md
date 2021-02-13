@@ -5,7 +5,7 @@
 <hr>
 
 ### NOTE:
-1. I am not a GIS expert.
+1. I am not a GIS expert. This package arose from the difficulties I encountered figuring out satellite nighttime lights during my Masters. You can read the publication here: [https://www.researchgate.net/publication/306129326_Constructing_spatiotemporal_poverty_indices_from_big_data/stats](https://www.researchgate.net/publication/306129326_Constructing_spatiotemporal_poverty_indices_from_big_data/stats)
 2. This package is still in beta. It is provided as-is for whatever use you may find for it. It may or may not function as you expect it to.
 3. Background removal/gas flare removal has been added but is still under testing.
 4. Apparently the monthly VIIRS tiles (VIIRS.M) are no longer provided for free. Daily VIIRS tiles (VIIRS.D) are only available for approximately the immediate previous 2 months. The annual tiles (VIIRS.Y) are only available for the years 2015 & 2016.
