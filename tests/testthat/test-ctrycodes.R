@@ -10,7 +10,14 @@ test_that("ctryNameToCode input is valid", {
   expect_error(ctryNameToCode(""), "Invalid ctryName")
 })
 
-test_that("ctryCode lookups work", {
+test_that("ctryCodeToName input is valid", {
+  expect_error(ctryCodeToName(7), "Invalid ctryCode")
+  expect_error(ctryCodeToName(NULL), "Invalid ctryCode")
+  expect_error(ctryCodeToName(NA), "Invalid ctryCode")
+  expect_error(ctryCodeToName(""), "Invalid ctryCode")
+})
+
+test_that("ctryName/ctryCode lookups work", {
   #ctryCodeToName
   expect_match(ctryCodeToName("KEN"), "Kenya", fixed=TRUE)
   expect_match(ctryCodeToName("TZA"), "United Republic of Tanzania", fixed=TRUE)
@@ -25,6 +32,10 @@ test_that("ctryCode lookups work", {
   
   expect_that(ctryNameToCode(), is_a("data.frame"))
   expect_true(nrow(ctryNameToCode()) > 0)
+  
+  expect_null(searchCountry())
+  expect_identical(searchCountry("Kenya"), data.frame("ADMIN"="Kenya", "ISO3"="KEN"))
+  
   
   #validCtryCodes
   expect_equal(validCtryCodes(c("RWA", "UGA", "ETH")), c(TRUE,TRUE,TRUE))

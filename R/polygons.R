@@ -1984,14 +1984,14 @@ searchAdmLevelMembers <- function(ctryCode = NULL,
     stop(Sys.time(), ": Invalid ctryCode detected ")
   
   if (missing(admLevels))
-    admLevels <- searchAdmLevelName(
+    admLevels <- unlist(searchAdmLevelName(
       ctryCodes = ctryCode,
       downloadMethod = downloadMethod,
       dnldPoly = dnldPoly,
       gadmVersion = gadmVersion,
       gadmPolyType = gadmPolyType,
       custPolyPath = custPolyPath
-    )
+    ))
   
   #  stop(Sys.time(), ": Missing required parameter admLevelName")
   
@@ -2000,9 +2000,6 @@ searchAdmLevelMembers <- function(ctryCode = NULL,
   
   if (missing(dnldPoly))
     dnldPoly <- TRUE
-  
-  #for cran checks
-  ..admLevel <- NULL
   
   ctryStruct <- readCtryStruct(
     ctryCode = ctryCode,
@@ -2017,7 +2014,7 @@ searchAdmLevelMembers <- function(ctryCode = NULL,
   {
     if (is.null(admLevelMembers))
     {
-      return(as.list(unique(ctryStruct[, ..admLevel])))
+      return(as.list(unique(ctryStruct[, admLevel, with=FALSE])))
     }
     
     z <-
@@ -2029,7 +2026,7 @@ searchAdmLevelMembers <- function(ctryCode = NULL,
           idxFound <-
             grep(
               pattern = paste0("^", admLevelMember, "$"),
-              x = ctryStruct[, ..admLevel],
+              x = ctryStruct[, admLevel, with=FALSE],
               fixed = TRUE
             )
           
@@ -2038,7 +2035,7 @@ searchAdmLevelMembers <- function(ctryCode = NULL,
             idxFound <-
               grep(
                 pattern = admLevelMember,
-                x = unlist(ctryStruct[, ..admLevel]),
+                x = unlist(ctryStruct[, admLevel, with=FALSE]),
                 ignore.case = TRUE
               )
           
@@ -2049,7 +2046,7 @@ searchAdmLevelMembers <- function(ctryCode = NULL,
           
           #foundMembers <- as.character(ctryStruct[idxFound, 1:grep(admLevel, admLevels)])
           foundMembers <-
-            unique(as.character(unlist(ctryStruct[idxFound, ..admLevel])))
+            unique(as.character(unlist(ctryStruct[idxFound, admLevel, with=FALSE])))
           
           return(foundMembers)
         }

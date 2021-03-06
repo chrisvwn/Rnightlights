@@ -7,7 +7,9 @@
   
   #display credits
   credits <- "Rnightlights
-  
+
+When using the data please credit the various agencies:
+
 DMSP data collected by US Air Force Weather Agency
 Image and data processing by NOAA's National Geophysical Data Center
 (https://eogdata.mines.edu/dmsp/downloadV4composites.html)
@@ -45,7 +47,21 @@ Using the data to create maps for academic publishing is allowed.
   
   #Setup the data path, possibly by prompting the user. if not found
   if(is.null(getNlDataPath()))
+  {
+    message(Sys.time(), ": dataPath is not set. Running setupDataPath")
     setupDataPath()
+  }
+  
+  #if path is set but it is not found create it
+  if(!dir.exists(dataPath <- getNlDataPath()))
+  {
+    message(Sys.time(), ": ", dataPath, " does not exist. Creating")
+    setNlDataPath(dataPath)
+  }
+  
+  #Create any missing data dirs
+  #Upgrade also checks for this so this may make the upgrade one redundant
+  createNlDataDirs()
   
   #try to speed up the code
   #does this work?
@@ -65,9 +81,11 @@ Using the data to create maps for academic publishing is allowed.
 
 .onDetach <- function(libpath)
 {
-  suppressWarnings(rm(.RnightlightsEnv))
-  
+  #restore the previous timeout option
   options("timeout" = .RnightlightsEnv$oldTimeout)
+  
+  #remove our hidden environment
+  suppressWarnings(rm(.RnightlightsEnv))
 }
 
 ######################## .Last.lib ###################################

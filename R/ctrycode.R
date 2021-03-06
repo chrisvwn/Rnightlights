@@ -33,6 +33,8 @@ ctryNameToCode <- function(ctryNames)
     
     ctryList <- dplyr::arrange(ctryList, ADMIN)
     
+    rownames(ctryList) <- NULL
+    
     return(ctryList)
   }
   
@@ -80,6 +82,8 @@ ctryNameToCode <- function(ctryNames)
     unlist(sapply(ctryNames[notFoundIdx], function(cName)
       rworldmap::rwmGetISO3(cName)))
   
+  rownames(result) <- NULL
+  
   return(result)
 }
 
@@ -123,11 +127,26 @@ ctryCodeToName <- function(ctryCodes)
     
     ctryList <- dplyr::arrange(ctryList, ISO3)
     
+    rownames(ctryList) <- NULL
+    
     return(ctryList)
   }
   
   #if (class(ctryCodes) != "character" || is.null(ctryCodes) || is.na(ctryCodes) || ctryCodes =="" || ctryCodes == " ")
   # stop(Sys.time(), ": Invalid ctryCode: ", ctryCodes)
+  
+  if (class(ctryCodes) != "character" ||
+      is.null(ctryCodes) || is.na(ctryCodes) || ctryCodes == "")
+    stop(Sys.time(), ": Invalid ctryCodes: ", ctryCodes)
+  
+  hasNonAlpha <-
+    sapply(ctryCodes, function(ctryCode)
+      stringr::str_detect(ctryCode, "[^[:alpha:]| ]"))
+  
+  if (any(hasNonAlpha))
+    stop(Sys.time(),
+         ": Invalid ctryNames detected: ",
+         paste0(ctryCodes[hasNonAlpha], sep = ","))
   
   ctryList <- map@data[, c("ISO3", "ADMIN")]
   
@@ -149,6 +168,8 @@ ctryCodeToName <- function(ctryCodes)
   result[foundIdx] <- as.character(ctryList[idx[foundIdx], "ADMIN"])
   
   result[notFoundIdx] <- NA
+  
+  rownames(result) <- NULL
   
   return(result)
 }
@@ -180,12 +201,15 @@ ctryCodeToName <- function(ctryCodes)
 #' @export
 searchCountry <- function(searchTerms, extended = FALSE)
 {
+  if(missing(searchTerms) || is.null(searchTerms))
+    return()
+  
   resCountry <-
     do.call("rbind.data.frame", lapply(searchTerms, function(searchTerm)
     {
-      ctryName <- ctryCodeToName(searchTerm)
+      ctryName <- try(expr = ctryCodeToName(searchTerm), silent = TRUE)
       
-      if (length(ctryName) > 1 || !is.na(ctryName))
+      if (!inherits(ctryName, 'try-error') && (length(ctryName) > 1 || !is.na(ctryName)))
       {
         allCtryNames <- ctryCodeToName()
         resCountry <-
@@ -198,9 +222,9 @@ searchCountry <- function(searchTerms, extended = FALSE)
       #country  code
       if (nrow(resCountry) == 0 || extended)
       {
-        ctryCode <- ctryNameToCode(searchTerm)
+        ctryCode <- try(expr = ctryNameToCode(searchTerm), silent = TRUE)
         
-        if (length(ctryCode) > 1 || !is.na(ctryCode))
+        if (!inherits(ctryName, 'try-error') && (length(ctryCode) > 1 || !is.na(ctryCode)))
         {
           allCtryCodes <- ctryNameToCode()
           resCountry <-
@@ -242,6 +266,8 @@ searchCountry <- function(searchTerms, extended = FALSE)
   
   #remove duplicates if results found
   resCountry <- unique.data.frame(resCountry)
+  
+  rownames(resCountry) <- NULL
   
   return(resCountry)
 }

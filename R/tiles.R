@@ -163,7 +163,7 @@ getAllNlConfigNames <-
       ),
       list(
         nlType = "VIIRS.D",
-        productName = "daily_radiance",
+        productName = "daily (nightly)_radiance",
         configName = "vcmcfg",
         extension = "rade9",
         fileRegex1 = "SVDNB_npp_d{nlPeriod}\\.d\\.{tileName}\\.{extension}\\.tif",
@@ -401,6 +401,33 @@ validNlConfigName <- function(configName, nlType)
 validNlConfigExtension <- function(extension, configName, nlType)
 {
   toupper(extension) %in% toupper(unique(getAllNlConfigNames(nlTypes = nlType, configNames = configName)$extension))
+}
+
+######################## getRadNlConfigExtension ###################################
+
+#' Check if a configName is valid for a given nlType
+#'
+#' Check if a configName is valid for a given nlType
+#'
+#' @param configName character the config shortname of raster
+#' 
+#' @param extension character the extension of raster
+#'
+#' @param nlType types of nightlight to check
+#'
+#' @return logical a vector of logical values
+#'
+#' @examples
+#' Rnightlights:::validNlConfigName("VCMCFG", "OLS.Y")
+#'  #returns FALSE
+#'
+#' Rnightlights:::validNlConfigName("VCMCFG", "VIIRS.M")
+#'  #returns TRUE
+#'
+#' @export
+getRadNlConfigExtension <- function(nlType, configName = )
+{
+  unique(grep(pattern = "rad|avg", unique(getAllNlConfigNames(nlTypes = nlType, configNames = configName)$extension), value = TRUE))[1]
 }
 
 ######################## downloadNlTiles ###################################

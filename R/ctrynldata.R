@@ -938,7 +938,7 @@ getCtryNlData <- function(ctryCode = NULL,
     stop("Invalid configName(s) supplied")
 
   if(missing(extensions))
-    extensions <- sapply(paste0("extension_", configNames), pkgOptions)
+    extensions <- sapply(paste0("extension_", nlTypes), pkgOptions)
   
   if (any(!validNlConfigExtension(extension = extensions, configName = configNames, nlType = nlTypes)))
     stop("Invalid extension(s) supplied")
@@ -1522,7 +1522,7 @@ getCtryNlDataColName <-
         configName,
         "_",
         toupper(extension),
-        "-MTS",
+        "_MTS",
         toupper(multiTileStrategy),
         "-",
         toupper(multiTileMergeFun),

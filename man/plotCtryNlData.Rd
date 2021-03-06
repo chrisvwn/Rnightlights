@@ -6,22 +6,7 @@
 \usage{
 plotCtryNlData(
   ctryData,
-  ctryCodes,
-  admLevel,
-  admLevelFilters,
-  nlType,
-  configName,
-  extension,
-  nlPeriodStart,
-  nlPeriodEnd,
-  gadmPolyVer,
-  gadmPolyType,
-  multiTileMergeStrategy,
-  multiTileMergeFun,
-  removeGasFlaresMethod,
-  nlStat,
-  custPolyPath = NULL,
-  cropMaskMethod,
+  admLevelFilters = NULL,
   scale = FALSE,
   graphType = "line",
   normArea = FALSE,
@@ -39,11 +24,13 @@ followed by the stat columns. In future it may be possible to supply
 a custom data.frame and direct the function on which columns to find
 the particular data.}
 
-\item{admLevel}{\code{character} The country admin level in the given
-ctryCode at which to calculate stats}
-
 \item{admLevelFilters}{\code{character} The admLevel members that are selected
 the rest will be filtered out}
+
+\item{ctryCode}{\code{character} The ctryCode of interest}
+
+\item{admLevel}{\code{character} The country admin level in the given
+ctryCode at which to calculate stats}
 
 \item{nlType}{\code{character} The nlType of interest}
 
@@ -51,21 +38,12 @@ the rest will be filtered out}
 
 \item{extension}{character the extension of raster being processed}
 
-\item{gadmPolyType}{The format of polygons to download from GADM}
+\item{multiTileStrategy}{character How to handle multiple tiles per nlPeriod}
 
 \item{multiTileMergeFun}{character The function to use to merge tiles}
 
 \item{removeGasFlaresMethod}{character The method to use to perform gas flare removal
 or NULL to disable}
-
-\item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
-
-\item{cropMaskMethod}{\code{character} Whether to use rasterize or
-gdal-based functions to crop and mask the country rasters}
-
-\item{ctryCode}{\code{character} The ctryCode of interest}
-
-\item{multiTileStrategy}{character How to handle multiple tiles per nlPeriod}
 
 \item{nlPeriod}{\code{character} The nlPeriod of interest}
 
@@ -74,10 +52,17 @@ the stats specified in \code{pkgOptions("nlStats")}}
 
 \item{downloadMethod}{The method used to download polygons and rasters}
 
+\item{cropMaskMethod}{\code{character} Whether to use rasterize or
+gdal-based functions to crop and mask the country rasters}
+
 \item{extractMethod}{("rast" or "gdal") Whether to use rasterize or
 gdal-based functions to crop and mask the country rasters}
 
 \item{gadmVersion}{The GADM version to use}
+
+\item{gadmPolyType}{The format of polygons to download from GADM}
+
+\item{custPolyPath}{Alternative to GADM. A path to a custom shapefile zip}
 }
 \value{
 None

@@ -77,7 +77,10 @@ setupDataPath <- function(newDataPath = tempdir(), ...)
         {
           message(Sys.time(),
                   ": Using temporary directory for this session only")
+          
           dataPath <- tempdir()
+          
+          setNlDataPath(dataPath = dataPath)
         }
         
         if (is.null(dataPath) || is.na(dataPath))
@@ -164,7 +167,10 @@ setupDataPath <- function(newDataPath = tempdir(), ...)
         {
           message(Sys.time(),
                   ": Using temporary directory for this session only")
+          
           dataPath <- tempdir()
+          
+          setNlDataPath(dataPath = dataPath)
         }
         
         #is.na if dialog cancelled, is.null if readline empty
@@ -275,6 +281,7 @@ setNlDataPath <- function(dataPath)
     dirCreate <- file.path(dataPath, dataDirName)
     
     successCreate <- tryCatch({
+      message(Sys.time(), ": Creating ", dirCreate)
       dir.create(dirCreate)
     }, error = function(err)
     {
@@ -685,29 +692,53 @@ createNlDataDirs <- function()
   #set directory paths (tiles, ctrypoly, output/cropped rasters, downloads/temp?)
   
   #create directories
-  if (!dir.exists(getNlDir("dirPolygon")))
-    dir.create(getNlDir("dirPolygon"))
+  if (!dir.exists(dirCreate <- getNlDir("dirPolygon")))
+  {
+    message(Sys.time(), ": Creating ", dirCreate)
+    dir.create(dirCreate)
+  }
   
-  if (!dir.exists(getNlDir("dirNlTiles")))
-    dir.create(getNlDir("dirNlTiles"))
+  if (!dir.exists(dirCreate <- getNlDir("dirNlTiles")))
+  {
+    message(Sys.time(), ": Creating ", dirCreate)
+    dir.create(dirCreate)
+  }
   
-  if (!dir.exists(getNlDir("dirNlGasFlares")))
-    dir.create(getNlDir("dirNlGasFlares"))
+  if (!dir.exists(dirCreate <- getNlDir("dirNlGasFlares")))
+  {
+    message(Sys.time(), ": Creating ", dirCreate)
+    dir.create(dirCreate)
+  }
   
-  if (!dir.exists(getNlDir("dirNlData")))
-    dir.create(getNlDir("dirNlData"))
+  if (!dir.exists(dirCreate <- getNlDir("dirNlData")))
+  {
+    message(Sys.time(), ": Creating ", dirCreate)
+    dir.create(dirCreate)
+  }
   
-  if (!dir.exists(getNlDir("dirRasterOutput")))
-    dir.create(getNlDir("dirRasterOutput"))
+  if (!dir.exists(dirCreate <- getNlDir("dirRasterOutput")))
+  {
+    message(Sys.time(), ": Creating ", dirCreate)
+    dir.create(dirCreate)
+  }
   
-  if (!dir.exists(getNlDir("dirRasterWeb")))
-    dir.create(getNlDir("dirRasterWeb"))
+  if (!dir.exists(dirCreate <- getNlDir("dirRasterWeb")))
+  {
+    message(Sys.time(), ": Creating ", dirCreate)
+    dir.create(dirCreate)
+  }
   
-  if (!dir.exists(getNlDir("dirNlTemp")))
-    dir.create(getNlDir("dirNlTemp"))
+  if (!dir.exists(dirCreate <- getNlDir("dirNlTemp")))
+  {
+    message(Sys.time(), ": Creating ", dirCreate)
+    dir.create(dirCreate)
+  }
   
-  if (!dir.exists(getNlDir("dirZonals")))
-    dir.create(getNlDir("dirZonals"))
+  if (!dir.exists(dirCreate <- getNlDir("dirZonals")))
+  {
+    message(Sys.time(), ": Creating ", dirCreate)
+    dir.create(dirCreate)
+  }
 }
 
 ######################## getNlDir ###################################

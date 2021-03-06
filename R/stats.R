@@ -1,3 +1,59 @@
+#' @export
+nlStat <- function(funName, ...)
+{
+  if(!existsFunction(funName))
+    stop("Function '", funName, "' not found")
+  
+  argz <- unlist(list(...))
+  
+  nlSt <- list(funName, argz)
+  
+  #a single list
+  if (is.list(nlSt) &&
+      length(nlSt) > 1 &&
+      all(sapply(2:length(nlSt), function(i)
+        ! is.list(nlSt[[i]]) &&
+        (grepl("=", nlSt[i]) || length(names(nlSt[i])) > 0))))
+    nlSt <- list(nlSt)
+  
+  validStats <- validNlStats(nlSt)
+  
+  if(!all(validStats))
+    stop("Invalid nlStat: ", nlSt)
+  
+  # if (!all(validStats))
+  # {
+  #   if (!useSavedStats) {
+  #     stop(
+  #       Sys.time(),
+  #       ": nlStats not found: ",
+  #       paste(as.character(nlStats[!validStats]), collapse = ", "),
+  #       "\n Set useSavedStats to TRUE to search also in saved Stats"
+  #     )
+  #   } else {
+  #     message(
+  #       Sys.time(),
+  #       ": ",
+  #       paste(as.character(nlStats[!validStats]), collapse = ", "),
+  #       " not found. Checking saved stats"
+  #     )
+  #     
+  #     foundSavedStatSigs <-
+  #       sapply(nlSt[!validStats], function(x)
+  #         searchSavedNlStatName(x[[1]]))
+  #     
+  #     numFoundMatches <- sapply(foundSavedStatSigs, length)
+  #     
+  #     if (any(numFoundMatches == 0))
+  #       stop(Sys.time(),
+  #            ": Not found in saved stats: ",
+  #            paste(nlSt[!validStats][numFoundMatches == 0], collapse = ", "))
+  #   }
+  # }
+  
+  nlSt
+}
+
 ######################## validNlStats ###################################
 
 #' Check if given statistics are valid
@@ -163,7 +219,7 @@ nlStatArgs <- function(nlStat)
   
   #if args are passed as named lists e.g. list("sum", na.rm=TRUE) convert each named argument
   #to the string format "arg=value"
-  if (!is.null(names(nlStat)))
+  if (!is.null(names(nlStat[2:length(nlStat)])))
   {
     args <-
       paste(names(nlStat)[2:length(nlStat)], nlStat[2:length(nlStat)], sep = "=")
@@ -1099,7 +1155,7 @@ equalNlStats <- function(nlStatName1, nlStatName2)
 #'
 #' @import data.table
 #' 
-#' @import ff
+#' @importFrom ff vmode .rambytes
 myZonal <-
   function (rast,
             nlType,
