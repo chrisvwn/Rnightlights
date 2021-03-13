@@ -425,7 +425,7 @@ validNlConfigExtension <- function(extension, configName, nlType)
 #'  #returns TRUE
 #'
 #' @export
-getRadNlConfigExtension <- function(nlType, configName = )
+getRadNlConfigExtension <- function(nlType, configName)
 {
   unique(grep(pattern = "rad|avg", unique(getAllNlConfigNames(nlTypes = nlType, configNames = configName)$extension), value = TRUE))[1]
 }
