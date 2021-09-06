@@ -1,3 +1,6 @@
+# Package outdated
+## It seems there have been a number of changes that have happened upstream especially around tile downloading that render the package unusable. However, I have not had the time to keep the package up-to-date and do not see this changing in the near future. <br><br> Please find an alternative package/software for your use-case.
+
 # Rnightlights [![Build Status](https://travis-ci.org/chrisvwn/Rnightlights.svg?branch=master)](https://travis-ci.org/chrisvwn/Rnightlights) [![codecov](https://codecov.io/gh/chrisvwn/Rnightlights/branch/master/graph/badge.svg)](https://codecov.io/gh/chrisvwn/Rnightlights) [![Monthly Downloads](http://cranlogs.r-pkg.org/badges/Rnightlights)](http://cranlogs.r-pkg.org/badges/Rnightlights) [![Total Downloads](http://cranlogs.r-pkg.org/badges/grand-total/Rnightlights)](http://cranlogs.r-pkg.org/badges/grand-total/Rnightlights)
 
 ## Nightlights Data Extraction in R
